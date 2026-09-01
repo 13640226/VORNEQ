@@ -1,0 +1,25 @@
+﻿param(
+  [int]$Port = 8081
+)
+
+$ErrorActionPreference = "Stop"
+
+$projectRoot =
+  Split-Path -Parent $PSScriptRoot
+
+Set-Location $projectRoot
+
+Write-Host ""
+Write-Host "========================================" -ForegroundColor DarkGray
+Write-Host " SAMAN KHERAD — P0 PLAYGROUND" -ForegroundColor Cyan
+Write-Host " Final Test Build" -ForegroundColor DarkCyan
+Write-Host "========================================" -ForegroundColor DarkGray
+Write-Host ""
+
+Write-Host "URL:" -ForegroundColor Yellow
+Write-Host "http://127.0.0.1:$Port/playground.html" -ForegroundColor Green
+Write-Host ""
+Write-Host "Press Ctrl+C to stop." -ForegroundColor Yellow
+Write-Host ""
+
+python -m http.server $Port --bind 127.0.0.1

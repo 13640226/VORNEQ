@@ -1,0 +1,1512 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="light">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1">
+
+  <meta
+    name="color-scheme"
+    content="light dark">
+
+  <meta
+    name="description"
+    content="Component Playground پروژه سامان خرد">
+
+  <title>
+    Component Playground — سامان خرد
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="./assets/css/tokens.css">
+
+  <link
+    rel="stylesheet"
+    href="./assets/css/themes.css">
+
+  <link
+    rel="stylesheet"
+    href="./assets/css/base.css">
+
+  <link
+    rel="stylesheet"
+    href="./assets/css/components.css">
+
+</head>
+
+<body>
+
+  <a
+    class="skip-link"
+    href="#main">
+    رفتن به محتوای اصلی
+  </a>
+
+
+  <!-- ========================================================
+       HEADER
+       ======================================================== -->
+
+  <header class="site-header">
+
+    <div class="site-header__inner">
+
+      <a
+        href="#main"
+        class="site-brand">
+        سامان خرد
+      </a>
+
+
+      <nav
+        class="site-nav"
+        aria-label="منوی اصلی">
+
+        <a
+          href="#main"
+          aria-current="page">
+          خانه
+        </a>
+
+        <a href="#principles">
+          اصول
+        </a>
+
+        <a href="#method">
+          روش
+        </a>
+
+        <a href="#thought">
+          تالار اندیشه
+        </a>
+
+        <a href="#library">
+          کتابخانه
+        </a>
+
+        <a href="#footer">
+          درباره
+        </a>
+
+      </nav>
+
+
+      <button
+        class="drawer-trigger"
+        id="drawerTrigger"
+        type="button"
+        aria-expanded="false"
+        aria-controls="drawer"
+        aria-label="باز کردن منوی اصلی">
+
+        <span
+          class="drawer-trigger__icon"
+          aria-hidden="true">
+
+          <span></span>
+          <span></span>
+          <span></span>
+
+        </span>
+
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <!-- ========================================================
+       MOBILE DRAWER
+       ======================================================== -->
+
+  <div
+    class="drawer-overlay"
+    id="drawerOverlay"
+    hidden>
+  </div>
+
+
+  <nav
+    class="drawer"
+    id="drawer"
+    aria-label="منوی موبایل"
+    hidden>
+
+    <div class="drawer__header">
+
+      <span class="site-brand">
+        سامان خرد
+      </span>
+
+      <button
+        class="drawer__close"
+        id="drawerClose"
+        type="button"
+        aria-label="بستن منو">
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="drawer__body">
+
+      <div class="drawer__nav">
+
+        <a
+          class="drawer__nav-link"
+          href="#main">
+          خانه
+        </a>
+
+        <a
+          class="drawer__nav-link"
+          href="#principles">
+          اصول
+
+          <span
+            class="drawer__arrow"
+            aria-hidden="true">
+            ←
+          </span>
+        </a>
+
+        <a
+          class="drawer__nav-link"
+          href="#method">
+          روش
+
+          <span
+            class="drawer__arrow"
+            aria-hidden="true">
+            ←
+          </span>
+        </a>
+
+        <a
+          class="drawer__nav-link"
+          href="#thought">
+          تالار اندیشه
+
+          <span
+            class="drawer__arrow"
+            aria-hidden="true">
+            ←
+          </span>
+        </a>
+
+        <a
+          class="drawer__nav-link"
+          href="#library">
+          کتابخانه
+
+          <span
+            class="drawer__arrow"
+            aria-hidden="true">
+            ←
+          </span>
+        </a>
+
+        <a
+          class="drawer__nav-link"
+          href="#footer">
+          درباره
+        </a>
+
+      </div>
+
+
+      <div class="drawer__search">
+
+        <label
+          class="control-label"
+          for="drawerSearch">
+          جست‌وجو
+        </label>
+
+        <input
+          class="drawer__search-input"
+          id="drawerSearch"
+          type="search"
+          placeholder="جست‌وجو در محتوا...">
+
+      </div>
+
+    </div>
+
+  </nav>
+
+
+  <!-- ========================================================
+       MAIN
+       ======================================================== -->
+
+  <main id="main">
+
+
+    <!-- ======================================================
+         HERO
+         ====================================================== -->
+
+    <section class="pg-hero">
+
+      <div class="container pg-hero__grid">
+
+        <div class="pg-hero__content">
+
+          <div class="pg-kicker">
+            Component Playground / Phase 0
+          </div>
+
+          <h1 class="pg-display">
+            فضایی برای
+            پرسیدن،
+            سنجیدن و
+            <span class="accent">
+              تغییر دادن
+            </span>
+          </h1>
+
+          <p class="pg-intro">
+            مرجع بصری مؤلفه‌های سامان خرد؛
+            برای آزمودن یک آرشیو فکری،
+            فضای مطالعه و معماری محتوایی
+            بدون الگوهای وابستگی‌ساز.
+          </p>
+
+        </div>
+
+
+        <div
+          class="pg-hero__media"
+          aria-label="Placeholder برای Cover Media">
+
+          <span>
+            Cover / Artwork
+          </span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         THEME + DIRECTION CONTROLS
+         ====================================================== -->
+
+    <section class="pg-controls">
+
+      <div class="container pg-controls__inner">
+
+        <div class="control-group">
+
+          <div class="control-label">
+            Direction
+          </div>
+
+          <button
+            class="btn"
+            id="dirRtl"
+            type="button"
+            aria-pressed="true">
+            RTL
+          </button>
+
+          <button
+            class="btn"
+            id="dirLtr"
+            type="button"
+            aria-pressed="false">
+            LTR
+          </button>
+
+        </div>
+
+
+        <div class="control-group">
+
+          <div class="control-label">
+            Theme
+          </div>
+
+          <button
+            class="btn"
+            id="themeLight"
+            type="button"
+            aria-pressed="true">
+            Light
+          </button>
+
+          <button
+            class="btn"
+            id="themeCream"
+            type="button"
+            aria-pressed="false">
+            Cream
+          </button>
+
+          <button
+            class="btn"
+            id="themeDark"
+            type="button"
+            aria-pressed="false">
+            Dark
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         CONTENT PAGE ANATOMY
+         ====================================================== -->
+
+    <section class="content-demo">
+
+      <div class="content-demo__inner">
+
+
+        <!-- Breadcrumb -->
+
+        <nav
+          class="breadcrumb"
+          aria-label="مسیر صفحه">
+
+          <ol class="breadcrumb__list">
+
+            <li>
+              <a href="#main">
+                خانه
+              </a>
+            </li>
+
+            <li
+              class="breadcrumb__separator"
+              aria-hidden="true">
+              /
+            </li>
+
+            <li>
+              <a href="#principles">
+                اصول
+              </a>
+            </li>
+
+            <li
+              class="breadcrumb__separator"
+              aria-hidden="true">
+              /
+            </li>
+
+            <li aria-current="page">
+              اصل نمونه
+            </li>
+
+          </ol>
+
+        </nav>
+
+
+        <!-- Metadata -->
+
+        <div class="pg-metadata">
+
+          <span class="pg-metadata__item">
+
+            <span class="pg-metadata__label">
+              نسخه
+            </span>
+
+            <span class="pg-metadata__value">
+              v1.0
+            </span>
+
+          </span>
+
+
+          <span class="pg-metadata__item">
+
+            <span class="pg-metadata__label">
+              آخرین بازبینی
+            </span>
+
+            <span class="pg-metadata__value">
+              ۱۴۰۵/۰۶/۰۱
+            </span>
+
+          </span>
+
+
+          <span class="pg-metadata__item">
+
+            <span class="pg-metadata__label">
+              وضعیت
+            </span>
+
+            <span class="pg-metadata__badge">
+              بررسی‌شده
+            </span>
+
+          </span>
+
+        </div>
+
+
+        <!-- Utility -->
+
+        <div class="pg-utility">
+
+          <div class="pg-utility__label">
+            ابزارهای محتوا
+          </div>
+
+          <div class="pg-utility__actions">
+
+            <button
+              class="btn"
+              type="button">
+              اشتراک
+            </button>
+
+            <button
+              class="btn"
+              type="button">
+              نشان‌گذاری
+            </button>
+
+            <button
+              class="btn"
+              type="button"
+              onclick="window.print()">
+              چاپ
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- Summary -->
+
+        <section
+          class="pg-summary"
+          aria-labelledby="summaryTitle">
+
+          <div
+            class="pg-summary__label"
+            id="summaryTitle">
+            Summary
+          </div>
+
+          <p>
+            این بخش خلاصه‌ای مستقل از محتواست.
+            کاربر باید بتواند پیش از ورود به متن کامل،
+            موضوع، وضعیت و هدف سند را درک کند.
+          </p>
+
+        </section>
+
+
+        <!-- Gallery -->
+
+        <section
+          class="pg-gallery"
+          aria-labelledby="galleryTitle">
+
+          <div class="pg-gallery__header">
+
+            <h2 id="galleryTitle">
+              اسناد و تصاویر مرتبط
+            </h2>
+
+          </div>
+
+          <div class="pg-gallery__grid">
+
+            <div class="pg-gallery__item">
+              سند ۱
+            </div>
+
+            <div class="pg-gallery__item">
+              سند ۲
+            </div>
+
+            <div class="pg-gallery__item">
+              تصویر ۳
+            </div>
+
+            <div class="pg-gallery__item">
+              سند ۴
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- Five-item accordion -->
+
+        <section
+          class="pg-section"
+          aria-labelledby="accordionTitle">
+
+          <div class="pg-section__heading">
+
+            <div class="pg-section__index">
+              Content / Accordion
+            </div>
+
+            <div>
+
+              <h2
+                class="pg-section__title"
+                id="accordionTitle">
+                ساختار اطلاعات تکمیلی
+              </h2>
+
+              <p class="pg-section__description">
+                اطلاعاتی که برای مطالعه لازم‌اند،
+                اما نباید همه در یک سطح بصری قرار بگیرند.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="accordion">
+
+            <details
+              class="accordion-item"
+              open>
+
+              <summary
+                class="accordion-item__trigger">
+
+                درباره این مطلب
+
+                <span
+                  class="accordion-icon"
+                  aria-hidden="true">
+                  ▾
+                </span>
+
+              </summary>
+
+              <div class="accordion-item__content">
+
+                <p>
+                  توضیح درباره هدف،
+                  دامنه و زمینهٔ این محتوا.
+                </p>
+
+              </div>
+
+            </details>
+
+
+            <details class="accordion-item">
+
+              <summary
+                class="accordion-item__trigger">
+
+                منابع و شواهد
+
+                <span
+                  class="accordion-icon"
+                  aria-hidden="true">
+                  ▾
+                </span>
+
+              </summary>
+
+              <div class="accordion-item__content">
+
+                <p>
+                  منابع اصلی،
+                  شواهد موافق و مخالف
+                  و وضعیت ارزیابی آن‌ها.
+                </p>
+
+              </div>
+
+            </details>
+
+
+            <details class="accordion-item">
+
+              <summary
+                class="accordion-item__trigger">
+
+                وضعیت بررسی
+
+                <span
+                  class="accordion-icon"
+                  aria-hidden="true">
+                  ▾
+                </span>
+
+              </summary>
+
+              <div class="accordion-item__content">
+
+                <p>
+                  تاریخ بازبینی،
+                  وضعیت تحریری
+                  و محدودیت‌های شناخته‌شده.
+                </p>
+
+              </div>
+
+            </details>
+
+
+            <details class="accordion-item">
+
+              <summary
+                class="accordion-item__trigger">
+
+                تاریخچه تغییرات
+
+                <span
+                  class="accordion-icon"
+                  aria-hidden="true">
+                  ▾
+                </span>
+
+              </summary>
+
+              <div class="accordion-item__content">
+
+                <p>
+                  نسخه‌ها،
+                  تاریخ تغییر
+                  و توضیح انسانی دربارهٔ دلیل اصلاحات.
+                </p>
+
+              </div>
+
+            </details>
+
+
+            <details class="accordion-item">
+
+              <summary
+                class="accordion-item__trigger">
+
+                پرسش‌های باز
+
+                <span
+                  class="accordion-icon"
+                  aria-hidden="true">
+                  ▾
+                </span>
+
+              </summary>
+
+              <div class="accordion-item__content">
+
+                <p>
+                  پرسش‌هایی که هنوز پاسخ قابل اتکا ندارند
+                  یا نیازمند بررسی بیشترند.
+                </p>
+
+              </div>
+
+            </details>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         PRINCIPLES / ARCHIVE
+         ====================================================== -->
+
+    <section
+      class="pg-section"
+      id="principles">
+
+      <div class="container">
+
+        <div class="pg-section__heading">
+
+          <div class="pg-section__index">
+            01 / Archive
+          </div>
+
+          <div>
+
+            <h2 class="pg-section__title">
+              آرشیو، نه داشبورد
+            </h2>
+
+            <p class="pg-section__description">
+              محتوا مثل یک مجموعهٔ تحریری،
+              قابل ارجاع و قابل بازبینی نمایش داده می‌شود.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="editorial-grid">
+
+          <article class="editorial-card">
+
+            <div class="editorial-card__eyebrow">
+              Principle
+            </div>
+
+            <h3>
+              هیچ چیز مقدس نیست
+            </h3>
+
+            <p>
+              هیچ انسان، رهبر، کتاب،
+              الگوریتم یا ایده‌ای
+              از پرسش‌گری مصون نیست.
+            </p>
+
+            <a href="#method">
+              مشاهده →
+            </a>
+
+          </article>
+
+
+          <article class="editorial-card">
+
+            <div class="editorial-card__eyebrow">
+              Document
+            </div>
+
+            <h3>
+              معماری محتوای نسخه‌پذیر
+            </h3>
+
+            <p>
+              هر سند نسخه،
+              وضعیت بازبینی
+              و تاریخ تغییر مشخص دارد.
+            </p>
+
+            <a href="#library">
+              مشاهده →
+            </a>
+
+          </article>
+
+
+          <article class="editorial-card">
+
+            <div class="editorial-card__eyebrow">
+              Research
+            </div>
+
+            <h3>
+              قدرت و اطلاعات
+            </h3>
+
+            <p>
+              انگیزه،
+              ساختار قدرت،
+              پاسخ‌گویی
+              و اعتبار ادعا.
+            </p>
+
+            <a href="#library">
+              مشاهده →
+            </a>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         METHOD
+         ====================================================== -->
+
+    <section
+      class="pg-section"
+      id="method">
+
+      <div class="container">
+
+        <div class="pg-section__heading">
+
+          <div class="pg-section__index">
+            02 / Method
+          </div>
+
+          <div>
+
+            <h2 class="pg-section__title">
+              روش شش‌مرحله‌ای
+            </h2>
+
+            <p class="pg-section__description">
+              از روشن‌کردن ادعا
+              تا تصمیم مستقل.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <ol class="method-list">
+
+          <li class="method-row">
+
+            <div class="method-row__number">
+              01
+            </div>
+
+            <h3>
+              ادعا را مشخص کن
+            </h3>
+
+            <p>
+              دقیقاً چه چیزی گفته شده
+              و چه چیزی گفته نشده است؟
+            </p>
+
+          </li>
+
+
+          <li class="method-row">
+
+            <div class="method-row__number">
+              02
+            </div>
+
+            <h3>
+              شواهد را بسنج
+            </h3>
+
+            <p>
+              منبع،
+              کیفیت،
+              استقلال
+              و قابلیت بررسی.
+            </p>
+
+          </li>
+
+
+          <li class="method-row">
+
+            <div class="method-row__number">
+              03
+            </div>
+
+            <h3>
+              عدم‌قطعیت را بشناس
+            </h3>
+
+            <p>
+              چه چیزهایی را
+              هنوز نمی‌دانیم؟
+            </p>
+
+          </li>
+
+
+          <li class="method-row">
+
+            <div class="method-row__number">
+              04
+            </div>
+
+            <h3>
+              قدرت و انگیزه را ببین
+            </h3>
+
+            <p>
+              چه کسی تصمیم می‌گیرد
+              و چگونه پاسخ‌گو می‌شود؟
+            </p>
+
+          </li>
+
+
+          <li class="method-row">
+
+            <div class="method-row__number">
+              05
+            </div>
+
+            <h3>
+              پیامدها را بسنج
+            </h3>
+
+            <p>
+              پذیرش،
+              رد
+              یا تعلیق قضاوت چه پیامدی دارد؟
+            </p>
+
+          </li>
+
+
+          <li class="method-row">
+
+            <div class="method-row__number">
+              06
+            </div>
+
+            <h3>
+              خودت تصمیم بگیر
+            </h3>
+
+            <p>
+              تا حد ممکن
+              تصمیم نهایی نزد خود فرد باقی بماند.
+            </p>
+
+          </li>
+
+        </ol>
+
+      </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         THOUGHT
+         ====================================================== -->
+
+    <section
+      class="pg-section"
+      id="thought">
+
+      <div class="container">
+
+        <aside class="thought-prompt">
+
+          <div class="pg-kicker">
+            Hall of Thought
+          </div>
+
+          <h2>
+            چه چیزی می‌تواند
+            نظر تو را تغییر دهد؟
+          </h2>
+
+          <p>
+            یکی از باورهای مهم خود را انتخاب کن.
+            نه برای ردکردن آن،
+            بلکه برای مشخص‌کردن شرایطی
+            که در آن تجدیدنظر عقلانی ممکن می‌شود.
+          </p>
+
+        </aside>
+
+      </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         LIBRARY
+         ====================================================== -->
+
+    <section
+      class="pg-section"
+      id="library">
+
+      <div class="container">
+
+        <div class="pg-section__heading">
+
+          <div class="pg-section__index">
+            03 / Library
+          </div>
+
+          <div>
+
+            <h2 class="pg-section__title">
+              کتابخانهٔ تحریری
+            </h2>
+
+            <p class="pg-section__description">
+              مقالات،
+              اسناد
+              و پژوهش‌ها
+              در ساختاری قابل ارجاع.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="article-grid">
+
+          <article class="article-card">
+
+            <div class="article-card__media">
+              Document
+            </div>
+
+            <div class="article-card__meta">
+              مقاله · v1.0
+            </div>
+
+            <h3>
+              معماری محتوای نسخه‌پذیر
+            </h3>
+
+            <p>
+              هر محتوا باید بتواند
+              تاریخچهٔ تغییر و وضعیت بررسی
+              خود را نشان دهد.
+            </p>
+
+          </article>
+
+
+          <article class="article-card">
+
+            <div class="article-card__media">
+              Research
+            </div>
+
+            <div class="article-card__meta">
+              پژوهش · Reviewed
+            </div>
+
+            <h3>
+              قدرت چگونه بر اطلاعات اثر می‌گذارد؟
+            </h3>
+
+            <p>
+              بررسی رابطهٔ انگیزه،
+              ساختار قدرت
+              و پاسخ‌گویی.
+            </p>
+
+          </article>
+
+
+          <article class="article-card">
+
+            <div class="article-card__media">
+              Stress Test
+            </div>
+
+            <div class="article-card__meta">
+              تست متن بلند
+            </div>
+
+            <h3>
+              این عنوان عمداً بسیار طولانی است
+              تا رفتار صفحه در موبایل،
+              جهت‌های مختلف
+              و Zoom بالا بررسی شود
+            </h3>
+
+            <p>
+              متن نباید باعث overflow افقی شود.
+            </p>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         RELATED READING
+         ====================================================== -->
+
+    <section class="pg-section">
+
+      <div class="container">
+
+        <div class="pg-section__heading">
+
+          <div class="pg-section__index">
+            04 / Related
+          </div>
+
+          <div>
+
+            <h2 class="pg-section__title">
+              ادامهٔ مطالعه
+            </h2>
+
+            <p class="pg-section__description">
+              مسیرهای مرتبط
+              بدون اجبار به ادامه‌دادن.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="related-grid">
+
+          <article class="related-card">
+
+            <div class="related-card__meta">
+              اصل
+            </div>
+
+            <h3>
+              هیچ چیز مقدس نیست
+            </h3>
+
+            <a href="#principles">
+              مشاهده →
+            </a>
+
+          </article>
+
+
+          <article class="related-card">
+
+            <div class="related-card__meta">
+              روش
+            </div>
+
+            <h3>
+              عدم‌قطعیت را بشناس
+            </h3>
+
+            <a href="#method">
+              مشاهده →
+            </a>
+
+          </article>
+
+
+          <article class="related-card">
+
+            <div class="related-card__meta">
+              پژوهش
+            </div>
+
+            <h3>
+              شفافیت در قدرت
+            </h3>
+
+            <a href="#library">
+              مشاهده →
+            </a>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         SOCIAL PLACEHOLDERS
+         ====================================================== -->
+
+    <section class="container">
+
+      <div class="pg-social">
+
+        <div class="pg-social__label">
+          External / Share placeholders
+        </div>
+
+        <div class="pg-social__links">
+
+          <button
+            class="btn"
+            type="button">
+            X
+          </button>
+
+          <button
+            class="btn"
+            type="button">
+            Telegram
+          </button>
+
+          <button
+            class="btn"
+            type="button">
+            RSS
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- ========================================================
+       FOOTER
+       ======================================================== -->
+
+  <footer
+    class="site-footer"
+    id="footer">
+
+    <div class="container">
+
+
+      <!-- Desktop Footer -->
+
+      <div class="site-footer__grid">
+
+        <div>
+
+          <h2 class="site-footer__title">
+            سامان خرد
+          </h2>
+
+          <p class="site-footer__manifesto">
+            فضایی برای استقلال فکری،
+            نقدپذیری
+            و پرسش‌گری.
+            هیچ چیز فراتر از پرسش نیست.
+          </p>
+
+        </div>
+
+
+        <div class="site-footer__links">
+
+          <strong>
+            محتوا
+          </strong>
+
+          <a href="#principles">
+            اصول
+          </a>
+
+          <a href="#method">
+            روش
+          </a>
+
+          <a href="#library">
+            کتابخانه
+          </a>
+
+        </div>
+
+
+        <div class="site-footer__links">
+
+          <strong>
+            پروژه
+          </strong>
+
+          <a href="#main">
+            درباره
+          </a>
+
+          <a href="#main">
+            مشارکت
+          </a>
+
+          <a href="#main">
+            حریم خصوصی
+          </a>
+
+        </div>
+
+
+        <div class="site-footer__links">
+
+          <strong>
+            ارتباط
+          </strong>
+
+          <a href="#main">
+            تماس
+          </a>
+
+          <a href="#main">
+            گزارش خطا
+          </a>
+
+        </div>
+
+      </div>
+
+
+      <!-- Mobile Footer -->
+
+      <div class="footer-accordion">
+
+        <details class="footer-accordion-item">
+
+          <summary class="footer-accordion-item__trigger">
+
+            سامان خرد
+
+            <span
+              class="accordion-icon"
+              aria-hidden="true">
+              ▾
+            </span>
+
+          </summary>
+
+          <div class="footer-accordion-item__content">
+
+            <p class="footer-accordion__description">
+              فضایی برای استقلال فکری،
+              نقدپذیری
+              و پرسش‌گری.
+            </p>
+
+          </div>
+
+        </details>
+
+
+        <details class="footer-accordion-item">
+
+          <summary class="footer-accordion-item__trigger">
+
+            محتوا
+
+            <span
+              class="accordion-icon"
+              aria-hidden="true">
+              ▾
+            </span>
+
+          </summary>
+
+          <div class="footer-accordion-item__content">
+
+            <a href="#principles">
+              اصول
+            </a>
+
+            <a href="#method">
+              روش
+            </a>
+
+            <a href="#library">
+              کتابخانه
+            </a>
+
+          </div>
+
+        </details>
+
+
+        <details class="footer-accordion-item">
+
+          <summary class="footer-accordion-item__trigger">
+
+            پروژه
+
+            <span
+              class="accordion-icon"
+              aria-hidden="true">
+              ▾
+            </span>
+
+          </summary>
+
+          <div class="footer-accordion-item__content">
+
+            <a href="#main">
+              درباره
+            </a>
+
+            <a href="#main">
+              مشارکت
+            </a>
+
+            <a href="#main">
+              حریم خصوصی
+            </a>
+
+          </div>
+
+        </details>
+
+
+        <details class="footer-accordion-item">
+
+          <summary class="footer-accordion-item__trigger">
+
+            ارتباط
+
+            <span
+              class="accordion-icon"
+              aria-hidden="true">
+              ▾
+            </span>
+
+          </summary>
+
+          <div class="footer-accordion-item__content">
+
+            <a href="#main">
+              تماس
+            </a>
+
+            <a href="#main">
+              گزارش خطا
+            </a>
+
+          </div>
+
+        </details>
+
+      </div>
+
+
+      <div class="site-footer__bottom">
+        Component Playground · Phase 0 · Final Test Build
+      </div>
+
+    </div>
+
+  </footer>
+
+
+  <script
+    src="./playground.js"
+    defer>
+  </script>
+
+</body>
+
+</html>
