@@ -52,3 +52,10 @@ playwright-report/
 *.ps1~
 
 .backup-*
+
+# Django local database
+db.sqlite3
+db.sqlite3-journal
+
+# Local backups
+.local-backups/
