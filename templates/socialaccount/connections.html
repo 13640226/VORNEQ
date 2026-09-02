@@ -1,0 +1,240 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="مدیریت حساب‌های متصل — سامان خرد">
+
+    <title>
+        حساب‌های متصل — سامان خرد
+    </title>
+
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/themes.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+
+<body>
+
+<a
+    class="skip-link"
+    href="#main">
+    رفتن به محتوای اصلی
+</a>
+
+
+<header class="site-header">
+
+    <div class="site-header__inner">
+
+        <a
+            class="site-brand brand-lockup"
+            href="{% url 'home' %}"
+            aria-label="سامان خرد — صفحه اصلی">
+
+            <span
+                class="brand-sigil brand-sigil--small"
+                aria-hidden="true">
+
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </span>
+
+            <span class="site-brand__text">
+
+                <strong>
+                    سامان خرد
+                </strong>
+
+                <small>
+                    بنیادِ عریانِ پرسش
+                </small>
+
+            </span>
+
+        </a>
+
+    </div>
+
+</header>
+
+
+<main
+    id="main"
+    tabindex="-1">
+
+    <section class="manifest-section">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <p class="section-code">
+                    ACCOUNT / CONNECTIONS
+                </p>
+
+                <div>
+
+                    <p class="section-kicker">
+                        حساب کاربری
+                    </p>
+
+                    <h1>
+                        حساب‌های متصل
+                    </h1>
+
+                    <p>
+                        سرویس‌های خارجی متصل به حساب سامان خرد
+                        را مشاهده و مدیریت کنید.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="archive-card"
+                style="max-width: 760px; margin-inline: auto;">
+
+                <div class="archive-card__body">
+
+                    {% if form.accounts %}
+
+                        <h2>
+                            اتصال‌های فعال
+                        </h2>
+
+                        <form
+                            method="post"
+                            action="{% url 'socialaccount_connections' %}">
+
+                            {% csrf_token %}
+
+                            {% for base_account in form.accounts %}
+
+                                {% with base_account.get_provider_account as account %}
+
+                                    <div
+                                        class="form-field"
+                                        style="
+                                            padding-block: 1rem;
+                                            border-bottom: 1px solid rgba(255,255,255,0.08);
+                                        ">
+
+                                        <label>
+
+                                            <input
+                                                type="radio"
+                                                name="account"
+                                                value="{{ base_account.id }}">
+
+                                            {{ account.get_brand.name }}
+
+                                        </label>
+
+                                        <p class="archive-card__meta">
+                                            {{ account }}
+                                        </p>
+
+                                    </div>
+
+                                {% endwith %}
+
+                            {% endfor %}
+
+
+                            <div class="manifest-actions">
+
+                                <button
+                                    type="submit"
+                                    class="btn btn--secondary">
+
+                                    قطع اتصال انتخاب‌شده
+
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    {% else %}
+
+                        <h2>
+                            حساب خارجی متصل نیست
+                        </h2>
+
+                        <p>
+                            در حال حاضر هیچ حساب اجتماعی یا سرویس خارجی
+                            به این حساب متصل نشده است.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <div class="manifest-actions">
+
+                <a
+                    href="{% url 'account_email' %}"
+                    class="btn btn--secondary">
+
+                    مدیریت ایمیل
+
+                </a>
+
+                <a
+                    href="{% url 'account_change_password' %}"
+                    class="btn btn--secondary">
+
+                    تغییر رمز عبور
+
+                </a>
+
+                <a
+                    href="{% url 'home' %}"
+                    class="btn btn--primary">
+
+                    بازگشت به خانه
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script
+    src="{% static 'js/main.js' %}"
+    defer>
+</script>
+
+<script
+    src="{% static 'js/home.js' %}"
+    defer>
+</script>
+
+</body>
+
+</html>

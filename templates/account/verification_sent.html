@@ -1,0 +1,173 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="description"
+    content="ایمیل تأیید حساب ارسال شد — سامان خرد">
+
+  <title>
+    ایمیل تأیید ارسال شد — سامان خرد
+  </title>
+
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/themes.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+
+<body>
+
+  <a
+    class="skip-link"
+    href="#main">
+    رفتن به محتوای اصلی
+  </a>
+
+  <header class="site-header">
+
+    <div class="site-header__inner">
+
+      <a
+        class="site-brand brand-lockup"
+        href="{% url 'home' %}"
+        aria-label="سامان خرد — صفحه اصلی">
+
+        <span
+          class="brand-sigil brand-sigil--small"
+          aria-hidden="true">
+
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+
+        </span>
+
+        <span class="site-brand__text">
+
+          <strong>
+            سامان خرد
+          </strong>
+
+          <small>
+            بنیادِ عریانِ پرسش
+          </small>
+
+        </span>
+
+      </a>
+
+    </div>
+
+  </header>
+
+  <main
+    id="main"
+    tabindex="-1">
+
+    <section class="manifest-section">
+
+      <div class="container">
+
+        <div class="section-heading">
+
+          <p class="section-code">
+            ACCOUNT / EMAIL VERIFICATION
+          </p>
+
+          <div>
+
+            <p class="section-kicker">
+              تأیید حساب
+            </p>
+
+            <h1>
+              ایمیل تأیید ارسال شد
+            </h1>
+
+            <p>
+              برای تکمیل فرایند ثبت‌نام،
+              صندوق ورودی ایمیل خود را بررسی کنید.
+            </p>
+
+          </div>
+
+        </div>
+
+        <div
+          class="archive-card"
+          style="max-width: 640px; margin-inline: auto;">
+
+          <div class="archive-card__body">
+
+            <h2>
+              لینک تأیید را باز کنید
+            </h2>
+
+            <p>
+              ایمیلی حاوی لینک تأیید حساب برای شما ارسال شده است.
+            </p>
+
+            <p>
+              اگر ایمیل را مشاهده نمی‌کنید،
+              پوشه‌های Spam و Junk را نیز بررسی کنید.
+            </p>
+
+            <p>
+              پس از تأیید ایمیل می‌توانید
+              به حساب خود وارد شوید و از امکانات حساب کاربری استفاده کنید.
+            </p>
+
+            <div class="manifest-actions">
+
+              <a
+                href="{% url 'account_login' %}"
+                class="btn btn--primary">
+
+                رفتن به صفحه ورود
+
+              </a>
+
+              <a
+                href="{% url 'home' %}"
+                class="btn btn--secondary">
+
+                بازگشت به خانه
+
+              </a>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script
+    src="{% static 'js/main.js' %}"
+    defer>
+  </script>
+
+  <script
+    src="{% static 'js/home.js' %}"
+    defer>
+  </script>
+
+</body>
+
+</html>

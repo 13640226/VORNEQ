@@ -1,0 +1,275 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="description"
+    content="پنل فروشنده — سامان خرد">
+
+  <title>
+    پنل فروشنده — سامان خرد
+  </title>
+
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/themes.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+
+<body>
+
+  <a
+    class="skip-link"
+    href="#main">
+    رفتن به محتوای اصلی
+  </a>
+
+  <header class="site-header">
+
+    <div class="site-header__inner">
+
+      <a
+        class="site-brand brand-lockup"
+        href="{% url 'home' %}"
+        aria-label="سامان خرد — صفحه اصلی">
+
+        <span
+          class="brand-sigil brand-sigil--small"
+          aria-hidden="true">
+
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+
+        </span>
+
+        <span class="site-brand__text">
+
+          <strong>
+            سامان خرد
+          </strong>
+
+          <small>
+            بنیادِ عریانِ پرسش
+          </small>
+
+        </span>
+
+      </a>
+
+      <nav
+        class="site-nav"
+        aria-label="منوی پنل فروشنده">
+
+        <a href="{% url 'home' %}">
+          خانه
+        </a>
+
+        <a href="{% url 'marketplace:index' %}">
+          بازار دیجیتال
+        </a>
+
+        <a href="{% url 'marketplace:product_create' %}">
+          ثبت محصول
+        </a>
+
+      </nav>
+
+    </div>
+
+  </header>
+
+
+  <main
+    id="main"
+    tabindex="-1">
+
+    <section class="manifest-section">
+
+      <div class="container">
+
+        <div class="section-heading">
+
+          <p class="section-code">
+            SELLER / DASHBOARD
+          </p>
+
+          <div>
+
+            <p class="section-kicker">
+              پنل فروشنده
+            </p>
+
+            <h1>
+              محصولات شما
+            </h1>
+
+            <p>
+              هر محصول جدید یا ویرایش‌شده
+              برای بررسی مدیر ارسال می‌شود.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="manifest-actions">
+
+          <a
+            href="{% url 'marketplace:product_create' %}"
+            class="btn btn--primary">
+
+            ثبت محصول جدید
+
+          </a>
+
+        </div>
+
+
+        <div class="archive-grid">
+
+          {% for product in products %}
+
+            <article class="archive-card">
+
+              {% if product.image %}
+
+                <div class="archive-card__poster">
+
+                  <img
+                    src="{{ product.image.url }}"
+                    alt="{{ product.title }}"
+                    loading="lazy">
+
+                </div>
+
+              {% endif %}
+
+
+              <div class="archive-card__body">
+
+                <p class="archive-card__meta">
+
+                  {{ product.category|default:"محصول دیجیتال" }}
+
+                  /
+
+                  {{ product.get_status_display }}
+
+                </p>
+
+                <h2>
+                  {{ product.title }}
+                </h2>
+
+                {% if product.short_description %}
+
+                  <p>
+                    {{ product.short_description|truncatewords:24 }}
+                  </p>
+
+                {% endif %}
+
+
+                {% if product.status == "approved" %}
+
+                  <a href="{% url 'marketplace:detail' product.slug %}">
+                    مشاهده نسخه عمومی ←
+                  </a>
+
+                {% else %}
+
+                  <p class="audio-unavailable">
+                    این محصول هنوز عمومی نشده است.
+                  </p>
+
+                {% endif %}
+
+
+                <a href="{% url 'marketplace:product_edit' product.pk %}">
+                  ویرایش محصول ←
+                </a>
+
+              </div>
+
+            </article>
+
+          {% empty %}
+
+            <article class="archive-card">
+
+              <div class="archive-card__body">
+
+                <p class="archive-card__meta">
+                  پنل فروشنده
+                </p>
+
+                <h2>
+                  هنوز محصولی ثبت نکرده‌اید
+                </h2>
+
+                <p>
+                  با گزینه «ثبت محصول جدید»
+                  اولین محصول خود را ایجاد کنید.
+                </p>
+
+              </div>
+
+            </article>
+
+          {% endfor %}
+
+        </div>
+
+
+        <div class="manifest-actions">
+
+          <a
+            href="{% url 'marketplace:index' %}"
+            class="btn btn--secondary">
+
+            بازگشت به بازار
+
+          </a>
+
+          <a
+            href="{% url 'home' %}"
+            class="btn btn--secondary">
+
+            خانه
+
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script
+    src="{% static 'js/main.js' %}"
+    defer>
+  </script>
+
+  <script
+    src="{% static 'js/home.js' %}"
+    defer>
+  </script>
+
+</body>
+
+</html>
