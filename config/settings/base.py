@@ -12,7 +12,7 @@ from pathlib import Path
 # PATHS
 # =============================================================================
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # =============================================================================
@@ -41,31 +41,6 @@ def env_list(name, default=""):
         for item in value.split(",")
         if item.strip()
     ]
-
-
-# =============================================================================
-# CORE SECURITY
-# =============================================================================
-
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-development-only-change-me",
-)
-
-DEBUG = env_bool(
-    "DJANGO_DEBUG",
-    True,
-)
-
-ALLOWED_HOSTS = env_list(
-    "DJANGO_ALLOWED_HOSTS",
-    "127.0.0.1,localhost",
-)
-
-CSRF_TRUSTED_ORIGINS = env_list(
-    "DJANGO_CSRF_TRUSTED_ORIGINS",
-    "http://127.0.0.1:8000,http://localhost:8000",
-)
 
 
 # =============================================================================
@@ -345,12 +320,6 @@ ACCOUNT_UNIQUE_EMAIL = True
 # Production:
 # change this to "mandatory".
 
-ACCOUNT_EMAIL_VERIFICATION = os.environ.get(
-    "ACCOUNT_EMAIL_VERIFICATION",
-    "none" if DEBUG else "mandatory",
-)
-
-
 # Prevent account enumeration where possible.
 
 ACCOUNT_PREVENT_ENUMERATION = True
@@ -373,51 +342,6 @@ ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
 SOCIALACCOUNT_AUTO_SIGNUP = True
 
 SOCIALACCOUNT_LOGIN_ON_GET = False
-
-
-# =============================================================================
-# EMAIL
-# =============================================================================
-
-if DEBUG:
-
-    EMAIL_BACKEND = (
-        "django.core.mail.backends.console.EmailBackend"
-    )
-
-else:
-
-    EMAIL_BACKEND = os.environ.get(
-        "EMAIL_BACKEND",
-        "django.core.mail.backends.smtp.EmailBackend",
-    )
-
-    EMAIL_HOST = os.environ.get(
-        "EMAIL_HOST",
-        "",
-    )
-
-    EMAIL_PORT = int(
-        os.environ.get(
-            "EMAIL_PORT",
-            "587",
-        )
-    )
-
-    EMAIL_HOST_USER = os.environ.get(
-        "EMAIL_HOST_USER",
-        "",
-    )
-
-    EMAIL_HOST_PASSWORD = os.environ.get(
-        "EMAIL_HOST_PASSWORD",
-        "",
-    )
-
-    EMAIL_USE_TLS = env_bool(
-        "EMAIL_USE_TLS",
-        True,
-    )
 
 
 DEFAULT_FROM_EMAIL = os.environ.get(
@@ -494,9 +418,6 @@ AXES_RESET_ON_SUCCESS = True
 
 AXES_ENABLE_ADMIN = True
 
-AXES_VERBOSE = DEBUG
-
-
 # Optional custom template.
 #
 # Enable this only after creating:
@@ -531,44 +452,6 @@ X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
-
-
-# =============================================================================
-# PRODUCTION SECURITY
-# =============================================================================
-
-if not DEBUG:
-
-    # -------------------------------------------------------------------------
-    # HTTPS
-    # -------------------------------------------------------------------------
-
-    SECURE_SSL_REDIRECT = True
-
-    SECURE_PROXY_SSL_HEADER = (
-        "HTTP_X_FORWARDED_PROTO",
-        "https",
-    )
-
-
-    # -------------------------------------------------------------------------
-    # HSTS
-    # -------------------------------------------------------------------------
-
-    SECURE_HSTS_SECONDS = 31536000
-
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-
-    SECURE_HSTS_PRELOAD = True
-
-
-    # -------------------------------------------------------------------------
-    # Secure cookies
-    # -------------------------------------------------------------------------
-
-    SESSION_COOKIE_SECURE = True
-
-    CSRF_COOKIE_SECURE = True
 
 
 # =============================================================================
