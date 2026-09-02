@@ -50,3 +50,5 @@ playwright-report/
 
 # PowerShell temp
 *.ps1~
+
+.backup-*

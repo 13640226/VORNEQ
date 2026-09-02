@@ -1,0 +1,2121 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="color-scheme"
+        content="light dark">
+
+    <meta
+        name="description"
+        content="سامان خرد — مکتب واقع‌گرایی خودفرمان؛ فضایی برای پرسش، سنجش قدرت، پذیرش عدم‌قطعیت و تصمیم مستقل.">
+
+    <meta
+        name="theme-color"
+        content="#0c0b0b">
+
+    <title>
+        سامان خرد — بنیادِ عریانِ پرسش
+    </title>
+
+
+    <!-- ======================================================
+         CSS
+         ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/tokens.css' %}">
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/themes.css' %}">
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/base.css' %}">
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/components.css' %}">
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/home.css' %}">
+</head>
+
+
+<body>
+
+<a
+    class="skip-link"
+    href="#main">
+    رفتن به محتوای اصلی
+</a>
+
+
+<!-- ==========================================================
+     HEADER
+     ========================================================== -->
+
+<header class="site-header">
+
+    <div class="site-header__inner">
+
+        <a
+            class="site-brand brand-lockup"
+            href="{% url 'home' %}"
+            aria-label="سامان خرد — صفحه اصلی">
+
+            <span
+                class="brand-sigil brand-sigil--small"
+                aria-hidden="true">
+
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </span>
+
+            <span class="site-brand__text">
+
+                <strong>
+                    سامان خرد
+                </strong>
+
+                <small>
+                    بنیادِ عریانِ پرسش
+                </small>
+
+            </span>
+
+        </a>
+
+
+        <nav
+            class="site-nav"
+            aria-label="منوی اصلی">
+
+            <a href="#manifesto">
+                عصیان خرد
+            </a>
+
+            <a href="#principles">
+                اصول قدرت
+            </a>
+
+            <a href="#method">
+                تیغ شک
+            </a>
+
+            <a href="#hall">
+                پرسش‌گاه
+            </a>
+
+            <a href="{% url 'library:index' %}">
+                آرشیو عریان
+            </a>
+
+            <a href="#audio-library">
+                نوای تاریک
+            </a>
+
+            <a href="{% url 'marketplace:index' %}">
+                بازار
+            </a>
+
+        </nav>
+
+
+        <div class="nav-actions">
+
+            {% if user.is_authenticated %}
+
+                <a
+                    href="{% url 'marketplace:seller_dashboard' %}"
+                    class="btn btn--secondary">
+                    پنل فروشنده
+                </a>
+
+                {% if user.is_staff %}
+
+                    <a
+                        href="{% url 'marketplace:review_queue' %}"
+                        class="btn btn--secondary">
+                        مدیریت
+                    </a>
+
+                {% endif %}
+
+                <a
+                    href="{% url 'account_logout' %}"
+                    class="btn btn--secondary">
+                    خروج
+                </a>
+
+            {% else %}
+
+                <a
+                    href="{% url 'account_login' %}"
+                    class="btn btn--secondary">
+                    ورود
+                </a>
+
+                <a
+                    href="{% url 'account_signup' %}"
+                    class="btn btn--primary">
+                    ثبت‌نام
+                </a>
+
+            {% endif %}
+
+        </div>
+
+
+        <button
+            class="drawer-trigger"
+            id="drawerTrigger"
+            type="button"
+            aria-expanded="false"
+            aria-controls="drawer"
+            aria-label="باز کردن منوی اصلی">
+
+            <span
+                class="drawer-trigger__icon"
+                aria-hidden="true">
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </span>
+
+        </button>
+
+    </div>
+
+</header>
+
+
+<!-- ==========================================================
+     MOBILE DRAWER
+     ========================================================== -->
+
+<div
+    class="drawer-overlay"
+    id="drawerOverlay"
+    hidden>
+</div>
+
+
+<nav
+    class="drawer"
+    id="drawer"
+    aria-label="منوی موبایل"
+    hidden>
+
+    <div class="drawer__header">
+
+        <span class="brand-lockup">
+
+            <span
+                class="brand-sigil brand-sigil--small"
+                aria-hidden="true">
+
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </span>
+
+            <strong>
+                سامان خرد
+            </strong>
+
+        </span>
+
+
+        <button
+            class="drawer__close"
+            id="drawerClose"
+            type="button"
+            aria-label="بستن منو">
+            ×
+        </button>
+
+    </div>
+
+
+    <div class="drawer__body">
+
+        <div class="drawer__nav">
+
+            <a
+                class="drawer__nav-link"
+                href="#top">
+                خانه
+            </a>
+
+            <a
+                class="drawer__nav-link"
+                href="#manifesto">
+                عصیان خرد
+            </a>
+
+            <a
+                class="drawer__nav-link"
+                href="#principles">
+                اصول قدرت
+            </a>
+
+            <a
+                class="drawer__nav-link"
+                href="#method">
+                تیغ شک
+            </a>
+
+            <a
+                class="drawer__nav-link"
+                href="#hall">
+                پرسش‌گاه
+            </a>
+
+            <a
+                class="drawer__nav-link"
+                href="{% url 'library:index' %}">
+                آرشیو عریان
+            </a>
+
+            <a
+                class="drawer__nav-link"
+                href="#audio-library">
+                نوای تاریک
+            </a>
+
+            <a
+                class="drawer__nav-link"
+                href="{% url 'marketplace:index' %}">
+                بازار دیجیتال
+            </a>
+
+
+            {% if user.is_authenticated %}
+
+                <a
+                    class="drawer__nav-link"
+                    href="{% url 'marketplace:seller_dashboard' %}">
+                    پنل فروشنده
+                </a>
+
+                <a
+                    class="drawer__nav-link"
+                    href="{% url 'account_logout' %}">
+                    خروج
+                </a>
+
+            {% else %}
+
+                <a
+                    class="drawer__nav-link"
+                    href="{% url 'account_login' %}">
+                    ورود
+                </a>
+
+                <a
+                    class="drawer__nav-link"
+                    href="{% url 'account_signup' %}">
+                    ثبت‌نام
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<!-- ==========================================================
+     MAIN
+     ========================================================== -->
+
+<main
+    id="main"
+    tabindex="-1">
+
+
+    <!-- ======================================================
+         01 / HERO
+         ====================================================== -->
+
+    <section
+        class="manifest-hero"
+        id="top">
+
+        <div class="container manifest-hero__grid">
+
+            <div class="manifest-hero__content">
+
+                <p class="manifest-kicker">
+                    SAMAN KHERAD / THE UNCLAIMED CENTER
+                </p>
+
+                <p class="manifest-identity">
+
+                    مکتبِ واقع‌گراییِ خودفرمان
+
+                    <span aria-hidden="true">
+                        —
+                    </span>
+
+                    بنیادِ عریانِ پرسش
+
+                </p>
+
+
+                <h1 class="manifest-display">
+
+                    ببین.
+
+                    <br>
+
+                    بسنج.
+
+                    <br>
+
+                    <span>
+                        بشکن.
+                    </span>
+
+                    <br>
+
+                    خودت حکم کن.
+
+                </h1>
+
+
+                <p class="manifest-lead">
+
+                    هیچ اندیشه، قدرت، سنت، مذهب، نهاد،
+                    اکثریت، متخصص یا الگوریتمی
+                    صرفاً به اتکای اعتبار، قدمت یا تقدس
+                    از تیغ پرسش مصون نیست.
+
+                </p>
+
+
+                <blockquote class="manifest-hero__quote">
+
+                    واقعیت، مرکز است؛
+                    هیچ‌کس مالک مرکز نیست.
+
+                </blockquote>
+
+
+                <div class="manifest-actions">
+
+                    <a
+                        href="#method"
+                        class="btn btn--primary">
+                        تیغ شک را به کار بگیر
+                    </a>
+
+                    <a
+                        href="#manifesto"
+                        class="btn btn--secondary">
+                        عصیان خرد
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="hero-poster"
+                aria-hidden="true">
+
+                <div class="hero-poster__index">
+                    01
+                </div>
+
+                <div class="hero-poster__line">
+                </div>
+
+                <div class="hero-poster__sigil">
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </div>
+
+                <p>
+                    THE CENTER
+                    <br>
+                    REMAINS
+                    <br>
+                    UNCLAIMED
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         02 / MANIFESTO
+         ====================================================== -->
+
+    <section
+        class="manifest-section manifest-section--statement"
+        id="manifesto">
+
+        <div class="container statement-grid">
+
+            <div class="section-code">
+                02 / MANIFESTO
+            </div>
+
+
+            <div class="statement-copy">
+
+                <p class="section-kicker">
+                    عصیان خرد
+                </p>
+
+
+                <h2>
+
+                    سامان خرد برای
+
+                    <span class="accent-text">
+                        فرمان‌برداری
+                    </span>
+
+                    ساخته نشده است.
+
+                </h2>
+
+
+                <p>
+
+                    اینجا قرار نیست حقیقتی آماده
+                    در دهان تو گذاشته شود.
+
+                    قرار نیست زنجیر یک باور کهنه
+                    با زنجیر باوری تازه عوض شود.
+
+                    سامان خرد از تو نمی‌خواهد
+                    به آن ایمان بیاوری؛
+
+                    از تو می‌خواهد هیچ‌کس را
+                    صاحب حقیقت ندانی.
+
+                </p>
+
+
+                <p>
+
+                    ادعا را از صاحب ادعا جدا کن.
+                    شواهد را بسنج.
+                    علت‌ها را جست‌وجو کن.
+                    قدرت و منفعت را ببین.
+                    مرز دانسته و نادانسته را آشکار کن.
+
+                    و اگر واقعیت علیه باور تو شهادت داد،
+                    آماده باش باور خودت را تغییر دهی.
+
+                </p>
+
+
+                <p>
+
+                    آزادی اندیشه فقط حق مخالفت
+                    با دیگران نیست؛
+
+                    توانایی مخالفت با خود نیز هست.
+
+                </p>
+
+
+                <blockquote class="manifest-quote">
+
+                    هیچ کتاب، رهبر، دولت، مذهب،
+                    بازار، دانشگاه، اکثریت، رسانه،
+                    ماشین یا الگوریتمی از پرسش معاف نیست.
+
+                    سامان خرد نیز نیست.
+
+                </blockquote>
+
+
+                <p>
+
+                    کرامت انسان از درست‌بودن عقایدش نمی‌آید.
+
+                    انسانی که اشتباه می‌کند
+                    همچنان صاحب کرامت است.
+
+                    بنابراین با ایده‌ها سخت‌گیر باش؛
+                    با انسان‌ها منصف.
+
+                </p>
+
+
+                <p class="manifest-emphasis">
+
+                    اینجا قرار نیست ارباب تازه‌ای
+                    جای ارباب قدیمی بنشیند؛
+
+                    <strong>
+                        مرکز خالی می‌ماند.
+                    </strong>
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         03 / PRINCIPLES
+         ====================================================== -->
+
+    <section
+        class="manifest-section"
+        id="principles">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <p class="section-code">
+                    03 / PRINCIPLES
+                </p>
+
+                <div>
+
+                    <p class="section-kicker">
+                        اصول قدرت
+                    </p>
+
+                    <h2>
+                        اصول بنیادین
+                    </h2>
+
+                    <p>
+
+                        این‌ها فرمان نیستند.
+
+                        قواعد فعلی سنجش‌اند
+                        و خودشان نیز باید
+                        زیر فشار پرسش دوام بیاورند.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="principle-poster-grid">
+
+
+                <article class="principle-poster">
+
+                    <div
+                        class="principle-poster__ghost"
+                        aria-hidden="true">
+                        ∞
+                    </div>
+
+                    <p class="principle-poster__eyebrow">
+                        اصل فراگیر
+                    </p>
+
+                    <h3>
+                        باور، هویت نیست
+                    </h3>
+
+                    <p>
+
+                        می‌توانی باوری را کنار بگذاری
+                        بی‌آنکه خودت را نابود کنی.
+
+                    </p>
+
+                    <p class="principle-poster__rule">
+
+                        تغییر نظر شکست نیست.
+                        اعتراف به ندانستن خواری نیست.
+
+                    </p>
+
+                </article>
+
+
+                <article class="principle-poster">
+
+                    <div
+                        class="principle-poster__ghost"
+                        aria-hidden="true">
+                        ۰
+                    </div>
+
+                    <p class="principle-poster__eyebrow">
+                        اصل صفرم
+                    </p>
+
+                    <h3>
+                        هیچ قدرتی مقدس نیست
+                    </h3>
+
+                    <p>
+
+                        قدرت فقط روی صندلی حکومت نمی‌نشیند.
+
+                        پول، شهرت، دانش، طراحی،
+                        سنت و کنترل اطلاعات
+                        نیز می‌توانند قدرت باشند.
+
+                    </p>
+
+                    <p class="principle-poster__rule">
+
+                        چه کسی تصمیم می‌گیرد؟
+                        چه کسی سود می‌برد؟
+                        چه کسی هزینه می‌دهد؟
+
+                    </p>
+
+                </article>
+
+
+                <article class="principle-poster">
+
+                    <div
+                        class="principle-poster__ghost"
+                        aria-hidden="true">
+                        ۱
+                    </div>
+
+                    <p class="principle-poster__eyebrow">
+                        اصل یکم
+                    </p>
+
+                    <h3>
+                        هیچ‌چیز از شک مصون نیست
+                    </h3>
+
+                    <p>
+
+                        هرجا پرسیدن را گناه،
+                        خیانت یا جرم اعلام کردند،
+                        حصار را ببین.
+
+                    </p>
+
+                    <p class="principle-poster__rule">
+
+                        شک ابزار است؛
+                        نه معبود.
+
+                    </p>
+
+                </article>
+
+
+                <article class="principle-poster">
+
+                    <div
+                        class="principle-poster__ghost"
+                        aria-hidden="true">
+                        ۲
+                    </div>
+
+                    <p class="principle-poster__eyebrow">
+                        اصل دوم
+                    </p>
+
+                    <h3>
+                        شواهد، معیار اطمینان‌اند
+                    </h3>
+
+                    <p>
+
+                        صدا، مقام، شهرت، ایمان،
+                        اکثریت یا اعتمادبه‌نفس
+                        به‌تنهایی دلیل نیستند.
+
+                    </p>
+
+                    <p class="principle-poster__rule">
+
+                        حق اندیشیدن برابر است؛
+                        اعتبار ادعاها برابر نیست.
+
+                    </p>
+
+                </article>
+
+
+                <article class="principle-poster">
+
+                    <div
+                        class="principle-poster__ghost"
+                        aria-hidden="true">
+                        ۳
+                    </div>
+
+                    <p class="principle-poster__eyebrow">
+                        اصل سوم
+                    </p>
+
+                    <h3>
+                        ایده را از انسان جدا کن
+                    </h3>
+
+                    <p>
+
+                        هویت، ملیت، دین، حزب
+                        یا گذشته انسان
+                        جای استدلال را نمی‌گیرد.
+
+                    </p>
+
+                    <p class="principle-poster__rule">
+
+                        با ایده‌ها سخت‌گیر؛
+                        با انسان‌ها منصف.
+
+                    </p>
+
+                </article>
+
+
+                <article class="principle-poster">
+
+                    <div
+                        class="principle-poster__ghost"
+                        aria-hidden="true">
+                        ۴
+                    </div>
+
+                    <p class="principle-poster__eyebrow">
+                        اصل چهارم
+                    </p>
+
+                    <h3>
+                        توجه را گروگان نگیر
+                    </h3>
+
+                    <p>
+
+                        هیچ ساختار آزادی‌خواهی نباید
+                        با ترس، شرم، امتیاز یا اعتیاد
+                        انسان را به بازگشت مجبور کند.
+
+                    </p>
+
+                    <p class="principle-poster__rule">
+
+                        بدون استریک.
+                        بدون FOMO.
+                        بدون گروگان‌گیری توجه.
+
+                    </p>
+
+                </article>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         04 / METHOD
+         ====================================================== -->
+
+    <section
+        class="manifest-section method-section"
+        id="method">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <p class="section-code">
+                    04 / METHOD
+                </p>
+
+                <div>
+
+                    <p class="section-kicker">
+                        تیغ شک
+                    </p>
+
+                    <h2>
+                        روش شش‌گانهٔ تسلط بر ادعا
+                    </h2>
+
+                    <p>
+
+                        به‌جای این‌که بپرسی
+                        «چه چیزی باید باور کنم؟»
+
+                        بپرس:
+
+                        «چگونه باید بسنجیم؟»
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="method-layout">
+
+                <ol class="manifest-method-list">
+
+
+                    <li class="manifest-method-row">
+
+                        <span class="manifest-method-row__number">
+                            ۰۱
+                        </span>
+
+                        <h3>
+                            ادعا را عریان کن
+                        </h3>
+
+                        <p>
+
+                            دقیقاً چه گزاره‌ای مطرح شده؟
+
+                            واقعیت، تفسیر و ارزش‌داوری
+                            را از هم جدا کن.
+
+                        </p>
+
+                    </li>
+
+
+                    <li class="manifest-method-row">
+
+                        <span class="manifest-method-row__number">
+                            ۰۲
+                        </span>
+
+                        <h3>
+                            شواهد را بازخواست کن
+                        </h3>
+
+                        <p>
+
+                            منبع کجاست؟
+                            کیفیت داده چیست؟
+                            بهترین شاهد مخالف کدام است؟
+
+                        </p>
+
+                    </li>
+
+
+                    <li class="manifest-method-row">
+
+                        <span class="manifest-method-row__number">
+                            ۰۳
+                        </span>
+
+                        <h3>
+                            مرز نادانی را مشخص کن
+                        </h3>
+
+                        <p>
+
+                            تا کجا می‌دانی؟
+
+                            از کجا به بعد باید
+                            صادقانه بگویی:
+                            «نمی‌دانم»؟
+
+                        </p>
+
+                    </li>
+
+
+                    <li class="manifest-method-row">
+
+                        <span class="manifest-method-row__number">
+                            ۰۴
+                        </span>
+
+                        <h3>
+                            ردّ قدرت را پیدا کن
+                        </h3>
+
+                        <p>
+
+                            پول، منفعت، ترس،
+                            مقام، اطلاعات و ساختار قدرت
+                            کجای ماجرا ایستاده‌اند؟
+
+                        </p>
+
+                    </li>
+
+
+                    <li class="manifest-method-row">
+
+                        <span class="manifest-method-row__number">
+                            ۰۵
+                        </span>
+
+                        <h3>
+                            بهای انتخاب را بشمار
+                        </h3>
+
+                        <p>
+
+                            اگر بپذیری، رد کنی
+                            یا قضاوت را معلق بگذاری،
+                            چه چیزی به دست می‌آوری
+                            یا از دست می‌دهی؟
+
+                        </p>
+
+                    </li>
+
+
+                    <li class="manifest-method-row">
+
+                        <span class="manifest-method-row__number">
+                            ۰۶
+                        </span>
+
+                        <h3>
+                            خودت حکم کن
+                        </h3>
+
+                        <p>
+
+                            مسئولیت داوری را واگذار نکن؛
+                            اما داوری خودت را نیز
+                            مصون از بازبینی ندان.
+
+                        </p>
+
+                    </li>
+
+                </ol>
+
+
+                <aside
+                    class="method-poster"
+                    aria-label="پوستر روش شش‌گانه">
+
+                    <p>
+                        SEE
+                        <br>
+                        WEIGH
+                        <br>
+                        BREAK
+                        <br>
+                        JUDGE
+                    </p>
+
+                    <div class="method-poster__marks">
+
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+
+                    </div>
+
+                    <strong>
+
+                        پاسخ آماده نه.
+                        <br>
+                        روشِ سنجش.
+
+                    </strong>
+
+                </aside>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         05 / HALL
+         ====================================================== -->
+
+    <section
+        class="manifest-section hall-section"
+        id="hall">
+
+        <div class="container hall-card">
+
+            <div
+                class="open-square"
+                aria-hidden="true">
+            </div>
+
+            <p class="section-code">
+                05 / THE OPEN CENTER
+            </p>
+
+            <p class="section-kicker">
+                پرسش‌گاه
+            </p>
+
+            <h2>
+
+                چه چیزی می‌تواند
+
+                <span class="accent-text">
+                    نظر تو
+                </span>
+
+                را تغییر دهد؟
+
+            </h2>
+
+
+            <p class="hall-card__lead">
+
+                یک باور مهم را انتخاب کن؛
+                نه باوری که رهایش کردن آسان است،
+
+                همان باوری که اگر فرو بریزد
+                چیزی درونت تکان می‌خورد.
+
+            </p>
+
+
+            <p>
+
+                حالا بپرس:
+
+                چه شاهدی، اگر واقعی باشد،
+                مرا وادار می‌کند این باور را
+                زیر تیغ بازبینی ببرم؟
+
+            </p>
+
+
+            <p class="hall-card__warning">
+
+                اگر پاسخ «هیچ» است،
+                شاید دیگر تو صاحب باور نیستی؛
+                باور صاحب تو شده است.
+
+            </p>
+
+
+            <blockquote class="hall-card__quote">
+
+                اینجا با مرشد روبه‌رو نمی‌شوی؛
+                با آینه روبه‌رو می‌شوی.
+
+            </blockquote>
+
+        </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         06 / SCIENCE × PHILOSOPHY
+         ====================================================== -->
+
+    <section
+        class="manifest-section"
+        id="science-philosophy">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <p class="section-code">
+                    06 / SCIENCE × PHILOSOPHY
+                </p>
+
+                <div>
+
+                    <p class="section-kicker">
+                        آزمون واقعیت
+                    </p>
+
+                    <h2>
+                        از علم بیاموز؛
+                        پشت علم پنهان نشو.
+                    </h2>
+
+                    <p>
+
+                        علم و فلسفه در سامان خرد
+                        یکدیگر را تأیید نمی‌کنند؛
+                        یکدیگر را می‌آزمایند.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="archive-grid">
+
+
+                <article class="archive-card">
+
+                    <div class="archive-card__body">
+
+                        <p class="archive-card__meta">
+                            اصل معرفتی / E → P
+                        </p>
+
+                        <h3>
+                            توضیح، توجیه نیست
+                        </h3>
+
+                        <p>
+
+                            اینکه بتوانیم علت یک رفتار،
+                            ارزش یا ساختار را توضیح دهیم،
+                            به‌تنهایی آن را اخلاقاً موجه نمی‌کند.
+
+                        </p>
+
+                    </div>
+
+                </article>
+
+
+                <article class="archive-card">
+
+                    <div class="archive-card__body">
+
+                        <p class="archive-card__meta">
+                            اصل مدل / SCIENCE
+                        </p>
+
+                        <h3>
+                            مرز مدل را با مرز واقعیت اشتباه نگیر
+                        </h3>
+
+                        <p>
+
+                            شکست یک مدل ممکن است
+                            محدودیت ابزار ما باشد،
+                            نه شکست طبیعت.
+
+                        </p>
+
+                    </div>
+
+                </article>
+
+
+                <article class="archive-card">
+
+                    <div class="archive-card__body">
+
+                        <p class="archive-card__meta">
+                            اصل اصلاح / MODEL
+                        </p>
+
+                        <h3>
+                            قدرت توضیحی، کامل‌بودن نیست
+                        </h3>
+
+                        <p>
+
+                            یک مدل می‌تواند بسیار موفق باشد
+                            و همچنان ناقص، موقت
+                            و قابل‌اصلاح باقی بماند.
+
+                        </p>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         07 / LIBRARY
+         ====================================================== -->
+
+    <section
+        class="manifest-section"
+        id="library">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <p class="section-code">
+                    07 / NAKED ARCHIVE
+                </p>
+
+                <div>
+
+                    <p class="section-kicker">
+                        آرشیو عریان
+                    </p>
+
+                    <h2>
+                        آرشیو، نه ویترین.
+                    </h2>
+
+                    <p>
+
+                        سند باید بتواند تاریخ،
+                        خطا، اصلاح و دلیل تغییر
+                        خودش را نشان دهد.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="archive-grid">
+
+                {% for item in library_items %}
+
+                    <article class="archive-card">
+
+                        <div class="archive-card__body">
+
+                            <p class="archive-card__meta">
+
+                                {{ item.category|default:"سند" }}
+
+                                {% if item.version %}
+                                    / {{ item.version }}
+                                {% endif %}
+
+                            </p>
+
+                            <h3>
+                                {{ item.title }}
+                            </h3>
+
+                            {% if item.short_description %}
+
+                                <p>
+                                    {{ item.short_description|truncatewords:24 }}
+                                </p>
+
+                            {% endif %}
+
+                            <a
+                                href="{% url 'library:detail' item.slug %}">
+                                مطالعه سند ←
+                            </a>
+
+                        </div>
+
+                    </article>
+
+                {% empty %}
+
+                    <article class="archive-card">
+
+                        <div class="archive-card__body">
+
+                            <p class="archive-card__meta">
+                                ARCHIVE
+                            </p>
+
+                            <h3>
+                                هنوز سندی منتشر نشده است
+                            </h3>
+
+                            <p>
+
+                                پس از افزودن اولین سند
+                                از پنل مدیریت،
+                                محتوای آن در این قسمت
+                                نمایش داده می‌شود.
+
+                            </p>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+
+            <div class="manifest-actions">
+
+                <a
+                    href="{% url 'library:index' %}"
+                    class="btn btn--primary">
+                    مشاهده تمام آرشیو
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         08 / AUDIO LIBRARY
+         ====================================================== -->
+
+    <section
+        class="manifest-section audio-library-section"
+        id="audio-library">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <p class="section-code">
+                    08 / DARK VOICE
+                </p>
+
+                <div>
+
+                    <p class="section-kicker">
+                        نوای تاریک
+                    </p>
+
+                    <h2>
+
+                        صدا را بشنو؛
+
+                        <span class="accent-text">
+                            سخنران را نپرست.
+                        </span>
+
+                    </h2>
+
+                    <p>
+
+                        هیچ صدا، شخصیت یا لحن مقتدرانه‌ای
+                        حق ندارد جای سنجش تو را بگیرد.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="audio-manifest-grid">
+
+                {% for audio in audio_items %}
+
+                    <article class="audio-manifest-card">
+
+                        <div
+                            class="audio-cover audio-cover--{{ audio.cover_type|default:'dialogue' }}"
+                            aria-hidden="true">
+
+                            <i></i>
+                            <i></i>
+                            <i></i>
+                            <i></i>
+                            <i></i>
+
+                        </div>
+
+
+                        <p class="audio-manifest-card__index">
+                            AUDIO / {{ forloop.counter }}
+                        </p>
+
+
+                        <h3>
+                            {{ audio.title }}
+                        </h3>
+
+
+                        {% if audio.description %}
+
+                            <p>
+                                {{ audio.description|truncatewords:18 }}
+                            </p>
+
+                        {% endif %}
+
+
+                        {% if audio.audio_file %}
+
+                            <audio
+                                controls
+                                preload="none">
+
+                                <source
+                                    src="{{ audio.audio_file.url }}"
+                                    type="{{ audio.mime_type|default:'audio/mpeg' }}">
+
+                                مرورگر شما از پخش صوت پشتیبانی نمی‌کند.
+
+                            </audio>
+
+                        {% else %}
+
+                            <p class="audio-unavailable">
+                                فایل صوتی هنوز منتشر نشده است.
+                            </p>
+
+                        {% endif %}
+
+                    </article>
+
+                {% empty %}
+
+                    <article class="audio-manifest-card">
+
+                        <div
+                            class="audio-cover audio-cover--dialogue"
+                            aria-hidden="true">
+
+                            <i></i>
+                            <i></i>
+                            <i></i>
+                            <i></i>
+                            <i></i>
+
+                        </div>
+
+                        <p class="audio-manifest-card__index">
+                            AUDIO / 01
+                        </p>
+
+                        <h3>
+                            نوای تاریک در راه است
+                        </h3>
+
+                        <p>
+
+                            پس از افزودن فایل صوتی
+                            از پنل مدیریت،
+                            محتوا در این بخش نمایش داده می‌شود.
+
+                        </p>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         09 / MARKETPLACE
+         ====================================================== -->
+
+    <section
+        class="manifest-section marketplace-section"
+        id="marketplace">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <p class="section-code">
+                    09 / MARKETPLACE
+                </p>
+
+                <div>
+
+                    <p class="section-kicker">
+                        بازار دیجیتال
+                    </p>
+
+                    <h2>
+                        آثار تأییدشده
+                    </h2>
+
+                    <p>
+
+                        هر محصول پیش از انتشار عمومی
+                        وارد صف بررسی می‌شود.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="archive-grid">
+
+                {% for product in approved_products %}
+
+                    <article class="archive-card">
+
+                        {% if product.image %}
+
+                            <div class="archive-card__poster">
+
+                                <img
+                                    src="{{ product.image.url }}"
+                                    alt="{{ product.title }}"
+                                    loading="lazy">
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <div class="archive-card__body">
+
+                            <p class="archive-card__meta">
+
+                                {{ product.category|default:"محصول دیجیتال" }}
+
+                                /
+
+                                {{ product.price }}
+
+                            </p>
+
+                            <h3>
+                                {{ product.title }}
+                            </h3>
+
+                            {% if product.short_description %}
+
+                                <p>
+                                    {{ product.short_description|truncatewords:22 }}
+                                </p>
+
+                            {% endif %}
+
+                            <a
+                                href="{% url 'marketplace:detail' product.slug %}">
+                                مشاهده محصول ←
+                            </a>
+
+                        </div>
+
+                    </article>
+
+                {% empty %}
+
+                    <article class="archive-card">
+
+                        <div class="archive-card__body">
+
+                            <p class="archive-card__meta">
+                                MARKETPLACE
+                            </p>
+
+                            <h3>
+                                هنوز محصول تأییدشده‌ای وجود ندارد
+                            </h3>
+
+                            <p>
+
+                                محصولات پس از تأیید مدیر
+                                در این قسمت نمایش داده می‌شوند.
+
+                            </p>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+
+            <div class="manifest-actions">
+
+                <a
+                    href="{% url 'marketplace:index' %}"
+                    class="btn btn--primary">
+                    مشاهده بازار
+                </a>
+
+
+                {% if user.is_authenticated %}
+
+                    <a
+                        href="{% url 'marketplace:seller_dashboard' %}"
+                        class="btn btn--secondary">
+                        پنل فروشنده
+                    </a>
+
+                {% else %}
+
+                    <a
+                        href="{% url 'account_login' %}"
+                        class="btn btn--secondary">
+                        ورود برای فروشندگی
+                    </a>
+
+                {% endif %}
+
+
+                {% if user.is_staff %}
+
+                    <a
+                        href="{% url 'marketplace:review_queue' %}"
+                        class="btn btn--secondary">
+                        صف بررسی محصولات
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         10 / GOVERNANCE
+         ====================================================== -->
+
+    <section
+        class="manifest-section governance-section"
+        id="governance">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <p class="section-code">
+                    10 / GOVERNANCE
+                </p>
+
+                <div>
+
+                    <p class="section-kicker">
+                        Charter of Epistemic Governance v1.0
+                    </p>
+
+                    <h2>
+                        منشور حکمرانی معرفتی
+                    </h2>
+
+                    <p>
+
+                        مرجع فعلی حکمرانی سامان خرد؛
+                        نسخه‌دار، قابل‌ردیابی
+                        و قابل‌بازنگری.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="governance-charter">
+
+                <p>
+
+                    واقعیت، مرکز است؛
+
+                    <strong>
+                        هیچ‌کس مالک مرکز نیست.
+                    </strong>
+
+                </p>
+
+                <p>
+
+                    شواهد وزن می‌دهند؛
+
+                    <strong>
+                        قدرت اعتبار نمی‌دهد.
+                    </strong>
+
+                </p>
+
+                <p>
+
+                    هر حکم موقت است؛
+                    هر اصلاح باید مستدل
+                    و قابل‌ردیابی باشد.
+
+                </p>
+
+                <p>
+
+                    هرچه قدرت بیشتر شود،
+                    حسابرسی باید سخت‌تر شود.
+
+                </p>
+
+                <p>
+
+                    هر قاعده‌ای که علیه دیگران
+                    به کار می‌بریم،
+                    باید علیه خودمان نیز
+                    قابل اجرا باشد.
+
+                </p>
+
+                <p class="governance-charter__final">
+
+                    هیچ قاعده‌ای حق ندارد
+                    راه اصلاح خودش را ببندد.
+
+                </p>
+
+            </div>
+
+
+            <div class="governance-note">
+
+                <p>
+
+                    این منشور حقیقتی مقدس نیست.
+
+                    اعتبارش از دوام آوردن
+                    در برابر نقد، شواهد
+                    و تجربه نهادی می‌آید؛
+
+                    نه از نام، بنیان‌گذار
+                    یا قدمت آن.
+
+                </p>
+
+                <p>
+                    <strong>
+                        Canonical ≠ Immutable
+                    </strong>
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         11 / CRITIQUE
+         ====================================================== -->
+
+    <section
+        class="manifest-section critique-section"
+        id="critique">
+
+        <div
+            class="critique-watermark"
+            aria-hidden="true">
+
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </div>
+
+
+        <div class="container critique-content">
+
+            <p class="section-code">
+                11 / CRITIQUE THE FOUNDATION
+            </p>
+
+            <p class="section-kicker">
+                نقد بنیاد
+            </p>
+
+            <h2>
+
+                اگر نتوانی
+
+                <span class="accent-text">
+                    سامان خرد
+                </span>
+
+                را نقد کنی،
+                سامان خرد شکست خورده است.
+
+            </h2>
+
+            <p>
+
+                اگر در اصول، روش، اسناد،
+                حکمرانی یا محتوای این مکتب
+                خطایی می‌بینی،
+                آن را نام ببر.
+
+            </p>
+
+            <p>
+
+                هرچه سامان خرد قدرتمندتر شود،
+                باید نقدپذیرتر و پاسخ‌گوتر شود.
+
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         12 / CLOSING
+         ====================================================== -->
+
+    <section
+        class="manifest-section closing-section"
+        id="closing">
+
+        <div class="container closing-content">
+
+            <p class="section-code">
+                12 / THE MIRROR
+            </p>
+
+            <h2>
+                این متن حقیقت نهایی نیست.
+            </h2>
+
+            <p>
+
+                هر بخش آن،
+                اگر در برابر شواهد،
+                استدلال یا نقد بهتر دوام نیاورد،
+                باید تغییر کند.
+
+            </p>
+
+            <blockquote>
+
+                نه به این دلیل که سامان خرد ضعیف است؛
+                بلکه چون سامانی که نتواند خودش را اصلاح کند،
+                دیگر سامان خرد نیست.
+
+            </blockquote>
+
+            <p class="closing-content__signature">
+
+                اینجا با مرشد روبه‌رو نمی‌شوی؛
+
+                <strong>
+                    با آینه روبه‌رو می‌شوی.
+                </strong>
+
+            </p>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- ==========================================================
+     FOOTER
+     ========================================================== -->
+
+<footer class="site-footer">
+
+    <div class="container">
+
+        <div class="site-footer__grid">
+
+            <div>
+
+                <div class="footer-brand">
+
+                    <div
+                        class="brand-sigil brand-sigil--footer"
+                        aria-hidden="true">
+
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+
+                    </div>
+
+                    <div>
+
+                        <h2 class="site-footer__title">
+                            سامان خرد
+                        </h2>
+
+                        <p class="site-footer__manifesto">
+                            بنیادِ عریانِ پرسش
+                        </p>
+
+                        <p>
+                            واقعیت، مرکز است؛
+                            هیچ‌کس مالک مرکز نیست.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="site-footer__links">
+
+                <strong>
+                    مکتب
+                </strong>
+
+                <a href="#manifesto">
+                    عصیان خرد
+                </a>
+
+                <a href="#principles">
+                    اصول قدرت
+                </a>
+
+                <a href="#method">
+                    تیغ شک
+                </a>
+
+                <a href="#hall">
+                    پرسش‌گاه
+                </a>
+
+            </div>
+
+
+            <div class="site-footer__links">
+
+                <strong>
+                    آرشیو
+                </strong>
+
+                <a href="{% url 'library:index' %}">
+                    آرشیو عریان
+                </a>
+
+                <a href="#audio-library">
+                    نوای تاریک
+                </a>
+
+                <a href="{% url 'marketplace:index' %}">
+                    بازار دیجیتال
+                </a>
+
+            </div>
+
+
+            <div class="site-footer__links">
+
+                <strong>
+                    حساب
+                </strong>
+
+                {% if user.is_authenticated %}
+
+                    <a href="{% url 'marketplace:seller_dashboard' %}">
+                        پنل فروشنده
+                    </a>
+
+                    <a href="{% url 'account_email' %}">
+                        مدیریت ایمیل
+                    </a>
+
+                    <a href="{% url 'account_logout' %}">
+                        خروج
+                    </a>
+
+                {% else %}
+
+                    <a href="{% url 'account_login' %}">
+                        ورود
+                    </a>
+
+                    <a href="{% url 'account_signup' %}">
+                        ثبت‌نام
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="site-footer__bottom">
+
+            <span>
+                © ۱۴۰۵ — سامان خرد
+            </span>
+
+            <span>
+                v1.0 · CANONICAL / VERSIONED / REVISABLE
+            </span>
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+<!-- ==========================================================
+     JS
+     ========================================================== -->
+
+<script
+    src="{% static 'js/main.js' %}"
+    defer>
+</script>
+
+<script
+    src="{% static 'js/home.js' %}"
+    defer>
+</script>
+
+</body>
+
+</html>

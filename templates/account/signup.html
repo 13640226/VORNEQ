@@ -1,0 +1,570 @@
+{% extends "_base.html" %}
+{% load static i18n %}
+
+{% block title %}
+    {% trans 'ثبت‌نام — سامان خرد' %}
+{% endblock %}
+
+{% block meta %}
+    {{ block.super }}
+    <meta
+        name="description"
+        content="{% trans 'ساخت حساب کاربری در سامان خرد' %}"
+    >
+    <meta name="robots" content="noindex, follow">
+{% endblock %}
+
+{% block content %}
+
+<section class="account-page">
+
+    <div class="container">
+
+        <div class="account-card account-card--signup">
+
+            <!-- ======================================================
+                 HEADER
+                 ====================================================== -->
+
+            <header class="account-card__header">
+
+                <p class="section-code">
+                    ACCOUNT / SIGNUP
+                </p>
+
+                <h1 class="account-card__title">
+                    {% trans 'ساخت حساب در سامان خرد' %}
+                </h1>
+
+                <p class="account-card__subtitle">
+                    {% trans 'حساب کاربری برای دسترسی به امکانات شخصی، کتابخانه و پنل فروشنده استفاده می‌شود.' %}
+                </p>
+
+            </header>
+
+            <!-- ======================================================
+                 SIGNUP FORM
+                 ====================================================== -->
+
+            <form
+                method="post"
+                action="{% url 'account_signup' %}"
+                class="account-form"
+            >
+
+                {% csrf_token %}
+
+                {% if redirect_field_value %}
+                    <input
+                        type="hidden"
+                        name="{{ redirect_field_name }}"
+                        value="{{ redirect_field_value }}"
+                    >
+                {% endif %}
+
+                <!-- ==================================================
+                     NON FIELD ERRORS
+                     ================================================== -->
+
+                {% if form.non_field_errors %}
+
+                    <div
+                        class="form-errors form-errors--global"
+                        role="alert"
+                    >
+
+                        {% for error in form.non_field_errors %}
+                            <p class="form-error">
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+                <!-- ==================================================
+                     FORM FIELDS
+                     ================================================== -->
+
+                {% for field in form %}
+
+                    <div
+                        class="
+                            form-group
+                            {% if field.errors %}
+                                form-group--error
+                            {% endif %}
+                        "
+                    >
+
+                        <label
+                            for="{{ field.id_for_label }}"
+                            class="form-label"
+                        >
+                            {{ field.label }}
+
+                            {% if field.field.required %}
+                                <span
+                                    class="form-required"
+                                    aria-hidden="true"
+                                >
+                                    *
+                                </span>
+                            {% endif %}
+                        </label>
+
+                        <div class="form-control">
+                            {{ field }}
+                        </div>
+
+                        {% if field.help_text %}
+                            <div class="form-help">
+                                {{ field.help_text|safe }}
+                            </div>
+                        {% endif %}
+
+                        {% if field.errors %}
+
+                            <div
+                                class="form-errors"
+                                role="alert"
+                            >
+
+                                {% for error in field.errors %}
+                                    <p class="form-error">
+                                        {{ error }}
+                                    </p>
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
+                <!-- ==================================================
+                     ACTIONS
+                     ================================================== -->
+
+                <div class="form-actions">
+
+                    <button
+                        type="submit"
+                        class="btn btn--primary btn--full"
+                    >
+                        {% trans 'ساخت حساب' %}
+                    </button>
+
+                </div>
+
+            </form>
+
+            <!-- ======================================================
+                 LOGIN LINK
+                 ====================================================== -->
+
+            <div class="account-links">
+
+                <span>
+                    {% trans 'قبلاً حساب ساخته‌اید؟' %}
+                </span>
+
+                <a
+                    href="{% url 'account_login' %}"
+                    class="account-links__link"
+                >
+                    {% trans 'وارد شوید' %}
+                </a>
+
+            </div>
+
+            <!-- ======================================================
+                 FOOTER
+                 ====================================================== -->
+
+            <footer class="account-card__footer">
+
+                <a
+                    href="{% url 'home' %}"
+                    class="btn btn--secondary btn--small"
+                >
+                    ← {% trans 'بازگشت به صفحه اصلی' %}
+                </a>
+
+            </footer>
+
+        </div>
+
+    </div>
+
+</section>
+
+<style>
+
+    /* ==========================================================
+       ACCOUNT PAGE
+       ========================================================== */
+
+    .account-page {
+        min-height: calc(100vh - 180px);
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding:
+            clamp(2rem, 5vw, 4rem)
+            0;
+    }
+
+    .account-card {
+        width: 100%;
+        max-width: 520px;
+
+        margin-inline: auto;
+
+        padding:
+            clamp(1.5rem, 4vw, 2.5rem);
+
+        background:
+            rgba(255, 255, 255, 0.018);
+
+        border:
+            1px solid
+            rgba(232, 225, 215, 0.075);
+
+        border-radius: 4px;
+    }
+
+    .account-card--signup {
+        max-width: 560px;
+    }
+
+    /* ==========================================================
+       HEADER
+       ========================================================== */
+
+    .account-card__header {
+        margin-bottom: 2rem;
+
+        text-align: center;
+    }
+
+    .account-card__title {
+        margin:
+            0.5rem
+            0
+            0.5rem;
+
+        font-size:
+            clamp(1.65rem, 4vw, 2rem);
+
+        font-weight: 750;
+        line-height: 1.3;
+
+        letter-spacing: -0.025em;
+    }
+
+    .account-card__subtitle {
+        max-width: 440px;
+
+        margin:
+            0
+            auto;
+
+        color: #a0988a;
+
+        font-size: 0.95rem;
+        line-height: 1.8;
+    }
+
+    /* ==========================================================
+       FORM
+       ========================================================== */
+
+    .account-form {
+        width: 100%;
+    }
+
+    .account-form .form-group {
+        margin-bottom: 1.35rem;
+    }
+
+    .form-label {
+        display: block;
+
+        margin-bottom: 0.4rem;
+
+        color: #d4cdc2;
+
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .form-required {
+        color: #b84a4a;
+    }
+
+    .form-control {
+        width: 100%;
+    }
+
+    /* Django / allauth generated inputs */
+
+    .account-form input[type="text"],
+    .account-form input[type="email"],
+    .account-form input[type="password"],
+    .account-form input[type="url"],
+    .account-form input[type="number"],
+    .account-form select,
+    .account-form textarea {
+
+        width: 100%;
+
+        box-sizing: border-box;
+
+        padding:
+            0.75rem
+            0.9rem;
+
+        background:
+            rgba(255, 255, 255, 0.035);
+
+        border:
+            1px solid
+            rgba(232, 225, 215, 0.12);
+
+        border-radius: 4px;
+
+        color: #e8e1d7;
+
+        font-family: inherit;
+        font-size: 0.95rem;
+
+        transition:
+            border-color 180ms ease,
+            background 180ms ease,
+            box-shadow 180ms ease;
+    }
+
+    .account-form input:focus,
+    .account-form select:focus,
+    .account-form textarea:focus {
+
+        outline: none;
+
+        border-color:
+            rgba(184, 74, 74, 0.5);
+
+        background:
+            rgba(255, 255, 255, 0.05);
+
+        box-shadow:
+            0 0 0 3px
+            rgba(184, 74, 74, 0.08);
+    }
+
+    .account-form input::placeholder {
+        color: #5e574f;
+    }
+
+    .form-group--error
+    input,
+    .form-group--error
+    select,
+    .form-group--error
+    textarea {
+
+        border-color:
+            rgba(184, 74, 74, 0.55);
+    }
+
+    /* ==========================================================
+       HELP TEXT
+       ========================================================== */
+
+    .form-help {
+        margin-top: 0.35rem;
+
+        color: #756d63;
+
+        font-size: 0.78rem;
+        line-height: 1.65;
+    }
+
+    .form-help ul {
+        margin:
+            0.4rem
+            0
+            0;
+
+        padding-inline-start: 1.25rem;
+    }
+
+    .form-help li {
+        margin-bottom: 0.2rem;
+    }
+
+    /* ==========================================================
+       ERRORS
+       ========================================================== */
+
+    .form-errors {
+        margin-top: 0.35rem;
+    }
+
+    .form-errors--global {
+        margin-bottom: 1.25rem;
+
+        padding: 0.9rem 1rem;
+
+        background:
+            rgba(184, 74, 74, 0.08);
+
+        border:
+            1px solid
+            rgba(184, 74, 74, 0.18);
+
+        border-radius: 4px;
+    }
+
+    .form-error {
+        margin: 0.15rem 0;
+
+        color: #c65b5b;
+
+        font-size: 0.8rem;
+        line-height: 1.6;
+    }
+
+    /* ==========================================================
+       ACTION
+       ========================================================== */
+
+    .form-actions {
+        margin-top: 1.75rem;
+    }
+
+    .btn--full {
+        width: 100%;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        padding:
+            0.8rem
+            1.25rem;
+    }
+
+    /* ==========================================================
+       LOGIN LINK
+       ========================================================== */
+
+    .account-links {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        gap: 0.5rem;
+
+        flex-wrap: wrap;
+
+        margin-top: 1.5rem;
+
+        color: #7a7268;
+
+        font-size: 0.9rem;
+    }
+
+    .account-links__link {
+        color: #b7aea2;
+
+        text-decoration: none;
+
+        transition:
+            color 180ms ease;
+    }
+
+    .account-links__link:hover {
+        color: #e8e1d7;
+
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    /* ==========================================================
+       FOOTER
+       ========================================================== */
+
+    .account-card__footer {
+        margin-top: 1.75rem;
+
+        padding-top: 1.25rem;
+
+        border-top:
+            1px solid
+            rgba(232, 225, 215, 0.06);
+
+        text-align: center;
+    }
+
+    .btn--small {
+        padding:
+            0.45rem
+            1rem;
+
+        font-size: 0.85rem;
+    }
+
+    /* ==========================================================
+       RESPONSIVE
+       ========================================================== */
+
+    @media (max-width: 560px) {
+
+        .account-page {
+            align-items: flex-start;
+
+            padding:
+                1.5rem
+                0;
+        }
+
+        .account-card {
+            padding:
+                1.5rem
+                1.1rem;
+        }
+
+        .account-card__header {
+            margin-bottom: 1.5rem;
+        }
+
+        .account-card__subtitle {
+            font-size: 0.9rem;
+        }
+
+        .account-form input[type="text"],
+        .account-form input[type="email"],
+        .account-form input[type="password"],
+        .account-form input[type="url"],
+        .account-form input[type="number"],
+        .account-form select,
+        .account-form textarea {
+
+            padding:
+                0.68rem
+                0.8rem;
+
+            font-size: 0.9rem;
+        }
+
+    }
+
+</style>
+
+{% endblock %}

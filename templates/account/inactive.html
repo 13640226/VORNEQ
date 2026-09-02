@@ -1,0 +1,166 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="حساب غیرفعال — سامان خرد">
+
+    <title>حساب غیرفعال — سامان خرد</title>
+
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/themes.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+
+<body>
+
+<a
+    class="skip-link"
+    href="#main">
+    رفتن به محتوای اصلی
+</a>
+
+
+<header class="site-header">
+
+    <div class="site-header__inner">
+
+        <a
+            class="site-brand brand-lockup"
+            href="{% url 'home' %}"
+            aria-label="سامان خرد — صفحه اصلی">
+
+            <span
+                class="brand-sigil brand-sigil--small"
+                aria-hidden="true">
+
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </span>
+
+            <span class="site-brand__text">
+
+                <strong>
+                    سامان خرد
+                </strong>
+
+                <small>
+                    بنیادِ عریانِ پرسش
+                </small>
+
+            </span>
+
+        </a>
+
+    </div>
+
+</header>
+
+
+<main
+    id="main"
+    tabindex="-1">
+
+    <section class="manifest-section">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <p class="section-code">
+                    ACCOUNT / INACTIVE
+                </p>
+
+                <div>
+
+                    <p class="section-kicker">
+                        وضعیت حساب
+                    </p>
+
+                    <h1>
+                        حساب غیرفعال است
+                    </h1>
+
+                    <p>
+                        این حساب در حال حاضر غیرفعال است و امکان ورود
+                        به آن وجود ندارد.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="archive-card"
+                style="max-width: 640px; margin-inline: auto;">
+
+                <div class="archive-card__body">
+
+                    <h2>
+                        دسترسی به حساب ممکن نیست
+                    </h2>
+
+                    <p>
+                        حساب کاربری شما غیرفعال شده است.
+                        اگر تصور می‌کنید این وضعیت به اشتباه ایجاد شده،
+                        می‌توانید با مدیریت سامان خرد تماس بگیرید.
+                    </p>
+
+                    <div class="manifest-actions">
+
+                        <a
+                            href="{% url 'home' %}"
+                            class="btn btn--primary">
+
+                            بازگشت به صفحه اصلی
+
+                        </a>
+
+                        <a
+                            href="{% url 'account_login' %}"
+                            class="btn btn--secondary">
+
+                            صفحه ورود
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script
+    src="{% static 'js/main.js' %}"
+    defer>
+</script>
+
+<script
+    src="{% static 'js/home.js' %}"
+    defer>
+</script>
+
+</body>
+</html>

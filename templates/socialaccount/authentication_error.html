@@ -1,0 +1,174 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="خطا در ورود اجتماعی — سامان خرد">
+
+    <title>
+        خطا در ورود — سامان خرد
+    </title>
+
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/themes.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+
+<body>
+
+<a
+    class="skip-link"
+    href="#main">
+    رفتن به محتوای اصلی
+</a>
+
+
+<header class="site-header">
+
+    <div class="site-header__inner">
+
+        <a
+            class="site-brand brand-lockup"
+            href="{% url 'home' %}"
+            aria-label="سامان خرد — صفحه اصلی">
+
+            <span
+                class="brand-sigil brand-sigil--small"
+                aria-hidden="true">
+
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </span>
+
+            <span class="site-brand__text">
+
+                <strong>
+                    سامان خرد
+                </strong>
+
+                <small>
+                    بنیادِ عریانِ پرسش
+                </small>
+
+            </span>
+
+        </a>
+
+    </div>
+
+</header>
+
+
+<main
+    id="main"
+    tabindex="-1">
+
+    <section class="manifest-section">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <p class="section-code">
+                    ACCOUNT / AUTHENTICATION ERROR
+                </p>
+
+                <div>
+
+                    <p class="section-kicker">
+                        ورود به حساب
+                    </p>
+
+                    <h1>
+                        خطا در احراز هویت
+                    </h1>
+
+                    <p>
+                        هنگام ورود از طریق سرویس خارجی
+                        مشکلی رخ داده است.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="archive-card"
+                style="max-width: 640px; margin-inline: auto;">
+
+                <div class="archive-card__body">
+
+                    <h2>
+                        ورود انجام نشد
+                    </h2>
+
+                    <p>
+                        ارتباط با سرویس ورود خارجی با موفقیت
+                        تکمیل نشد.
+                    </p>
+
+                    <p>
+                        می‌توانید دوباره تلاش کنید یا از روش
+                        ورود معمولی استفاده کنید.
+                    </p>
+
+
+                    <div class="manifest-actions">
+
+                        <a
+                            href="{% url 'account_login' %}"
+                            class="btn btn--primary">
+
+                            تلاش دوباره
+
+                        </a>
+
+                        <a
+                            href="{% url 'home' %}"
+                            class="btn btn--secondary">
+
+                            بازگشت به خانه
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script
+    src="{% static 'js/main.js' %}"
+    defer>
+</script>
+
+<script
+    src="{% static 'js/home.js' %}"
+    defer>
+</script>
+
+</body>
+
+</html>
