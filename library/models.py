@@ -2,6 +2,13 @@ from django.db import models
 
 
 class LibraryItem(models.Model):
+    TYPE_CHOICES = [
+        ("book", "کتاب"),
+        ("article", "مقاله"),
+        ("document", "سند"),
+        ("other", "سایر"),
+    ]
+
     title = models.CharField(
         max_length=200,
         verbose_name="عنوان",
@@ -46,6 +53,28 @@ class LibraryItem(models.Model):
         verbose_name="محتوا",
     )
 
+    allow_public_reading = models.BooleanField(default=True)
+
+    item_type = models.CharField(
+        max_length=20,
+        choices=TYPE_CHOICES,
+        default="other",
+    )
+
+    title_en = models.CharField(max_length=200, blank=True, default="")
+    title_de = models.CharField(max_length=200, blank=True, default="")
+    short_description_en = models.TextField(blank=True, default="")
+    short_description_de = models.TextField(blank=True, default="")
+    content_en = models.TextField(blank=True, default="")
+    content_de = models.TextField(blank=True, default="")
+    author = models.CharField(max_length=200, blank=True, default="")
+    published_at = models.DateTimeField(null=True, blank=True)
+    pdf_file = models.FileField(
+        upload_to="library/pdfs/",
+        blank=True,
+        null=True,
+    )
+
     is_published = models.BooleanField(
         default=True,
         verbose_name="منتشر شده",
@@ -68,6 +97,31 @@ class LibraryItem(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_title(self, lang="fa"):
+        if lang == "en" and self.title_en:
+            return self.title_en
+        if lang == "de" and self.title_de:
+            return self.title_de
+        return self.title
+
+    def get_short_description(self, lang="fa"):
+        if lang == "en" and self.short_description_en:
+            return self.short_description_en
+        if lang == "de" and self.short_description_de:
+            return self.short_description_de
+        return self.short_description
+
+    def get_content(self, lang="fa"):
+        if lang == "en" and self.content_en:
+            return self.content_en
+        if lang == "de" and self.content_de:
+            return self.content_de
+        return self.content
+
+    @property
+    def has_pdf(self):
+        return bool(self.pdf_file)
 
 
 class AudioItem(models.Model):
