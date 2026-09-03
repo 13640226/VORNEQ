@@ -2,36 +2,29 @@
 {% load static i18n %}
 
 {% block title %}
-{% trans "سامان خرد — بنیاد عریان پرسش" %}
+سامان خرد — واقعیت، مرکز است
 {% endblock %}
 
 
 {% block meta %}
-{{ block.super }}
-
 <meta
     name="description"
-    content="{% trans 'سامان خرد؛ فضایی برای پرسش، نقد، خرد خودفرمان و رهایی از قطعیت‌های تحمیلی.' %}"
+    content="سامان خرد؛ فضایی برای پرسش، نقد، خرد خودفرمان و رهایی از قطعیت‌های تحمیلی."
 >
 
 <meta
     property="og:title"
-    content="{% trans 'سامان خرد — بنیاد عریان پرسش' %}"
+    content="سامان خرد — واقعیت، مرکز است"
 >
 
 <meta
     property="og:description"
-    content="{% trans 'نه تقلید، نه تقدیس؛ پرسش، سنجش و خرد خودفرمان.' %}"
+    content="سامان خرد؛ فضایی برای پرسش، نقد، خرد خودفرمان و رهایی از قطعیت‌های تحمیلی."
 >
 
 <meta
     property="og:type"
     content="website"
->
-
-<meta
-    property="og:image"
-    content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/saman-kherad-hero.png' %}"
 >
 
 <meta
@@ -41,751 +34,622 @@
 
 <meta
     name="twitter:title"
-    content="{% trans 'سامان خرد — بنیاد عریان پرسش' %}"
+    content="سامان خرد — واقعیت، مرکز است"
 >
 
 <meta
     name="twitter:description"
-    content="{% trans 'نه تقلید، نه تقدیس؛ پرسش، سنجش و خرد خودفرمان.' %}"
->
-
-<meta
-    name="twitter:image"
-    content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/saman-kherad-hero.png' %}"
+    content="سامان خرد؛ فضایی برای پرسش، نقد، خرد خودفرمان و رهایی از قطعیت‌های تحمیلی."
 >
 {% endblock %}
 
 
 {% block extra_head %}
-{{ block.super }}
-
-<link
-    rel="preload"
-    href="{% static 'images/saman-kherad-hero.png' %}"
-    as="image"
-    fetchpriority="high"
->
-
 <style>
+    .sk-homepage {
+        --bg-color: #010203;
+        --text-main: #e0e6ed;
+        --text-muted: #6b7a8a;
+        --cyan: #9ee6ff;
+        --violet: #7a4ca8;
+        --warm: #e8c99d;
 
-/* ============================================================
-   SAMAN KHERAD — HOME HERO
-   ============================================================ */
-
-.sk-home {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-}
-
-
-/* ============================================================
-   HERO
-   ============================================================ */
-
-.sk-hero {
-    position: relative;
-
-    width: min(1500px, calc(100% - 48px));
-
-    margin-inline: auto;
-
-    padding:
-        clamp(48px, 7vw, 110px)
-        0
-        clamp(70px, 9vw, 140px);
-
-    display: grid;
-
-    grid-template-columns:
-        minmax(320px, 0.85fr)
-        minmax(420px, 1.15fr);
-
-    gap: clamp(50px, 8vw, 130px);
-
-    align-items: center;
-}
-
-
-/* ============================================================
-   ARTWORK
-   ============================================================ */
-
-.sk-hero__visual {
-    position: relative;
-
-    display: flex;
-
-    justify-content: center;
-    align-items: center;
-
-    min-width: 0;
-}
-
-
-.sk-hero__frame {
-    position: relative;
-
-    width: min(100%, 620px);
-
-    aspect-ratio: 2 / 3;
-
-    overflow: hidden;
-
-    background: #090909;
-
-    border: 1px solid rgba(218, 196, 157, 0.24);
-
-    box-shadow:
-        0 40px 100px rgba(0, 0, 0, 0.55),
-        0 0 80px rgba(190, 151, 91, 0.05);
-}
-
-
-.sk-hero__frame::before {
-    content: "";
-
-    position: absolute;
-
-    inset: 18px;
-
-    z-index: 2;
-
-    pointer-events: none;
-
-    border: 1px solid rgba(224, 203, 165, 0.16);
-}
-
-
-.sk-hero__frame::after {
-    content: "01";
-
-    position: absolute;
-
-    top: 32px;
-    right: 34px;
-
-    z-index: 3;
-
-    color: rgba(246, 236, 216, 0.92);
-
-    font-family:
-        Inter,
-        Arial,
-        sans-serif;
-
-    font-size: 13px;
-
-    font-weight: 700;
-
-    letter-spacing: 0.08em;
-}
-
-
-.sk-hero__image {
-    position: absolute;
-
-    inset: 0;
-
-    display: block;
-
-    width: 100%;
-    height: 100%;
-
-    object-fit: cover;
-
-    object-position: center;
-
-    filter:
-        contrast(1.04)
-        saturate(0.92)
-        brightness(0.92);
-
-    transform: scale(1.002);
-}
-
-
-.sk-hero__image-overlay {
-    position: absolute;
-
-    inset: 0;
-
-    z-index: 1;
-
-    pointer-events: none;
-
-    background:
-        linear-gradient(
-            180deg,
-            rgba(0, 0, 0, 0.04),
-            rgba(0, 0, 0, 0.12)
-        );
-}
-
-
-.sk-hero__caption {
-    position: absolute;
-
-    z-index: 3;
-
-    left: 34px;
-    bottom: 30px;
-
-    margin: 0;
-
-    color: rgba(245, 237, 223, 0.82);
-
-    font-family:
-        Inter,
-        Arial,
-        sans-serif;
-
-    font-size: 11px;
-
-    line-height: 1.45;
-
-    letter-spacing: 0.08em;
-
-    text-transform: uppercase;
-}
-
-
-/* ============================================================
-   CONTENT
-   ============================================================ */
-
-.sk-hero__content {
-    position: relative;
-
-    z-index: 4;
-
-    min-width: 0;
-}
-
-
-.sk-hero__eyebrow {
-    display: flex;
-
-    align-items: center;
-
-    gap: 14px;
-
-    margin: 0 0 28px;
-
-    color: rgba(220, 205, 181, 0.76);
-
-    font-size: 13px;
-
-    font-weight: 600;
-
-    letter-spacing: 0.04em;
-}
-
-
-.sk-hero__eyebrow::before {
-    content: "";
-
-    width: 42px;
-    height: 1px;
-
-    flex: 0 0 auto;
-
-    background: rgba(207, 176, 125, 0.62);
-}
-
-
-.sk-hero__title {
-    margin: 0;
-
-    max-width: 820px;
-
-    color: #f4f0e8;
-
-    font-size: clamp(52px, 7.4vw, 118px);
-
-    font-weight: 800;
-
-    line-height: 0.93;
-
-    letter-spacing: -0.045em;
-}
-
-
-.sk-hero__title span {
-    display: block;
-}
-
-
-.sk-hero__lead {
-    max-width: 700px;
-
-    margin:
-        clamp(30px, 4vw, 52px)
-        0
-        0;
-
-    color: rgba(229, 221, 207, 0.74);
-
-    font-size: clamp(17px, 1.45vw, 22px);
-
-    line-height: 2;
-}
-
-
-.sk-hero__statement {
-    position: relative;
-
-    max-width: 700px;
-
-    margin-top: 38px;
-
-    padding-inline-start: 24px;
-
-    color: rgba(245, 238, 225, 0.9);
-
-    font-size: clamp(16px, 1.2vw, 19px);
-
-    line-height: 1.9;
-
-    border-inline-start:
-        1px solid rgba(196, 157, 98, 0.55);
-}
-
-
-/* ============================================================
-   ACTIONS
-   ============================================================ */
-
-.sk-hero__actions {
-    display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 14px;
-
-    margin-top: 44px;
-}
-
-
-.sk-button {
-    display: inline-flex;
-
-    min-height: 52px;
-
-    align-items: center;
-
-    justify-content: center;
-
-    padding: 0 26px;
-
-    border: 1px solid rgba(229, 214, 189, 0.18);
-
-    text-decoration: none;
-
-    font-weight: 700;
-
-    transition:
-        transform 180ms ease,
-        border-color 180ms ease,
-        background-color 180ms ease;
-}
-
-
-.sk-button:hover {
-    transform: translateY(-2px);
-}
-
-
-.sk-button--primary {
-    color: #111;
-
-    background: #e8dfd0;
-
-    border-color: #e8dfd0;
-}
-
-
-.sk-button--primary:hover {
-    background: #f3ece1;
-}
-
-
-.sk-button--secondary {
-    color: #eee5d7;
-
-    background: rgba(255, 255, 255, 0.025);
-}
-
-
-.sk-button--secondary:hover {
-    border-color: rgba(224, 198, 156, 0.55);
-
-    background: rgba(255, 255, 255, 0.045);
-}
-
-
-/* ============================================================
-   LOWER MANIFESTO
-   ============================================================ */
-
-.sk-manifesto {
-    width: min(1500px, calc(100% - 48px));
-
-    margin-inline: auto;
-
-    padding:
-        clamp(55px, 8vw, 110px)
-        0;
-
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-
-.sk-manifesto__grid {
-    display: grid;
-
-    grid-template-columns: repeat(3, 1fr);
-
-    gap: 1px;
-
-    background: rgba(255, 255, 255, 0.08);
-}
-
-
-.sk-manifesto__item {
-    min-height: 220px;
-
-    padding: clamp(30px, 4vw, 52px);
-
-    background: #0c0c0d;
-}
-
-
-.sk-manifesto__number {
-    display: block;
-
-    margin-bottom: 42px;
-
-    color: rgba(206, 175, 125, 0.68);
-
-    font-family:
-        Inter,
-        Arial,
-        sans-serif;
-
-    font-size: 12px;
-
-    letter-spacing: 0.1em;
-}
-
-
-.sk-manifesto__item h2 {
-    margin: 0 0 18px;
-
-    color: #f0e9de;
-
-    font-size: clamp(22px, 2vw, 30px);
-}
-
-
-.sk-manifesto__item p {
-    margin: 0;
-
-    color: rgba(222, 213, 199, 0.65);
-
-    line-height: 1.9;
-}
-
-
-/* ============================================================
-   ACCESSIBILITY
-   ============================================================ */
-
-.sk-button:focus-visible {
-    outline: 2px solid #e7d0aa;
-
-    outline-offset: 4px;
-}
-
-
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
-
-@media (max-width: 1050px) {
-
-    .sk-hero {
-        grid-template-columns: 1fr;
-
-        width: min(900px, calc(100% - 36px));
-
-        gap: 58px;
-    }
-
-
-    .sk-hero__content {
-        order: 1;
-    }
-
-
-    .sk-hero__visual {
-        order: 2;
-    }
-
-
-    .sk-hero__frame {
-        width: min(100%, 650px);
-    }
-
-
-    .sk-manifesto {
-        width: min(900px, calc(100% - 36px));
-    }
-
-
-    .sk-manifesto__grid {
-        grid-template-columns: 1fr;
-    }
-
-}
-
-
-@media (max-width: 600px) {
-
-    .sk-hero {
-        width: calc(100% - 28px);
-
-        padding-top: 40px;
-    }
-
-
-    .sk-hero__title {
-        font-size: clamp(46px, 17vw, 76px);
-    }
-
-
-    .sk-hero__lead {
-        font-size: 16px;
-    }
-
-
-    .sk-hero__actions {
-        flex-direction: column;
-    }
-
-
-    .sk-button {
         width: 100%;
+        overflow: hidden;
+
+        background:
+            radial-gradient(
+                circle at 50% 10%,
+                rgba(122, 76, 168, 0.07),
+                transparent 35rem
+            ),
+            var(--bg-color);
+
+        color: var(--text-main);
     }
 
-
-    .sk-hero__frame::before {
-        inset: 12px;
+    .sk-homepage *,
+    .sk-homepage *::before,
+    .sk-homepage *::after {
+        box-sizing: border-box;
     }
 
+    /* ========================================================
+       HERO
+       ======================================================== */
 
-    .sk-hero__frame::after {
-        top: 24px;
-        right: 25px;
+    .sk-homepage .hero {
+        position: relative;
+
+        width: 100%;
+        min-height: calc(100vh - 84px);
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        overflow: hidden;
     }
 
+    .sk-homepage .hero-img {
+        position: absolute;
 
-    .sk-hero__caption {
-        left: 25px;
-        bottom: 23px;
+        top: 50%;
+        left: 50%;
+
+        width: 100%;
+        height: 100%;
+
+        transform: translate(-50%, -50%);
+
+        object-fit: contain;
+
+        opacity: 0.86;
+
+        z-index: 1;
+
+        transition:
+            transform 8s ease-out,
+            opacity 2s ease;
     }
 
+    .sk-homepage .hero:hover .hero-img {
+        transform:
+            translate(-50%, -50%)
+            scale(1.02);
 
-    .sk-manifesto {
-        width: calc(100% - 28px);
+        opacity: 1;
     }
 
-}
+    .sk-homepage .hero::after {
+        content: "";
 
+        position: absolute;
+
+        inset: 0;
+
+        z-index: 1;
+
+        pointer-events: none;
+
+        background:
+            linear-gradient(
+                90deg,
+                rgba(1, 2, 3, 0.04),
+                rgba(1, 2, 3, 0.18)
+            );
+    }
+
+    .sk-homepage .hero-content {
+        position: relative;
+
+        z-index: 3;
+
+        width: min(1400px, calc(100% - 64px));
+        min-height: calc(100vh - 84px);
+
+        margin-inline: auto;
+
+        padding:
+            clamp(80px, 10vw, 150px)
+            0
+            clamp(100px, 12vw, 180px);
+
+        display: flex;
+        flex-direction: column;
+
+        align-items: flex-start;
+        justify-content: flex-end;
+
+        pointer-events: none;
+    }
+
+    .sk-homepage .hero-content > * {
+        pointer-events: auto;
+    }
+
+    .sk-homepage .hero-title {
+        max-width: 650px;
+
+        margin: 0;
+
+        color: var(--cyan);
+
+        font-size:
+            clamp(42px, 5.5vw, 82px);
+
+        font-weight: 300;
+
+        line-height: 1.22;
+
+        text-align: start;
+
+        text-shadow:
+            0 0 30px rgba(158, 230, 255, 0.16);
+    }
+
+    .sk-homepage .hero-sub {
+        max-width: 540px;
+
+        margin:
+            28px
+            0
+            0;
+
+        padding-inline-start: 22px;
+
+        color: var(--text-muted);
+
+        font-size:
+            clamp(16px, 1.3vw, 19px);
+
+        line-height: 2;
+
+        border-inline-start:
+            1px solid rgba(122, 76, 168, 0.7);
+    }
+
+    /* ========================================================
+       ACTIONS
+       ======================================================== */
+
+    .sk-homepage .cta-container {
+        display: flex;
+        flex-wrap: wrap;
+
+        gap: 12px;
+
+        margin-top: 36px;
+    }
+
+    .sk-homepage .btn-cta {
+        min-height: 48px;
+
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        padding:
+            0
+            25px;
+
+        color: #020304;
+
+        background: var(--cyan);
+
+        border:
+            1px solid var(--cyan);
+
+        border-radius: 4px;
+
+        font-size: 14px;
+
+        font-weight: 700;
+
+        text-decoration: none;
+
+        transition:
+            transform 180ms ease,
+            background-color 180ms ease,
+            border-color 180ms ease,
+            box-shadow 180ms ease;
+    }
+
+    .sk-homepage .btn-cta.secondary {
+        color: var(--cyan);
+
+        background:
+            rgba(1, 2, 3, 0.32);
+    }
+
+    .sk-homepage .btn-cta:hover {
+        transform: translateY(-2px);
+
+        box-shadow:
+            0 0 22px rgba(158, 230, 255, 0.22);
+    }
+
+    .sk-homepage .btn-cta:focus-visible {
+        outline:
+            2px solid var(--cyan);
+
+        outline-offset: 4px;
+    }
+
+    /* ========================================================
+       META
+       ======================================================== */
+
+    .sk-homepage .hero-meta {
+        position: absolute;
+
+        left: clamp(24px, 4vw, 64px);
+        bottom: 30px;
+
+        z-index: 3;
+
+        display: flex;
+
+        gap: clamp(14px, 2vw, 32px);
+
+        color: var(--text-muted);
+
+        font-family:
+            "Courier New",
+            monospace;
+
+        font-size: 10px;
+
+        letter-spacing: 0.2em;
+
+        opacity: 0.55;
+    }
+
+    /* ========================================================
+       PHILOSOPHY
+       ======================================================== */
+
+    .sk-homepage .philosophy-section {
+        width: min(1400px, calc(100% - 64px));
+
+        margin-inline: auto;
+
+        padding:
+            clamp(70px, 9vw, 130px)
+            0;
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap: 1px;
+
+        background:
+            rgba(158, 230, 255, 0.08);
+
+        border-top:
+            1px solid rgba(158, 230, 255, 0.08);
+
+        border-bottom:
+            1px solid rgba(158, 230, 255, 0.08);
+    }
+
+    .sk-homepage .philosophy-item {
+        min-height: 270px;
+
+        padding:
+            clamp(28px, 4vw, 52px);
+
+        background:
+            rgba(4, 6, 10, 0.96);
+
+        transition:
+            background-color 250ms ease,
+            transform 250ms ease;
+    }
+
+    .sk-homepage .philosophy-item:hover {
+        transform: translateY(-3px);
+
+        background:
+            rgba(7, 10, 16, 0.98);
+    }
+
+    .sk-homepage .item-number {
+        margin-bottom: 40px;
+
+        color: var(--warm);
+
+        font-family:
+            "Courier New",
+            monospace;
+
+        font-size: 12px;
+
+        letter-spacing: 0.08em;
+
+        opacity: 0.78;
+    }
+
+    .sk-homepage .philosophy-item h2 {
+        margin:
+            0
+            0
+            18px;
+
+        color: var(--cyan);
+
+        font-size:
+            clamp(22px, 2vw, 30px);
+
+        font-weight: 400;
+    }
+
+    .sk-homepage .philosophy-item p {
+        margin: 0;
+
+        color: var(--text-muted);
+
+        font-size: 15px;
+
+        line-height: 1.95;
+    }
+
+    /* ========================================================
+       RESPONSIVE
+       ======================================================== */
+
+    @media (max-width: 900px) {
+
+        .sk-homepage .hero-content {
+            width:
+                calc(100% - 36px);
+
+            padding-top: 80px;
+        }
+
+        .sk-homepage .philosophy-section {
+            width:
+                calc(100% - 36px);
+
+            grid-template-columns: 1fr;
+        }
+
+    }
+
+    @media (max-width: 640px) {
+
+        .sk-homepage .hero {
+            min-height:
+                calc(100svh - 84px);
+        }
+
+        .sk-homepage .hero-content {
+            min-height:
+                calc(100svh - 84px);
+
+            width:
+                calc(100% - 28px);
+
+            padding:
+                65px
+                0
+                100px;
+        }
+
+        .sk-homepage .hero-title {
+            font-size:
+                clamp(38px, 12vw, 58px);
+        }
+
+        .sk-homepage .cta-container {
+            width: 100%;
+
+            flex-direction: column;
+        }
+
+        .sk-homepage .btn-cta {
+            width: 100%;
+        }
+
+        .sk-homepage .hero-meta {
+            left: 14px;
+            right: 14px;
+            bottom: 18px;
+
+            justify-content: space-between;
+
+            gap: 8px;
+
+            font-size: 8px;
+        }
+
+        .sk-homepage .philosophy-section {
+            width:
+                calc(100% - 28px);
+
+            padding:
+                50px
+                0;
+        }
+
+    }
+
+    /* ========================================================
+       REDUCED MOTION
+       ======================================================== */
+
+    @media (prefers-reduced-motion: reduce) {
+
+        .sk-homepage .hero-img,
+        .sk-homepage .btn-cta,
+        .sk-homepage .philosophy-item {
+            transition: none;
+        }
+
+        .sk-homepage .hero:hover .hero-img {
+            transform:
+                translate(-50%, -50%);
+        }
+
+    }
 </style>
-
 {% endblock %}
 
 
 {% block content %}
 
-<main class="sk-home">
+<div class="sk-homepage">
 
     <section
-        class="sk-hero"
-        aria-labelledby="sk-hero-title"
+        class="hero"
+        aria-labelledby="sk-home-hero-title"
     >
 
-        <!-- ==================================================
-             ARTWORK
-             ================================================== -->
-
-        <div class="sk-hero__visual">
-
-            <figure class="sk-hero__frame">
-
-                <img
-                    src="{% static 'images/saman-kherad-hero.png' %}"
-                alt="{% trans 'کاور مفهومی سامان خرد؛ پیکره‌ای تاریک با مرکز تهی و ساختارهای هندسی' %}"
-                    class="sk-hero__image"
-                    width="992"
-                    height="1489"
-                    loading="eager"
-                    fetchpriority="high"
-                    decoding="async"
-                >
-
-                <div
-                    class="sk-hero__image-overlay"
-                    aria-hidden="true"
-                ></div>
-
-                <figcaption class="sk-hero__caption">
-                    THE CENTER<br>
-                    REMAINS<br>
-                    UNCLAIMED
-                </figcaption>
-
-            </figure>
-
-        </div>
+        <img
+            src="{% static 'images/saman-kherad-hero.svg' %}"
+            alt="بازنمایی بصری مرکز خالی، مسیرهای باز و شواهد مستقل"
+            class="hero-img"
+            width="992"
+            height="1489"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+        >
 
 
-        <!-- ==================================================
-             HERO COPY
-             ================================================== -->
-
-        <div class="sk-hero__content">
-
-            <p class="sk-hero__eyebrow">
-                {% trans "بنیاد عریان پرسش" %}
-            </p>
+        <div class="hero-content">
 
             <h1
-                id="sk-hero-title"
-                class="sk-hero__title"
+                id="sk-home-hero-title"
+                class="hero-title"
             >
-                <span>{% trans "بپرس." %}</span>
-                <span>{% trans "بسنج." %}</span>
-                <span>{% trans "شک کن." %}</span>
-                <span>{% trans "خودت" %}</span>
-                <span>{% trans "حکم کن." %}</span>
+                مرکز، خالی است.
+                <br>
+                حقیقت از پیش نوشته نشده.
             </h1>
 
-            <p class="sk-hero__lead">
-                {% blocktrans trimmed %}
-                نه اندیشه، نه قدرت، نه سنت، نه مذهب و نه نهاد؛
-                هیچ‌چیز از پرسش و سنجش معاف نیست.
-                سامان خرد فضایی برای بازپس‌گیری حق اندیشیدن
-                و داوری مستقل است.
-                {% endblocktrans %}
+
+            <p class="hero-sub">
+                این پلتفرم یک میدان معرفتی باز است؛
+                جایی که شواهد مستقل،
+                بدون تحمیل یک مرجع واحد،
+                در کنار هم قرار می‌گیرند.
             </p>
 
-            <p class="sk-hero__statement">
-                {% blocktrans trimmed %}
-                اینجا مرکز از پیش تصاحب نشده است؛
-                اعتبار باید در برابر پرسش دوام بیاورد.
-                {% endblocktrans %}
-            </p>
 
-            <div class="sk-hero__actions">
+            <div class="cta-container">
 
                 <a
-                    href="/fa/library/"
-                    class="sk-button sk-button--primary"
+                    href="{% url 'library:index' %}"
+                    class="btn-cta"
                 >
-                    {% trans "ورود به کتابخانه" %}
+                    کتابخانه
                 </a>
 
+
                 <a
-                    href="/fa/marketplace/"
-                    class="sk-button sk-button--secondary"
+                    href="{% url 'marketplace:index' %}"
+                    class="btn-cta secondary"
                 >
-                    {% trans "مشاهده بازار" %}
+                    بازار
                 </a>
 
             </div>
 
         </div>
 
-    </section>
 
-
-    <!-- ======================================================
-         MANIFESTO
-         ====================================================== -->
-
-    <section
-        class="sk-manifesto"
-        aria-label="{% trans 'اصول سامان خرد' %}"
-    >
-
-        <div class="sk-manifesto__grid">
-
-            <article class="sk-manifesto__item">
-
-                <span class="sk-manifesto__number">
-                    01
-                </span>
-
-                <h2>
-                    {% trans "هیچ مرجع مقدسی وجود ندارد" %}
-                </h2>
-
-                <p>
-                    {% blocktrans trimmed %}
-                    ادعاها نه با نام گوینده،
-                    بلکه با دلیل، شواهد و امکان نقد سنجیده می‌شوند.
-                    {% endblocktrans %}
-                </p>
-
-            </article>
-
-
-            <article class="sk-manifesto__item">
-
-                <span class="sk-manifesto__number">
-                    02
-                </span>
-
-                <h2>
-                    {% trans "پرسش مقدم بر اطاعت است" %}
-                </h2>
-
-                <p>
-                    {% blocktrans trimmed %}
-                    حق پرسیدن، شک‌کردن و بازنگری‌کردن
-                    پیش‌شرط هر شکل جدی از خردورزی است.
-                    {% endblocktrans %}
-                </p>
-
-            </article>
-
-
-            <article class="sk-manifesto__item">
-
-                <span class="sk-manifesto__number">
-                    03
-                </span>
-
-                <h2>
-                    {% trans "داوری را واگذار نکن" %}
-                </h2>
-
-                <p>
-                    {% blocktrans trimmed %}
-                    مسئولیت نهایی سنجش و انتخاب
-                به فرد بازمی‌گردد؛
-                    نه به جمع، سنت یا قدرت.
-                    {% endblocktrans %}
-                </p>
-
-            </article>
-
+        <div
+            class="hero-meta"
+            dir="ltr"
+            aria-hidden="true"
+        >
+            <span>OPEN</span>
+            <span>PLURAL</span>
+            <span>UNCLAIMED</span>
         </div>
 
     </section>
 
-</main>
+
+    <section
+        class="philosophy-section"
+        aria-label="اصول بنیادین سامان خرد"
+    >
+
+        <article class="philosophy-item">
+
+            <div
+                class="item-number"
+                aria-hidden="true"
+            >
+                [ 01 ]
+            </div>
+
+            <h2>
+                مرکز خالی
+            </h2>
+
+            <p>
+                هیچ مرجع یا پاسخ نهایی
+                در مرکز قرار ندارد.
+                فضای پرسش باز می‌ماند
+                تا نتیجه از پیش تحمیل نشود.
+            </p>
+
+        </article>
+
+
+        <article class="philosophy-item">
+
+            <div
+                class="item-number"
+                aria-hidden="true"
+            >
+                [ 02 ]
+            </div>
+
+            <h2>
+                شواهد مستقل
+            </h2>
+
+            <p>
+                هر شاهد هویت،
+                منشأ و زمینه خود را حفظ می‌کند.
+                رابطه میان شواهد
+                نباید استقلال آن‌ها را از بین ببرد.
+            </p>
+
+        </article>
+
+
+        <article class="philosophy-item">
+
+            <div
+                class="item-number"
+                aria-hidden="true"
+            >
+                [ 03 ]
+            </div>
+
+            <h2>
+                مسیرهای باز
+            </h2>
+
+            <p>
+                هیچ مسیر واحدی
+                به‌عنوان پاسخ صحیح تثبیت نمی‌شود.
+                هر داوری موقت است
+                و امکان بازبینی باقی می‌ماند.
+            </p>
+
+        </article>
+
+    </section>
+
+</div>
 
 {% endblock %}
