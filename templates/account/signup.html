@@ -1,570 +1,741 @@
-{% extends "_base.html" %}
+{% extends "base.html" %}
 {% load static i18n %}
 
 {% block title %}
-    {% trans 'ثبت‌نام — سامان خرد' %}
+ثبت‌نام — سامان خرد
 {% endblock %}
 
 {% block meta %}
-    {{ block.super }}
-    <meta
-        name="description"
-        content="{% trans 'ساخت حساب کاربری در سامان خرد' %}"
-    >
-    <meta name="robots" content="noindex, follow">
+<meta
+    name="description"
+    content="ایجاد حساب کاربری در سامان خرد."
+>
 {% endblock %}
 
-{% block content %}
-
-<section class="account-page">
-
-    <div class="container">
-
-        <div class="account-card account-card--signup">
-
-            <!-- ======================================================
-                 HEADER
-                 ====================================================== -->
-
-            <header class="account-card__header">
-
-                <p class="section-code">
-                    ACCOUNT / SIGNUP
-                </p>
-
-                <h1 class="account-card__title">
-                    {% trans 'ساخت حساب در سامان خرد' %}
-                </h1>
-
-                <p class="account-card__subtitle">
-                    {% trans 'حساب کاربری برای دسترسی به امکانات شخصی، کتابخانه و پنل فروشنده استفاده می‌شود.' %}
-                </p>
-
-            </header>
-
-            <!-- ======================================================
-                 SIGNUP FORM
-                 ====================================================== -->
-
-            <form
-                method="post"
-                action="{% url 'account_signup' %}"
-                class="account-form"
-            >
-
-                {% csrf_token %}
-
-                {% if redirect_field_value %}
-                    <input
-                        type="hidden"
-                        name="{{ redirect_field_name }}"
-                        value="{{ redirect_field_value }}"
-                    >
-                {% endif %}
-
-                <!-- ==================================================
-                     NON FIELD ERRORS
-                     ================================================== -->
-
-                {% if form.non_field_errors %}
-
-                    <div
-                        class="form-errors form-errors--global"
-                        role="alert"
-                    >
-
-                        {% for error in form.non_field_errors %}
-                            <p class="form-error">
-                                {{ error }}
-                            </p>
-                        {% endfor %}
-
-                    </div>
-
-                {% endif %}
-
-                <!-- ==================================================
-                     FORM FIELDS
-                     ================================================== -->
-
-                {% for field in form %}
-
-                    <div
-                        class="
-                            form-group
-                            {% if field.errors %}
-                                form-group--error
-                            {% endif %}
-                        "
-                    >
-
-                        <label
-                            for="{{ field.id_for_label }}"
-                            class="form-label"
-                        >
-                            {{ field.label }}
-
-                            {% if field.field.required %}
-                                <span
-                                    class="form-required"
-                                    aria-hidden="true"
-                                >
-                                    *
-                                </span>
-                            {% endif %}
-                        </label>
-
-                        <div class="form-control">
-                            {{ field }}
-                        </div>
-
-                        {% if field.help_text %}
-                            <div class="form-help">
-                                {{ field.help_text|safe }}
-                            </div>
-                        {% endif %}
-
-                        {% if field.errors %}
-
-                            <div
-                                class="form-errors"
-                                role="alert"
-                            >
-
-                                {% for error in field.errors %}
-                                    <p class="form-error">
-                                        {{ error }}
-                                    </p>
-                                {% endfor %}
-
-                            </div>
-
-                        {% endif %}
-
-                    </div>
-
-                {% endfor %}
-
-                <!-- ==================================================
-                     ACTIONS
-                     ================================================== -->
-
-                <div class="form-actions">
-
-                    <button
-                        type="submit"
-                        class="btn btn--primary btn--full"
-                    >
-                        {% trans 'ساخت حساب' %}
-                    </button>
-
-                </div>
-
-            </form>
-
-            <!-- ======================================================
-                 LOGIN LINK
-                 ====================================================== -->
-
-            <div class="account-links">
-
-                <span>
-                    {% trans 'قبلاً حساب ساخته‌اید؟' %}
-                </span>
-
-                <a
-                    href="{% url 'account_login' %}"
-                    class="account-links__link"
-                >
-                    {% trans 'وارد شوید' %}
-                </a>
-
-            </div>
-
-            <!-- ======================================================
-                 FOOTER
-                 ====================================================== -->
-
-            <footer class="account-card__footer">
-
-                <a
-                    href="{% url 'home' %}"
-                    class="btn btn--secondary btn--small"
-                >
-                    ← {% trans 'بازگشت به صفحه اصلی' %}
-                </a>
-
-            </footer>
-
-        </div>
-
-    </div>
-
-</section>
-
+{% block extra_head %}
 <style>
+    /* ============================================================
+       SAMAN KHERAD — SIGNUP
+       BLACK METAL × EPISTEMIC MINIMALISM
+       ============================================================ */
 
-    /* ==========================================================
-       ACCOUNT PAGE
-       ========================================================== */
+    .sk-auth-page {
+        --auth-bg: #070505;
+        --auth-surface: #100b0b;
+        --auth-surface-raised: #18100f;
 
-    .account-page {
-        min-height: calc(100vh - 180px);
+        --auth-text: #e3ddd7;
+        --auth-soft: #cfc2b5;
+        --auth-muted: #91847b;
+
+        --auth-accent: #842828;
+        --auth-accent-strong: #b23a35;
+
+        --auth-line: rgba(132, 40, 40, 0.24);
+        --auth-soft-line: rgba(207, 194, 181, 0.13);
+
+        width: 100%;
+        min-height: calc(100svh - 80px);
+
+        display: grid;
+        place-items: center;
+
+        position: relative;
+        isolation: isolate;
+
+        overflow: hidden;
+
+        padding: 48px 20px;
+
+        color: var(--auth-text);
+
+        direction: rtl;
+        text-align: right;
+
+        background:
+            radial-gradient(
+                circle at 24% 38%,
+                rgba(132, 40, 40, 0.13),
+                transparent 28rem
+            ),
+            linear-gradient(
+                135deg,
+                #050303 0%,
+                #0c0707 52%,
+                #030202 100%
+            );
+    }
+
+
+    .sk-auth-page *,
+    .sk-auth-page *::before,
+    .sk-auth-page *::after {
+        box-sizing: border-box;
+    }
+
+
+    /* grain */
+
+    .sk-auth-page::before {
+        content: "";
+
+        position: absolute;
+        inset: 0;
+
+        z-index: -2;
+
+        pointer-events: none;
+
+        opacity: 0.05;
+
+        background:
+            repeating-radial-gradient(
+                circle at 20% 30%,
+                rgba(255, 255, 255, 0.05) 0 1px,
+                transparent 1px 4px
+            );
+
+        background-size: 7px 7px;
+    }
+
+
+    /* empty-center circle */
+
+    .sk-auth-page::after {
+        content: "";
+
+        position: absolute;
+
+        width: min(70vw, 680px);
+        aspect-ratio: 1;
+
+        top: 50%;
+        left: 30%;
+
+        z-index: -1;
+
+        transform: translate(-50%, -50%);
+
+        border-radius: 50%;
+
+        border:
+            1px solid
+            rgba(132, 40, 40, 0.16);
+
+        box-shadow:
+            0 0 0 5vw rgba(132, 40, 40, 0.015),
+            0 0 90px rgba(0, 0, 0, 0.68);
+
+        pointer-events: none;
+    }
+
+
+    /* ============================================================
+       AUTH PANEL
+       ============================================================ */
+
+    .sk-auth-shell {
+        width: min(100%, 520px);
+
+        position: relative;
+
+        padding:
+            clamp(28px, 5vw, 48px);
+
+        background:
+            linear-gradient(
+                145deg,
+                rgba(16, 11, 11, 0.96),
+                rgba(7, 5, 5, 0.98)
+            );
+
+        border:
+            1px solid
+            var(--auth-line);
+
+        box-shadow:
+            0 30px 90px
+            rgba(0, 0, 0, 0.38);
+    }
+
+
+    .sk-auth-shell::before {
+        content: "";
+
+        position: absolute;
+
+        top: 0;
+        right: 0;
+
+        width: 38%;
+        height: 1px;
+
+        background:
+            linear-gradient(
+                90deg,
+                transparent,
+                var(--auth-accent-strong)
+            );
+
+        opacity: 0.7;
+    }
+
+
+    /* ============================================================
+       HEADER
+       ============================================================ */
+
+    .sk-auth-eyebrow {
+        margin:
+            0
+            0
+            18px;
 
         display: flex;
         align-items: center;
-        justify-content: center;
 
-        padding:
-            clamp(2rem, 5vw, 4rem)
-            0;
+        gap: 10px;
+
+        direction: ltr;
+
+        color:
+            var(--auth-soft);
+
+        font-family:
+            "Courier New",
+            monospace;
+
+        font-size: 9px;
+        font-weight: 700;
+
+        letter-spacing: 0.14em;
+
+        text-transform: uppercase;
+
+        opacity: 0.5;
     }
 
-    .account-card {
-        width: 100%;
-        max-width: 520px;
 
-        margin-inline: auto;
+    .sk-auth-eyebrow::before {
+        content: "";
 
-        padding:
-            clamp(1.5rem, 4vw, 2.5rem);
+        width: 28px;
+        height: 1px;
 
-        background:
-            rgba(255, 255, 255, 0.018);
+        background: currentColor;
 
-        border:
-            1px solid
-            rgba(232, 225, 215, 0.075);
-
-        border-radius: 4px;
+        opacity: 0.45;
     }
 
-    .account-card--signup {
-        max-width: 560px;
-    }
 
-    /* ==========================================================
-       HEADER
-       ========================================================== */
+    .sk-auth-title {
+        margin: 0;
 
-    .account-card__header {
-        margin-bottom: 2rem;
-
-        text-align: center;
-    }
-
-    .account-card__title {
-        margin:
-            0.5rem
-            0
-            0.5rem;
+        color:
+            var(--auth-text);
 
         font-size:
-            clamp(1.65rem, 4vw, 2rem);
+            clamp(
+                2rem,
+                5vw,
+                3rem
+            );
 
-        font-weight: 750;
-        line-height: 1.3;
+        font-weight: 800;
 
-        letter-spacing: -0.025em;
+        line-height: 1.25;
+
+        letter-spacing: -0.035em;
     }
 
-    .account-card__subtitle {
-        max-width: 440px;
 
+    .sk-auth-title span {
+        color:
+            var(--auth-accent-strong);
+    }
+
+
+    .sk-auth-intro {
+        margin:
+            18px
+            0
+            0;
+
+        color:
+            #a89b92;
+
+        font-size: 14px;
+
+        line-height: 1.95;
+    }
+
+
+    /* ============================================================
+       FORM
+       ============================================================ */
+
+    .sk-auth-form {
+        margin-top: 34px;
+    }
+
+
+    .sk-auth-form p {
         margin:
             0
-            auto;
-
-        color: #a0988a;
-
-        font-size: 0.95rem;
-        line-height: 1.8;
+            0
+            20px;
     }
 
-    /* ==========================================================
-       FORM
-       ========================================================== */
 
-    .account-form {
-        width: 100%;
-    }
-
-    .account-form .form-group {
-        margin-bottom: 1.35rem;
-    }
-
-    .form-label {
+    .sk-auth-form label {
         display: block;
 
-        margin-bottom: 0.4rem;
+        margin-bottom: 8px;
 
-        color: #d4cdc2;
+        color:
+            var(--auth-soft);
 
-        font-size: 0.875rem;
-        font-weight: 600;
+        font-size: 12px;
+        font-weight: 700;
     }
 
-    .form-required {
-        color: #b84a4a;
-    }
 
-    .form-control {
+    .sk-auth-form input[type="text"],
+    .sk-auth-form input[type="email"],
+    .sk-auth-form input[type="password"],
+    .sk-auth-form input[type="url"],
+    .sk-auth-form select,
+    .sk-auth-form textarea {
         width: 100%;
-    }
-
-    /* Django / allauth generated inputs */
-
-    .account-form input[type="text"],
-    .account-form input[type="email"],
-    .account-form input[type="password"],
-    .account-form input[type="url"],
-    .account-form input[type="number"],
-    .account-form select,
-    .account-form textarea {
-
-        width: 100%;
-
-        box-sizing: border-box;
+        min-height: 48px;
 
         padding:
-            0.75rem
-            0.9rem;
+            10px
+            13px;
+
+        color:
+            var(--auth-text);
+
+        caret-color:
+            var(--auth-accent-strong);
 
         background:
-            rgba(255, 255, 255, 0.035);
+            rgba(0, 0, 0, 0.28);
 
         border:
             1px solid
-            rgba(232, 225, 215, 0.12);
+            var(--auth-soft-line);
 
-        border-radius: 4px;
-
-        color: #e8e1d7;
-
-        font-family: inherit;
-        font-size: 0.95rem;
-
-        transition:
-            border-color 180ms ease,
-            background 180ms ease,
-            box-shadow 180ms ease;
-    }
-
-    .account-form input:focus,
-    .account-form select:focus,
-    .account-form textarea:focus {
+        border-radius: 0;
 
         outline: none;
 
-        border-color:
-            rgba(184, 74, 74, 0.5);
+        font: inherit;
 
+        direction: rtl;
+
+        transition:
+            border-color 180ms ease,
+            background-color 180ms ease,
+            box-shadow 180ms ease;
+    }
+
+
+    .sk-auth-form textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+
+    .sk-auth-form input:focus,
+    .sk-auth-form select:focus,
+    .sk-auth-form textarea:focus {
         background:
-            rgba(255, 255, 255, 0.05);
+            rgba(0, 0, 0, 0.42);
+
+        border-color:
+            var(--auth-accent-strong);
 
         box-shadow:
             0 0 0 3px
-            rgba(184, 74, 74, 0.08);
+            rgba(132, 40, 40, 0.12);
     }
 
-    .account-form input::placeholder {
-        color: #5e574f;
+
+    .sk-auth-form input::placeholder {
+        color:
+            rgba(207, 194, 181, 0.34);
     }
 
-    .form-group--error
-    input,
-    .form-group--error
-    select,
-    .form-group--error
-    textarea {
 
-        border-color:
-            rgba(184, 74, 74, 0.55);
+    /* Django help text */
+
+    .sk-auth-form .helptext {
+        display: block;
+
+        margin-top: 7px;
+
+        color:
+            var(--auth-muted);
+
+        font-size: 11px;
+
+        line-height: 1.75;
     }
 
-    /* ==========================================================
-       HELP TEXT
-       ========================================================== */
 
-    .form-help {
-        margin-top: 0.35rem;
-
-        color: #756d63;
-
-        font-size: 0.78rem;
-        line-height: 1.65;
-    }
-
-    .form-help ul {
+    .sk-auth-form ul {
         margin:
-            0.4rem
+            8px
             0
             0;
 
-        padding-inline-start: 1.25rem;
+        padding-right: 18px;
+
+        color:
+            var(--auth-muted);
+
+        font-size: 11px;
+
+        line-height: 1.8;
     }
 
-    .form-help li {
-        margin-bottom: 0.2rem;
-    }
 
-    /* ==========================================================
-       ERRORS
-       ========================================================== */
+    /* errors */
 
-    .form-errors {
-        margin-top: 0.35rem;
-    }
+    .sk-auth-errors,
+    .sk-auth-form .errorlist {
+        margin:
+            0
+            0
+            20px;
 
-    .form-errors--global {
-        margin-bottom: 1.25rem;
+        padding:
+            12px
+            14px;
 
-        padding: 0.9rem 1rem;
+        list-style: none;
+
+        color:
+            #e0b2ac;
 
         background:
-            rgba(184, 74, 74, 0.08);
+            rgba(132, 40, 40, 0.11);
 
-        border:
-            1px solid
-            rgba(184, 74, 74, 0.18);
+        border-right:
+            3px solid
+            var(--auth-accent-strong);
 
-        border-radius: 4px;
+        font-size: 12px;
+
+        line-height: 1.8;
     }
 
-    .form-error {
-        margin: 0.15rem 0;
 
-        color: #c65b5b;
+    /* ============================================================
+       BUTTON
+       ============================================================ */
 
-        font-size: 0.8rem;
-        line-height: 1.6;
-    }
-
-    /* ==========================================================
-       ACTION
-       ========================================================== */
-
-    .form-actions {
-        margin-top: 1.75rem;
-    }
-
-    .btn--full {
+    .sk-auth-submit {
         width: 100%;
+        min-height: 50px;
+
+        margin-top: 8px;
 
         display: inline-flex;
         align-items: center;
         justify-content: center;
 
         padding:
-            0.8rem
-            1.25rem;
+            0
+            24px;
+
+        color:
+            #f1e9e3;
+
+        background:
+            var(--auth-accent);
+
+        border:
+            1px solid
+            var(--auth-accent-strong);
+
+        outline:
+            1px solid
+            rgba(178, 58, 53, 0.20);
+
+        outline-offset: 3px;
+
+        border-radius: 0;
+
+        font: inherit;
+
+        font-size: 13px;
+        font-weight: 800;
+
+        cursor: pointer;
+
+        transition:
+            transform 180ms ease,
+            background-color 180ms ease,
+            box-shadow 180ms ease;
     }
 
-    /* ==========================================================
-       LOGIN LINK
-       ========================================================== */
 
-    .account-links {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .sk-auth-submit:hover {
+        transform:
+            translateY(-2px);
 
-        gap: 0.5rem;
+        background:
+            var(--auth-accent-strong);
 
-        flex-wrap: wrap;
-
-        margin-top: 1.5rem;
-
-        color: #7a7268;
-
-        font-size: 0.9rem;
+        box-shadow:
+            0 10px 30px
+            rgba(132, 40, 40, 0.24);
     }
 
-    .account-links__link {
-        color: #b7aea2;
 
-        text-decoration: none;
+    .sk-auth-submit:focus-visible {
+        outline:
+            2px solid
+            var(--auth-soft);
+
+        outline-offset: 5px;
+    }
+
+
+    /* ============================================================
+       FOOTER / LOGIN LINK
+       ============================================================ */
+
+    .sk-auth-footer {
+        margin-top: 30px;
+
+        padding-top: 22px;
+
+        border-top:
+            1px solid
+            var(--auth-soft-line);
+
+        color:
+            var(--auth-muted);
+
+        font-size: 13px;
+
+        line-height: 1.8;
+    }
+
+
+    .sk-auth-footer a {
+        color:
+            var(--auth-soft);
+
+        text-decoration:
+            underline;
+
+        text-decoration-color:
+            rgba(178, 58, 53, 0.55);
+
+        text-underline-offset: 4px;
 
         transition:
             color 180ms ease;
     }
 
-    .account-links__link:hover {
-        color: #e8e1d7;
 
-        text-decoration: underline;
-        text-underline-offset: 3px;
+    .sk-auth-footer a:hover {
+        color:
+            var(--auth-accent-strong);
     }
 
-    /* ==========================================================
-       FOOTER
-       ========================================================== */
 
-    .account-card__footer {
-        margin-top: 1.75rem;
+    .sk-auth-meta {
+        margin-top: 26px;
 
-        padding-top: 1.25rem;
+        display: flex;
 
-        border-top:
-            1px solid
-            rgba(232, 225, 215, 0.06);
+        justify-content:
+            space-between;
 
-        text-align: center;
+        gap: 12px;
+
+        direction: ltr;
+
+        color:
+            var(--auth-muted);
+
+        font-family:
+            "Courier New",
+            monospace;
+
+        font-size: 8px;
+        font-weight: 700;
+
+        letter-spacing: 0.12em;
+
+        opacity: 0.4;
     }
 
-    .btn--small {
-        padding:
-            0.45rem
-            1rem;
 
-        font-size: 0.85rem;
-    }
+    /* ============================================================
+       MOBILE
+       ============================================================ */
 
-    /* ==========================================================
-       RESPONSIVE
-       ========================================================== */
+    @media (max-width: 640px) {
 
-    @media (max-width: 560px) {
-
-        .account-page {
-            align-items: flex-start;
+        .sk-auth-page {
+            min-height:
+                calc(100svh - 70px);
 
             padding:
-                1.5rem
-                0;
+                24px
+                13px;
         }
 
-        .account-card {
+
+        .sk-auth-page::after {
+            width: 100vw;
+
+            left: 50%;
+        }
+
+
+        .sk-auth-shell {
             padding:
-                1.5rem
-                1.1rem;
+                26px
+                20px;
         }
 
-        .account-card__header {
-            margin-bottom: 1.5rem;
+
+        .sk-auth-title {
+            font-size:
+                clamp(
+                    1.9rem,
+                    10vw,
+                    2.6rem
+                );
         }
 
-        .account-card__subtitle {
-            font-size: 0.9rem;
-        }
 
-        .account-form input[type="text"],
-        .account-form input[type="email"],
-        .account-form input[type="password"],
-        .account-form input[type="url"],
-        .account-form input[type="number"],
-        .account-form select,
-        .account-form textarea {
-
-            padding:
-                0.68rem
-                0.8rem;
-
-            font-size: 0.9rem;
+        .sk-auth-meta {
+            font-size: 7px;
         }
 
     }
 
+
+    @media (prefers-reduced-motion: reduce) {
+
+        .sk-auth-submit,
+        .sk-auth-form input,
+        .sk-auth-form select,
+        .sk-auth-form textarea {
+            transition: none;
+        }
+
+    }
 </style>
+{% endblock %}
+
+
+{% block content %}
+
+<section
+    class="sk-auth-page"
+    lang="fa"
+    dir="rtl"
+    aria-labelledby="sk-signup-title"
+>
+
+    <div class="sk-auth-shell">
+
+        <p
+            class="sk-auth-eyebrow"
+            aria-hidden="true"
+        >
+            SAMAN KHERAD / IDENTITY
+        </p>
+
+
+        <h1
+            id="sk-signup-title"
+            class="sk-auth-title"
+        >
+            ساختن
+            <span>هویت مستقل</span>
+        </h1>
+
+
+        <p class="sk-auth-intro">
+            حساب شما نقطهٔ آغاز یک مسیر شخصی است؛
+            مسیر پرسش، شواهد و بازبینی.
+        </p>
+
+
+        {% if form.non_field_errors %}
+            <div
+                class="sk-auth-errors"
+                role="alert"
+            >
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+
+        <form
+            method="post"
+            action="{% url 'account_signup' %}"
+            class="sk-auth-form"
+        >
+
+            {% csrf_token %}
+
+
+            {{ form.as_p }}
+
+
+            {% if redirect_field_value %}
+                <input
+                    type="hidden"
+                    name="{{ redirect_field_name }}"
+                    value="{{ redirect_field_value }}"
+                >
+            {% endif %}
+
+
+            <button
+                type="submit"
+                class="sk-auth-submit"
+            >
+                ایجاد حساب
+            </button>
+
+        </form>
+
+
+        <div class="sk-auth-footer">
+
+            <p>
+                پیش‌تر حساب ساخته‌اید؟
+                <a href="{% url 'account_login' %}">
+                    ورود
+                </a>
+            </p>
+
+        </div>
+
+
+        <div
+            class="sk-auth-meta"
+            aria-hidden="true"
+        >
+            <span>IDENTITY</span>
+            <span>PRIVATE</span>
+            <span>REVERSIBLE</span>
+        </div>
+
+    </div>
+
+</section>
 
 {% endblock %}
