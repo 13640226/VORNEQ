@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.evidence.models import Prediction, PredictionResolution
@@ -43,21 +43,37 @@ class PredictionLedgerService:
         resolved_by=None,
         resolved_at=None,
     ):
-        if hasattr(prediction, "resolution"):
+        # Re-read and lock the canonical Prediction row. This serializes competing
+        # resolution attempts on databases that support SELECT ... FOR UPDATE and
+        # avoids relying on possibly stale reverse-relation state on the caller's
+        # model instance.
+        locked = Prediction.objects.select_for_update().get(pk=prediction.pk)
+
+        if PredictionResolution.objects.filter(prediction=locked).exists():
             raise ValidationError("Prediction has already been resolved.")
 
         resolved_at = resolved_at or timezone.now()
-        if resolved_at < prediction.resolution_date:
+        if resolved_at < locked.resolution_date:
             raise ValidationError("Prediction cannot be resolved before its resolution date.")
 
-        return PredictionResolution.objects.create(
-            prediction=prediction,
-            outcome_occurred=bool(outcome_occurred),
-            evidence_ref=evidence_ref,
-            notes=notes,
-            resolved_by=resolved_by,
-            resolved_at=resolved_at,
-        )
+        # The OneToOne constraint remains the database-level final defence. The
+        # nested savepoint lets us translate a uniqueness race into the service's
+        # stable ValidationError contract without leaving the outer transaction
+        # in a broken state (useful on backends with weaker row-lock semantics).
+        try:
+            with transaction.atomic():
+                return PredictionResolution.objects.create(
+                    prediction=locked,
+                    outcome_occurred=bool(outcome_occurred),
+                    evidence_ref=evidence_ref,
+                    notes=notes,
+                    resolved_by=resolved_by,
+                    resolved_at=resolved_at,
+                )
+        except IntegrityError as exc:
+            if PredictionResolution.objects.filter(prediction=locked).exists():
+                raise ValidationError("Prediction has already been resolved.") from exc
+            raise
 
     @staticmethod
     def score(prediction):
