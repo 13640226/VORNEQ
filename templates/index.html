@@ -54,6 +54,9 @@
         --violet: #7a4ca8;
         --warm: #e8c99d;
 
+        direction: rtl;
+        text-align: right;
+
         width: 100%;
         overflow: hidden;
 
@@ -161,6 +164,9 @@
         align-items: flex-start;
         justify-content: flex-end;
 
+        direction: rtl;
+        text-align: right;
+
         pointer-events: none;
     }
 
@@ -173,6 +179,9 @@
 
         margin: 0;
 
+        direction: rtl;
+        text-align: right;
+
         color: var(--cyan);
 
         font-size:
@@ -180,9 +189,7 @@
 
         font-weight: 300;
 
-        line-height: 1.22;
-
-        text-align: start;
+        line-height: 1.35;
 
         text-shadow:
             0 0 30px rgba(158, 230, 255, 0.16);
@@ -196,7 +203,11 @@
             0
             0;
 
-        padding-inline-start: 22px;
+        padding-right: 22px;
+        padding-left: 0;
+
+        direction: rtl;
+        text-align: right;
 
         color: var(--text-muted);
 
@@ -205,8 +216,10 @@
 
         line-height: 2;
 
-        border-inline-start:
+        border-right:
             1px solid rgba(122, 76, 168, 0.7);
+
+        border-left: 0;
     }
 
     /* ========================================================
@@ -214,8 +227,12 @@
        ======================================================== */
 
     .sk-homepage .cta-container {
+        direction: rtl;
+
         display: flex;
         flex-wrap: wrap;
+
+        justify-content: flex-start;
 
         gap: 12px;
 
@@ -342,6 +359,9 @@
         padding:
             clamp(28px, 4vw, 52px);
 
+        direction: rtl;
+        text-align: right;
+
         background:
             rgba(4, 6, 10, 0.96);
 
@@ -385,6 +405,9 @@
             clamp(22px, 2vw, 30px);
 
         font-weight: 400;
+
+        direction: rtl;
+        text-align: right;
     }
 
     .sk-homepage .philosophy-item p {
@@ -395,6 +418,9 @@
         font-size: 15px;
 
         line-height: 1.95;
+
+        direction: rtl;
+        text-align: right;
     }
 
     /* ========================================================
@@ -442,6 +468,14 @@
         .sk-homepage .hero-title {
             font-size:
                 clamp(38px, 12vw, 58px);
+
+            text-align: right;
+        }
+
+        .sk-homepage .hero-sub {
+            text-align: right;
+
+            padding-right: 16px;
         }
 
         .sk-homepage .cta-container {
@@ -501,7 +535,11 @@
 
 {% block content %}
 
-<div class="sk-homepage">
+<div
+    class="sk-homepage"
+    lang="fa"
+    dir="rtl"
+>
 
     <section
         class="hero"
