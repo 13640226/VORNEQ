@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from apps.evidence.models import Claim, Critique, EvidenceRelation, EvidenceState
-from apps.evidence.services import EvidenceService, RelationService
+from apps.evidence.services import ContentVersionService, EvidenceService, RelationService
 from library.models import AudioItem, LibraryItem
 
 from .analysis import DisagreementMapService, EvidenceGapFinderService
@@ -123,6 +123,52 @@ class TruthGraphServiceTests(TestCase):
         response_codes = {gap["code"] for gap in response.json()["gaps"]}
         self.assertEqual(codes, response_codes)
 
+    def test_knowledge_diff_records_baseline_and_changed_claim(self):
+        updated = ContentVersionService.update_claim(
+            claim=self.claim,
+            claim_text="A battery chemistry can retain 92% capacity after 1,000 cycles",
+            change_note="Updated target after new engineering data",
+        )
+
+        versions = list(updated.content_versions.order_by("version_number"))
+        self.assertEqual(len(versions), 2)
+        self.assertEqual(versions[0].snapshot["claim_text"], self.claim.claim_text)
+        self.assertEqual(versions[1].snapshot["claim_text"], updated.claim_text)
+
+        diff = ContentVersionService.compare(before=versions[0], after=versions[1])
+        self.assertEqual(diff["changed_fields"], ["claim_text"])
+        self.assertTrue(diff["fields"][0]["unified_diff"])
+
+        response = self.client.get(
+            reverse(
+                "graph:knowledge-diff",
+                kwargs={
+                    "claim_id": self.claim.pk,
+                    "from_version": 1,
+                    "to_version": 2,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["changed_fields"], ["claim_text"])
+
+    def test_knowledge_history_and_decision_package_expose_current_version(self):
+        ContentVersionService.record_snapshot(claim=self.claim, change_note="Initial review")
+
+        history_response = self.client.get(
+            reverse("graph:knowledge-history", kwargs={"claim_id": self.claim.pk})
+        )
+        self.assertEqual(history_response.status_code, 200)
+        self.assertEqual(len(history_response.json()["versions"]), 1)
+
+        response = self.client.get(
+            reverse("graph:decision-package", kwargs={"claim_id": self.claim.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["knowledge_version"]["current_version"], 1)
+        self.assertEqual(len(payload["knowledge_history"]), 1)
+
     def test_decision_package_endpoint_includes_analysis_layers(self):
         response = self.client.get(
             reverse("graph:decision-package", kwargs={"claim_id": self.claim.pk})
@@ -138,3 +184,4 @@ class TruthGraphServiceTests(TestCase):
         self.assertEqual(len(payload["evidence"]), 1)
         self.assertIn("disagreement_map", payload)
         self.assertIn("evidence_gaps", payload)
+        self.assertIn("knowledge_history", payload)
