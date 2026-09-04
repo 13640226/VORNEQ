@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
@@ -12,9 +13,15 @@ from .services import TruthGraphService
 
 class TruthGraphServiceTests(TestCase):
     def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="graph-tester",
+            password="test-pass-123",
+        )
+        self.client.force_login(self.user)
         self.claim = Claim.objects.create(
             claim_text="A battery chemistry can retain 90% capacity after 1,000 cycles",
             scope="technical diligence pilot",
+            created_by=self.user,
         )
         self.evidence = EvidenceService.create_with_provenance(
             content="Independent cycle test reports 91% retained capacity after 1,000 cycles.",
