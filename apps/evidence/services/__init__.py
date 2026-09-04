@@ -4,6 +4,7 @@ from .review import ReviewService
 from .snapshot import SnapshotService
 from .decision import DecisionPackageService
 from .versioning import ContentVersionService
+from .prediction import PredictionLedgerService
 
 
 __all__ = [
@@ -13,4 +14,5 @@ __all__ = [
     "SnapshotService",
     "DecisionPackageService",
     "ContentVersionService",
+    "PredictionLedgerService",
 ]
