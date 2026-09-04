@@ -52,11 +52,20 @@ class DecisionPackageService:
                 }
             )
 
+        versions = list(claim.content_versions.order_by("version_number"))
+        current_version = versions[-1] if versions else None
+
         return {
             "claim": {
                 "id": str(claim.id),
                 "claim_text": claim.claim_text,
                 "scope": claim.scope,
+            },
+            "knowledge_version": {
+                "current_version": current_version.version_number if current_version else None,
+                "version_count": len(versions),
+                "last_change_note": current_version.change_note if current_version else "",
+                "last_version_at": current_version.created_at.isoformat() if current_version else None,
             },
             "evidence_state": state_values,
             "evidence": evidence_items,
@@ -78,6 +87,7 @@ class DecisionPackageService:
             f"# Decision Record: {package['claim']['claim_text']}",
             "",
             f"**Scope:** {package['claim']['scope'] or '—'}",
+            f"**Knowledge version:** {package['knowledge_version']['current_version'] or 'unversioned'}",
             f"**Evidence state:** {package['evidence_state']['state']}",
             f"**Distinct evidence:** {package['evidence_state']['evidence_count']}",
             "",
