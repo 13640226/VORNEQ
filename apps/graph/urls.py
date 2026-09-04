@@ -18,6 +18,16 @@ urlpatterns = [
         name="evidence-gaps",
     ),
     path(
+        "claims/<uuid:claim_id>/knowledge-history/",
+        views.knowledge_history,
+        name="knowledge-history",
+    ),
+    path(
+        "claims/<uuid:claim_id>/knowledge-diff/<int:from_version>/<int:to_version>/",
+        views.knowledge_diff,
+        name="knowledge-diff",
+    ),
+    path(
         "claims/<uuid:claim_id>/decision-package/",
         views.decision_package,
         name="decision-package",
