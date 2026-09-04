@@ -4,3 +4,5 @@ django-axes==8.3.1
 whitenoise==6.12.0
 Pillow==12.3.0
 gunicorn==26.2.0
+dj-database-url==3.0.1
+psycopg2-binary==2.9.10
