@@ -1,7 +1,8 @@
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_GET
 
+from apps.core.services import ReputationService
 from apps.evidence.models import Claim, ContentVersion
 from apps.evidence.services import (
     ContentVersionService,
@@ -60,6 +61,41 @@ def prediction_ledger(request, claim_id):
             "scoring_summary": PredictionLedgerService.scoring_summary(claim=claim),
         }
     )
+
+
+@require_GET
+def demo_dashboard(request, claim_id):
+    """Read-only presentation layer over the already-implemented pilot services."""
+    claim = get_object_or_404(Claim, pk=claim_id)
+    history = list(ContentVersion.objects.filter(claim=claim).order_by("version_number"))
+    latest_diff = None
+    if len(history) >= 2:
+        latest_diff = ContentVersionService.compare(before=history[-2], after=history[-1])
+
+    prediction_rows = PredictionLedgerService.ledger(claim)
+    related_user_ids = {claim.created_by_id} if claim.created_by_id else set()
+    related_user_ids.update(
+        row["created_by"] for row in prediction_rows if row.get("created_by") is not None
+    )
+    User = claim._meta.get_field("created_by").remote_field.model
+    reputations = [
+        ReputationService.snapshot(user)
+        for user in User.objects.filter(pk__in=related_user_ids).order_by("username")
+    ]
+
+    context = {
+        "claim": claim,
+        "package": DecisionPackageService.build(claim),
+        "graph": TruthGraphService.build_claim_graph(claim),
+        "disagreements": DisagreementMapService.build(claim),
+        "gaps": EvidenceGapFinderService.build(claim),
+        "knowledge_history": ContentVersionService.history(claim),
+        "latest_diff": latest_diff,
+        "predictions": prediction_rows,
+        "prediction_summary": PredictionLedgerService.scoring_summary(claim=claim),
+        "reputations": reputations,
+    }
+    return render(request, "graph/demo_dashboard.html", context)
 
 
 @require_GET
