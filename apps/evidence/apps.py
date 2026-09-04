@@ -6,3 +6,6 @@ class EvidenceConfig(AppConfig):
     name = "apps.evidence"
     label = "evidence"
     verbose_name = "Evidence Domain"
+
+    def ready(self):
+        from . import signals  # noqa: F401
