@@ -138,6 +138,7 @@ class ReputationTests(TestCase):
         self.assertFalse(Reputation.objects.filter(user=self.user).exists())
         reputation_count = Reputation.objects.count()
         history_count = ReputationHistory.objects.count()
+        self.client.force_login(self.user)
 
         response = self.client.get(
             reverse("graph:demo-dashboard", kwargs={"claim_id": self.claim.pk})
