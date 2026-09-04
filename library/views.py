@@ -86,6 +86,12 @@ def index(request):
         is_published=True,
     )
 
+    audio_items = AudioItem.objects.filter(
+        is_published=True,
+    ).order_by(
+        "-created_at",
+    )[:5]
+
 
     # --------------------------------------------------------
     # Content-type filter
@@ -188,6 +194,8 @@ def index(request):
         "items": page_obj,
         "page_obj": page_obj,
         "paginator": paginator,
+
+        "audio_items": audio_items,
 
         "query": query,
         "selected_type": item_type,
