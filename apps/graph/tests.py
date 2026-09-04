@@ -3,6 +3,7 @@ from django.urls import reverse
 
 from apps.evidence.models import Claim, EvidenceRelation, EvidenceState
 from apps.evidence.services import EvidenceService, RelationService
+from library.models import AudioItem, LibraryItem
 
 from .models import Edge, Node
 from .services import TruthGraphService
@@ -49,6 +50,29 @@ class TruthGraphServiceTests(TestCase):
 
         self.assertEqual(root.node_type, Node.NodeType.CLAIM)
         self.assertFalse(Edge.objects.filter(source=root).exists())
+
+    def test_library_and_audio_items_can_be_projected_without_parallel_models(self):
+        library_item = LibraryItem.objects.create(
+            title="Battery diligence memo",
+            slug="battery-diligence-memo",
+        )
+        audio_item = AudioItem.objects.create(title="Expert interview")
+
+        library_node = TruthGraphService.project_content_object(
+            obj=library_item,
+            node_type=Node.NodeType.LIBRARY_ITEM,
+            label=library_item.title,
+        )
+        audio_node = TruthGraphService.project_content_object(
+            obj=audio_item,
+            node_type=Node.NodeType.AUDIO_ITEM,
+            label=audio_item.title,
+        )
+
+        self.assertEqual(library_node.content_object, library_item)
+        self.assertEqual(audio_node.content_object, audio_item)
+        self.assertEqual(library_node.node_type, Node.NodeType.LIBRARY_ITEM)
+        self.assertEqual(audio_node.node_type, Node.NodeType.AUDIO_ITEM)
 
     def test_graph_endpoint_combines_canonical_evidence_without_writes(self):
         response = self.client.get(
