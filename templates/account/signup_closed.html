@@ -23,9 +23,11 @@
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/components.css' %}">
   <link rel="stylesheet" href="{% static 'css/home.css' %}">
+  <link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
 </head>
 
 <body>
+{% include "partials/_standalone_nav.html" %}
 
   <a
     class="skip-link"
