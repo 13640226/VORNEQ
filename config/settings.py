@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     # Local applications
     "library",
     "marketplace",
+    "apps.evidence.apps.EvidenceConfig",
 ]
 
 
