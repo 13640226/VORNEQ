@@ -94,6 +94,7 @@ INSTALLED_APPS = [
     "library",
     "marketplace",
     "apps.evidence.apps.EvidenceConfig",
+    "apps.graph.apps.GraphConfig",
 ]
 
 
