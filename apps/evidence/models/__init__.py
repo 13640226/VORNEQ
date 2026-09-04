@@ -9,6 +9,7 @@ from .perspective import Perspective, ClaimPerspective
 from .critique import Critique
 from .evidence_state import EvidenceState
 from .content_version import ContentVersion
+from .prediction import Prediction, PredictionResolution
 
 
 __all__ = [
@@ -25,4 +26,6 @@ __all__ = [
     "Critique",
     "EvidenceState",
     "ContentVersion",
+    "Prediction",
+    "PredictionResolution",
 ]
