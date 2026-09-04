@@ -18,8 +18,22 @@
 
 {% block extra_head %}
 {{ block.super }}
+<link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
 
 <style>
+    .standalone-nav__link:hover {
+        background-color: rgba(178, 58, 53, 0.08);
+    }
+
+    .standalone-nav__link--outline {
+        border-color: rgba(178, 58, 53, 0.4);
+    }
+
+    .standalone-nav__link--outline:hover {
+        border-color: #b23a35;
+        background-color: rgba(178, 58, 53, 0.08);
+    }
+
     /* ============================================================
        SAMAN KHERAD — SIGN UP
        BLACK METAL × EPISTEMIC MINIMALISM
@@ -750,6 +764,7 @@
 
 
 {% block content %}
+{% include "partials/_standalone_nav.html" %}
 
 <main
     class="sk-auth-page"
