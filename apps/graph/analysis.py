@@ -159,6 +159,7 @@ class EvidenceGapFinderService:
 
             if latest.observed_state in {
                 ConditionObservation.ObservedState.UNKNOWN,
+                ConditionObservation.ObservedState.NOT_OBSERVED,
                 ConditionObservation.ObservedState.POSSIBLY_MET,
                 ConditionObservation.ObservedState.DISPUTED,
             }:
