@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_GET
@@ -15,24 +16,28 @@ from .services import TruthGraphService
 
 
 @require_GET
+@login_required
 def claim_graph(request, claim_id):
     claim = get_object_or_404(Claim, pk=claim_id)
     return JsonResponse(TruthGraphService.build_claim_graph(claim))
 
 
 @require_GET
+@login_required
 def disagreement_map(request, claim_id):
     claim = get_object_or_404(Claim, pk=claim_id)
     return JsonResponse(DisagreementMapService.build(claim))
 
 
 @require_GET
+@login_required
 def evidence_gaps(request, claim_id):
     claim = get_object_or_404(Claim, pk=claim_id)
     return JsonResponse(EvidenceGapFinderService.build(claim))
 
 
 @require_GET
+@login_required
 def knowledge_history(request, claim_id):
     claim = get_object_or_404(Claim, pk=claim_id)
     return JsonResponse(
@@ -44,6 +49,7 @@ def knowledge_history(request, claim_id):
 
 
 @require_GET
+@login_required
 def knowledge_diff(request, claim_id, from_version, to_version):
     claim = get_object_or_404(Claim, pk=claim_id)
     before = get_object_or_404(ContentVersion, claim=claim, version_number=from_version)
@@ -52,6 +58,7 @@ def knowledge_diff(request, claim_id, from_version, to_version):
 
 
 @require_GET
+@login_required
 def prediction_ledger(request, claim_id):
     claim = get_object_or_404(Claim, pk=claim_id)
     return JsonResponse(
@@ -64,6 +71,7 @@ def prediction_ledger(request, claim_id):
 
 
 @require_GET
+@login_required
 def demo_dashboard(request, claim_id):
     """Read-only presentation layer over the already-implemented pilot services."""
     claim = get_object_or_404(Claim, pk=claim_id)
@@ -100,6 +108,7 @@ def demo_dashboard(request, claim_id):
 
 
 @require_GET
+@login_required
 def decision_package(request, claim_id):
     claim = get_object_or_404(Claim, pk=claim_id)
     package = DecisionPackageService.build(claim)
