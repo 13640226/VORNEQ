@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     # Local applications
     "library",
     "marketplace",
+    "apps.core.apps.CoreConfig",
     "apps.evidence.apps.EvidenceConfig",
     "apps.graph.apps.GraphConfig",
 ]
@@ -162,7 +163,7 @@ TEMPLATES = [
                 "django.template.context_processors.debug",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "django.template.context_processors.i18n",
+                "django.context_processors.i18n",
             ],
         },
     },
