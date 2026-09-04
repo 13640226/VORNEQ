@@ -104,3 +104,18 @@ class PredictionLedgerTests(TestCase):
         self.assertEqual(summary["resolved_predictions"], 1)
         self.assertAlmostEqual(summary["mean_brier_score"], 0.0625)
         self.assertAlmostEqual(summary["mean_accuracy_score"], 0.9375)
+
+    def test_ledger_keeps_unresolved_prediction_with_no_score(self):
+        prediction = PredictionLedgerService.create(
+            claim=self.claim,
+            event_statement="This prediction remains unresolved.",
+            probability="0.7000",
+            resolution_date=timezone.now() + timedelta(days=30),
+        )
+
+        rows = PredictionLedgerService.ledger(self.claim)
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["id"], str(prediction.id))
+        self.assertIsNone(rows[0]["resolution"])
+        self.assertIsNone(PredictionLedgerService.score(prediction))
