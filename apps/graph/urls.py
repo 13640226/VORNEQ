@@ -28,6 +28,11 @@ urlpatterns = [
         name="knowledge-diff",
     ),
     path(
+        "claims/<uuid:claim_id>/predictions/",
+        views.prediction_ledger,
+        name="prediction-ledger",
+    ),
+    path(
         "claims/<uuid:claim_id>/decision-package/",
         views.decision_package,
         name="decision-package",
