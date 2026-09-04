@@ -52,3 +52,5 @@ playwright-report/
 *.ps1~
 
 db.sqlite3
+
+staticfiles/
