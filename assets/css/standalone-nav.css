@@ -1,7 +1,7 @@
-/* Library-only standalone navigation. Loaded only by templates/library/index.html. */
+/* Shared standalone navigation used by selected public and account pages. */
 
-/* The stylesheet is loaded only by the Library index, so this hides the shared
-   base header on that page without changing base.html or any other route. */
+/* Pages that load this stylesheet intentionally replace the shared site header
+   with the standalone navigation without changing base.html or unrelated routes. */
 .site-header {
     display: none;
 }
