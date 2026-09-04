@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.core.models import ReputationHistory
+from apps.core.models import Reputation, ReputationHistory
 from apps.core.services import ReputationService
 from apps.evidence.models import Claim
 from apps.evidence.services import EvidenceService, PredictionLedgerService
@@ -116,3 +116,33 @@ class ReputationTests(TestCase):
             ReputationHistory.objects.filter(user=self.user).count(),
             history_count,
         )
+
+    def test_reputation_endpoint_without_cache_row_does_not_write(self):
+        self.assertFalse(Reputation.objects.filter(user=self.user).exists())
+        reputation_count = Reputation.objects.count()
+        history_count = ReputationHistory.objects.count()
+        self.client.force_login(self.user)
+
+        response = self.client.get(
+            reverse("core:reputation-detail", kwargs={"user_id": self.user.pk})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertFalse(payload["persisted"])
+        self.assertIsNone(payload["last_updated"])
+        self.assertEqual(Reputation.objects.count(), reputation_count)
+        self.assertEqual(ReputationHistory.objects.count(), history_count)
+
+    def test_demo_dashboard_without_cache_row_does_not_write_reputation(self):
+        self.assertFalse(Reputation.objects.filter(user=self.user).exists())
+        reputation_count = Reputation.objects.count()
+        history_count = ReputationHistory.objects.count()
+
+        response = self.client.get(
+            reverse("graph:demo-dashboard", kwargs={"claim_id": self.claim.pk})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Reputation.objects.count(), reputation_count)
+        self.assertEqual(ReputationHistory.objects.count(), history_count)
