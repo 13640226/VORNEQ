@@ -2,7 +2,14 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from apps.evidence.models import Claim, Critique, EvidenceRelation, EvidenceState
+from apps.evidence.models import (
+    ChangeCondition,
+    Claim,
+    ConditionObservation,
+    Critique,
+    EvidenceRelation,
+    EvidenceState,
+)
 from apps.evidence.services import ContentVersionService, EvidenceService, RelationService
 from library.models import AudioItem, LibraryItem
 
@@ -129,6 +136,56 @@ class TruthGraphServiceTests(TestCase):
         self.assertEqual(response.status_code, 200)
         response_codes = {gap["code"] for gap in response.json()["gaps"]}
         self.assertEqual(codes, response_codes)
+
+    def test_gap_finder_treats_not_observed_as_unresolved(self):
+        condition = ChangeCondition.objects.create(
+            claim=self.claim,
+            description="Independent replication remains inconclusive.",
+        )
+        ConditionObservation.objects.create(
+            condition=condition,
+            observed_state=ConditionObservation.ObservedState.NOT_OBSERVED,
+            observer_actor="regression-test",
+        )
+
+        result = EvidenceGapFinderService.build(self.claim)
+        codes = {gap["code"] for gap in result["gaps"]}
+
+        self.assertIn("unresolved_change_condition", codes)
+
+    def test_gap_finder_unresolved_states_and_met_control(self):
+        condition = ChangeCondition.objects.create(
+            claim=self.claim,
+            description="A defined threshold may trigger reassessment.",
+        )
+        unresolved_states = (
+            ConditionObservation.ObservedState.UNKNOWN,
+            ConditionObservation.ObservedState.NOT_OBSERVED,
+            ConditionObservation.ObservedState.POSSIBLY_MET,
+            ConditionObservation.ObservedState.DISPUTED,
+        )
+
+        for state in unresolved_states:
+            with self.subTest(state=state):
+                condition.observations.all().delete()
+                ConditionObservation.objects.create(
+                    condition=condition,
+                    observed_state=state,
+                    observer_actor="regression-test",
+                )
+                result = EvidenceGapFinderService.build(self.claim)
+                codes = {gap["code"] for gap in result["gaps"]}
+                self.assertIn("unresolved_change_condition", codes)
+
+        condition.observations.all().delete()
+        ConditionObservation.objects.create(
+            condition=condition,
+            observed_state=ConditionObservation.ObservedState.MET,
+            observer_actor="regression-test",
+        )
+        result = EvidenceGapFinderService.build(self.claim)
+        codes = {gap["code"] for gap in result["gaps"]}
+        self.assertNotIn("unresolved_change_condition", codes)
 
     def test_knowledge_diff_records_baseline_and_changed_claim(self):
         updated = ContentVersionService.update_claim(
