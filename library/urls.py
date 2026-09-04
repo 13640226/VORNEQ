@@ -5,6 +5,7 @@ URL configuration for the Saman Kherad Library.
 
 Routes:
 - /library/
+- /library/audio/<pk>/
 - /library/<slug>/
 - /library/<slug>/read/
 """
@@ -35,6 +36,17 @@ urlpatterns = [
         "",
         views.index,
         name="index",
+    ),
+
+
+    # --------------------------------------------------------
+    # Audio detail
+    # --------------------------------------------------------
+
+    path(
+        "audio/<int:pk>/",
+        views.audio_detail,
+        name="audio_detail",
     ),
 
 

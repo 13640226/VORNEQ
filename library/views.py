@@ -8,6 +8,7 @@ Includes:
 - Search and filtering
 - Pagination
 - Multilingual document rendering
+- Audio detail rendering
 - Protected in-browser PDF reader
 """
 
@@ -21,7 +22,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 from django.utils.translation import get_language
 
-from .models import LibraryItem
+from .models import AudioItem, LibraryItem
 
 
 # ============================================================
@@ -200,6 +201,32 @@ def index(request):
     return render(
         request,
         "library/index.html",
+        context,
+    )
+
+
+# ============================================================
+# AUDIO DETAIL
+# ============================================================
+
+def audio_detail(request, pk):
+    """
+    Display one published audio item.
+    """
+
+    audio = get_object_or_404(
+        AudioItem,
+        pk=pk,
+        is_published=True,
+    )
+
+    context = {
+        "audio": audio,
+    }
+
+    return render(
+        request,
+        "library/audio_detail.html",
         context,
     )
 
