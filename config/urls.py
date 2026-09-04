@@ -75,6 +75,14 @@ urlpatterns += i18n_patterns(
         include("marketplace.urls"),
     ),
 
+    # --------------------------------------------------------
+    # Truth Graph / Pilot Decision Workspace
+    # --------------------------------------------------------
+    path(
+        "graph/",
+        include("apps.graph.urls"),
+    ),
+
     # زبان پیش‌فرض هم prefix داشته باشد:
     # /fa/
     # /en/
