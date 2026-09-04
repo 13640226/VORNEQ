@@ -1296,6 +1296,62 @@
 
     <section
         class="philosophy-section"
+        aria-label="در یک نگاه"
+    >
+
+        <a
+            href="{% url 'library:index' %}"
+            class="philosophy-item"
+            style="min-height: 150px; padding: 24px; text-decoration: none;"
+        >
+            <div class="item-number" aria-hidden="true">[ LIB ]</div>
+            <h2>آخرین کتابخانه</h2>
+            <p>
+                {% if library_items %}
+                    {{ library_items.0.title }}
+                {% else %}
+                    هنوز موردی منتشر نشده است.
+                {% endif %}
+            </p>
+        </a>
+
+        <a
+            href="{% url 'library:index' %}"
+            class="philosophy-item"
+            style="min-height: 150px; padding: 24px; text-decoration: none;"
+        >
+            <div class="item-number" aria-hidden="true">[ AUD ]</div>
+            <h2>آخرین صوت</h2>
+            <p>
+                {% if audio_items %}
+                    {{ audio_items.0.title }}
+                {% else %}
+                    هنوز محتوای صوتی منتشر نشده است.
+                {% endif %}
+            </p>
+        </a>
+
+        <a
+            href="{% url 'marketplace:index' %}"
+            class="philosophy-item"
+            style="min-height: 150px; padding: 24px; text-decoration: none;"
+        >
+            <div class="item-number" aria-hidden="true">[ MKT ]</div>
+            <h2>تازه‌های بازار</h2>
+            <p>
+                {% if approved_products %}
+                    {{ approved_products.0.title }}
+                {% else %}
+                    هنوز محصولی منتشر نشده است.
+                {% endif %}
+            </p>
+        </a>
+
+    </section>
+
+
+    <section
+        class="philosophy-section"
         aria-label="اصول بنیادین سامان خرد"
     >
 
