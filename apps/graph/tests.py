@@ -1,10 +1,11 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from apps.evidence.models import Claim, EvidenceRelation, EvidenceState
+from apps.evidence.models import Claim, Critique, EvidenceRelation, EvidenceState
 from apps.evidence.services import EvidenceService, RelationService
 from library.models import AudioItem, LibraryItem
 
+from .analysis import DisagreementMapService, EvidenceGapFinderService
 from .models import Edge, Node
 from .services import TruthGraphService
 
@@ -85,7 +86,44 @@ class TruthGraphServiceTests(TestCase):
         self.assertEqual(Node.objects.count(), 0)
         self.assertEqual(Edge.objects.count(), 0)
 
-    def test_decision_package_endpoint_includes_state_and_truth_graph(self):
+    def test_disagreement_map_uses_explicit_human_category(self):
+        Critique.objects.create(
+            relation=self.relation,
+            category=Critique.Category.METHOD,
+            body="The cycle-test protocol does not match the claimed operating conditions.",
+        )
+
+        result = DisagreementMapService.build(self.claim)
+
+        self.assertEqual(result["category_counts"][Critique.Category.METHOD], 1)
+        self.assertEqual(result["category_counts"][Critique.Category.DATA], 0)
+        self.assertIn("not automatically assigned", result["note"])
+
+        response = self.client.get(
+            reverse("graph:disagreement-map", kwargs={"claim_id": self.claim.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["category_counts"][Critique.Category.METHOD],
+            1,
+        )
+
+    def test_evidence_gap_finder_flags_one_sided_single_evidence(self):
+        result = EvidenceGapFinderService.build(self.claim)
+        codes = {gap["code"] for gap in result["gaps"]}
+
+        self.assertIn("no_contradicting_evidence", codes)
+        self.assertIn("single_evidence_dependency", codes)
+        self.assertNotIn("missing_provenance", codes)
+
+        response = self.client.get(
+            reverse("graph:evidence-gaps", kwargs={"claim_id": self.claim.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        response_codes = {gap["code"] for gap in response.json()["gaps"]}
+        self.assertEqual(codes, response_codes)
+
+    def test_decision_package_endpoint_includes_analysis_layers(self):
         response = self.client.get(
             reverse("graph:decision-package", kwargs={"claim_id": self.claim.pk})
         )
@@ -98,3 +136,5 @@ class TruthGraphServiceTests(TestCase):
         )
         self.assertEqual(payload["truth_graph"]["root"], f"claim:{self.claim.pk}")
         self.assertEqual(len(payload["evidence"]), 1)
+        self.assertIn("disagreement_map", payload)
+        self.assertIn("evidence_gaps", payload)
