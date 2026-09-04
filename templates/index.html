@@ -1316,7 +1316,7 @@
         </a>
 
         <a
-            href="{% url 'library:index' %}"
+            href="{% if audio_items %}{% url 'library:audio_detail' audio_items.0.pk %}{% else %}{% url 'library:index' %}{% endif %}"
             class="philosophy-item"
             style="min-height: 150px; padding: 24px; text-decoration: none;"
         >
