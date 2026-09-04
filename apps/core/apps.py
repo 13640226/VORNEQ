@@ -1,11 +1,11 @@
 from django.apps import AppConfig
 
 
-class EvidenceConfig(AppConfig):
+class CoreConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "apps.evidence"
-    label = "evidence"
-    verbose_name = "Evidence Domain"
+    name = "apps.core"
+    label = "core"
+    verbose_name = "Core Reputation"
 
     def ready(self):
         from . import signals  # noqa: F401

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}DeepTech Decision Demo — Saman Kherad{% endblock %}
+
+{% block extra_head %}
+<style>
+.demo-shell{width:min(1380px,calc(100% - 40px));margin:0 auto;padding:48px 0 72px}.demo-kicker{color:#d5ae76;font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.demo-title{max-width:1050px;margin:12px 0 10px;font:700 clamp(30px,4vw,56px)/1.12 Georgia,serif;color:#f4eee4}.demo-sub{color:rgba(238,231,219,.6);max-width:900px;line-height:1.8}.demo-badge{display:inline-block;margin-top:14px;padding:7px 10px;border:1px solid rgba(213,174,118,.35);color:#d9bd91;font-size:12px}.demo-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;margin-top:30px}.panel{grid-column:span 6;padding:22px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.025)}.panel.wide{grid-column:1/-1}.panel h2{margin:0 0 16px;font-size:17px}.metric{font-size:34px;font-weight:800}.muted{color:rgba(238,231,219,.55);font-size:13px;line-height:1.7}.item{padding:14px 0;border-top:1px solid rgba(255,255,255,.07)}.item:first-of-type{border-top:0}.tag{display:inline-block;padding:4px 7px;margin-right:6px;border:1px solid rgba(255,255,255,.12);font-size:11px;color:#d7c7b0}.support{border-color:rgba(118,180,133,.35)}.contradict{border-color:rgba(210,117,117,.4)}.context{border-color:rgba(130,155,205,.4)}.gap-high{color:#e1a4a4}.gap-medium{color:#dcc28d}.diff-before,.diff-after{padding:12px;margin-top:8px;background:rgba(255,255,255,.025);white-space:pre-wrap}.diff-before{border-left:3px solid rgba(210,117,117,.6)}.diff-after{border-left:3px solid rgba(118,180,133,.6)}.score-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}.score{padding:10px;background:rgba(255,255,255,.025)}.score b{display:block;font-size:20px;margin-top:4px}.graph-row{display:flex;gap:10px;flex-wrap:wrap}.node{padding:9px 12px;border:1px solid rgba(255,255,255,.12);font-size:12px}.warning{padding:12px 14px;border:1px solid rgba(213,174,118,.25);background:rgba(213,174,118,.05);color:#d8c3a3;font-size:12px;line-height:1.7}@media(max-width:900px){.panel{grid-column:1/-1}.score-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="demo-shell">
+  <div class="demo-kicker">DeepTech diligence demo</div>
+  <h1 class="demo-title">{{ claim.claim_text }}</h1>
+  <p class="demo-sub">{{ claim.scope }} · A read-only presentation of the canonical evidence stack, disagreement structure, evidence gaps, knowledge history, forecasts and transparent reputation signals.</p>
+  <span class="demo-badge">Illustrative synthetic scenario — not a claim about named real-world publications</span>
+
+  <div class="demo-grid">
+    <section class="panel">
+      <h2>Evidence State</h2>
+      <div class="metric">{{ package.evidence_state.state }}</div>
+      <p class="muted">{{ package.evidence_state.evidence_count }} distinct evidence items · {{ package.evidence_state.supporting_count }} supporting · {{ package.evidence_state.contradicting_count }} contradicting</p>
+    </section>
+
+    <section class="panel">
+      <h2>Evidence Gaps</h2>
+      <div class="metric">{{ gaps.gap_count }}</div>
+      {% for gap in gaps.gaps %}
+        <div class="item"><span class="tag gap-{{ gap.severity }}">{{ gap.severity }}</span> {{ gap.message }}</div>
+      {% empty %}<p class="muted">No deterministic completeness gaps detected.</p>{% endfor %}
+    </section>
+
+    <section class="panel wide">
+      <h2>Evidence + Provenance</h2>
+      {% for item in package.evidence %}
+        <div class="item">
+          <span class="tag {% if item.relation == 'supports' %}support{% elif item.relation == 'contradicts' %}contradict{% else %}context{% endif %}">{{ item.relation }}</span>
+          {{ item.content }}
+          <div class="muted">{{ item.relation_basis }}</div>
+          {% for step in item.provenance %}<div class="muted">↳ {{ step.source_type }} · {{ step.source_ref }}</div>{% endfor %}
+        </div>
+      {% endfor %}
+    </section>
+
+    <section class="panel">
+      <h2>Disagreement Map</h2>
+      {% for critique in disagreements.categories.data %}<div class="item"><span class="tag">data</span>{{ critique.body }}</div>{% endfor %}
+      {% for critique in disagreements.categories.method %}<div class="item"><span class="tag">method</span>{{ critique.body }}</div>{% endfor %}
+      {% for critique in disagreements.categories.interpretation %}<div class="item"><span class="tag">interpretation</span>{{ critique.body }}</div>{% endfor %}
+      {% for critique in disagreements.categories.definition %}<div class="item"><span class="tag">definition</span>{{ critique.body }}</div>{% endfor %}
+      {% for critique in disagreements.categories.other %}<div class="item"><span class="tag">other</span>{{ critique.body }}</div>{% endfor %}
+      <p class="muted">Contradicting evidence remains separate from human disagreement categories.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Truth Graph</h2>
+      <div class="graph-row">
+        {% for node in graph.nodes %}<span class="node">{{ node.type|default:node.node_type }} · {{ node.label }}</span>{% endfor %}
+      </div>
+      <p class="muted">{{ graph.nodes|length }} nodes · {{ graph.edges|length }} edges · generated transiently with no GET-time projection write.</p>
+    </section>
+
+    <section class="panel wide">
+      <h2>Knowledge Diff</h2>
+      {% if latest_diff %}
+        <p class="muted">Version {{ latest_diff.from_version }} → {{ latest_diff.to_version }} · changed: {{ latest_diff.changed_fields|join:", " }}</p>
+        {% for field in latest_diff.fields %}{% if field.changed %}
+          <div class="diff-before">− {{ field.before }}</div>
+          <div class="diff-after">+ {{ field.after }}</div>
+        {% endif %}{% endfor %}
+      {% else %}<p class="muted">A second version is required before a diff is available.</p>{% endif %}
+    </section>
+
+    <section class="panel">
+      <h2>Prediction Ledger</h2>
+      {% for prediction in predictions %}
+        <div class="item"><strong>{{ prediction.probability|floatformat:0 }}%</strong> · {{ prediction.event_statement }}<div class="muted">{{ prediction.rationale }}</div>{% if prediction.resolution %}<div class="muted">Brier {{ prediction.resolution.brier_score|floatformat:3 }}</div>{% else %}<div class="muted">Pending resolution · {{ prediction.resolution_date }}</div>{% endif %}</div>
+      {% empty %}<p class="muted">No forecasts recorded.</p>{% endfor %}
+      <div class="warning">Brier scores are intentionally not fabricated before the forecast resolution date.</div>
+    </section>
+
+    <section class="panel">
+      <h2>Reputation</h2>
+      {% for rep in reputations %}
+        <div class="item"><strong>{{ rep.username }}</strong><div class="score-grid"><div class="score">Prediction<b>{{ rep.scores.prediction_accuracy|floatformat:2 }}</b></div><div class="score">Source<b>{{ rep.scores.source_quality|floatformat:2 }}</b></div><div class="score">Overall<b>{{ rep.scores.overall|floatformat:2 }}</b></div><div class="score">History<b>{{ rep.history|length }}</b></div></div></div>
+      {% endfor %}
+      <p class="muted">Only defensible dimensions are scored automatically; unsupported dimensions remain unscored.</p>
+    </section>
+
+    <section class="panel wide">
+      <h2>Decision Package</h2>
+      <p class="muted">Portable read model available as JSON at the Decision Package endpoint. It preserves the distinction between evidence, disagreement, uncertainty and unresolved change conditions rather than issuing a truth verdict.</p>
+    </section>
+  </div>
+</section>
+{% endblock %}

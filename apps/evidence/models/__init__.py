@@ -5,6 +5,11 @@ from .relation import EvidenceRelation
 from .condition import ChangeCondition, ConditionObservation
 from .review import ReviewRecord
 from .snapshot import AssessmentSnapshot
+from .perspective import Perspective, ClaimPerspective
+from .critique import Critique
+from .evidence_state import EvidenceState
+from .content_version import ContentVersion
+from .prediction import Prediction, PredictionResolution
 
 
 __all__ = [
@@ -16,4 +21,11 @@ __all__ = [
     "ConditionObservation",
     "ReviewRecord",
     "AssessmentSnapshot",
+    "Perspective",
+    "ClaimPerspective",
+    "Critique",
+    "EvidenceState",
+    "ContentVersion",
+    "Prediction",
+    "PredictionResolution",
 ]
