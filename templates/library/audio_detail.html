@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ audio.title }} — سامان خرد{% endblock %}
+
+{% block meta %}
+<meta name="description" content="{{ audio.description|default:audio.title|truncatechars:160 }}">
+{% endblock %}
+
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
+    <style>
+        .audio-detail {
+            min-height: calc(100vh - 72px);
+            padding: clamp(48px, 8vw, 96px) 24px;
+            direction: rtl;
+            color: #e3ddd7;
+            background: #070505;
+        }
+
+        .audio-detail__inner {
+            width: min(760px, 100%);
+            margin-inline: auto;
+        }
+
+        .audio-detail__eyebrow {
+            margin: 0 0 16px;
+            color: #91847b;
+            font: 700 10px/1.5 "Courier New", monospace;
+            letter-spacing: 0.12em;
+        }
+
+        .audio-detail h1 {
+            margin: 0 0 20px;
+            color: #b23a35;
+            font-size: clamp(2rem, 5vw, 3.4rem);
+            line-height: 1.3;
+        }
+
+        .audio-detail__description {
+            margin: 0 0 32px;
+            color: #cfc2b5;
+            line-height: 2;
+        }
+
+        .audio-detail__player {
+            padding: 22px;
+            border: 1px solid rgba(132, 40, 40, 0.28);
+            background: #100b0b;
+        }
+
+        .audio-detail audio {
+            width: 100%;
+        }
+
+        .audio-detail__empty {
+            margin: 0;
+            color: #91847b;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% include "partials/_standalone_nav.html" %}
+
+    <main class="audio-detail" id="main">
+        <div class="audio-detail__inner">
+            <p class="audio-detail__eyebrow">LIBRARY / AUDIO</p>
+            <h1>{{ audio.title }}</h1>
+
+            {% if audio.description %}
+                <div class="audio-detail__description">
+                    {{ audio.description|linebreaks }}
+                </div>
+            {% endif %}
+
+            <div class="audio-detail__player">
+                {% if audio.audio_file %}
+                    <audio controls preload="metadata">
+                        <source src="{{ audio.audio_file.url }}" type="{{ audio.mime_type|default:'audio/mpeg' }}">
+                        مرورگر شما از پخش صوت پشتیبانی نمی‌کند.
+                    </audio>
+                {% else %}
+                    <p class="audio-detail__empty">فایل صوتی برای این مورد در دسترس نیست.</p>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+{% endblock %}
