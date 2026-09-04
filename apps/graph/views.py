@@ -3,7 +3,11 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
 
 from apps.evidence.models import Claim, ContentVersion
-from apps.evidence.services import ContentVersionService, DecisionPackageService
+from apps.evidence.services import (
+    ContentVersionService,
+    DecisionPackageService,
+    PredictionLedgerService,
+)
 
 from .analysis import DisagreementMapService, EvidenceGapFinderService
 from .services import TruthGraphService
@@ -47,6 +51,18 @@ def knowledge_diff(request, claim_id, from_version, to_version):
 
 
 @require_GET
+def prediction_ledger(request, claim_id):
+    claim = get_object_or_404(Claim, pk=claim_id)
+    return JsonResponse(
+        {
+            "claim_id": str(claim.id),
+            "predictions": PredictionLedgerService.ledger(claim),
+            "scoring_summary": PredictionLedgerService.scoring_summary(claim=claim),
+        }
+    )
+
+
+@require_GET
 def decision_package(request, claim_id):
     claim = get_object_or_404(Claim, pk=claim_id)
     package = DecisionPackageService.build(claim)
@@ -54,4 +70,8 @@ def decision_package(request, claim_id):
     package["disagreement_map"] = DisagreementMapService.build(claim)
     package["evidence_gaps"] = EvidenceGapFinderService.build(claim)
     package["knowledge_history"] = ContentVersionService.history(claim)
+    package["prediction_ledger"] = {
+        "predictions": PredictionLedgerService.ledger(claim),
+        "scoring_summary": PredictionLedgerService.scoring_summary(claim=claim),
+    }
     return JsonResponse(package)
