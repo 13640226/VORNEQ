@@ -63,6 +63,7 @@ def index(request):
     - multilingual search
     - content-type filtering
     - pagination
+    - unified audio search when no content-type filter is active
     """
 
     language = get_language() or "fa"
@@ -92,6 +93,8 @@ def index(request):
         "-created_at",
     )[:5]
 
+    audio_results = None
+
 
     # --------------------------------------------------------
     # Content-type filter
@@ -106,6 +109,9 @@ def index(request):
         items = items.filter(
             item_type=item_type,
         )
+
+    else:
+        item_type = ""
 
 
     # --------------------------------------------------------
@@ -161,6 +167,20 @@ def index(request):
             )
         )
 
+        if not item_type:
+            audio_results = AudioItem.objects.filter(
+                is_published=True,
+            ).filter(
+                Q(
+                    title__icontains=query,
+                )
+                | Q(
+                    description__icontains=query,
+                )
+            ).order_by(
+                "-created_at",
+            )
+
 
     # --------------------------------------------------------
     # Ordering
@@ -196,6 +216,7 @@ def index(request):
         "paginator": paginator,
 
         "audio_items": audio_items,
+        "audio_results": audio_results,
 
         "query": query,
         "selected_type": item_type,
