@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -10,9 +11,15 @@ from apps.evidence.services import PredictionLedgerService
 
 class PredictionLedgerEndpointTests(TestCase):
     def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="prediction-endpoint-tester",
+            password="test-pass-123",
+        )
+        self.client.force_login(self.user)
         self.claim = Claim.objects.create(
             claim_text="A manufacturing process will achieve 95% yield in the pilot line.",
             scope="technical diligence pilot",
+            created_by=self.user,
         )
         self.due = timezone.now() + timedelta(days=7)
         self.prediction = PredictionLedgerService.create(
