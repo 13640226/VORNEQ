@@ -42,7 +42,7 @@ class TavonEvidenceExtensionTests(TestCase):
         self.assertEqual(state.contradicting_count, 1)
         self.assertEqual(state.evidence_count, 2)
 
-        RelationService.retire(supporting_relation)
+        RelationService.retire(relation=supporting_relation)
         state.refresh_from_db()
         self.assertEqual(state.state, EvidenceState.State.CONTRADICTING_ONLY)
         self.assertEqual(state.evidence_count, 1)
