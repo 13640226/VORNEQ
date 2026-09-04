@@ -21,6 +21,7 @@ class EndToEndDemoTests(TestCase):
         self.assertEqual(Prediction.objects.filter(claim=claim).count(), 2)
         self.assertEqual(claim.change_conditions.count(), 1)
 
+        self.client.force_login(claim.created_by)
         response = self.client.get(
             reverse("graph:demo-dashboard", kwargs={"claim_id": claim.pk})
         )
