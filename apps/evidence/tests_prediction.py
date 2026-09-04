@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils import timezone
 
-from apps.evidence.models import Claim
+from apps.evidence.models import Claim, Prediction
 from apps.evidence.services import PredictionLedgerService
 
 
@@ -54,6 +54,31 @@ class PredictionLedgerTests(TestCase):
                 outcome_occurred=False,
                 resolved_at=resolution_date + timedelta(days=1),
             )
+
+    def test_resolve_rechecks_database_when_caller_instance_is_stale(self):
+        resolution_date = timezone.now() + timedelta(days=1)
+        prediction = PredictionLedgerService.create(
+            claim=self.claim,
+            event_statement="A stale caller cannot create a second resolution.",
+            probability="0.5000",
+            resolution_date=resolution_date,
+        )
+        stale_prediction = Prediction.objects.get(pk=prediction.pk)
+
+        PredictionLedgerService.resolve(
+            prediction=prediction,
+            outcome_occurred=True,
+            resolved_at=resolution_date + timedelta(minutes=1),
+        )
+
+        with self.assertRaisesMessage(ValidationError, "Prediction has already been resolved."):
+            PredictionLedgerService.resolve(
+                prediction=stale_prediction,
+                outcome_occurred=False,
+                resolved_at=resolution_date + timedelta(minutes=2),
+            )
+
+        self.assertEqual(Prediction.objects.get(pk=prediction.pk).resolution.outcome_occurred, True)
 
     def test_scoring_summary_uses_resolved_predictions_only(self):
         due = timezone.now() + timedelta(days=1)
