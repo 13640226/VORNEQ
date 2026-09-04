@@ -9,6 +9,13 @@ from .relation import EvidenceRelation
 
 
 class Critique(models.Model):
+    class Category(models.TextChoices):
+        DATA = "data", "Data"
+        DEFINITION = "definition", "Definition"
+        METHOD = "method", "Method"
+        INTERPRETATION = "interpretation", "Interpretation"
+        OTHER = "other", "Other"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     claim = models.ForeignKey(
         Claim,
@@ -30,6 +37,11 @@ class Critique(models.Model):
         null=True,
         blank=True,
         related_name="replies",
+    )
+    category = models.CharField(
+        max_length=20,
+        choices=Category.choices,
+        default=Category.OTHER,
     )
     body = models.TextField()
     created_by = models.ForeignKey(
