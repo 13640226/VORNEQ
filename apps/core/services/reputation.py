@@ -166,11 +166,43 @@ class ReputationService:
 
     @staticmethod
     def snapshot(user, history_limit=25):
-        reputation, _ = Reputation.objects.get_or_create(user=user)
-        history = ReputationHistory.objects.filter(user=user)[:history_limit]
-        return {
-            "user_id": user.pk,
-            "scores": {
+        """Return a pure read/derive reputation snapshot without creating cache rows."""
+        reputation = Reputation.objects.filter(user=user).first()
+
+        if reputation is None:
+            from apps.evidence.models import ProvenanceStep
+
+            prediction_summary = PredictionLedgerService.scoring_summary(user=user)
+            prediction_accuracy = prediction_summary["mean_accuracy_score"]
+            if prediction_accuracy is None:
+                prediction_accuracy = 0.0
+
+            provenance = ProvenanceStep.objects.filter(
+                evidence_id=OuterRef("pk"),
+                source_ref__gt="",
+                source_type__gt="",
+            )
+            authored = Evidence.objects.filter(created_by=user).annotate(
+                has_complete_provenance=Exists(provenance)
+            )
+            total = authored.count()
+            complete = authored.filter(has_complete_provenance=True).count()
+            source_quality = (complete / total) if total else 0.0
+
+            scores = {
+                "accuracy": 0.0,
+                "corrigibility": 0.0,
+                "source_quality": source_quality,
+                "fair_critique": 0.0,
+                "domain_expertise": 0.0,
+                "prediction_accuracy": prediction_accuracy,
+                "social_behavior": 0.0,
+            }
+            scores["overall"] = sum(scores.values()) / 7.0
+            last_updated = None
+            persisted = False
+        else:
+            scores = {
                 "accuracy": reputation.accuracy_score,
                 "corrigibility": reputation.corrigibility_score,
                 "source_quality": reputation.source_quality_score,
@@ -179,8 +211,16 @@ class ReputationService:
                 "prediction_accuracy": reputation.prediction_accuracy_score,
                 "social_behavior": reputation.social_behavior_score,
                 "overall": reputation.overall_score,
-            },
-            "last_updated": reputation.last_updated.isoformat(),
+            }
+            last_updated = reputation.last_updated.isoformat()
+            persisted = True
+
+        history = ReputationHistory.objects.filter(user=user)[:history_limit]
+        return {
+            "user_id": user.pk,
+            "scores": scores,
+            "last_updated": last_updated,
+            "persisted": persisted,
             "history": [
                 {
                     "dimension": item.dimension,
