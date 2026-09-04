@@ -78,10 +78,11 @@ def demo_dashboard(request, claim_id):
         row["created_by"] for row in prediction_rows if row.get("created_by") is not None
     )
     User = claim._meta.get_field("created_by").remote_field.model
-    reputations = [
-        ReputationService.snapshot(user)
-        for user in User.objects.filter(pk__in=related_user_ids).order_by("username")
-    ]
+    reputations = []
+    for user in User.objects.filter(pk__in=related_user_ids).order_by("username"):
+        snapshot = ReputationService.snapshot(user)
+        snapshot["username"] = user.get_username()
+        reputations.append(snapshot)
 
     context = {
         "claim": claim,
