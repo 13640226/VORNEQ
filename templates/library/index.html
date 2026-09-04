@@ -446,6 +446,73 @@
         {% endif %}
 
 
+        <!-- =================================================
+             AUDIO DISCOVERY
+        ================================================== -->
+
+        <div class="results-summary">
+            <p>{% trans "آخرین صوت‌ها" %}</p>
+        </div>
+
+        <div class="archive-grid">
+
+            {% for audio in audio_items %}
+
+                <article class="archive-card archive-card--library">
+
+                    <div class="archive-card__body">
+
+                        <div class="archive-card__meta">
+                            <span>{% trans "محتوای صوتی" %}</span>
+                        </div>
+
+                        <h2 class="archive-card__title">
+                            <a
+                                href="{% url 'library:audio_detail' audio.pk %}"
+                                class="archive-card__link"
+                            >
+                                {{ audio.title }}
+                            </a>
+                        </h2>
+
+                        {% if audio.description %}
+                            <p class="archive-card__description">
+                                {{ audio.description|striptags|truncatewords:20 }}
+                            </p>
+                        {% endif %}
+
+                        <div class="archive-card__footer">
+                            <a
+                                href="{% url 'library:audio_detail' audio.pk %}"
+                                class="archive-card__read-more"
+                            >
+                                {% trans "شنیدن" %}
+                                <span aria-hidden="true">←</span>
+                            </a>
+
+                            <div class="archive-card__badges">
+                                <span class="archive-card__badge">AUDIO</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </article>
+
+            {% empty %}
+
+                <article class="archive-card archive-card--empty">
+                    <div class="archive-card__body">
+                        <p class="archive-card__meta">AUDIO / EMPTY</p>
+                        <h2>{% trans "هیچ محتوای صوتی منتشر نشده است" %}</h2>
+                    </div>
+                </article>
+
+            {% endfor %}
+
+        </div>
+
+
     </div>
 
 </section>
