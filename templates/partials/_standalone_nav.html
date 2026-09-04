@@ -1,0 +1,28 @@
+{% load i18n %}
+<nav class="standalone-nav" aria-label="{% trans 'ناوبری اصلی' %}">
+    <div class="standalone-nav__brand">
+        <a href="/{% if request.LANGUAGE_CODE %}{{ request.LANGUAGE_CODE }}/{% endif %}" class="standalone-nav__brand-link">
+            <span class="standalone-nav__logo" aria-hidden="true">📚</span>
+            <span class="standalone-nav__title">{% trans "سامان خرد" %}</span>
+        </a>
+    </div>
+
+    <ul class="standalone-nav__menu">
+        <li class="standalone-nav__item">
+            <a href="/{% if request.LANGUAGE_CODE %}{{ request.LANGUAGE_CODE }}/{% endif %}" class="standalone-nav__link {% if request.path == '/fa/' %}active{% endif %}">{% trans "خانه" %}</a>
+        </li>
+        <li class="standalone-nav__item">
+            <a href="/{% if request.LANGUAGE_CODE %}{{ request.LANGUAGE_CODE }}/{% endif %}library/" class="standalone-nav__link {% if '/library/' in request.path %}active{% endif %}">{% trans "کتابخانه" %}</a>
+        </li>
+        <li class="standalone-nav__item">
+            <a href="/{% if request.LANGUAGE_CODE %}{{ request.LANGUAGE_CODE }}/{% endif %}marketplace/" class="standalone-nav__link {% if '/marketplace/' in request.path %}active{% endif %}">{% trans "بازار" %}</a>
+        </li>
+        <li class="standalone-nav__item">
+            {% if user.is_authenticated %}
+                <a href="{% url 'account_logout' %}" class="standalone-nav__link standalone-nav__link--outline">{% trans "خروج" %}</a>
+            {% else %}
+                <a href="{% url 'account_login' %}" class="standalone-nav__link standalone-nav__link--outline">{% trans "ورود" %}</a>
+            {% endif %}
+        </li>
+    </ul>
+</nav>
