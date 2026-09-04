@@ -9,13 +9,13 @@
 
     <ul class="standalone-nav__menu">
         <li class="standalone-nav__item">
-            <a href="/{% if request.LANGUAGE_CODE %}{{ request.LANGUAGE_CODE }}/{% endif %}" class="standalone-nav__link {% if request.path == '/fa/' %}active{% endif %}">{% trans "خانه" %}</a>
+            <a href="/{% if request.LANGUAGE_CODE %}{{ request.LANGUAGE_CODE }}/{% endif %}" class="standalone-nav__link {% if request.path == '/fa/' %}active{% endif %}"{% if request.path == '/fa/' %} aria-current="page"{% endif %}>{% trans "خانه" %}</a>
         </li>
         <li class="standalone-nav__item">
-            <a href="/{% if request.LANGUAGE_CODE %}{{ request.LANGUAGE_CODE }}/{% endif %}library/" class="standalone-nav__link {% if '/library/' in request.path %}active{% endif %}">{% trans "کتابخانه" %}</a>
+            <a href="/{% if request.LANGUAGE_CODE %}{{ request.LANGUAGE_CODE }}/{% endif %}library/" class="standalone-nav__link {% if '/library/' in request.path %}active{% endif %}"{% if '/library/' in request.path %} aria-current="page"{% endif %}>{% trans "کتابخانه" %}</a>
         </li>
         <li class="standalone-nav__item">
-            <a href="/{% if request.LANGUAGE_CODE %}{{ request.LANGUAGE_CODE }}/{% endif %}marketplace/" class="standalone-nav__link {% if '/marketplace/' in request.path %}active{% endif %}">{% trans "بازار" %}</a>
+            <a href="/{% if request.LANGUAGE_CODE %}{{ request.LANGUAGE_CODE }}/{% endif %}marketplace/" class="standalone-nav__link {% if '/marketplace/' in request.path %}active{% endif %}"{% if '/marketplace/' in request.path %} aria-current="page"{% endif %}>{% trans "بازار" %}</a>
         </li>
         <li class="standalone-nav__item">
             {% if user.is_authenticated %}
