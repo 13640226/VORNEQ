@@ -55,6 +55,10 @@ class MarketplaceViewTests(TestCase):
             username="testuser",
             password="testpass",
         )
+        self.other_user = User.objects.create_user(
+            username="otheruser",
+            password="testpass",
+        )
         self.product = Product.objects.create(
             seller=self.user,
             title="Test Product",
@@ -83,3 +87,30 @@ class MarketplaceViewTests(TestCase):
         self.client.force_login(self.user)
         response = self.client.get(reverse("marketplace:seller_dashboard"))
         self.assertEqual(response.status_code, 200)
+
+    def test_product_edit_owner_returns_200(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(
+            reverse("marketplace:product_edit", args=[self.product.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_product_edit_other_user_returns_404(self):
+        self.client.force_login(self.other_user)
+
+        response = self.client.get(
+            reverse("marketplace:product_edit", args=[self.product.pk])
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_product_edit_anonymous_redirects_to_login(self):
+        url = reverse("marketplace:product_edit", args=[self.product.pk])
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/accounts/login/", response.url)
+        self.assertIn("next=", response.url)
