@@ -33,6 +33,11 @@ urlpatterns = [
         name="prediction-ledger",
     ),
     path(
+        "claims/<uuid:claim_id>/demo/",
+        views.demo_dashboard,
+        name="demo-dashboard",
+    ),
+    path(
         "claims/<uuid:claim_id>/decision-package/",
         views.decision_package,
         name="decision-package",
