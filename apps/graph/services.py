@@ -20,6 +20,28 @@ class TruthGraphService:
         }
 
     @classmethod
+    def project_content_object(cls, *, obj, node_type, label, metadata=None):
+        """Project any supported Django object, including LibraryItem/AudioItem/User.
+
+        This is intentionally explicit: the graph is a rebuildable index and never
+        becomes the canonical owner of the referenced object's data.
+        """
+        if node_type not in Node.NodeType.values:
+            raise ValueError(f"Unsupported graph node type: {node_type!r}")
+
+        content_type = ContentType.objects.get_for_model(obj, for_concrete_model=False)
+        node, _ = Node.objects.update_or_create(
+            content_type=content_type,
+            object_id=str(obj.pk),
+            defaults={
+                "node_type": node_type,
+                "label": str(label)[:255],
+                "metadata": metadata or {},
+            },
+        )
+        return node
+
+    @classmethod
     def build_claim_graph(cls, claim: Claim):
         """Return a transient graph without writing to the database."""
         nodes = []
