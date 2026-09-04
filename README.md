@@ -21,4 +21,5 @@ python manage.py test
 
 - فلسفه و معماری
 - راهنمای راه‌اندازی
+- [راهنمای ناوبری ایزوله](docs/standalone-navigation.md)
 - گزارش Phase-0
