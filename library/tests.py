@@ -149,4 +149,4 @@ class UnifiedLibrarySearchTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.context["audio_results"].exists())
-        self.assertContains(response, "هیچ سندی یافت نشد")
+        self.assertContains(response, "موردی در کتابخانه یافت نشد")
