@@ -1,236 +1,52 @@
-{% load static %}
-
-<!DOCTYPE html>
-<html lang="fa" dir="rtl" data-theme="dark">
-
-<head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0">
-
-    <meta
-        name="description"
-        content="تکمیل ثبت‌نام با حساب خارجی — سامان خرد">
-
-    <title>
-        تکمیل ثبت‌نام — سامان خرد
-    </title>
-
-    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-    <link rel="stylesheet" href="{% static 'css/themes.css' %}">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    <link rel="stylesheet" href="{% static 'css/components.css' %}">
-    <link rel="stylesheet" href="{% static 'css/home.css' %}">
-</head>
-
-<body>
-
-<a
-    class="skip-link"
-    href="#main">
-    رفتن به محتوای اصلی
-</a>
-
-
-<header class="site-header">
-
-    <div class="site-header__inner">
-
-        <a
-            class="site-brand brand-lockup"
-            href="{% url 'home' %}"
-            aria-label="سامان خرد — صفحه اصلی">
-
-            <span
-                class="brand-sigil brand-sigil--small"
-                aria-hidden="true">
-
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-
-            </span>
-
-            <span class="site-brand__text">
-
-                <strong>
-                    سامان خرد
-                </strong>
-
-                <small>
-                    بنیادِ عریانِ پرسش
-                </small>
-
-            </span>
-
-        </a>
-
-    </div>
-
-</header>
-
-
-<main
-    id="main"
-    tabindex="-1">
-
-    <section class="manifest-section">
-
-        <div class="container">
-
-            <div class="section-heading">
-
-                <p class="section-code">
-                    ACCOUNT / SOCIAL SIGNUP
-                </p>
-
-                <div>
-
-                    <p class="section-kicker">
-                        ثبت‌نام با حساب خارجی
-                    </p>
-
-                    <h1>
-                        تکمیل ساخت حساب
-                    </h1>
-
-                    <p>
-                        برای تکمیل ثبت‌نام،
-                        اطلاعات لازم را بررسی و تأیید کنید.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div
-                class="archive-card"
-                style="max-width: 640px; margin-inline: auto;">
-
-                <div class="archive-card__body">
-
-                    {% if form.non_field_errors %}
-
-                        <div class="form-errors">
-
-                            {% for error in form.non_field_errors %}
-
-                                <p class="form-error">
-                                    {{ error }}
-                                </p>
-
-                            {% endfor %}
-
-                        </div>
-
-                    {% endif %}
-
-
-                    <form method="post">
-
-                        {% csrf_token %}
-
-                        {% for field in form %}
-
-                            <div class="form-field">
-
-                                <label for="{{ field.id_for_label }}">
-                                    {{ field.label }}
-                                </label>
-
-                                {{ field }}
-
-                                {% if field.help_text %}
-
-                                    <small>
-                                        {{ field.help_text }}
-                                    </small>
-
-                                {% endif %}
-
-                                {% for error in field.errors %}
-
-                                    <p class="form-error">
-                                        {{ error }}
-                                    </p>
-
-                                {% endfor %}
-
-                            </div>
-
-                        {% endfor %}
-
-
-                        {% if redirect_field_value %}
-
-                            <input
-                                type="hidden"
-                                name="{{ redirect_field_name }}"
-                                value="{{ redirect_field_value }}">
-
-                        {% endif %}
-
-
-                        <div class="manifest-actions">
-
-                            <button
-                                type="submit"
-                                class="btn btn--primary">
-
-                                تکمیل ثبت‌نام
-
-                            </button>
-
-                            <a
-                                href="{% url 'account_login' %}"
-                                class="btn btn--secondary">
-
-                                بازگشت به ورود
-
-                            </a>
-
-                        </div>
-
-                    </form>
-
-                </div>
-
-            </div>
-
-
-            <div class="manifest-actions">
-
-                <a
-                    href="{% url 'home' %}"
-                    class="btn btn--secondary">
-
-                    خانه
-
-                </a>
-
-            </div>
-
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Sign Up" %} — VORNEQ{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="account-shell">
+  <div class="account-card">
+    <p class="account-card__eyebrow">VORNEQ / ACCOUNT</p>
+    <h1 class="account-card__title">{% trans "Complete Your Sign Up" %}</h1>
+    <p class="account-card__subtitle">{% trans "Review the required details to finish creating your account." %}</p>
+
+    <form method="post" class="account-form">
+      {% csrf_token %}
+      {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+      {% endif %}
+
+      {% if form.non_field_errors %}
+        <div class="account-form__errors" role="alert">
+          {% for error in form.non_field_errors %}<p class="account-form__error">{{ error }}</p>{% endfor %}
         </div>
+      {% endif %}
 
-    </section>
+      <div class="account-form__fields">
+        {% for field in form %}
+          {% if field.is_hidden %}
+            {{ field }}
+          {% else %}
+            <div class="account-form__field{% if field.field.widget.input_type == 'checkbox' %} account-form__field--checkbox{% endif %}">
+              {{ field.label_tag }}
+              {{ field }}
+              {% for error in field.errors %}<span class="account-form__field-error">{{ error }}</span>{% endfor %}
+              {% if field.help_text %}<span class="account-form__help">{{ field.help_text|safe }}</span>{% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
 
-</main>
-
-
-<script
-    src="{% static 'js/main.js' %}"
-    defer>
-</script>
-
-<script
-    src="{% static 'js/home.js' %}"
-    defer>
-</script>
-
-</body>
-
-</html>
+      <div class="account-form__actions">
+        <button type="submit" class="account-form__button account-form__button--primary">{% trans "Complete Sign Up" %}</button>
+        <a href="{% url 'account_login' %}" class="account-form__button account-form__button--secondary">{% trans "Back to Sign In" %}</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
