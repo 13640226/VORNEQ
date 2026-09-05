@@ -83,12 +83,12 @@
           </a>
           {% endif %}
           <div class="discovery-card__body">
-            <p class="discovery-card__type">{{ item.type|capfirst }}</p>
+            <p class="discovery-card__type">{% include "partials/_content_type_label.html" with type=item.type %}</p>
             <h3 class="discovery-card__title"><a href="{{ item.url }}">{{ item.title }}</a></h3>
             {% if item.description %}<p class="discovery-card__description">{{ item.description }}</p>{% endif %}
             <div class="discovery-card__meta">
               <span>{% if item.source %}{{ item.source }}{% else %}VORNEQ{% endif %}</span>
-              <time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:"M j, Y" }}</time>
+              <time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:"DATE_FORMAT" }}</time>
             </div>
             {% if item.type == "product" %}
             <div class="discovery-card__commerce">
@@ -131,8 +131,8 @@
           {% endif %}
           <div class="discovery-feed-item__content">
             <div class="discovery-feed-item__topline">
-              <span class="discovery-feed-item__type">{{ item.type|capfirst }}</span>
-              <time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:"M j, Y" }}</time>
+              <span class="discovery-feed-item__type">{% include "partials/_content_type_label.html" with type=item.type %}</span>
+              <time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:"DATE_FORMAT" }}</time>
             </div>
             <h3 class="discovery-feed-item__title"><a href="{{ item.url }}">{{ item.title }}</a></h3>
             {% if item.description %}<p class="discovery-feed-item__description">{{ item.description }}</p>{% endif %}
