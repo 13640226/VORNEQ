@@ -1,275 +1,97 @@
-{% load static %}
+{% extends "base.html" %}
+{% load static i18n %}
 
-<!DOCTYPE html>
-<html lang="fa" dir="rtl" data-theme="dark">
+{% block title %}{{ product.title }} — VORNEQ Marketplace{% endblock %}
 
-<head>
-  <meta charset="UTF-8">
+{% block meta %}
+<meta name="description" content="{{ product.short_description|default:product.description|striptags|truncatechars:160 }}">
+{% endblock %}
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
+<link rel="stylesheet" href="{% static 'css/marketplace.css' %}">
+{% endblock %}
 
-  <meta
-    name="description"
-    content="پنل فروشنده — سامان خرد">
+{% block content %}
+{% include "partials/_standalone_nav.html" %}
 
-  <title>
-    پنل فروشنده — سامان خرد
-  </title>
+<article class="marketplace-detail">
+  <div class="marketplace-detail__shell">
+    <a href="{% url 'marketplace:index' %}" class="marketplace-detail__back">← {% trans "Back to Marketplace" %}</a>
 
-  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-  <link rel="stylesheet" href="{% static 'css/themes.css' %}">
-  <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  <link rel="stylesheet" href="{% static 'css/components.css' %}">
-  <link rel="stylesheet" href="{% static 'css/home.css' %}">
-</head>
+    <div class="marketplace-detail__layout">
+      {% if product.image %}
+        <div class="marketplace-detail__image-wrapper">
+          <img src="{{ product.image.url }}" alt="{{ product.title }}" class="marketplace-detail__image">
+        </div>
+      {% endif %}
 
-<body>
+      <div class="marketplace-detail__body">
+        <div class="marketplace-detail__meta-top">
+          <span class="marketplace-detail__category">{{ product.get_category_display }}</span>
+          {% if product.version %}<span class="marketplace-detail__version">v{{ product.version }}</span>{% endif %}
+        </div>
 
-  <a
-    class="skip-link"
-    href="#main">
-    رفتن به محتوای اصلی
-  </a>
+        <h1 class="marketplace-detail__title">{{ product.title }}</h1>
+        <p class="marketplace-detail__seller">{% trans "By" %} {{ product.seller.get_username }}</p>
 
-  <header class="site-header">
+        {% if product.short_description %}
+          <p class="marketplace-detail__description">{{ product.short_description }}</p>
+        {% endif %}
 
-    <div class="site-header__inner">
-
-      <a
-        class="site-brand brand-lockup"
-        href="{% url 'home' %}"
-        aria-label="سامان خرد — صفحه اصلی">
-
-        <span
-          class="brand-sigil brand-sigil--small"
-          aria-hidden="true">
-
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-
-        </span>
-
-        <span class="site-brand__text">
-
-          <strong>
-            سامان خرد
-          </strong>
-
-          <small>
-            بنیادِ عریانِ پرسش
-          </small>
-
-        </span>
-
-      </a>
-
-      <nav
-        class="site-nav"
-        aria-label="منوی پنل فروشنده">
-
-        <a href="{% url 'home' %}">
-          خانه
-        </a>
-
-        <a href="{% url 'marketplace:index' %}">
-          بازار دیجیتال
-        </a>
-
-        <a href="{% url 'marketplace:product_create' %}">
-          ثبت محصول
-        </a>
-
-      </nav>
-
+        <div class="marketplace-detail__price" aria-label="{% trans 'Price' %}">
+          {% if product.price == 0 %}
+            <span class="marketplace-detail__free">{% trans "Free" %}</span>
+          {% else %}
+            <span>{{ product.price|floatformat:2 }}</span>
+          {% endif %}
+        </div>
+      </div>
     </div>
 
-  </header>
-
-
-  <main
-    id="main"
-    tabindex="-1">
-
-    <section class="manifest-section">
-
-      <div class="container">
-
-        <div class="section-heading">
-
-          <p class="section-code">
-            SELLER / DASHBOARD
-          </p>
-
-          <div>
-
-            <p class="section-kicker">
-              پنل فروشنده
-            </p>
-
-            <h1>
-              محصولات شما
-            </h1>
-
-            <p>
-              هر محصول جدید یا ویرایش‌شده
-              برای بررسی مدیر ارسال می‌شود.
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <div class="manifest-actions">
-
-          <a
-            href="{% url 'marketplace:product_create' %}"
-            class="btn btn--primary">
-
-            ثبت محصول جدید
-
-          </a>
-
-        </div>
-
-
-        <div class="archive-grid">
-
-          {% for product in products %}
-
-            <article class="archive-card">
-
-              {% if product.image %}
-
-                <div class="archive-card__poster">
-
-                  <img
-                    src="{{ product.image.url }}"
-                    alt="{{ product.title }}"
-                    loading="lazy">
-
-                </div>
-
-              {% endif %}
-
-
-              <div class="archive-card__body">
-
-                <p class="archive-card__meta">
-
-                  {{ product.category|default:"محصول دیجیتال" }}
-
-                  /
-
-                  {{ product.get_status_display }}
-
-                </p>
-
-                <h2>
-                  {{ product.title }}
-                </h2>
-
-                {% if product.short_description %}
-
-                  <p>
-                    {{ product.short_description|truncatewords:24 }}
-                  </p>
-
-                {% endif %}
-
-
-                {% if product.status == "approved" %}
-
-                  <a href="{% url 'marketplace:detail' product.slug %}">
-                    مشاهده نسخه عمومی ←
-                  </a>
-
-                {% else %}
-
-                  <p class="audio-unavailable">
-                    این محصول هنوز عمومی نشده است.
-                  </p>
-
-                {% endif %}
-
-
-                <a href="{% url 'marketplace:product_edit' product.pk %}">
-                  ویرایش محصول ←
-                </a>
-
-              </div>
-
-            </article>
-
-          {% empty %}
-
-            <article class="archive-card">
-
-              <div class="archive-card__body">
-
-                <p class="archive-card__meta">
-                  پنل فروشنده
-                </p>
-
-                <h2>
-                  هنوز محصولی ثبت نکرده‌اید
-                </h2>
-
-                <p>
-                  با گزینه «ثبت محصول جدید»
-                  اولین محصول خود را ایجاد کنید.
-                </p>
-
-              </div>
-
-            </article>
-
-          {% endfor %}
-
-        </div>
-
-
-        <div class="manifest-actions">
-
-          <a
-            href="{% url 'marketplace:index' %}"
-            class="btn btn--secondary">
-
-            بازگشت به بازار
-
-          </a>
-
-          <a
-            href="{% url 'home' %}"
-            class="btn btn--secondary">
-
-            خانه
-
-          </a>
-
-        </div>
-
+    {% if product.description %}
+      <section class="marketplace-detail__section" aria-labelledby="product-description-title">
+        <h2 id="product-description-title" class="marketplace-detail__section-title">{% trans "About this product" %}</h2>
+        <div class="marketplace-detail__content">{{ product.description|linebreaks }}</div>
+      </section>
+    {% endif %}
+
+    {% if product.tags %}
+      <section class="marketplace-detail__section marketplace-detail__tags" aria-labelledby="product-tags-title">
+        <h2 id="product-tags-title" class="marketplace-detail__section-title">{% trans "Tags" %}</h2>
+        <p class="marketplace-detail__tags-text">{{ product.tags }}</p>
+      </section>
+    {% endif %}
+
+    <dl class="marketplace-detail__meta">
+      <div class="marketplace-detail__meta-item">
+        <dt>{% trans "Category" %}</dt>
+        <dd>{{ product.get_category_display }}</dd>
       </div>
+      {% if product.version %}
+        <div class="marketplace-detail__meta-item">
+          <dt>{% trans "Version" %}</dt>
+          <dd>{{ product.version }}</dd>
+        </div>
+      {% endif %}
+      {% if product.published_at %}
+        <div class="marketplace-detail__meta-item">
+          <dt>{% trans "Published" %}</dt>
+          <dd>{{ product.published_at|date:"F j, Y" }}</dd>
+        </div>
+      {% endif %}
+      <div class="marketplace-detail__meta-item">
+        <dt>{% trans "Updated" %}</dt>
+        <dd>{{ product.updated_at|date:"F j, Y" }}</dd>
+      </div>
+    </dl>
 
-    </section>
-
-  </main>
-
-
-  <script
-    src="{% static 'js/main.js' %}"
-    defer>
-  </script>
-
-  <script
-    src="{% static 'js/home.js' %}"
-    defer>
-  </script>
-
-</body>
-
-</html>
+    <div class="marketplace-detail__footer">
+      <a href="{% url 'marketplace:index' %}" class="marketplace-detail__back-action">{% trans "Browse more products" %}</a>
+    </div>
+  </div>
+</article>
+{% endblock %}
