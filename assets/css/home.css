@@ -253,6 +253,13 @@ html[dir="rtl"] .discovery-search__wrapper {
   margin-bottom: var(--space-6);
 }
 
+.discovery-results.is-empty .discovery-results__header {
+  width: min(900px, 100%);
+  margin-inline: auto;
+  justify-content: center;
+  text-align: center;
+}
+
 .discovery-section-heading h2,
 .discovery-results__header h2,
 .discovery-empty h2 {
@@ -538,7 +545,9 @@ html[dir="rtl"] .discovery-empty h2 {
 
 .discovery-empty {
   width: min(680px, 100%);
+  margin-inline: auto;
   padding-block: var(--space-8);
+  text-align: center;
 }
 
 .discovery-empty h2 {
@@ -547,7 +556,7 @@ html[dir="rtl"] .discovery-empty h2 {
 
 .discovery-empty > p:not(.discovery-empty__eyebrow) {
   max-width: 50ch;
-  margin: var(--space-3) 0 var(--space-5);
+  margin: var(--space-3) auto var(--space-5);
   color: var(--color-text-secondary);
   line-height: 1.7;
 }
