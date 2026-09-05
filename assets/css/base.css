@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    BASE
    ============================================================ */
 
@@ -131,13 +131,14 @@ h3 {
 }
 
 ::selection {
-  background: var(--color-accent);
-  color: var(--color-text-on-accent);
+  background: var(--color-accent-subtle);
+  color: var(--color-text-primary);
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 4px;
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 [hidden] {
@@ -167,7 +168,8 @@ h3 {
     var(--space-4);
 
   background: var(--color-text-primary);
-  color: var(--color-bg-page);
+  color: var(--color-bg-elevated);
+  border-radius: var(--radius-sm);
 
   transform: translateY(-180%);
 }
