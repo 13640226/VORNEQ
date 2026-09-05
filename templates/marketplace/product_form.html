@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}{{ page_title }} — VORNEQ{% endblock %}
+{% block title %}{% if mode == "edit" %}{% trans "Edit Product" %}{% else %}{% trans "Create Product" %}{% endif %} — VORNEQ{% endblock %}
 
 {% block extra_head %}
 {{ block.super }}
@@ -13,7 +13,7 @@
   <div class="marketplace-workspace__shell">
     <header class="marketplace-workspace__header">
       <p class="marketplace-header__eyebrow">VORNEQ / {% trans "Seller" %}</p>
-      <h1 class="marketplace-workspace__title">{{ page_title }}</h1>
+      <h1 class="marketplace-workspace__title">{% if mode == "edit" %}{% trans "Edit Product" %}{% else %}{% trans "Create Product" %}{% endif %}</h1>
       <p class="marketplace-workspace__subtitle">{% trans "New and edited products return to the moderation queue before publication." %}</p>
     </header>
 
