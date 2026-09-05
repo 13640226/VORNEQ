@@ -3,12 +3,6 @@
    Based on tokens.css — v2.1 (PR-C)
    ========================================================== */
 
-/* Pages that load this stylesheet intentionally replace the shared site header
-   with the standalone navigation without changing base.html or unrelated routes. */
-.site-header {
-  display: none;
-}
-
 .standalone-nav {
   position: sticky;
   top: 0;
