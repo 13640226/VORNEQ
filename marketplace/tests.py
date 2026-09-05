@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.core.models import Entitlement
-from apps.core.services import grant_entitlement
+from apps.core.services.entitlement import grant_entitlement
 
 from .models import Product
 
