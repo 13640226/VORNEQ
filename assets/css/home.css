@@ -407,6 +407,7 @@ html[dir="rtl"] .discovery-empty h2 {
 
 .discovery-feed {
   width: min(900px, 100%);
+  margin-inline: auto;
   border-top: 1px solid var(--color-border);
 }
 
@@ -490,6 +491,7 @@ html[dir="rtl"] .discovery-empty h2 {
   justify-content: space-between;
   gap: var(--space-4);
   margin-top: var(--space-6);
+  margin-inline: auto;
   padding-top: var(--space-4);
 }
 
