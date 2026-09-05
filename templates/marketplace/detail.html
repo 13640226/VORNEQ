@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n %}
+{% load static i18n entitlements %}
 
 {% block title %}{{ product.title }} — VORNEQ {% trans "Marketplace" %}{% endblock %}
 
@@ -83,6 +83,15 @@
         <dd>{{ product.updated_at|date:"DATE_FORMAT" }}</dd>
       </div>
     </dl>
+
+    {% if product.has_digital_file %}
+      {% has_product_entitlement user product as can_download %}
+      {% if can_download %}
+        <div class="marketplace-detail__footer">
+          <a href="{% url 'marketplace:download_product' product.id %}" class="marketplace-detail__back-action">↓ {% trans "Digital file" %}</a>
+        </div>
+      {% endif %}
+    {% endif %}
 
     <div class="marketplace-detail__footer">
       <a href="{% url 'marketplace:index' %}" class="marketplace-detail__back-action">{% trans "Browse more products" %}</a>

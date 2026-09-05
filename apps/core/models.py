@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Reputation(models.Model):
@@ -86,3 +87,50 @@ class ReputationHistory(models.Model):
 
     def __str__(self):
         return f"{self.user_id} {self.dimension}: {self.old_value} -> {self.new_value}"
+
+
+class Entitlement(models.Model):
+    """Proof of a user's right to access a digital product."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="entitlements",
+    )
+    product = models.ForeignKey(
+        "marketplace.Product",
+        on_delete=models.CASCADE,
+        related_name="entitlements",
+    )
+    granted_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "product"],
+                name="core_ent_user_product_unique",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["user", "product", "is_active"],
+                name="core_ent_user_prod_active_idx",
+            ),
+            models.Index(
+                fields=["expires_at"],
+                name="core_ent_expires_idx",
+            ),
+        ]
+
+    def is_valid(self):
+        if not self.is_active:
+            return False
+        if self.expires_at and timezone.now() >= self.expires_at:
+            return False
+        return True
+
+    def __str__(self):
+        return f"{self.user_id} -> product:{self.product_id}"
