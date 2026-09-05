@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}{{ title }} — VORNEQ Library{% endblock %}
+{% block title %}{{ title }} — VORNEQ {% trans "Library" %}{% endblock %}
 
 {% block meta %}
 <meta name="description" content="{{ short_description|default:title|striptags|truncatechars:160 }}">
@@ -17,7 +17,7 @@
   <div class="library-shell library-detail__inner">
     <a href="{% url 'library:index' %}" class="library-detail__back">← {% trans "Back to Library" %}</a>
 
-    <span class="library-detail__type">{{ item.get_item_type_display }}</span>
+    <span class="library-detail__type">{% include "partials/_content_type_label.html" with type=item.item_type %}</span>
     <h1 class="library-detail__title">{{ title }}</h1>
 
     {% if item.author %}
