@@ -113,7 +113,7 @@
       </div>
     {% elif not audio_results %}
       <div class="library-empty">
-        <h2>{% trans "No library items found" %}</h2>
+        <h2>{% if language == 'fa' %}هیچ سندی یافت نشد{% else %}{% trans "No library items found" %}{% endif %}</h2>
         {% if query %}
           <p>{% trans "Try another keyword or clear the current search." %}</p>
         {% else %}
