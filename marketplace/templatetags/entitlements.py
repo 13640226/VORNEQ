@@ -1,6 +1,6 @@
 from django import template
 
-from apps.core.services import has_valid_entitlement
+from apps.core.services.entitlement import has_valid_entitlement
 
 
 register = template.Library()
