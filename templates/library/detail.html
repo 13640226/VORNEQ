@@ -1,224 +1,64 @@
-{% load static %}
+{% extends "base.html" %}
+{% load static i18n %}
 
-<!DOCTYPE html>
-<html lang="fa" dir="rtl" data-theme="dark">
+{% block title %}{{ title }} — VORNEQ Library{% endblock %}
 
-<head>
-  <meta charset="UTF-8">
+{% block meta %}
+<meta name="description" content="{{ short_description|default:title|striptags|truncatechars:160 }}">
+{% endblock %}
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
+<link rel="stylesheet" href="{% static 'css/library.css' %}">
+{% endblock %}
 
-  <meta
-    name="description"
-    content="{{ item.title }} — سندی از آرشیو عریان سامان خرد">
+{% block content %}
+{% include "partials/_standalone_nav.html" %}
 
-  <title>
-    {{ item.title }} — سامان خرد
-  </title>
+<article class="library-detail">
+  <div class="library-shell library-detail__inner">
+    <a href="{% url 'library:index' %}" class="library-detail__back">← {% trans "Back to Library" %}</a>
 
-  <link
-    rel="stylesheet"
-    href="{% static 'css/tokens.css' %}">
+    <span class="library-detail__type">{{ item.get_item_type_display }}</span>
+    <h1 class="library-detail__title">{{ title }}</h1>
 
-  <link
-    rel="stylesheet"
-    href="{% static 'css/themes.css' %}">
+    {% if item.author %}
+      <p class="library-detail__author">{{ item.author }}</p>
+    {% endif %}
 
-  <link
-    rel="stylesheet"
-    href="{% static 'css/base.css' %}">
+    {% if short_description %}
+      <p class="library-detail__description">{{ short_description }}</p>
+    {% endif %}
 
-  <link
-    rel="stylesheet"
-    href="{% static 'css/components.css' %}">
+    {% if content %}
+      <div class="library-detail__content">{{ content|linebreaks }}</div>
+    {% else %}
+      <div class="library-empty">
+        <p>{% trans "The full text for this library item is not available yet." %}</p>
+      </div>
+    {% endif %}
 
-  <link
-    rel="stylesheet"
-    href="{% static 'css/home.css' %}">
-</head>
-
-<body>
-
-  <a
-    class="skip-link"
-    href="#main">
-
-    رفتن به محتوای اصلی
-
-  </a>
-
-
-  <header class="site-header">
-
-    <div class="site-header__inner">
-
-      <a
-        class="site-brand brand-lockup"
-        href="{% url 'home' %}"
-        aria-label="سامان خرد — صفحه اصلی">
-
-        <span
-          class="brand-sigil brand-sigil--small"
-          aria-hidden="true">
-
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-
-        </span>
-
-        <span class="site-brand__text">
-
-          <strong>
-            سامان خرد
-          </strong>
-
-          <small>
-            بنیادِ عریانِ پرسش
-          </small>
-
-        </span>
-
-      </a>
-
-
-      <nav
-        class="site-nav"
-        aria-label="منوی سند">
-
-        <a href="{% url 'home' %}">
-          خانه
-        </a>
-
-        <a href="{% url 'library:index' %}">
-          آرشیو عریان
-        </a>
-
-      </nav>
-
+    <div class="library-detail__meta">
+      {% if item.author %}<span>{% trans "Author" %}: {{ item.author }}</span>{% endif %}
+      {% if item.category %}<span>{% trans "Category" %}: {{ item.category }}</span>{% endif %}
+      {% if item.version %}<span>{% trans "Version" %}: {{ item.version }}</span>{% endif %}
+      {% if item.published_at %}<span>{% trans "Published" %}: {{ item.published_at|date:"DATE_FORMAT" }}</span>{% endif %}
+      <span>{% trans "Updated" %}: {{ item.updated_at|date:"DATE_FORMAT" }}</span>
     </div>
 
-  </header>
-
-
-  <main
-    id="main"
-    tabindex="-1">
-
-    <section class="manifest-section">
-
-      <div class="container">
-
-        <div class="section-heading">
-
-          <p class="section-code">
-            LIBRARY / DOCUMENT
-          </p>
-
-          <div>
-
-            <p class="section-kicker">
-              آرشیو عریان
-            </p>
-
-            <h1>
-              {{ item.title }}
-            </h1>
-
-            <p>
-              {{ item.category|default:"سند" }}
-
-              {% if item.version %}
-                — {{ item.version }}
-              {% endif %}
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <article class="statement-copy">
-
-          {% if item.short_description %}
-
-            <p class="manifest-lead">
-              {{ item.short_description }}
-            </p>
-
-          {% endif %}
-
-
-          {% if item.content %}
-
-            <div>
-              {{ item.content|linebreaks }}
-            </div>
-
-          {% else %}
-
-            <p>
-              متن کامل این سند هنوز اضافه نشده است.
-            </p>
-
-          {% endif %}
-
-
-          <p class="archive-card__meta">
-
-            ایجاد:
-            {{ item.created_at|date:"Y/m/d" }}
-
-            <br>
-
-            آخرین به‌روزرسانی:
-            {{ item.updated_at|date:"Y/m/d" }}
-
-          </p>
-
-        </article>
-
-
-        <div class="manifest-actions">
-
-          <a
-            href="{% url 'library:index' %}"
-            class="btn btn--secondary">
-
-            بازگشت به کتابخانه
-
-          </a>
-
-          <a
-            href="{% url 'home' %}"
-            class="btn btn--secondary">
-
-            خانه
-
-          </a>
-
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-
-  <script
-    src="{% static 'js/main.js' %}"
-    defer>
-  </script>
-
-  <script
-    src="{% static 'js/home.js' %}"
-    defer>
-  </script>
-
-</body>
-
-</html>
+    <div class="library-detail__actions">
+      {% if has_pdf %}
+        <a href="{% url 'library:serve_pdf' item.slug %}" class="library-detail__action library-detail__action--primary">
+          {% trans "Read PDF" %}
+        </a>
+      {% endif %}
+      <a href="{% url 'library:index' %}" class="library-detail__action library-detail__action--secondary">
+        {% trans "Browse Library" %}
+      </a>
+    </div>
+  </div>
+</article>
+{% endblock %}
