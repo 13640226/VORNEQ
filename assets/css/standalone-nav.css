@@ -1,104 +1,218 @@
-/* Shared standalone navigation used by selected public and account pages. */
+/* ==========================================================
+   VORNEQ GLOBAL NAVIGATION
+   Based on tokens.css — v2.1 (PR-C)
+   ========================================================== */
 
 /* Pages that load this stylesheet intentionally replace the shared site header
    with the standalone navigation without changing base.html or unrelated routes. */
 .site-header {
-    display: none;
+  display: none;
 }
 
 .standalone-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 2rem;
-    background: rgba(11, 11, 13, 0.96);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
-    backdrop-filter: blur(18px);
-    font-family: Tahoma, Arial, sans-serif;
-    direction: rtl;
-    color: #f1ece3;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  min-height: var(--header-height);
+  background: var(--color-bg-elevated);
+  border-bottom: 1px solid var(--color-border);
 }
 
-.standalone-nav__brand-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    color: #f3eee5;
+.standalone-nav__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  width: 100%;
+  max-width: var(--container-width);
+  min-height: var(--header-height);
+  margin-inline: auto;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-4);
 }
 
-.standalone-nav__logo {
-    font-size: 1.5rem;
-    line-height: 1;
+/* ----- Brand / Wordmark ----- */
+.standalone-nav__brand {
+  flex-shrink: 0;
 }
 
-.standalone-nav__title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #f3eee5;
-    letter-spacing: -0.025em;
+.standalone-nav__wordmark {
+  display: inline-block;
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-display);
+  color: var(--color-accent);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: color var(--motion-duration-fast) var(--motion-easing-standard);
 }
 
+.standalone-nav__wordmark:hover {
+  color: var(--color-accent-hover);
+}
+
+/* ----- Primary Navigation ----- */
 .standalone-nav__menu {
-    display: flex;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    gap: 1.5rem;
-    align-items: center;
+  flex: 0 1 auto;
+}
+
+.standalone-nav__list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  white-space: nowrap;
 }
 
 .standalone-nav__item {
-    margin: 0;
+  margin: 0;
 }
 
 .standalone-nav__link {
-    text-decoration: none;
-    color: rgba(238, 231, 219, 0.76);
-    font-weight: 600;
-    font-size: 0.95rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.375rem;
-    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+  display: inline-block;
+  padding-block: var(--space-1);
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    color var(--motion-duration-fast) var(--motion-easing-standard),
+    border-color var(--motion-duration-fast) var(--motion-easing-standard);
 }
 
 .standalone-nav__link:hover {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
 }
 
-.standalone-nav__link.active {
-    color: #e2bd84;
-    background-color: rgba(226, 189, 132, 0.10);
-    font-weight: 700;
+.standalone-nav__link.is-active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
 }
 
-.standalone-nav__link--outline {
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    padding: 0.4rem 1rem;
+/* ----- Account Actions ----- */
+.standalone-nav__actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-3);
+  margin-inline-start: auto;
 }
 
-.standalone-nav__link--outline:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-color: rgba(226, 189, 132, 0.48);
+.standalone-nav__user {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  text-transform: uppercase;
+  user-select: none;
 }
 
-@media (max-width: 640px) {
-    .standalone-nav {
-        flex-direction: column;
-        padding: 0.75rem 1rem;
-        gap: 0.75rem;
-    }
+.standalone-nav__action {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background var(--motion-duration-fast) var(--motion-easing-standard),
+    color var(--motion-duration-fast) var(--motion-easing-standard),
+    border-color var(--motion-duration-fast) var(--motion-easing-standard);
+}
 
-    .standalone-nav__menu {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 0.5rem;
-    }
+.standalone-nav__action--login {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
 
-    .standalone-nav__link {
-        font-size: 0.85rem;
-        padding: 0.3rem 0.6rem;
-    }
+.standalone-nav__action--login:hover {
+  background: var(--color-accent-hover);
+}
+
+.standalone-nav__action--logout {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.standalone-nav__action--logout:hover {
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong);
+}
+
+/* ==========================================================
+   RESPONSIVE — Mobile (≤ 768px)
+   ========================================================== */
+
+@media (max-width: 768px) {
+  .standalone-nav__inner {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+  }
+
+  .standalone-nav__brand {
+    flex: 0 1 auto;
+  }
+
+  .standalone-nav__actions {
+    margin-inline-start: 0;
+  }
+
+  .standalone-nav__menu {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .standalone-nav__menu::-webkit-scrollbar {
+    display: none;
+  }
+
+  .standalone-nav__list {
+    gap: var(--space-4);
+    padding-block: var(--space-1);
+  }
+
+  .standalone-nav__link {
+    padding-block: var(--space-1);
+    font-size: var(--font-size-small);
+  }
+
+  .standalone-nav__wordmark {
+    font-size: 1.25rem;
+  }
+}
+
+/* ==========================================================
+   ACCESSIBILITY — Focus & Reduced Motion
+   ========================================================== */
+
+.standalone-nav__wordmark:focus-visible,
+.standalone-nav__link:focus-visible,
+.standalone-nav__action:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .standalone-nav__wordmark,
+  .standalone-nav__link,
+  .standalone-nav__action {
+    transition: none;
+  }
 }
