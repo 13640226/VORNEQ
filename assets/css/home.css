@@ -602,8 +602,14 @@ html[dir="rtl"] .discovery-empty h2 {
     width: 100%;
   }
 
+  .discovery-filters {
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .discovery-filters__list {
     justify-content: flex-start;
+    flex-wrap: nowrap;
   }
 
   .discovery-featured,
@@ -634,6 +640,20 @@ html[dir="rtl"] .discovery-empty h2 {
 
   .discovery-pagination__link {
     flex: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .discovery-hero {
+    padding-block: var(--space-5) var(--space-4);
+  }
+
+  .discovery-hero__title {
+    font-size: var(--font-size-h2);
+  }
+
+  .discovery-empty {
+    padding-block: var(--space-6);
   }
 }
 
