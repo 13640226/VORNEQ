@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 
-from apps.core.services import has_valid_entitlement
+from apps.core.services.entitlement import has_valid_entitlement
 
 from .models import Product
 
