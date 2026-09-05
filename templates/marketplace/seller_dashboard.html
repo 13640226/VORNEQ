@@ -2,17 +2,17 @@
 {% load static i18n %}
 
 {% block title %}
-    {% trans "داشبورد فروشنده — سامان خرد" %}
+    {% trans "Seller Dashboard" %} — VORNEQ
 {% endblock %}
 
 {% block content %}
 <section class="page-header">
     <div class="container">
         <div class="page-header__content">
-            <p class="section-code">09 / SELLER DASHBOARD</p>
-            <h1>{% trans "داشبورد فروشنده" %}</h1>
+            <p class="section-code">VORNEQ / {% trans "Seller Dashboard" %}</p>
+            <h1>{% trans "Seller Dashboard" %}</h1>
             <p class="page-header__subtitle">
-                {% trans "محصولات خود را مدیریت کنید و آثار جدید را برای بررسی ارسال کنید." %}
+                {% trans "Manage your products and submit new work for review." %}
             </p>
         </div>
     </div>
@@ -22,12 +22,12 @@
     <div class="container">
 
         <div class="results-summary">
-            <p>{% trans "محصولات من" %}</p>
+            <p>{% trans "My products" %}</p>
             <a
                 href="{% url 'marketplace:product_create' %}"
                 class="btn btn--primary"
             >
-                {% trans "ایجاد محصول جدید" %}
+                {% trans "Create new product" %}
             </a>
         </div>
 
@@ -39,7 +39,7 @@
                     <div class="archive-card__body">
 
                         <div class="archive-card__meta">
-                            <span>{% trans "وضعیت:" %}</span>
+                            <span>{% trans "Status:" %}</span>
                             <span>{{ product.get_status_display }}</span>
                         </div>
 
@@ -60,7 +60,7 @@
                                         href="{% url 'marketplace:detail' product.slug %}"
                                         class="archive-card__read-more"
                                     >
-                                        {% trans "مشاهده" %}
+                                        {% trans "View" %}
                                         <span aria-hidden="true">←</span>
                                     </a>
                                 {% endif %}
@@ -69,7 +69,7 @@
                                     href="{% url 'marketplace:product_edit' product.pk %}"
                                     class="archive-card__read-more"
                                 >
-                                    {% trans "ویرایش" %}
+                                    {% trans "Edit" %}
                                 </a>
                             </div>
 
@@ -87,16 +87,16 @@
 
                 <article class="archive-card archive-card--empty">
                     <div class="archive-card__body">
-                        <p class="archive-card__meta">SELLER / EMPTY</p>
-                        <h2>{% trans "هنوز محصولی ثبت نکرده‌اید" %}</h2>
+                        <p class="archive-card__meta">{% trans "Seller" %} / {% trans "Empty" %}</p>
+                        <h2>{% trans "You have not submitted any products yet" %}</h2>
                         <p>
-                            {% trans "اولین محصول خود را ایجاد کنید و برای بررسی ارسال کنید." %}
+                            {% trans "Create your first product and submit it for review." %}
                         </p>
                         <a
                             href="{% url 'marketplace:product_create' %}"
                             class="btn btn--primary"
                         >
-                            {% trans "ایجاد محصول جدید" %}
+                            {% trans "Create new product" %}
                         </a>
                     </div>
                 </article>
