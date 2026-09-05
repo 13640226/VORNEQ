@@ -515,10 +515,18 @@ body .site-footer {
     padding-block: var(--space-5) var(--space-7);
   }
 
+  .library-header {
+    margin-bottom: var(--space-4);
+  }
+
   .library-header__title,
   .library-detail__title,
   .audio-detail__title {
     font-size: var(--font-size-h2);
+  }
+
+  .library-search {
+    margin-bottom: var(--space-3);
   }
 
   .library-search__form {
@@ -530,9 +538,24 @@ body .site-footer {
     width: 100%;
   }
 
+  .library-filters {
+    margin-bottom: var(--space-4);
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .library-grid,
   .library-audio__grid {
     grid-template-columns: 1fr;
+  }
+
+  .library-empty {
+    padding-block: var(--space-6);
+  }
+
+  .library-section {
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
   }
 }
 
