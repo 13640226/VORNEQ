@@ -1,551 +1,186 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}
-    {% trans "آرشیو عریان" %} — {% trans "سامان خرد" %}
-{% endblock %}
-
+{% block title %}{% trans "Library" %} — VORNEQ{% endblock %}
 
 {% block meta %}
-    {{ block.super }}
-
-    <meta
-        name="description"
-        content="{% trans 'کتاب‌ها، مقالات، اسناد و متون آرشیو سامان خرد برای مطالعه آنلاین.' %}"
-    >
+<meta name="description" content="{% trans 'Explore books, articles, documents, and audio in the VORNEQ library.' %}">
 {% endblock %}
-
 
 {% block extra_head %}
-    {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
+<link rel="stylesheet" href="{% static 'css/library.css' %}">
 {% endblock %}
 
-
 {% block content %}
-
 {% include "partials/_standalone_nav.html" %}
 
-<!-- =========================================================
-     LIBRARY HEADER
-========================================================= -->
+<section class="library-page">
+  <div class="library-shell">
+    <header class="library-header">
+      <p class="library-header__eyebrow">VORNEQ / LIBRARY</p>
+      <h1 class="library-header__title">{% trans "Library" %}</h1>
+      <p class="library-header__subtitle">
+        {% trans "Explore books, articles, documents, and audio from the VORNEQ knowledge repository." %}
+      </p>
+    </header>
 
-<section class="page-header">
-
-    <div class="container">
-
-        <div class="page-header__content">
-
-            <p class="section-code">
-                07 / NAKED ARCHIVE
-            </p>
-
-            <h1>
-                {% trans "آرشیو عریان" %}
-            </h1>
-
-            <p class="page-header__subtitle">
-                {% trans "کتاب‌ها، مقالات و اسناد برای مطالعه، بررسی و نقد." %}
-            </p>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =========================================================
-     SEARCH
-========================================================= -->
-
-<section class="search-section">
-
-    <div class="container">
-
-        <form
-            method="get"
-            action="{% url 'library:index' %}"
-            class="search-form"
-            role="search"
+    <section class="library-search" aria-label="{% trans 'Search library' %}">
+      <form method="get" action="{% url 'library:index' %}" class="library-search__form" role="search">
+        <label for="library-search" class="sr-only">{% trans "Search library" %}</label>
+        <input
+          id="library-search"
+          type="search"
+          name="q"
+          value="{{ query }}"
+          class="library-search__input"
+          placeholder="{% trans 'Search books, articles, documents, and audio…' %}"
+          autocomplete="off"
         >
+        {% if selected_type %}
+          <input type="hidden" name="type" value="{{ selected_type }}">
+        {% endif %}
+        <button type="submit" class="library-search__button">{% trans "Search" %}</button>
+      </form>
+      {% if query %}
+        <a href="{% url 'library:index' %}{% if selected_type %}?type={{ selected_type|urlencode }}{% endif %}" class="library-search__clear">
+          {% trans "Clear search" %}
+        </a>
+      {% endif %}
+    </section>
 
-            <div class="search-form__group">
+    <nav class="library-filters" aria-label="{% trans 'Filter by content type' %}">
+      <a
+        href="{% url 'library:index' %}{% if query %}?q={{ query|urlencode }}{% endif %}"
+        class="library-filters__link {% if not selected_type %}is-active{% endif %}"
+        {% if not selected_type %}aria-current="page"{% endif %}
+      >{% trans "All" %}</a>
+      {% for type_code, type_label in item_types %}
+        <a
+          href="{% url 'library:index' %}?type={{ type_code|urlencode }}{% if query %}&q={{ query|urlencode }}{% endif %}"
+          class="library-filters__link {% if selected_type == type_code %}is-active{% endif %}"
+          {% if selected_type == type_code %}aria-current="page"{% endif %}
+        >{{ type_label }}</a>
+      {% endfor %}
+    </nav>
 
-                <label
-                    for="library-search"
-                    class="sr-only"
-                >
-                    {% trans "جست‌وجو در کتابخانه" %}
-                </label>
+    {% if query %}
+      <div class="library-results-summary">
+        <h2>{% blocktrans with search=query %}Results for “{{ search }}”{% endblocktrans %}</h2>
+        <p>{% blocktrans count total=items.paginator.count %}{{ total }} library result{% plural %}{{ total }} library results{% endblocktrans %}</p>
+      </div>
+    {% endif %}
 
-
-                <input
-                    id="library-search"
-                    type="search"
-                    name="q"
-                    value="{{ query }}"
-                    placeholder="{% trans 'جست‌وجو در آرشیو...' %}"
-                    class="search-form__input"
-                    autocomplete="off"
-                >
-
-
-                <button
-                    type="submit"
-                    class="search-form__button"
-                >
-                    {% trans "جست‌وجو" %}
-                </button>
-
+    {% if items %}
+      <div class="library-grid">
+        {% for item in items %}
+          <article class="library-card">
+            <div class="library-card__meta">
+              <span class="library-card__type">{{ item.get_item_type_display }}</span>
+              {% if item.category %}<span>{{ item.category }}</span>{% endif %}
+              {% if item.version %}<span>{{ item.version }}</span>{% endif %}
             </div>
 
-
-            {% if query %}
-
-                <a
-                    href="{% url 'library:index' %}"
-                    class="search-form__clear"
-                >
-                    {% trans "پاک کردن جست‌وجو" %}
-                </a>
-
-            {% endif %}
-
-        </form>
-
-    </div>
-
-</section>
-
-
-<!-- =========================================================
-     LIBRARY RESULTS
-========================================================= -->
-
-<section class="library-grid-section">
-
-    <div class="container">
-
-
-        <!-- =================================================
-             RESULT INFORMATION
-        ================================================== -->
-
-        {% if query %}
-
-            <div class="results-summary">
-
-                <p>
-
-                    {% blocktrans with search=query %}
-                        نتایج جست‌وجو برای «{{ search }}»
-                    {% endblocktrans %}
-
-                </p>
-
-                <p class="results-count">
-
-                    {% blocktrans count total=items.paginator.count %}
-                        {{ total }} نتیجه در آرشیو
-                    {% plural %}
-                        {{ total }} نتیجه در آرشیو
-                    {% endblocktrans %}
-
-                </p>
-
-            </div>
-
-        {% endif %}
-
-
-        <!-- =================================================
-             ARCHIVE GRID
-        ================================================== -->
-
-        <div class="archive-grid">
-
-            {% for item in items %}
-
-                <article class="archive-card archive-card--library">
-
-                    <div class="archive-card__body">
-
-
-                        <div class="archive-card__meta">
-
-                            <span>
-                                {{ item.get_item_type_display }}
-                            </span>
-
-                            {% if item.category %}
-                                <span aria-hidden="true">/</span>
-                                <span>{{ item.category }}</span>
-                            {% endif %}
-
-                            {% if item.version %}
-                                <span aria-hidden="true">/</span>
-                                <span>{{ item.version }}</span>
-                            {% endif %}
-
-                        </div>
-
-
-                        <h2 class="archive-card__title">
-                            <a
-                                href="{% url 'library:detail' item.slug %}"
-                                class="archive-card__link"
-                            >
-                                {{ item.title }}
-                            </a>
-                        </h2>
-
-
-                        {% if item.author %}
-                            <p class="archive-card__author">
-                                <span>{% trans "نویسنده:" %}</span>
-                                {{ item.author }}
-                            </p>
-                        {% endif %}
-
-
-                        {% if item.short_description %}
-                            <p class="archive-card__description">
-                                {{ item.short_description|striptags|truncatewords:30 }}
-                            </p>
-                        {% endif %}
-
-
-                        <div class="archive-card__footer">
-
-                            <a
-                                href="{% url 'library:detail' item.slug %}"
-                                class="archive-card__read-more"
-                            >
-                                {% trans "مطالعه" %}
-                                <span aria-hidden="true">←</span>
-                            </a>
-
-                            <div class="archive-card__badges">
-
-                                {% if item.pdf_file %}
-                                    <span
-                                        class="archive-card__badge"
-                                        title="{% trans 'این سند دارای نسخه PDF برای مطالعه آنلاین است.' %}"
-                                    >
-                                        PDF
-                                    </span>
-                                {% endif %}
-
-                                {% if item.item_type %}
-                                    <span class="archive-card__badge">
-                                        {{ item.get_item_type_display }}
-                                    </span>
-                                {% endif %}
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </article>
-
-            {% empty %}
-
-                {% if not audio_results %}
-
-                    <article class="archive-card archive-card--empty">
-
-                        <div class="archive-card__body">
-
-                            <p class="archive-card__meta">
-                                ARCHIVE / EMPTY
-                            </p>
-
-                            <h2>
-                                {% trans "هیچ سندی یافت نشد" %}
-                            </h2>
-
-                            {% if query %}
-
-                                <p>
-                                    {% trans "عبارت جست‌وجوشده در آرشیو نتیجه‌ای نداشت." %}
-                                </p>
-
-                                <a
-                                    href="{% url 'library:index' %}"
-                                    class="btn btn--secondary"
-                                >
-                                    {% trans "نمایش تمام آرشیو" %}
-                                </a>
-
-                            {% else %}
-
-                                <p>
-                                    {% trans "هنوز کتاب، مقاله یا سندی برای نمایش منتشر نشده است." %}
-                                </p>
-
-                            {% endif %}
-
-                        </div>
-
-                    </article>
-
-                {% endif %}
-
-            {% endfor %}
-
-        </div>
-
-
-        {% if query and not selected_type and audio_results %}
-
-        <!-- =================================================
-             AUDIO SEARCH RESULTS
-        ================================================== -->
-
-        <div class="results-summary">
-            <p>{% trans "نتایج صوتی" %}</p>
-            <p class="results-count">
-                {% blocktrans count total=audio_results|length %}
-                    {{ total }} نتیجه صوتی
-                {% plural %}
-                    {{ total }} نتیجه صوتی
-                {% endblocktrans %}
-            </p>
-        </div>
-
-        <div class="archive-grid">
-
-            {% for audio in audio_results %}
-
-                <article class="archive-card archive-card--library">
-
-                    <div class="archive-card__body">
-
-                        <div class="archive-card__meta">
-                            <span>{% trans "محتوای صوتی" %}</span>
-                        </div>
-
-                        <h2 class="archive-card__title">
-                            <a
-                                href="{% url 'library:audio_detail' audio.pk %}"
-                                class="archive-card__link"
-                            >
-                                {{ audio.title }}
-                            </a>
-                        </h2>
-
-                        {% if audio.description %}
-                            <p class="archive-card__description">
-                                {{ audio.description|striptags|truncatewords:20 }}
-                            </p>
-                        {% endif %}
-
-                        <div class="archive-card__footer">
-                            <a
-                                href="{% url 'library:audio_detail' audio.pk %}"
-                                class="archive-card__read-more"
-                            >
-                                {% trans "شنیدن" %}
-                                <span aria-hidden="true">←</span>
-                            </a>
-
-                            <div class="archive-card__badges">
-                                <span class="archive-card__badge">AUDIO</span>
-                            </div>
-                        </div>
-
-                    </div>
-
-                </article>
-
-            {% endfor %}
-
-        </div>
-
-        {% endif %}
-
-
-        <!-- =================================================
-             PAGINATION
-        ================================================== -->
-
-        {% if items.paginator.num_pages > 1 %}
-
-            <nav
-                class="pagination"
-                aria-label="{% trans 'صفحه‌بندی کتابخانه' %}"
-            >
-
-                <ul class="pagination__list">
-
-                    {% if items.has_previous %}
-
-                        <li class="pagination__item">
-                            <a
-                                class="pagination__link"
-                                href="?page={{ items.previous_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}"
-                                rel="prev"
-                            >
-                                ← {% trans "قبلی" %}
-                            </a>
-                        </li>
-
-                    {% endif %}
-
-
-                    {% for num in items.paginator.page_range %}
-
-                        {% if num == items.number %}
-
-                            <li
-                                class="pagination__item pagination__item--active"
-                                aria-current="page"
-                            >
-                                <span class="pagination__link">{{ num }}</span>
-                            </li>
-
-                        {% elif num >= items.number|add:"-2" and num <= items.number|add:"2" %}
-
-                            <li class="pagination__item">
-                                <a
-                                    class="pagination__link"
-                                    href="?page={{ num }}{% if query %}&q={{ query|urlencode }}{% endif %}"
-                                >
-                                    {{ num }}
-                                </a>
-                            </li>
-
-                        {% endif %}
-
-                    {% endfor %}
-
-
-                    {% if items.has_next %}
-
-                        <li class="pagination__item">
-                            <a
-                                class="pagination__link"
-                                href="?page={{ items.next_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}"
-                                rel="next"
-                            >
-                                {% trans "بعدی" %} →
-                            </a>
-                        </li>
-
-                    {% endif %}
-
-                </ul>
-
-            </nav>
-
-        {% endif %}
-
-
-        {% if not query and not selected_type %}
-
-        <!-- =================================================
-             AUDIO DISCOVERY
-        ================================================== -->
-
-        <div class="results-summary">
-            <p>{% trans "آخرین صوت‌ها" %}</p>
-        </div>
-
-        <div class="archive-grid">
-
-            {% for audio in audio_items %}
-
-                <article class="archive-card archive-card--library">
-
-                    <div class="archive-card__body">
-
-                        <div class="archive-card__meta">
-                            <span>{% trans "محتوای صوتی" %}</span>
-                        </div>
-
-                        <h2 class="archive-card__title">
-                            <a
-                                href="{% url 'library:audio_detail' audio.pk %}"
-                                class="archive-card__link"
-                            >
-                                {{ audio.title }}
-                            </a>
-                        </h2>
-
-                        {% if audio.description %}
-                            <p class="archive-card__description">
-                                {{ audio.description|striptags|truncatewords:20 }}
-                            </p>
-                        {% endif %}
-
-                        <div class="archive-card__footer">
-                            <a
-                                href="{% url 'library:audio_detail' audio.pk %}"
-                                class="archive-card__read-more"
-                            >
-                                {% trans "شنیدن" %}
-                                <span aria-hidden="true">←</span>
-                            </a>
-
-                            <div class="archive-card__badges">
-                                <span class="archive-card__badge">AUDIO</span>
-                            </div>
-                        </div>
-
-                    </div>
-
-                </article>
-
-            {% empty %}
-
-                <article class="archive-card archive-card--empty">
-                    <div class="archive-card__body">
-                        <p class="archive-card__meta">AUDIO / EMPTY</p>
-                        <h2>{% trans "هیچ محتوای صوتی منتشر نشده است" %}</h2>
-                    </div>
-                </article>
-
-            {% endfor %}
-
-        </div>
-
-        {% endif %}
-
-
-    </div>
-
-</section>
-
-
-<!-- =========================================================
-     READING POLICY
-========================================================= -->
-
-<section class="library-policy">
-
-    <div class="container">
-
-        <div class="library-policy__inner">
-
-            <p class="section-code">
-                READING POLICY
-            </p>
-
-            <h2>
-                {% trans "برای خواندن، نه برای انبار کردن." %}
+            <h2 class="library-card__title">
+              <a href="{% url 'library:detail' item.slug %}">
+                {% if language == 'en' and item.title_en %}{{ item.title_en }}{% elif language == 'de' and item.title_de %}{{ item.title_de }}{% else %}{{ item.title }}{% endif %}
+              </a>
             </h2>
 
-            <p>
-                {% trans "محتوای این آرشیو برای مطالعه مستقیم در سامان خرد ارائه می‌شود. برای اسناد دارای PDF، نسخه مطالعه درون‌سایت در صفحه سند در دسترس خواهد بود." %}
-            </p>
+            {% if item.author %}
+              <p class="library-card__author">{{ item.author }}</p>
+            {% endif %}
 
+            {% if language == 'en' and item.short_description_en %}
+              <p class="library-card__description">{{ item.short_description_en|striptags|truncatewords:28 }}</p>
+            {% elif language == 'de' and item.short_description_de %}
+              <p class="library-card__description">{{ item.short_description_de|striptags|truncatewords:28 }}</p>
+            {% elif item.short_description %}
+              <p class="library-card__description">{{ item.short_description|striptags|truncatewords:28 }}</p>
+            {% endif %}
+
+            <div class="library-card__footer">
+              <div class="library-card__badges">
+                {% if item.has_pdf %}<span class="library-card__badge">PDF</span>{% endif %}
+              </div>
+              <a href="{% url 'library:detail' item.slug %}" class="library-card__action">{% trans "Read" %}</a>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% elif not audio_results %}
+      <div class="library-empty">
+        <h2>{% if language == 'fa' %}هیچ سندی یافت نشد{% else %}{% trans "No library items found" %}{% endif %}</h2>
+        {% if query %}
+          <p>{% trans "Try another keyword or clear the current search." %}</p>
+        {% else %}
+          <p>{% trans "There are no published library items yet." %}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if items.paginator.num_pages > 1 %}
+      <nav class="library-pagination" aria-label="{% trans 'Library pagination' %}">
+        {% if items.has_previous %}
+          <a class="library-pagination__link" href="?page={{ items.previous_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if selected_type %}&type={{ selected_type|urlencode }}{% endif %}" rel="prev">{% trans "Previous" %}</a>
+        {% endif %}
+
+        {% for num in items.paginator.page_range %}
+          {% if num == items.number %}
+            <span class="library-pagination__current" aria-current="page">{{ num }}</span>
+          {% elif num >= items.number|add:"-2" and num <= items.number|add:"2" %}
+            <a class="library-pagination__link" href="?page={{ num }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if selected_type %}&type={{ selected_type|urlencode }}{% endif %}">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if items.has_next %}
+          <a class="library-pagination__link" href="?page={{ items.next_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if selected_type %}&type={{ selected_type|urlencode }}{% endif %}" rel="next">{% trans "Next" %}</a>
+        {% endif %}
+      </nav>
+    {% endif %}
+
+    {% if query and not selected_type and audio_results %}
+      <section class="library-section" aria-labelledby="audio-search-title">
+        <div class="library-section__header">
+          <p class="library-section__eyebrow">AUDIO</p>
+          <h2 id="audio-search-title" class="library-section__title">{% trans "Audio results" %}</h2>
         </div>
+        <div class="library-audio__grid">
+          {% for audio in audio_results %}
+            <article class="library-audio__card">
+              <h3 class="library-audio__title"><a href="{% url 'library:audio_detail' audio.pk %}">{{ audio.title }}</a></h3>
+              {% if audio.description %}<p class="library-audio__description">{{ audio.description|striptags|truncatewords:24 }}</p>{% endif %}
+              <a href="{% url 'library:audio_detail' audio.pk %}" class="library-audio__action">{% trans "Listen" %}</a>
+            </article>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
 
-    </div>
-
+    {% if not query and not selected_type %}
+      <section class="library-section" aria-labelledby="latest-audio-title">
+        <div class="library-section__header">
+          <p class="library-section__eyebrow">AUDIO</p>
+          <h2 id="latest-audio-title" class="library-section__title">{% trans "Latest Audio" %}</h2>
+        </div>
+        {% if audio_items %}
+          <div class="library-audio__grid">
+            {% for audio in audio_items %}
+              <article class="library-audio__card">
+                <h3 class="library-audio__title"><a href="{% url 'library:audio_detail' audio.pk %}">{{ audio.title }}</a></h3>
+                {% if audio.description %}<p class="library-audio__description">{{ audio.description|striptags|truncatewords:24 }}</p>{% endif %}
+                <a href="{% url 'library:audio_detail' audio.pk %}" class="library-audio__action">{% trans "Listen" %}</a>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="library-empty"><p>{% trans "No audio has been published yet." %}</p></div>
+        {% endif %}
+      </section>
+    {% endif %}
+  </div>
 </section>
-
 {% endblock %}
