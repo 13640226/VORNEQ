@@ -1,9 +1,3 @@
-databases:
-  - name: saman-kherad-staging-db
-    plan: free
-    databaseName: saman_kherad_staging
-    user: saman_kherad
-
 services:
   - type: web
     name: saman-kherad-staging
@@ -24,6 +18,4 @@ services:
       - key: DJANGO_CSRF_TRUSTED_ORIGINS
         value: https://saman-kherad-staging.onrender.com
       - key: DATABASE_URL
-        fromDatabase:
-          name: saman-kherad-staging-db
-          property: connectionString
+        sync: false
