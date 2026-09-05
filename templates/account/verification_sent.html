@@ -1,176 +1,24 @@
-{% load static %}
+{% extends "base.html" %}
+{% load static i18n allauth account %}
 
-<!DOCTYPE html>
-<html lang="fa" dir="rtl" data-theme="dark">
+{% block title %}{% trans "Verification Sent" %} — VORNEQ{% endblock %}
 
-<head>
-  <meta charset="UTF-8">
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
-
-  <meta
-    name="description"
-    content="ایمیل تأیید حساب ارسال شد — سامان خرد">
-
-  <title>
-    ایمیل تأیید ارسال شد — سامان خرد
-  </title>
-
-  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-  <link rel="stylesheet" href="{% static 'css/themes.css' %}">
-  <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  <link rel="stylesheet" href="{% static 'css/components.css' %}">
-  <link rel="stylesheet" href="{% static 'css/home.css' %}">
-  <link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
-</head>
-
-<body>
-
-  {% include "partials/_standalone_nav.html" %}
-
-  <a
-    class="skip-link"
-    href="#main">
-    رفتن به محتوای اصلی
-  </a>
-
-  <header class="site-header">
-
-    <div class="site-header__inner">
-
-      <a
-        class="site-brand brand-lockup"
-        href="{% url 'home' %}"
-        aria-label="سامان خرد — صفحه اصلی">
-
-        <span
-          class="brand-sigil brand-sigil--small"
-          aria-hidden="true">
-
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-
-        </span>
-
-        <span class="site-brand__text">
-
-          <strong>
-            سامان خرد
-          </strong>
-
-          <small>
-            بنیادِ عریانِ پرسش
-          </small>
-
-        </span>
-
-      </a>
-
-    </div>
-
-  </header>
-
-  <main
-    id="main"
-    tabindex="-1">
-
-    <section class="manifest-section">
-
-      <div class="container">
-
-        <div class="section-heading">
-
-          <p class="section-code">
-            ACCOUNT / EMAIL VERIFICATION
-          </p>
-
-          <div>
-
-            <p class="section-kicker">
-              تأیید حساب
-            </p>
-
-            <h1>
-              ایمیل تأیید ارسال شد
-            </h1>
-
-            <p>
-              برای تکمیل فرایند ثبت‌نام،
-              صندوق ورودی ایمیل خود را بررسی کنید.
-            </p>
-
-          </div>
-
-        </div>
-
-        <div
-          class="archive-card"
-          style="max-width: 640px; margin-inline: auto;">
-
-          <div class="archive-card__body">
-
-            <h2>
-              لینک تأیید را باز کنید
-            </h2>
-
-            <p>
-              ایمیلی حاوی لینک تأیید حساب برای شما ارسال شده است.
-            </p>
-
-            <p>
-              اگر ایمیل را مشاهده نمی‌کنید،
-              پوشه‌های Spam و Junk را نیز بررسی کنید.
-            </p>
-
-            <p>
-              پس از تأیید ایمیل می‌توانید
-              به حساب خود وارد شوید و از امکانات حساب کاربری استفاده کنید.
-            </p>
-
-            <div class="manifest-actions">
-
-              <a
-                href="{% url 'account_login' %}"
-                class="btn btn--primary">
-
-                رفتن به صفحه ورود
-
-              </a>
-
-              <a
-                href="{% url 'home' %}"
-                class="btn btn--secondary">
-
-                بازگشت به خانه
-
-              </a>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-  <script
-    src="{% static 'js/main.js' %}"
-    defer>
-  </script>
-
-  <script
-    src="{% static 'js/home.js' %}"
-    defer>
-  </script>
-
-</body>
-
-</html>
+{% block content %}
+{% include "partials/_standalone_nav.html" %}
+<div class="account-shell">
+  <div class="account-card account-card--message">
+    <p class="account-card__eyebrow">VORNEQ / EMAIL</p>
+    <h1 class="account-card__title">{% trans "Verify Your Email" %}</h1>
+    <p class="account-card__subtitle">{% trans "We've sent a verification link to your email address. Please check your inbox and follow the link to complete your registration." %}</p>
+    <div class="account-card__footer"><a href="{% url 'account_login' %}" class="account-form__link">{% trans "Back to Sign In" %}</a></div>
+  </div>
+</div>
+{% endblock %}
