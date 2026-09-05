@@ -103,7 +103,7 @@
   </section>
   {% endif %}
 
-  <section class="discovery-results" aria-labelledby="results-title">
+  <section class="discovery-results{% if not results %} is-empty{% endif %}" aria-labelledby="results-title">
     <div class="discovery-shell">
       <div class="discovery-results__header">
         <div>
