@@ -12,7 +12,7 @@
 <section class="marketplace-workspace">
   <div class="marketplace-workspace__shell">
     <header class="marketplace-workspace__header">
-      <p class="marketplace-header__eyebrow">VORNEQ / MODERATION</p>
+      <p class="marketplace-header__eyebrow">VORNEQ / {% trans "Moderation" %}</p>
       <h1 class="marketplace-workspace__title">{% trans "Product Review Queue" %}</h1>
       <p class="marketplace-workspace__subtitle">{% trans "New and edited products remain here until a moderator reviews them." %}</p>
     </header>
@@ -38,7 +38,7 @@
             <dl class="marketplace-review-card__facts">
               <div><dt>{% trans "Seller" %}</dt><dd>{% if product.seller.username %}{{ product.seller.username }}{% else %}{{ product.seller.email }}{% endif %}</dd></div>
               <div><dt>{% trans "Price" %}</dt><dd>{{ product.price }}</dd></div>
-              <div><dt>{% trans "Submitted" %}</dt><dd>{{ product.created_at|date:"Y/m/d H:i" }}</dd></div>
+              <div><dt>{% trans "Submitted" %}</dt><dd>{{ product.created_at|date:"SHORT_DATETIME_FORMAT" }}</dd></div>
             </dl>
             <a href="{% url 'admin:marketplace_product_change' product.pk %}" class="marketplace-workspace__button marketplace-workspace__button--primary">{% trans "Review in Django Admin" %}</a>
           </div>
