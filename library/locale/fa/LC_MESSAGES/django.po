@@ -1,0 +1,16 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: VORNEQ\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#, python-format
+msgid "Results for “%(search)s”"
+msgstr "نتایج برای «%(search)s»"
+
+#, python-format
+msgid "Results for “%(query)s”"
+msgstr "نتایج برای «%(query)s»"

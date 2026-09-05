@@ -1,0 +1,773 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: VORNEQ\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "About this product"
+msgstr "Über dieses Produkt"
+
+msgid "Account"
+msgstr "Konto"
+
+msgid "Account Inactive"
+msgstr "Konto inaktiv"
+
+msgid "Across VORNEQ"
+msgstr "In VORNEQ"
+
+msgid "Active connections"
+msgstr "Aktive Verbindungen"
+
+msgid "Add Email"
+msgstr "E-Mail hinzufügen"
+
+msgid "Add Email Address"
+msgstr "E-Mail-Adresse hinzufügen"
+
+msgid "All"
+msgstr "Alle"
+
+msgid "Allowed image formats: JPG, JPEG, PNG and WebP."
+msgstr "Erlaubte Bildformate: JPG, JPEG, PNG und WebP."
+
+msgid "Allowed product formats: PDF, ZIP, MP3, WAV and EPUB."
+msgstr "Erlaubte Produktformate: PDF, ZIP, MP3, WAV und EPUB."
+
+msgid "Already have an account? Sign in"
+msgstr "Du hast bereits ein Konto? Anmelden"
+
+msgid "Approve, reject, or request changes."
+msgstr "Genehmigen, ablehnen oder Änderungen anfordern."
+
+msgid "Approved"
+msgstr "Genehmigt"
+
+msgid "Are you sure you want to sign out of your VORNEQ account?"
+msgstr "Möchtest du dich wirklich von deinem VORNEQ-Konto abmelden?"
+
+msgid "Article"
+msgstr "Artikel"
+
+msgid "Articles"
+msgstr "Artikel"
+
+msgid "Artwork"
+msgstr "Kunstwerk"
+
+msgid "Audio"
+msgstr "Audio"
+
+msgid "Audio product"
+msgstr "Audioprodukt"
+
+msgid "Audio results"
+msgstr "Audioergebnisse"
+
+msgid "Authentication Error"
+msgstr "Authentifizierungsfehler"
+
+msgid "Author"
+msgstr "Autor"
+
+msgid "Back to Home"
+msgstr "Zurück zur Startseite"
+
+msgid "Back to Library"
+msgstr "Zurück zur Bibliothek"
+
+msgid "Back to Marketplace"
+msgstr "Zurück zum Marktplatz"
+
+msgid "Back to Sign In"
+msgstr "Zurück zur Anmeldung"
+
+msgid "Book"
+msgstr "Buch"
+
+msgid "Books"
+msgstr "Bücher"
+
+msgid "Browse Library"
+msgstr "Bibliothek durchsuchen"
+
+msgid "Browse more products"
+msgstr "Weitere Produkte ansehen"
+
+msgid "By"
+msgstr "Von"
+
+msgid "Cancel"
+msgstr "Abbrechen"
+
+msgid "Category"
+msgstr "Kategorie"
+
+msgid "Change Password"
+msgstr "Passwort ändern"
+
+msgid "Change Your Password"
+msgstr "Passwort ändern"
+
+msgid "Changes requested"
+msgstr "Änderungen angefordert"
+
+msgid "Changes were requested from the seller."
+msgstr "Vom Verkäufer wurden Änderungen angefordert."
+
+msgid "Check Your Email"
+msgstr "E-Mail prüfen"
+
+msgid "Choose a strong password for your VORNEQ account."
+msgstr "Wähle ein starkes Passwort für dein VORNEQ-Konto."
+
+msgid "Clear filters"
+msgstr "Filter zurücksetzen"
+
+msgid "Clear search"
+msgstr "Suche löschen"
+
+msgid "Comma-separated tags"
+msgstr "Durch Kommas getrennte Schlagwörter"
+
+msgid "Complete Sign Up"
+msgstr "Registrierung abschließen"
+
+msgid "Complete Your Sign Up"
+msgstr "Registrierung abschließen"
+
+msgid "Confirm"
+msgstr "Bestätigen"
+
+msgid "Confirm Email"
+msgstr "E-Mail bestätigen"
+
+msgid "Confirm Email Address"
+msgstr "E-Mail-Adresse bestätigen"
+
+msgid "Confirm that you want to connect this external account to your VORNEQ account."
+msgstr "Bestätige, dass du dieses externe Konto mit deinem VORNEQ-Konto verbinden möchtest."
+
+msgid "Confirm to continue signing in with the selected provider."
+msgstr "Bestätige, um die Anmeldung mit dem ausgewählten Anbieter fortzusetzen."
+
+msgid "Connect Account"
+msgstr "Konto verbinden"
+
+msgid "Connected Accounts"
+msgstr "Verbundene Konten"
+
+msgid "Continue"
+msgstr "Weiter"
+
+msgid "Continue with External Account"
+msgstr "Mit externem Konto fortfahren"
+
+msgid "Course"
+msgstr "Kurs"
+
+msgid "Create Product"
+msgstr "Produkt erstellen"
+
+msgid "Create Your Account"
+msgstr "Konto erstellen"
+
+msgid "Create a password to sign in with your account credentials."
+msgstr "Erstelle ein Passwort, um dich mit deinen Kontodaten anzumelden."
+
+msgid "Create new product"
+msgstr "Neues Produkt erstellen"
+
+msgid "Create your first product and submit it for review."
+msgstr "Erstelle dein erstes Produkt und reiche es zur Prüfung ein."
+
+msgid "Created at"
+msgstr "Erstellt am"
+
+msgid "Curated from the latest"
+msgstr "Aus den neuesten Inhalten ausgewählt"
+
+msgid "Current email addresses"
+msgstr "Aktuelle E-Mail-Adressen"
+
+msgid "Decision"
+msgstr "Entscheidung"
+
+msgid "Description is required."
+msgstr "Eine Beschreibung ist erforderlich."
+
+msgid "Digital file"
+msgstr "Digitale Datei"
+
+msgid "Digital file cannot exceed 100 MB."
+msgstr "Die digitale Datei darf 100 MB nicht überschreiten."
+
+msgid "Digital product"
+msgstr "Digitales Produkt"
+
+msgid "Disconnect Selected Account"
+msgstr "Ausgewähltes Konto trennen"
+
+msgid "Discover"
+msgstr "Entdecken"
+
+msgid "Discover approved digital products from independent creators on VORNEQ."
+msgstr "Entdecke geprüfte digitale Produkte unabhängiger Anbieter auf VORNEQ."
+
+msgid "Discover approved digital products, courses, templates, audio, software, and more from independent creators."
+msgstr "Entdecke geprüfte digitale Produkte, Kurse, Vorlagen, Audio, Software und mehr von unabhängigen Anbietern."
+
+msgid "Discover books, articles, audio, documents, and digital products with VORNEQ."
+msgstr "Entdecke Bücher, Artikel, Audio, Dokumente und digitale Produkte mit VORNEQ."
+
+msgid "Discover knowledge across formats."
+msgstr "Wissen in verschiedenen Formaten entdecken."
+
+msgid "Discovery results"
+msgstr "Entdeckungsergebnisse"
+
+msgid "Do not expose digital_file.url in public templates."
+msgstr "digital_file.url darf in öffentlichen Vorlagen nicht offengelegt werden."
+
+msgid "Document"
+msgstr "Dokument"
+
+msgid "Documents"
+msgstr "Dokumente"
+
+msgid "Don't have an account? Sign up"
+msgstr "Noch kein Konto? Registrieren"
+
+msgid "E-book"
+msgstr "E-Book"
+
+msgid "Edit"
+msgstr "Bearbeiten"
+
+msgid "Edit Product"
+msgstr "Produkt bearbeiten"
+
+msgid "Email"
+msgstr "E-Mail"
+
+msgid "Email Addresses"
+msgstr "E-Mail-Adressen"
+
+msgid "Empty"
+msgstr "Leer"
+
+msgid "Enter your current password and choose a new one."
+msgstr "Gib dein aktuelles Passwort ein und wähle ein neues."
+
+msgid "Enter your email address and we'll send you a link to reset your password."
+msgstr "Gib deine E-Mail-Adresse ein. Wir senden dir einen Link zum Zurücksetzen des Passworts."
+
+msgid "Explore books, articles, documents, and audio from the VORNEQ knowledge repository."
+msgstr "Entdecke Bücher, Artikel, Dokumente und Audio im Wissensarchiv von VORNEQ."
+
+msgid "Explore books, articles, documents, and audio in the VORNEQ library."
+msgstr "Entdecke Bücher, Artikel, Dokumente und Audio in der VORNEQ-Bibliothek."
+
+msgid "Featured discoveries"
+msgstr "Empfohlene Entdeckungen"
+
+msgid "Filter by category"
+msgstr "Nach Kategorie filtern"
+
+msgid "Filter by content type"
+msgstr "Nach Inhaltstyp filtern"
+
+msgid "Filtered discoveries"
+msgstr "Gefilterte Entdeckungen"
+
+msgid "For creators"
+msgstr "Für Anbieter"
+
+msgid "Forgot your password?"
+msgstr "Passwort vergessen?"
+
+msgid "Free"
+msgstr "Kostenlos"
+
+msgid "Full description"
+msgstr "Vollständige Beschreibung"
+
+msgid "Have something to publish?"
+msgstr "Möchtest du etwas veröffentlichen?"
+
+msgid "Home"
+msgstr "Startseite"
+
+msgid "Invalid Reset Link"
+msgstr "Ungültiger Link zum Zurücksetzen"
+
+msgid "JPG, PNG or WebP. Maximum size: 10 MB."
+msgstr "JPG, PNG oder WebP. Maximale Größe: 10 MB."
+
+msgid "Join VORNEQ to explore, curate, and share knowledge."
+msgstr "Werde Teil von VORNEQ, um Wissen zu entdecken, zu kuratieren und zu teilen."
+
+msgid "Knowledge Discovery Platform"
+msgstr "Plattform zur Wissensentdeckung"
+
+msgid "Knowledge, discovered."
+msgstr "Wissen, entdeckt."
+
+msgid "Latest Audio"
+msgstr "Neueste Audioinhalte"
+
+msgid "Latest discoveries"
+msgstr "Neueste Entdeckungen"
+
+msgid "Library"
+msgstr "Bibliothek"
+
+msgid "Library pagination"
+msgstr "Seitennavigation der Bibliothek"
+
+msgid "Listen"
+msgstr "Anhören"
+
+msgid "Make Primary"
+msgstr "Als primär festlegen"
+
+msgid "Manage All Products"
+msgstr "Alle Produkte verwalten"
+
+msgid "Manage Email"
+msgstr "E-Mail verwalten"
+
+msgid "Manage the email addresses connected to your account."
+msgstr "Verwalte die mit deinem Konto verbundenen E-Mail-Adressen."
+
+msgid "Manage your products and submit new work for review."
+msgstr "Verwalte deine Produkte und reiche neue Inhalte zur Prüfung ein."
+
+msgid "Marketplace"
+msgstr "Marktplatz"
+
+msgid "Moderation"
+msgstr "Moderation"
+
+msgid "Moderator"
+msgstr "Moderator"
+
+msgid "My products"
+msgstr "Meine Produkte"
+
+msgid "New and edited products remain here until a moderator reviews them."
+msgstr "Neue und bearbeitete Produkte bleiben hier, bis sie geprüft wurden."
+
+msgid "New and edited products return to the moderation queue before publication."
+msgstr "Neue und bearbeitete Produkte werden vor der Veröffentlichung erneut geprüft."
+
+msgid "Next"
+msgstr "Weiter"
+
+msgid "No approved products have been published yet."
+msgstr "Es wurden noch keine genehmigten Produkte veröffentlicht."
+
+msgid "No audio has been published yet."
+msgstr "Es wurden noch keine Audioinhalte veröffentlicht."
+
+msgid "No email address is currently registered for this account."
+msgstr "Für dieses Konto ist derzeit keine E-Mail-Adresse registriert."
+
+msgid "No external accounts are currently connected."
+msgstr "Derzeit sind keine externen Konten verbunden."
+
+msgid "No library items found"
+msgstr "Keine Bibliothekseinträge gefunden"
+
+msgid "No products found"
+msgstr "Keine Produkte gefunden"
+
+msgid "No results found"
+msgstr "Keine Ergebnisse gefunden"
+
+msgid "Nothing matched"
+msgstr "Keine Übereinstimmung"
+
+msgid "Open seller dashboard"
+msgstr "Verkäufer-Dashboard öffnen"
+
+msgid "Optional score from 1 to 10"
+msgstr "Optionale Bewertung von 1 bis 10"
+
+msgid "Optional score from 1 to 10."
+msgstr "Optionale Bewertung von 1 bis 10."
+
+msgid "Other"
+msgstr "Sonstiges"
+
+msgid "PDF, ZIP, MP3, WAV or EPUB. Maximum size: 100 MB."
+msgstr "PDF, ZIP, MP3, WAV oder EPUB. Maximale Größe: 100 MB."
+
+msgid "Page %(current)s of %(total)s"
+msgstr "Seite %(current)s von %(total)s"
+
+msgid "Pagination"
+msgstr "Seitennavigation"
+
+msgid "Password Changed"
+msgstr "Passwort geändert"
+
+msgid "Password Reset Successful"
+msgstr "Passwort erfolgreich zurückgesetzt"
+
+msgid "Pending review"
+msgstr "Prüfung ausstehend"
+
+msgid "Please confirm that %(email)s is your email address."
+msgstr "Bitte bestätige, dass %(email)s deine E-Mail-Adresse ist."
+
+msgid "Please explain why the product was rejected or what changes are required."
+msgstr "Bitte erkläre, warum das Produkt abgelehnt wurde oder welche Änderungen erforderlich sind."
+
+msgid "Previous"
+msgstr "Zurück"
+
+msgid "Price"
+msgstr "Preis"
+
+msgid "Price cannot be negative."
+msgstr "Der Preis darf nicht negativ sein."
+
+msgid "Price is required."
+msgstr "Ein Preis ist erforderlich."
+
+msgid "Primary"
+msgstr "Primär"
+
+msgid "Product"
+msgstr "Produkt"
+
+msgid "Product Review Queue"
+msgstr "Produkt-Prüfwarteschlange"
+
+msgid "Product image"
+msgstr "Produktbild"
+
+msgid "Product image cannot exceed 10 MB."
+msgstr "Das Produktbild darf 10 MB nicht überschreiten."
+
+msgid "Product review"
+msgstr "Produktprüfung"
+
+msgid "Product reviews"
+msgstr "Produktprüfungen"
+
+msgid "Products"
+msgstr "Produkte"
+
+msgid "Protected product file. Do not expose digital_file.url in public templates."
+msgstr "Geschützte Produktdatei. digital_file.url darf in öffentlichen Vorlagen nicht offengelegt werden."
+
+msgid "Published"
+msgstr "Veröffentlicht"
+
+msgid "Published at"
+msgstr "Veröffentlicht am"
+
+msgid "Quality score"
+msgstr "Qualitätsbewertung"
+
+msgid "Re-send Verification"
+msgstr "Bestätigung erneut senden"
+
+msgid "Read"
+msgstr "Lesen"
+
+msgid "Read PDF"
+msgstr "PDF lesen"
+
+msgid "Rejected"
+msgstr "Abgelehnt"
+
+msgid "Remove"
+msgstr "Entfernen"
+
+msgid "Request a new reset link"
+msgstr "Neuen Link anfordern"
+
+msgid "Reset Link Sent"
+msgstr "Link zum Zurücksetzen gesendet"
+
+msgid "Reset Password"
+msgstr "Passwort zurücksetzen"
+
+msgid "Reset Your Password"
+msgstr "Passwort zurücksetzen"
+
+msgid "Reset discovery"
+msgstr "Entdeckung zurücksetzen"
+
+msgid "Results for “%(query)s”"
+msgstr "Ergebnisse für „%(query)s“"
+
+msgid "Review and manage external services connected to your account."
+msgstr "Prüfe und verwalte externe Dienste, die mit deinem Konto verbunden sind."
+
+msgid "Review in Django Admin"
+msgstr "In Django Admin prüfen"
+
+msgid "Review notes"
+msgstr "Prüfnotizen"
+
+msgid "Review status"
+msgstr "Prüfstatus"
+
+msgid "Review the required details to finish creating your account."
+msgstr "Prüfe die erforderlichen Angaben, um dein Konto fertig einzurichten."
+
+msgid "Reviewed at"
+msgstr "Geprüft am"
+
+msgid "Save and Submit for Review"
+msgstr "Speichern und zur Prüfung einreichen"
+
+msgid "Score must be between 1 and 10."
+msgstr "Die Bewertung muss zwischen 1 und 10 liegen."
+
+msgid "Search"
+msgstr "Suchen"
+
+msgid "Search VORNEQ"
+msgstr "VORNEQ durchsuchen"
+
+msgid "Search and filter products"
+msgstr "Produkte suchen und filtern"
+
+msgid "Search books, articles, documents, and audio…"
+msgstr "Bücher, Artikel, Dokumente und Audio durchsuchen…"
+
+msgid "Search books, articles, documents, audio, and digital products from one place."
+msgstr "Durchsuche Bücher, Artikel, Dokumente, Audio und digitale Produkte an einem Ort."
+
+msgid "Search library"
+msgstr "Bibliothek durchsuchen"
+
+msgid "Search marketplace"
+msgstr "Marktplatz durchsuchen"
+
+msgid "Search products…"
+msgstr "Produkte suchen…"
+
+msgid "Search, explore, and connect knowledge across formats."
+msgstr "Wissen formatübergreifend suchen, entdecken und verbinden."
+
+msgid "Security"
+msgstr "Sicherheit"
+
+msgid "Seller"
+msgstr "Verkäufer"
+
+msgid "Seller Dashboard"
+msgstr "Verkäufer-Dashboard"
+
+msgid "Send Reset Link"
+msgstr "Link zum Zurücksetzen senden"
+
+msgid "Separate tags with commas."
+msgstr "Schlagwörter mit Kommas trennen."
+
+msgid "Set New Password"
+msgstr "Neues Passwort festlegen"
+
+msgid "Set Password"
+msgstr "Passwort festlegen"
+
+msgid "Set a Password"
+msgstr "Passwort festlegen"
+
+msgid "Short description"
+msgstr "Kurzbeschreibung"
+
+msgid "Sign In"
+msgstr "Anmelden"
+
+msgid "Sign Out"
+msgstr "Abmelden"
+
+msgid "Sign Up"
+msgstr "Registrieren"
+
+msgid "Sign Up Closed"
+msgstr "Registrierung geschlossen"
+
+msgid "Sign in"
+msgstr "Anmelden"
+
+msgid "Sign in to sell on VORNEQ"
+msgstr "Anmelden, um auf VORNEQ zu verkaufen"
+
+msgid "Sign out"
+msgstr "Abmelden"
+
+msgid "Site header"
+msgstr "Seitenkopf"
+
+msgid "Skip to main content"
+msgstr "Zum Hauptinhalt springen"
+
+msgid "Slug"
+msgstr "Slug"
+
+msgid "Social Account Login"
+msgstr "Anmeldung mit externem Konto"
+
+msgid "Software"
+msgstr "Software"
+
+msgid "Status:"
+msgstr "Status:"
+
+msgid "Submitted"
+msgstr "Eingereicht"
+
+msgid "Submitted products are reviewed before they become publicly available."
+msgstr "Eingereichte Produkte werden geprüft, bevor sie öffentlich verfügbar sind."
+
+msgid "Tags"
+msgstr "Schlagwörter"
+
+msgid "Template"
+msgstr "Vorlage"
+
+msgid "The audio file is not available for this item."
+msgstr "Für diesen Eintrag ist keine Audiodatei verfügbar."
+
+msgid "The external sign-in flow could not be completed. You can try again or use the standard sign-in form."
+msgstr "Die externe Anmeldung konnte nicht abgeschlossen werden. Versuche es erneut oder nutze die normale Anmeldung."
+
+msgid "The full text for this library item is not available yet."
+msgstr "Der vollständige Text dieses Bibliothekseintrags ist noch nicht verfügbar."
+
+msgid "The password reset link is invalid or has expired. Please request a new one."
+msgstr "Der Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen. Bitte fordere einen neuen an."
+
+msgid "The product is publicly visible only when it is both approved and published."
+msgstr "Das Produkt ist nur öffentlich sichtbar, wenn es genehmigt und veröffentlicht ist."
+
+msgid "The product was approved. It can now be published by an administrator."
+msgstr "Das Produkt wurde genehmigt und kann nun von einem Administrator veröffentlicht werden."
+
+msgid "The product was rejected."
+msgstr "Das Produkt wurde abgelehnt."
+
+msgid "The review queue is empty"
+msgstr "Die Prüfwarteschlange ist leer"
+
+msgid "There are currently no products waiting for moderation."
+msgstr "Derzeit warten keine Produkte auf eine Prüfung."
+
+msgid "There are no published library items yet."
+msgstr "Es gibt noch keine veröffentlichten Bibliothekseinträge."
+
+msgid "This account is currently inactive. Please contact support if you believe this is an error."
+msgstr "Dieses Konto ist derzeit inaktiv. Bitte kontaktiere den Support, wenn du einen Fehler vermutest."
+
+msgid "This email confirmation link is invalid or has expired."
+msgstr "Dieser E-Mail-Bestätigungslink ist ungültig oder abgelaufen."
+
+msgid "Title"
+msgstr "Titel"
+
+msgid "Title is required."
+msgstr "Ein Titel ist erforderlich."
+
+msgid "Try Again"
+msgstr "Erneut versuchen"
+
+msgid "Try a different search term or category."
+msgstr "Versuche einen anderen Suchbegriff oder eine andere Kategorie."
+
+msgid "Try adjusting your keywords or choosing a different content type."
+msgstr "Passe deine Suchbegriffe an oder wähle einen anderen Inhaltstyp."
+
+msgid "Try another keyword or clear the current search."
+msgstr "Versuche ein anderes Stichwort oder lösche die aktuelle Suche."
+
+msgid "Unverified"
+msgstr "Nicht bestätigt"
+
+msgid "Updated"
+msgstr "Aktualisiert"
+
+msgid "Updated at"
+msgstr "Aktualisiert am"
+
+msgid "VORNEQ — Knowledge Discovery Platform"
+msgstr "VORNEQ — Plattform zur Wissensentdeckung"
+
+msgid "Verification Sent"
+msgstr "Bestätigung gesendet"
+
+msgid "Verified"
+msgstr "Bestätigt"
+
+msgid "Verify Your Email"
+msgstr "E-Mail bestätigen"
+
+msgid "Version"
+msgstr "Version"
+
+msgid "View"
+msgstr "Ansehen"
+
+msgid "View all products"
+msgstr "Alle Produkte ansehen"
+
+msgid "View details"
+msgstr "Details ansehen"
+
+msgid "We're sorry, but new registrations are currently closed. Please check back later."
+msgstr "Neue Registrierungen sind derzeit geschlossen. Bitte versuche es später erneut."
+
+msgid "We've sent a verification link to your email address. Please check your inbox and follow the link to complete your registration."
+msgstr "Wir haben einen Bestätigungslink an deine E-Mail-Adresse gesendet. Prüfe deinen Posteingang und folge dem Link, um die Registrierung abzuschließen."
+
+msgid "We've sent you a link to reset your password. Please check your email and follow the instructions."
+msgstr "Wir haben dir einen Link zum Zurücksetzen des Passworts gesendet. Prüfe deine E-Mail und folge den Anweisungen."
+
+msgid "Welcome back. Sign in to continue your discovery journey."
+msgstr "Willkommen zurück. Melde dich an, um deine Entdeckungsreise fortzusetzen."
+
+msgid "Write moderation notes..."
+msgstr "Prüfnotizen schreiben..."
+
+msgid "You have not submitted any products yet"
+msgstr "Du hast noch keine Produkte eingereicht"
+
+msgid "Your browser does not support the audio element."
+msgstr "Dein Browser unterstützt das Audioelement nicht."
+
+msgid "Your changes were saved. The product has been returned to the review queue."
+msgstr "Deine Änderungen wurden gespeichert. Das Produkt wurde wieder in die Prüfwarteschlange gestellt."
+
+msgid "Your password has been changed. You can now sign in with your new password."
+msgstr "Dein Passwort wurde geändert. Du kannst dich jetzt mit dem neuen Passwort anmelden."
+
+msgid "Your product was submitted for review."
+msgstr "Dein Produkt wurde zur Prüfung eingereicht."
+
+msgid "philosophy, logic, method"
+msgstr "Philosophie, Logik, Methode"
+
+msgid "%(counter)s result"
+msgid_plural "%(counter)s results"
+msgstr[0] "%(counter)s Ergebnis"
+msgstr[1] "%(counter)s Ergebnisse"
+
+msgid "%(total)s library result"
+msgid_plural "%(total)s library results"
+msgstr[0] "%(total)s Bibliotheksergebnis"
+msgstr[1] "%(total)s Bibliotheksergebnisse"
+
+msgid "%(total)s product"
+msgid_plural "%(total)s products"
+msgstr[0] "%(total)s Produkt"
+msgstr[1] "%(total)s Produkte"

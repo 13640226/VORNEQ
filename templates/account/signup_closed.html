@@ -11,7 +11,7 @@
 {% block content %}
 <div class="account-shell">
   <div class="account-card account-card--message">
-    <p class="account-card__eyebrow">VORNEQ / ACCOUNT</p>
+    <p class="account-card__eyebrow">VORNEQ / {% trans "Account" %}</p>
     <h1 class="account-card__title">{% trans "Sign Up Closed" %}</h1>
     <p class="account-card__subtitle">{% trans "We're sorry, but new registrations are currently closed. Please check back later." %}</p>
     <div class="account-card__footer"><a href="{% url 'account_login' %}" class="account-form__link">{% trans "Back to Sign In" %}</a></div>

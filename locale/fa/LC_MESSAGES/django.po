@@ -1,0 +1,734 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: VORNEQ\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "About this product"
+msgstr "درباره این محصول"
+
+msgid "Account"
+msgstr "حساب کاربری"
+
+msgid "Account Inactive"
+msgstr "حساب غیرفعال"
+
+msgid "Across VORNEQ"
+msgstr "در سراسر VORNEQ"
+
+msgid "Active connections"
+msgstr "اتصال‌های فعال"
+
+msgid "Add Email"
+msgstr "افزودن ایمیل"
+
+msgid "Add Email Address"
+msgstr "افزودن نشانی ایمیل"
+
+msgid "All"
+msgstr "همه"
+
+msgid "Allowed image formats: JPG, JPEG, PNG and WebP."
+msgstr "فرمت‌های مجاز تصویر: JPG، JPEG، PNG و WebP."
+
+msgid "Allowed product formats: PDF, ZIP, MP3, WAV and EPUB."
+msgstr "فرمت‌های مجاز محصول: PDF، ZIP، MP3، WAV و EPUB."
+
+msgid "Already have an account? Sign in"
+msgstr "قبلاً حساب دارید؟ وارد شوید"
+
+msgid "Approve, reject, or request changes."
+msgstr "تأیید، رد یا درخواست تغییر."
+
+msgid "Approved"
+msgstr "تأییدشده"
+
+msgid "Are you sure you want to sign out of your VORNEQ account?"
+msgstr "آیا مطمئن هستید که می‌خواهید از حساب VORNEQ خود خارج شوید؟"
+
+msgid "Article"
+msgstr "مقاله"
+
+msgid "Articles"
+msgstr "مقاله‌ها"
+
+msgid "Artwork"
+msgstr "اثر هنری"
+
+msgid "Audio"
+msgstr "صوت"
+
+msgid "Audio product"
+msgstr "محصول صوتی"
+
+msgid "Audio results"
+msgstr "نتایج صوتی"
+
+msgid "Authentication Error"
+msgstr "خطای احراز هویت"
+
+msgid "Author"
+msgstr "نویسنده"
+
+msgid "Back to Home"
+msgstr "بازگشت به خانه"
+
+msgid "Back to Library"
+msgstr "بازگشت به کتابخانه"
+
+msgid "Back to Marketplace"
+msgstr "بازگشت به بازارچه"
+
+msgid "Back to Sign In"
+msgstr "بازگشت به ورود"
+
+msgid "Book"
+msgstr "کتاب"
+
+msgid "Books"
+msgstr "کتاب‌ها"
+
+msgid "Browse Library"
+msgstr "مرور کتابخانه"
+
+msgid "Browse more products"
+msgstr "مرور محصولات بیشتر"
+
+msgid "By"
+msgstr "توسط"
+
+msgid "Cancel"
+msgstr "انصراف"
+
+msgid "Category"
+msgstr "دسته‌بندی"
+
+msgid "Change Password"
+msgstr "تغییر رمز عبور"
+
+msgid "Change Your Password"
+msgstr "رمز عبور خود را تغییر دهید"
+
+msgid "Changes were requested from the seller."
+msgstr "از فروشنده درخواست تغییر شد."
+
+msgid "Check Your Email"
+msgstr "ایمیل خود را بررسی کنید"
+
+msgid "Choose a strong password for your VORNEQ account."
+msgstr "یک رمز عبور قوی برای حساب VORNEQ خود انتخاب کنید."
+
+msgid "Clear filters"
+msgstr "پاک کردن فیلترها"
+
+msgid "Clear search"
+msgstr "پاک کردن جستجو"
+
+msgid "Complete Sign Up"
+msgstr "تکمیل ثبت‌نام"
+
+msgid "Complete Your Sign Up"
+msgstr "ثبت‌نام خود را تکمیل کنید"
+
+msgid "Confirm"
+msgstr "تأیید"
+
+msgid "Confirm Email"
+msgstr "تأیید ایمیل"
+
+msgid "Confirm Email Address"
+msgstr "تأیید نشانی ایمیل"
+
+msgid "Confirm that you want to connect this external account to your VORNEQ account."
+msgstr "تأیید کنید که می‌خواهید این حساب خارجی را به حساب VORNEQ خود متصل کنید."
+
+msgid "Confirm to continue signing in with the selected provider."
+msgstr "برای ادامه ورود با ارائه‌دهنده انتخاب‌شده تأیید کنید."
+
+msgid "Connect Account"
+msgstr "اتصال حساب"
+
+msgid "Connected Accounts"
+msgstr "حساب‌های متصل"
+
+msgid "Continue"
+msgstr "ادامه"
+
+msgid "Continue with External Account"
+msgstr "ادامه با حساب خارجی"
+
+msgid "Course"
+msgstr "دوره"
+
+msgid "Create Product"
+msgstr "ایجاد محصول"
+
+msgid "Create Your Account"
+msgstr "حساب خود را ایجاد کنید"
+
+msgid "Create a password to sign in with your account credentials."
+msgstr "برای ورود با اطلاعات حساب خود یک رمز عبور ایجاد کنید."
+
+msgid "Create new product"
+msgstr "ایجاد محصول جدید"
+
+msgid "Create your first product and submit it for review."
+msgstr "اولین محصول خود را ایجاد و برای بررسی ارسال کنید."
+
+msgid "Curated from the latest"
+msgstr "برگزیده از تازه‌ترین‌ها"
+
+msgid "Current email addresses"
+msgstr "نشانی‌های ایمیل فعلی"
+
+msgid "Decision"
+msgstr "تصمیم"
+
+msgid "Description is required."
+msgstr "توضیحات الزامی است."
+
+msgid "Digital file"
+msgstr "فایل دیجیتال"
+
+msgid "Digital file cannot exceed 100 MB."
+msgstr "حجم فایل دیجیتال نمی‌تواند بیش از ۱۰۰ مگابایت باشد."
+
+msgid "Digital product"
+msgstr "محصول دیجیتال"
+
+msgid "Disconnect Selected Account"
+msgstr "قطع اتصال حساب انتخاب‌شده"
+
+msgid "Discover"
+msgstr "کشف"
+
+msgid "Discover approved digital products from independent creators on VORNEQ."
+msgstr "محصولات دیجیتال تأییدشده از سازندگان مستقل را در VORNEQ کشف کنید."
+
+msgid "Discover approved digital products, courses, templates, audio, software, and more from independent creators."
+msgstr "محصولات دیجیتال، دوره‌ها، قالب‌ها، صوت، نرم‌افزار و موارد دیگر از سازندگان مستقل را کشف کنید."
+
+msgid "Discover books, articles, audio, documents, and digital products with VORNEQ."
+msgstr "کتاب‌ها، مقاله‌ها، صوت، اسناد و محصولات دیجیتال را با VORNEQ کشف کنید."
+
+msgid "Discover knowledge across formats."
+msgstr "دانش را در قالب‌های مختلف کشف کنید."
+
+msgid "Discovery results"
+msgstr "نتایج کشف"
+
+msgid "Document"
+msgstr "سند"
+
+msgid "Documents"
+msgstr "اسناد"
+
+msgid "Don't have an account? Sign up"
+msgstr "حساب ندارید؟ ثبت‌نام کنید"
+
+msgid "E-book"
+msgstr "کتاب الکترونیکی"
+
+msgid "Edit"
+msgstr "ویرایش"
+
+msgid "Edit Product"
+msgstr "ویرایش محصول"
+
+msgid "Email"
+msgstr "ایمیل"
+
+msgid "Email Addresses"
+msgstr "نشانی‌های ایمیل"
+
+msgid "Empty"
+msgstr "خالی"
+
+msgid "Enter your current password and choose a new one."
+msgstr "رمز عبور فعلی را وارد و یک رمز جدید انتخاب کنید."
+
+msgid "Enter your email address and we'll send you a link to reset your password."
+msgstr "نشانی ایمیل خود را وارد کنید تا پیوند بازنشانی رمز عبور برایتان ارسال شود."
+
+msgid "Explore books, articles, documents, and audio from the VORNEQ knowledge repository."
+msgstr "کتاب‌ها، مقاله‌ها، اسناد و محتوای صوتی را از مخزن دانش VORNEQ کاوش کنید."
+
+msgid "Explore books, articles, documents, and audio in the VORNEQ library."
+msgstr "کتاب‌ها، مقاله‌ها، اسناد و محتوای صوتی را در کتابخانه VORNEQ کاوش کنید."
+
+msgid "Featured discoveries"
+msgstr "کشف‌های برگزیده"
+
+msgid "Filter by category"
+msgstr "فیلتر بر اساس دسته‌بندی"
+
+msgid "Filter by content type"
+msgstr "فیلتر بر اساس نوع محتوا"
+
+msgid "Filtered discoveries"
+msgstr "کشف‌های فیلترشده"
+
+msgid "For creators"
+msgstr "برای سازندگان"
+
+msgid "Forgot your password?"
+msgstr "رمز عبور را فراموش کرده‌اید؟"
+
+msgid "Free"
+msgstr "رایگان"
+
+msgid "Full description"
+msgstr "توضیح کامل"
+
+msgid "Have something to publish?"
+msgstr "چیزی برای انتشار دارید؟"
+
+msgid "Home"
+msgstr "خانه"
+
+msgid "Invalid Reset Link"
+msgstr "پیوند بازنشانی نامعتبر"
+
+msgid "JPG, PNG or WebP. Maximum size: 10 MB."
+msgstr "JPG، PNG یا WebP. حداکثر حجم: ۱۰ مگابایت."
+
+msgid "Join VORNEQ to explore, curate, and share knowledge."
+msgstr "به VORNEQ بپیوندید تا دانش را کاوش، گزینش و به اشتراک بگذارید."
+
+msgid "Knowledge Discovery Platform"
+msgstr "پلتفرم کشف دانش"
+
+msgid "Knowledge, discovered."
+msgstr "دانش، کشف‌شده."
+
+msgid "Latest Audio"
+msgstr "تازه‌ترین صوت‌ها"
+
+msgid "Latest discoveries"
+msgstr "تازه‌ترین کشف‌ها"
+
+msgid "Library"
+msgstr "کتابخانه"
+
+msgid "Library pagination"
+msgstr "صفحه‌بندی کتابخانه"
+
+msgid "Listen"
+msgstr "گوش دادن"
+
+msgid "Make Primary"
+msgstr "تنظیم به‌عنوان اصلی"
+
+msgid "Manage All Products"
+msgstr "مدیریت همه محصولات"
+
+msgid "Manage Email"
+msgstr "مدیریت ایمیل"
+
+msgid "Manage the email addresses connected to your account."
+msgstr "نشانی‌های ایمیل متصل به حساب خود را مدیریت کنید."
+
+msgid "Manage your products and submit new work for review."
+msgstr "محصولات خود را مدیریت کنید و آثار جدید را برای بررسی ارسال کنید."
+
+msgid "Marketplace"
+msgstr "بازارچه"
+
+msgid "Moderation"
+msgstr "بررسی و نظارت"
+
+msgid "My products"
+msgstr "محصولات من"
+
+msgid "New and edited products remain here until a moderator reviews them."
+msgstr "محصولات جدید و ویرایش‌شده تا زمان بررسی مدیر در اینجا می‌مانند."
+
+msgid "New and edited products return to the moderation queue before publication."
+msgstr "محصولات جدید و ویرایش‌شده پیش از انتشار دوباره به صف بررسی می‌روند."
+
+msgid "Next"
+msgstr "بعدی"
+
+msgid "No approved products have been published yet."
+msgstr "هنوز محصول تأییدشده‌ای منتشر نشده است."
+
+msgid "No audio has been published yet."
+msgstr "هنوز محتوای صوتی منتشر نشده است."
+
+msgid "No email address is currently registered for this account."
+msgstr "در حال حاضر هیچ نشانی ایمیلی برای این حساب ثبت نشده است."
+
+msgid "No external accounts are currently connected."
+msgstr "در حال حاضر هیچ حساب خارجی متصل نیست."
+
+msgid "No library items found"
+msgstr "موردی در کتابخانه یافت نشد"
+
+msgid "No products found"
+msgstr "محصولی یافت نشد"
+
+msgid "No results found"
+msgstr "نتیجه‌ای یافت نشد"
+
+msgid "Nothing matched"
+msgstr "موردی مطابقت نداشت"
+
+msgid "Open seller dashboard"
+msgstr "باز کردن داشبورد فروشنده"
+
+msgid "Optional score from 1 to 10."
+msgstr "امتیاز اختیاری از ۱ تا ۱۰."
+
+msgid "Other"
+msgstr "سایر"
+
+msgid "PDF, ZIP, MP3, WAV or EPUB. Maximum size: 100 MB."
+msgstr "PDF، ZIP، MP3، WAV یا EPUB. حداکثر حجم: ۱۰۰ مگابایت."
+
+msgid "Page %(current)s of %(total)s"
+msgstr "صفحه %(current)s از %(total)s"
+
+msgid "Pagination"
+msgstr "صفحه‌بندی"
+
+msgid "Password Changed"
+msgstr "رمز عبور تغییر کرد"
+
+msgid "Password Reset Successful"
+msgstr "بازنشانی رمز عبور موفق بود"
+
+msgid "Pending"
+msgstr "در انتظار"
+
+msgid "Pending review"
+msgstr "در انتظار بررسی"
+
+msgid "Please confirm that %(email)s is your email address."
+msgstr "لطفاً تأیید کنید که %(email)s نشانی ایمیل شماست."
+
+msgid "Please explain why the product was rejected or what changes are required."
+msgstr "لطفاً توضیح دهید چرا محصول رد شده یا چه تغییراتی لازم است."
+
+msgid "Previous"
+msgstr "قبلی"
+
+msgid "Price"
+msgstr "قیمت"
+
+msgid "Price cannot be negative."
+msgstr "قیمت نمی‌تواند منفی باشد."
+
+msgid "Price is required."
+msgstr "قیمت الزامی است."
+
+msgid "Primary"
+msgstr "اصلی"
+
+msgid "Product"
+msgstr "محصول"
+
+msgid "Product Review Queue"
+msgstr "صف بررسی محصولات"
+
+msgid "Product image"
+msgstr "تصویر محصول"
+
+msgid "Product image cannot exceed 10 MB."
+msgstr "حجم تصویر محصول نمی‌تواند بیش از ۱۰ مگابایت باشد."
+
+msgid "Products"
+msgstr "محصولات"
+
+msgid "Published"
+msgstr "منتشرشده"
+
+msgid "Quality score"
+msgstr "امتیاز کیفیت"
+
+msgid "Re-send Verification"
+msgstr "ارسال مجدد تأیید"
+
+msgid "Read"
+msgstr "مطالعه"
+
+msgid "Read PDF"
+msgstr "مطالعه PDF"
+
+msgid "Rejected"
+msgstr "ردشده"
+
+msgid "Remove"
+msgstr "حذف"
+
+msgid "Request a new reset link"
+msgstr "درخواست پیوند بازنشانی جدید"
+
+msgid "Reset Link Sent"
+msgstr "پیوند بازنشانی ارسال شد"
+
+msgid "Reset Password"
+msgstr "بازنشانی رمز عبور"
+
+msgid "Reset Your Password"
+msgstr "رمز عبور خود را بازنشانی کنید"
+
+msgid "Reset discovery"
+msgstr "بازنشانی کشف"
+
+msgid "Results for “%(query)s”"
+msgstr "نتایج برای «%(query)s»"
+
+msgid "Review and manage external services connected to your account."
+msgstr "سرویس‌های خارجی متصل به حساب خود را بررسی و مدیریت کنید."
+
+msgid "Review in Django Admin"
+msgstr "بررسی در مدیریت Django"
+
+msgid "Review notes"
+msgstr "یادداشت بررسی"
+
+msgid "Review status"
+msgstr "وضعیت بررسی"
+
+msgid "Review the required details to finish creating your account."
+msgstr "برای تکمیل ایجاد حساب، اطلاعات لازم را بررسی کنید."
+
+msgid "Save and Submit for Review"
+msgstr "ذخیره و ارسال برای بررسی"
+
+msgid "Score must be between 1 and 10."
+msgstr "امتیاز باید بین ۱ تا ۱۰ باشد."
+
+msgid "Search"
+msgstr "جستجو"
+
+msgid "Search VORNEQ"
+msgstr "جستجو در VORNEQ"
+
+msgid "Search and filter products"
+msgstr "جستجو و فیلتر محصولات"
+
+msgid "Search books, articles, documents, and audio…"
+msgstr "جستجوی کتاب‌ها، مقاله‌ها، اسناد و صوت…"
+
+msgid "Search books, articles, documents, audio, and digital products from one place."
+msgstr "کتاب‌ها، مقاله‌ها، اسناد، محتوای صوتی و محصولات دیجیتال را از یک‌جا جستجو کنید."
+
+msgid "Search library"
+msgstr "جستجو در کتابخانه"
+
+msgid "Search marketplace"
+msgstr "جستجو در بازارچه"
+
+msgid "Search products…"
+msgstr "جستجوی محصولات…"
+
+msgid "Search, explore, and connect knowledge across formats."
+msgstr "دانش را در قالب‌های مختلف جستجو، کاوش و به هم متصل کنید."
+
+msgid "Security"
+msgstr "امنیت"
+
+msgid "Seller"
+msgstr "فروشنده"
+
+msgid "Seller Dashboard"
+msgstr "داشبورد فروشنده"
+
+msgid "Send Reset Link"
+msgstr "ارسال پیوند بازنشانی"
+
+msgid "Separate tags with commas."
+msgstr "برچسب‌ها را با ویرگول جدا کنید."
+
+msgid "Set New Password"
+msgstr "تنظیم رمز عبور جدید"
+
+msgid "Set Password"
+msgstr "تنظیم رمز عبور"
+
+msgid "Set a Password"
+msgstr "یک رمز عبور تنظیم کنید"
+
+msgid "Short description"
+msgstr "توضیح کوتاه"
+
+msgid "Sign In"
+msgstr "ورود"
+
+msgid "Sign Out"
+msgstr "خروج"
+
+msgid "Sign Up"
+msgstr "ثبت‌نام"
+
+msgid "Sign Up Closed"
+msgstr "ثبت‌نام بسته است"
+
+msgid "Sign in"
+msgstr "ورود"
+
+msgid "Sign in to sell on VORNEQ"
+msgstr "برای فروش در VORNEQ وارد شوید"
+
+msgid "Sign out"
+msgstr "خروج"
+
+msgid "Site header"
+msgstr "سربرگ سایت"
+
+msgid "Skip to main content"
+msgstr "رفتن به محتوای اصلی"
+
+msgid "Social Account Login"
+msgstr "ورود با حساب خارجی"
+
+msgid "Software"
+msgstr "نرم‌افزار"
+
+msgid "Status:"
+msgstr "وضعیت:"
+
+msgid "Submitted"
+msgstr "ارسال‌شده"
+
+msgid "Submitted products are reviewed before they become publicly available."
+msgstr "محصولات ارسالی پیش از انتشار عمومی بررسی می‌شوند."
+
+msgid "Tags"
+msgstr "برچسب‌ها"
+
+msgid "Template"
+msgstr "قالب"
+
+msgid "The audio file is not available for this item."
+msgstr "فایل صوتی این مورد در دسترس نیست."
+
+msgid "The external sign-in flow could not be completed. You can try again or use the standard sign-in form."
+msgstr "فرایند ورود خارجی کامل نشد. دوباره تلاش کنید یا از فرم ورود معمولی استفاده کنید."
+
+msgid "The full text for this library item is not available yet."
+msgstr "متن کامل این مورد هنوز در دسترس نیست."
+
+msgid "The password reset link is invalid or has expired. Please request a new one."
+msgstr "پیوند بازنشانی رمز عبور نامعتبر است یا منقضی شده. یک پیوند جدید درخواست کنید."
+
+msgid "The product was approved. It can now be published by an administrator."
+msgstr "محصول تأیید شد و اکنون می‌تواند توسط مدیر منتشر شود."
+
+msgid "The product was rejected."
+msgstr "محصول رد شد."
+
+msgid "The review queue is empty"
+msgstr "صف بررسی خالی است"
+
+msgid "There are currently no products waiting for moderation."
+msgstr "در حال حاضر محصولی در انتظار بررسی نیست."
+
+msgid "There are no published library items yet."
+msgstr "هنوز مورد منتشرشده‌ای در کتابخانه وجود ندارد."
+
+msgid "This account is currently inactive. Please contact support if you believe this is an error."
+msgstr "این حساب در حال حاضر غیرفعال است. اگر فکر می‌کنید اشتباهی رخ داده، با پشتیبانی تماس بگیرید."
+
+msgid "This email confirmation link is invalid or has expired."
+msgstr "این پیوند تأیید ایمیل نامعتبر است یا منقضی شده است."
+
+msgid "Title"
+msgstr "عنوان"
+
+msgid "Title is required."
+msgstr "عنوان الزامی است."
+
+msgid "Try Again"
+msgstr "تلاش دوباره"
+
+msgid "Try a different search term or category."
+msgstr "عبارت جستجو یا دسته‌بندی دیگری امتحان کنید."
+
+msgid "Try adjusting your keywords or choosing a different content type."
+msgstr "کلیدواژه‌ها را تغییر دهید یا نوع محتوای دیگری انتخاب کنید."
+
+msgid "Try another keyword or clear the current search."
+msgstr "کلیدواژه دیگری امتحان کنید یا جستجوی فعلی را پاک کنید."
+
+msgid "Unverified"
+msgstr "تأییدنشده"
+
+msgid "Updated"
+msgstr "به‌روزرسانی‌شده"
+
+msgid "VORNEQ — Knowledge Discovery Platform"
+msgstr "VORNEQ — پلتفرم کشف دانش"
+
+msgid "Verification Sent"
+msgstr "تأیید ارسال شد"
+
+msgid "Verified"
+msgstr "تأییدشده"
+
+msgid "Verify Your Email"
+msgstr "ایمیل خود را تأیید کنید"
+
+msgid "Version"
+msgstr "نسخه"
+
+msgid "View"
+msgstr "مشاهده"
+
+msgid "View all products"
+msgstr "مشاهده همه محصولات"
+
+msgid "View details"
+msgstr "مشاهده جزئیات"
+
+msgid "We're sorry, but new registrations are currently closed. Please check back later."
+msgstr "متأسفیم، ثبت‌نام جدید در حال حاضر بسته است. لطفاً بعداً دوباره بررسی کنید."
+
+msgid "We've sent a verification link to your email address. Please check your inbox and follow the link to complete your registration."
+msgstr "پیوند تأیید به نشانی ایمیل شما ارسال شد. صندوق ورودی را بررسی و برای تکمیل ثبت‌نام پیوند را دنبال کنید."
+
+msgid "We've sent you a link to reset your password. Please check your email and follow the instructions."
+msgstr "پیوند بازنشانی رمز عبور برایتان ارسال شد. ایمیل خود را بررسی و دستورالعمل‌ها را دنبال کنید."
+
+msgid "Welcome back. Sign in to continue your discovery journey."
+msgstr "خوش آمدید. برای ادامه مسیر کشف خود وارد شوید."
+
+msgid "Write moderation notes..."
+msgstr "یادداشت بررسی را بنویسید..."
+
+msgid "You have not submitted any products yet"
+msgstr "هنوز محصولی ثبت نکرده‌اید"
+
+msgid "Your browser does not support the audio element."
+msgstr "مرورگر شما از پخش صوت پشتیبانی نمی‌کند."
+
+msgid "Your changes were saved. The product has been returned to the review queue."
+msgstr "تغییرات ذخیره شد. محصول دوباره به صف بررسی بازگشت."
+
+msgid "Your password has been changed. You can now sign in with your new password."
+msgstr "رمز عبور شما تغییر کرد. اکنون می‌توانید با رمز جدید وارد شوید."
+
+msgid "Your product was submitted for review."
+msgstr "محصول شما برای بررسی ارسال شد."
+
+msgid "philosophy, logic, method"
+msgstr "فلسفه، منطق، روش"
+
+msgid "%(counter)s result"
+msgid_plural "%(counter)s results"
+msgstr[0] "%(counter)s نتیجه"
+msgstr[1] "%(counter)s نتیجه"
+
+msgid "%(total)s library result"
+msgid_plural "%(total)s library results"
+msgstr[0] "%(total)s نتیجه کتابخانه"
+msgstr[1] "%(total)s نتیجه کتابخانه"
+
+msgid "%(total)s product"
+msgid_plural "%(total)s products"
+msgstr[0] "%(total)s محصول"
+msgstr[1] "%(total)s محصول"
