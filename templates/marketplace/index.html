@@ -1,947 +1,158 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}
-    {% trans "بازار دیجیتال — سامان خرد" %}
-{% endblock %}
+{% block title %}{% trans "Marketplace" %} — VORNEQ{% endblock %}
 
 {% block meta %}
-    {{ block.super }}
-
-    <meta
-        name="description"
-        content="{% trans 'آثار دیجیتال تأییدشده در سامان خرد؛ محتوای فکری، پژوهشی و مستقل.' %}"
-    >
-
-    <meta
-        property="og:title"
-        content="{% trans 'بازار دیجیتال — سامان خرد' %}"
-    >
-
-    <meta
-        property="og:description"
-        content="{% trans 'مجموعه‌ای از آثار دیجیتال که پیش از انتشار عمومی بررسی شده‌اند.' %}"
-    >
-
-    <meta property="og:type" content="website">
+<meta name="description" content="{% trans 'Discover approved digital products from independent creators on VORNEQ.' %}">
 {% endblock %}
-
 
 {% block extra_head %}
-    {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
+<link rel="stylesheet" href="{% static 'css/marketplace.css' %}">
 {% endblock %}
 
-
 {% block content %}
-
 {% include "partials/_standalone_nav.html" %}
 
-<!-- =========================================================
-     PAGE HEADER
-     ========================================================= -->
+<section class="marketplace-page">
+  <div class="marketplace-shell">
+    <header class="marketplace-header">
+      <p class="marketplace-header__eyebrow">VORNEQ / MARKETPLACE</p>
+      <h1 class="marketplace-header__title">{% trans "Marketplace" %}</h1>
+      <p class="marketplace-header__subtitle">
+        {% trans "Discover approved digital products, courses, templates, audio, software, and more from independent creators." %}
+      </p>
+    </header>
 
-<section class="page-header">
-    <div class="container">
-
-        <div class="page-header__content">
-
-            <p class="section-code">
-                09 / MARKETPLACE
-            </p>
-
-            <h1>
-                {% trans "بازار دیجیتال" %}
-            </h1>
-
-            <p class="page-header__subtitle">
-                {% trans "آثار تأییدشده؛ هر محصول پیش از انتشار عمومی بررسی می‌شود." %}
-            </p>
-
+    <section class="marketplace-toolbar" aria-label="{% trans 'Search and filter products' %}">
+      <form method="get" action="{% url 'marketplace:index' %}" class="marketplace-search" role="search">
+        <label for="marketplace-search" class="sr-only">{% trans "Search marketplace" %}</label>
+        <div class="marketplace-search__wrapper">
+          <input
+            id="marketplace-search"
+            type="search"
+            name="q"
+            class="marketplace-search__input"
+            placeholder="{% trans 'Search products…' %}"
+            value="{{ query }}"
+            autocomplete="off"
+          >
+          {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+          <button type="submit" class="marketplace-search__button">{% trans "Search" %}</button>
         </div>
+      </form>
 
-    </div>
-</section>
+      <nav class="marketplace-filters" aria-label="{% trans 'Filter by category' %}">
+        <a
+          href="{% url 'marketplace:index' %}{% if query %}?q={{ query|urlencode }}{% endif %}"
+          class="marketplace-filters__link {% if not category %}is-active{% endif %}"
+          {% if not category %}aria-current="page"{% endif %}
+        >{% trans "All" %}</a>
+        {% for category_code, category_label in categories %}
+          <a
+            href="{% url 'marketplace:index' %}?category={{ category_code|urlencode }}{% if query %}&q={{ query|urlencode }}{% endif %}"
+            class="marketplace-filters__link {% if category == category_code %}is-active{% endif %}"
+            {% if category == category_code %}aria-current="page"{% endif %}
+          >{{ category_label }}</a>
+        {% endfor %}
+      </nav>
 
+      {% if query or category %}
+        <div class="marketplace-toolbar__summary" aria-live="polite">
+          <span>{% blocktrans count total=paginator.count %}{{ total }} product{% plural %}{{ total }} products{% endblocktrans %}</span>
+          <a href="{% url 'marketplace:index' %}" class="marketplace-toolbar__clear">{% trans "Clear filters" %}</a>
+        </div>
+      {% endif %}
+    </section>
 
-<!-- =========================================================
-     SEARCH & FILTERS
-     ========================================================= -->
-
-<section class="search-section">
-    <div class="container">
-
-        <form
-            method="get"
-            action="{% url 'marketplace:index' %}"
-            class="search-form"
-            role="search"
-        >
-
-            <div class="search-form__group">
-
-                <label
-                    for="marketplace-search"
-                    class="sr-only"
-                >
-                    {% trans "جست‌وجوی محصولات" %}
-                </label>
-
-                <input
-                    id="marketplace-search"
-                    type="search"
-                    name="q"
-                    value="{{ query }}"
-                    placeholder="{% trans 'جست‌وجو در محصولات...' %}"
-                    class="search-form__input"
-                    autocomplete="off"
-                >
-
-                {% if category %}
-                    <input
-                        type="hidden"
-                        name="category"
-                        value="{{ category }}"
-                    >
-                {% endif %}
-
-                <button
-                    type="submit"
-                    class="search-form__button"
-                >
-                    {% trans "جست‌وجو" %}
-                </button>
-
-            </div>
-
-
-            {% if categories %}
-
-                <nav
-                    class="search-form__filters"
-                    aria-label="{% trans 'دسته‌بندی محصولات' %}"
-                >
-
-                    <span class="search-form__filter-label">
-                        {% trans "دسته‌بندی:" %}
-                    </span>
-
-                    <a
-                        href="?{% if query %}q={{ query|urlencode }}{% endif %}"
-                        class="search-form__filter-link {% if not category %}active{% endif %}"
-                        {% if not category %}
-                            aria-current="page"
-                        {% endif %}
-                    >
-                        {% trans "همه" %}
-                    </a>
-
-
-                    {% for cat in categories %}
-
-                        <a
-                            href="?category={{ cat|urlencode }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}"
-                            class="search-form__filter-link {% if category == cat %}active{% endif %}"
-                            {% if category == cat %}
-                                aria-current="page"
-                            {% endif %}
-                        >
-                            {{ cat }}
-                        </a>
-
-                    {% endfor %}
-
-                </nav>
-
+    {% if products %}
+      <div class="marketplace-grid">
+        {% for product in products %}
+          <article class="marketplace-card">
+            {% if product.image %}
+              <a href="{% url 'marketplace:detail' product.slug %}" class="marketplace-card__image-link" tabindex="-1" aria-hidden="true">
+                <img src="{{ product.image.url }}" alt="" class="marketplace-card__image" loading="lazy" decoding="async">
+              </a>
             {% endif %}
 
+            <div class="marketplace-card__body">
+              <div class="marketplace-card__kicker">
+                <span class="marketplace-card__category">{{ product.get_category_display }}</span>
+                {% if product.version %}<span class="marketplace-card__version">v{{ product.version }}</span>{% endif %}
+              </div>
 
-            {% if query or category %}
+              <h2 class="marketplace-card__title">
+                <a href="{% url 'marketplace:detail' product.slug %}" class="marketplace-card__link">{{ product.title }}</a>
+              </h2>
 
-                <div class="search-form__actions">
+              <p class="marketplace-card__seller">{% trans "By" %} {{ product.seller.get_username }}</p>
 
-                    <a
-                        href="{% url 'marketplace:index' %}"
-                        class="search-form__clear"
-                    >
-                        {% trans "پاک کردن فیلترها" %}
-                    </a>
+              {% if product.short_description %}
+                <p class="marketplace-card__description">{{ product.short_description|striptags|truncatechars:140 }}</p>
+              {% endif %}
 
+              <div class="marketplace-card__footer">
+                <div class="marketplace-card__price">
+                  {% if product.price == 0 %}
+                    <span class="marketplace-card__badge">{% trans "Free" %}</span>
+                  {% else %}
+                    <span>{{ product.price|floatformat:2 }}</span>
+                  {% endif %}
                 </div>
+                <a href="{% url 'marketplace:detail' product.slug %}" class="marketplace-card__action">{% trans "View details" %}</a>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
 
+      {% if page_obj.has_other_pages %}
+        <nav class="marketplace-pagination" aria-label="{% trans 'Pagination' %}">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if category %}&category={{ category|urlencode }}{% endif %}" class="marketplace-pagination__link" rel="prev">{% trans "Previous" %}</a>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <span class="marketplace-pagination__current" aria-current="page">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <a href="?page={{ num }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if category %}&category={{ category|urlencode }}{% endif %}" class="marketplace-pagination__link">{{ num }}</a>
             {% endif %}
+          {% endfor %}
 
-        </form>
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if category %}&category={{ category|urlencode }}{% endif %}" class="marketplace-pagination__link" rel="next">{% trans "Next" %}</a>
+          {% endif %}
+        </nav>
+      {% endif %}
+    {% else %}
+      <div class="marketplace-empty">
+        <h2 class="marketplace-empty__title">{% trans "No products found" %}</h2>
+        <p class="marketplace-empty__message">
+          {% if query or category %}
+            {% trans "Try a different search term or category." %}
+          {% else %}
+            {% trans "No approved products have been published yet." %}
+          {% endif %}
+        </p>
+        {% if query or category %}<a href="{% url 'marketplace:index' %}" class="marketplace-empty__action">{% trans "View all products" %}</a>{% endif %}
+      </div>
+    {% endif %}
 
-    </div>
+    <aside class="marketplace-seller-cta">
+      <p class="marketplace-seller-cta__eyebrow">{% trans "For creators" %}</p>
+      <h2 class="marketplace-seller-cta__title">{% trans "Have something to publish?" %}</h2>
+      <p class="marketplace-seller-cta__text">{% trans "Submitted products are reviewed before they become publicly available." %}</p>
+      {% if user.is_authenticated %}
+        <a href="{% url 'marketplace:seller_dashboard' %}" class="marketplace-seller-cta__link">{% trans "Open seller dashboard" %}</a>
+      {% else %}
+        <a href="{% url 'account_login' %}?next={% url 'marketplace:seller_dashboard' %}" class="marketplace-seller-cta__link">{% trans "Sign in to sell on VORNEQ" %}</a>
+      {% endif %}
+    </aside>
+  </div>
 </section>
-
-
-<!-- =========================================================
-     MARKETPLACE RESULTS
-     ========================================================= -->
-
-<section class="marketplace-grid-section">
-    <div class="container">
-
-
-        {% if query or category %}
-
-            <p
-                class="results-count"
-                aria-live="polite"
-            >
-
-                {% blocktrans count counter=products.paginator.count %}
-                    {{ counter }} محصول یافت شد
-                {% plural %}
-                    {{ counter }} محصول یافت شد
-                {% endblocktrans %}
-
-            </p>
-
-        {% endif %}
-
-
-        <div class="archive-grid">
-
-            {% for product in products %}
-
-                <article
-                    class="archive-card archive-card--marketplace"
-                >
-
-                    <div class="archive-card__body">
-
-
-                        {% if product.image %}
-
-                            <a
-                                href="{% url 'marketplace:detail' product.slug %}"
-                                class="archive-card__poster"
-                                tabindex="-1"
-                                aria-hidden="true"
-                            >
-
-                                <img
-                                    src="{{ product.image.url }}"
-                                    alt=""
-                                    loading="lazy"
-                                    decoding="async"
-                                    class="archive-card__image"
-                                >
-
-                            </a>
-
-                        {% else %}
-
-                            <div
-                                class="archive-card__poster archive-card__poster--placeholder"
-                                aria-hidden="true"
-                            >
-
-                                <span class="archive-card__placeholder-mark">
-                                    SK
-                                </span>
-
-                            </div>
-
-                        {% endif %}
-
-
-                        <p class="archive-card__meta">
-
-                            {{ product.get_category_display }}
-
-                            {% if product.version %}
-                                / {{ product.version }}
-                            {% endif %}
-
-                        </p>
-
-
-                        <h2 class="archive-card__title">
-
-                            <a
-                                href="{% url 'marketplace:detail' product.slug %}"
-                                class="archive-card__link"
-                            >
-                                {{ product.title }}
-                            </a>
-
-                        </h2>
-
-
-                        {% if product.short_description %}
-
-                            <p class="archive-card__description">
-                                {{ product.short_description|truncatewords:22 }}
-                            </p>
-
-                        {% endif %}
-
-
-                        <div class="archive-card__footer">
-
-
-                            <div class="archive-card__price">
-
-                                {% if product.price == 0 %}
-
-                                    <span class="archive-card__price-value">
-                                        {% trans "رایگان" %}
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="archive-card__price-value">
-                                        {{ product.price|floatformat:2 }}
-                                    </span>
-
-                                    <span
-                                        class="archive-card__currency-note"
-                                        title="{% trans 'واحد پول در نسخهٔ نهایی سیستم پرداخت مشخص خواهد شد.' %}"
-                                    >
-                                        {% trans "قیمت" %}
-                                    </span>
-
-                                {% endif %}
-
-                            </div>
-
-
-                            <a
-                                href="{% url 'marketplace:detail' product.slug %}"
-                                class="archive-card__read-more"
-                                aria-label="{% blocktrans with title=product.title %}مشاهدهٔ محصول {{ title }}{% endblocktrans %}"
-                            >
-                                {% trans "مشاهدهٔ اثر" %}
-                                <span aria-hidden="true">←</span>
-                            </a>
-
-                        </div>
-
-                    </div>
-
-                </article>
-
-
-            {% empty %}
-
-
-                <article
-                    class="archive-card archive-card--empty"
-                >
-
-                    <div class="archive-card__body">
-
-                        <p class="archive-card__meta">
-                            MARKETPLACE
-                        </p>
-
-                        <h2>
-                            {% trans "هیچ محصولی یافت نشد" %}
-                        </h2>
-
-
-                        {% if query or category %}
-
-                            <p>
-                                {% trans "جست‌وجوی شما نتیجه‌ای نداشت. عبارت یا دسته‌بندی دیگری را امتحان کنید." %}
-                            </p>
-
-                            <a
-                                href="{% url 'marketplace:index' %}"
-                                class="btn btn--secondary"
-                            >
-                                {% trans "مشاهدهٔ همهٔ محصولات" %}
-                            </a>
-
-                        {% else %}
-
-                            <p>
-                                {% trans "هنوز محصول تأییدشده‌ای منتشر نشده است." %}
-                            </p>
-
-                        {% endif %}
-
-                    </div>
-
-                </article>
-
-            {% endfor %}
-
-        </div>
-
-
-        <!-- =================================================
-             PAGINATION
-             ================================================= -->
-
-        {% if products.paginator.num_pages > 1 %}
-
-            <nav
-                class="pagination"
-                aria-label="{% trans 'صفحه‌بندی محصولات' %}"
-            >
-
-                <ul class="pagination__list">
-
-
-                    {% if products.has_previous %}
-
-                        <li class="pagination__item">
-
-                            <a
-                                href="?page={{ products.previous_page_number }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}{% if category %}&amp;category={{ category|urlencode }}{% endif %}"
-                                class="pagination__link"
-                                rel="prev"
-                            >
-                                <span aria-hidden="true">←</span>
-                                {% trans "قبلی" %}
-                            </a>
-
-                        </li>
-
-                    {% else %}
-
-                        <li
-                            class="pagination__item pagination__item--disabled"
-                            aria-hidden="true"
-                        >
-
-                            <span class="pagination__link">
-                                ← {% trans "قبلی" %}
-                            </span>
-
-                        </li>
-
-                    {% endif %}
-
-
-                    {% for num in products.paginator.page_range %}
-
-                        {% if num == products.number %}
-
-                            <li
-                                class="pagination__item pagination__item--active"
-                            >
-
-                                <span
-                                    class="pagination__link"
-                                    aria-current="page"
-                                >
-                                    {{ num }}
-                                </span>
-
-                            </li>
-
-
-                        {% elif num > products.number|add:"-3" and num < products.number|add:"3" %}
-
-                            <li class="pagination__item">
-
-                                <a
-                                    href="?page={{ num }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}{% if category %}&amp;category={{ category|urlencode }}{% endif %}"
-                                    class="pagination__link"
-                                >
-                                    {{ num }}
-                                </a>
-
-                            </li>
-
-                        {% endif %}
-
-                    {% endfor %}
-
-
-                    {% if products.has_next %}
-
-                        <li class="pagination__item">
-
-                            <a
-                                href="?page={{ products.next_page_number }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}{% if category %}&amp;category={{ category|urlencode }}{% endif %}"
-                                class="pagination__link"
-                                rel="next"
-                            >
-                                {% trans "بعدی" %}
-                                <span aria-hidden="true">→</span>
-                            </a>
-
-                        </li>
-
-                    {% else %}
-
-                        <li
-                            class="pagination__item pagination__item--disabled"
-                            aria-hidden="true"
-                        >
-
-                            <span class="pagination__link">
-                                {% trans "بعدی" %} →
-                            </span>
-
-                        </li>
-
-                    {% endif %}
-
-                </ul>
-
-            </nav>
-
-        {% endif %}
-
-
-        <!-- =================================================
-             SELLER CTA
-             ================================================= -->
-
-        <aside
-            class="marketplace-cta"
-            aria-labelledby="marketplace-seller-title"
-        >
-
-            <p
-                id="marketplace-seller-title"
-                class="marketplace-cta__eyebrow"
-            >
-                {% trans "برای پدیدآورندگان" %}
-            </p>
-
-            <h2 class="marketplace-cta__title">
-                {% trans "اثری برای ارائه دارید؟" %}
-            </h2>
-
-            <p class="marketplace-cta__text">
-                {% trans "آثار ثبت‌شده پیش از انتشار عمومی وارد فرایند بررسی می‌شوند." %}
-            </p>
-
-
-            {% if user.is_authenticated %}
-
-                <a
-                    href="{% url 'marketplace:seller_dashboard' %}"
-                    class="btn btn--primary"
-                >
-                    {% trans "ورود به میز کار فروشنده" %}
-                </a>
-
-            {% else %}
-
-                <a
-                    href="{% url 'account_login' %}?next={% url 'marketplace:seller_dashboard' %}"
-                    class="btn btn--secondary"
-                >
-                    {% trans "ورود برای ارائهٔ اثر" %}
-                </a>
-
-            {% endif %}
-
-        </aside>
-
-    </div>
-</section>
-
-
-<!-- =========================================================
-     PAGE-SPECIFIC STYLES
-     ========================================================= -->
-
-<style>
-
-    /* ========================================================
-       SCREEN READER ONLY
-       ======================================================== */
-
-    .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
-    }
-
-
-    /* ========================================================
-       FILTERS
-       ======================================================== */
-
-    .search-form__filters {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 0.5rem 0.75rem;
-
-        margin-top: 1rem;
-        padding-top: 1rem;
-
-        border-top:
-            1px solid rgba(232, 225, 215, 0.07);
-    }
-
-
-    .search-form__filter-label {
-        margin-inline-end: 0.25rem;
-
-        font-size: 0.8125rem;
-        color: #8f887f;
-
-        letter-spacing: 0.02em;
-    }
-
-
-    .search-form__filter-link {
-        display: inline-flex;
-        align-items: center;
-
-        min-height: 2rem;
-
-        padding:
-            0.25rem
-            0.625rem;
-
-        border:
-            1px solid transparent;
-
-        border-radius: 2px;
-
-        color: #a8a097;
-
-        font-size: 0.8125rem;
-
-        text-decoration: none;
-
-        transition:
-            color 160ms ease,
-            border-color 160ms ease,
-            background-color 160ms ease;
-    }
-
-
-    .search-form__filter-link:hover,
-    .search-form__filter-link:focus-visible {
-        color: #e8e1d7;
-
-        border-color:
-            rgba(232, 225, 215, 0.12);
-
-        background:
-            rgba(255, 255, 255, 0.025);
-    }
-
-
-    .search-form__filter-link.active {
-        color: #e8e1d7;
-
-        border-color:
-            rgba(184, 74, 74, 0.25);
-
-        background:
-            rgba(184, 74, 74, 0.10);
-    }
-
-
-    .search-form__actions {
-        margin-top: 1rem;
-    }
-
-
-    /* ========================================================
-       PRODUCT IMAGE
-       ======================================================== */
-
-    .archive-card__poster {
-        position: relative;
-
-        display: block;
-
-        width: 100%;
-
-        margin-bottom: 1.25rem;
-
-        overflow: hidden;
-
-        background: #151414;
-
-        border:
-            1px solid rgba(232, 225, 215, 0.07);
-
-        border-radius: 3px;
-    }
-
-
-    .archive-card__image {
-        display: block;
-
-        width: 100%;
-
-        aspect-ratio: 16 / 9;
-
-        object-fit: cover;
-
-        transition:
-            transform 300ms ease,
-            opacity 300ms ease;
-    }
-
-
-    .archive-card__poster:hover .archive-card__image {
-        transform: scale(1.015);
-        opacity: 0.94;
-    }
-
-
-    /* ========================================================
-       PLACEHOLDER
-       ======================================================== */
-
-    .archive-card__poster--placeholder {
-        display: grid;
-
-        place-items: center;
-
-        aspect-ratio: 16 / 9;
-
-        background:
-            linear-gradient(
-                135deg,
-                #111010,
-                #181616
-            );
-    }
-
-
-    .archive-card__placeholder-mark {
-        display: grid;
-
-        place-items: center;
-
-        width: 3.75rem;
-        height: 3.75rem;
-
-        border:
-            1px solid rgba(232, 225, 215, 0.18);
-
-        border-radius: 50%;
-
-        color:
-            rgba(232, 225, 215, 0.45);
-
-        font-family:
-            Inter,
-            Arial,
-            sans-serif;
-
-        font-size: 0.75rem;
-
-        letter-spacing: 0.16em;
-    }
-
-
-    /* ========================================================
-       PRODUCT TITLE & DESCRIPTION
-       ======================================================== */
-
-    .archive-card__title {
-        margin:
-            0
-            0
-            0.75rem;
-
-        font-size: 1.25rem;
-
-        line-height: 1.45;
-    }
-
-
-    .archive-card__description {
-        color: #aaa299;
-
-        line-height: 1.8;
-    }
-
-
-    /* ========================================================
-       PRICE
-       ======================================================== */
-
-    .archive-card__price {
-        display: flex;
-        align-items: baseline;
-        gap: 0.4rem;
-    }
-
-
-    .archive-card__price-value {
-        color: #c15a5a;
-
-        font-size: 1.05rem;
-        font-weight: 650;
-
-        font-variant-numeric:
-            tabular-nums;
-    }
-
-
-    .archive-card__currency-note {
-        color: #77716b;
-
-        font-size: 0.6875rem;
-
-        font-weight: 400;
-    }
-
-
-    /* ========================================================
-       SELLER CTA
-       ======================================================== */
-
-    .marketplace-cta {
-        max-width: 760px;
-
-        margin:
-            5rem
-            auto
-            1rem;
-
-        padding:
-            3rem
-            2rem;
-
-        text-align: center;
-
-        border-top:
-            1px solid rgba(232, 225, 215, 0.08);
-
-        border-bottom:
-            1px solid rgba(232, 225, 215, 0.08);
-    }
-
-
-    .marketplace-cta__eyebrow {
-        margin-bottom: 0.75rem;
-
-        color: #b84a4a;
-
-        font-size: 0.6875rem;
-
-        letter-spacing: 0.12em;
-
-        text-transform: uppercase;
-    }
-
-
-    .marketplace-cta__title {
-        margin-bottom: 0.75rem;
-
-        color: #e8e1d7;
-
-        font-size:
-            clamp(
-                1.4rem,
-                3vw,
-                2rem
-            );
-    }
-
-
-    .marketplace-cta__text {
-        max-width: 520px;
-
-        margin:
-            0
-            auto
-            1.5rem;
-
-        color: #9e978e;
-
-        line-height: 1.8;
-    }
-
-
-    /* ========================================================
-       FOCUS ACCESSIBILITY
-       ======================================================== */
-
-    .search-form__filter-link:focus-visible,
-    .archive-card__link:focus-visible,
-    .archive-card__read-more:focus-visible,
-    .pagination__link:focus-visible {
-        outline:
-            2px solid #b84a4a;
-
-        outline-offset: 3px;
-    }
-
-
-    /* ========================================================
-       RESPONSIVE
-       ======================================================== */
-
-    @media (max-width: 640px) {
-
-        .search-form__filters {
-            gap:
-                0.35rem
-                0.5rem;
-        }
-
-
-        .search-form__filter-label {
-            width: 100%;
-
-            margin-bottom: 0.25rem;
-        }
-
-
-        .search-form__filter-link {
-            font-size: 0.75rem;
-        }
-
-
-        .archive-card__title {
-            font-size: 1.1rem;
-        }
-
-
-        .archive-card__price-value {
-            font-size: 0.95rem;
-        }
-
-
-        .marketplace-cta {
-            margin-top: 3rem;
-
-            padding:
-                2rem
-                1rem;
-        }
-
-    }
-
-
-    /* ========================================================
-       REDUCED MOTION
-       ======================================================== */
-
-    @media (prefers-reduced-motion: reduce) {
-
-        .archive-card__image,
-        .search-form__filter-link {
-            transition: none;
-        }
-
-
-        .archive-card__poster:hover .archive-card__image {
-            transform: none;
-        }
-
-    }
-
-</style>
-
 {% endblock %}
