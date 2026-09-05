@@ -1,203 +1,32 @@
-{% load static %}
-
-<!DOCTYPE html>
-<html lang="fa" dir="rtl" data-theme="dark">
-
-<head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0">
-
-    <meta
-        name="description"
-        content="ورود با حساب خارجی — سامان خرد">
-
-    <title>
-        ورود با حساب خارجی — سامان خرد
-    </title>
-
-    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-    <link rel="stylesheet" href="{% static 'css/themes.css' %}">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    <link rel="stylesheet" href="{% static 'css/components.css' %}">
-    <link rel="stylesheet" href="{% static 'css/home.css' %}">
-</head>
-
-<body>
-
-<a
-    class="skip-link"
-    href="#main">
-    رفتن به محتوای اصلی
-</a>
-
-
-<header class="site-header">
-
-    <div class="site-header__inner">
-
-        <a
-            class="site-brand brand-lockup"
-            href="{% url 'home' %}"
-            aria-label="سامان خرد — صفحه اصلی">
-
-            <span
-                class="brand-sigil brand-sigil--small"
-                aria-hidden="true">
-
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-
-            </span>
-
-            <span class="site-brand__text">
-
-                <strong>
-                    سامان خرد
-                </strong>
-
-                <small>
-                    بنیادِ عریانِ پرسش
-                </small>
-
-            </span>
-
-        </a>
-
-    </div>
-
-</header>
-
-
-<main
-    id="main"
-    tabindex="-1">
-
-    <section class="manifest-section">
-
-        <div class="container">
-
-            <div class="section-heading">
-
-                <p class="section-code">
-                    ACCOUNT / SOCIAL LOGIN
-                </p>
-
-                <div>
-
-                    <p class="section-kicker">
-                        ورود امن
-                    </p>
-
-                    <h1>
-                        ادامه با حساب خارجی
-                    </h1>
-
-                    <p>
-                        برای ادامه، ورود از طریق سرویس انتخاب‌شده
-                        را تأیید کنید.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div
-                class="archive-card"
-                style="max-width: 640px; margin-inline: auto;">
-
-                <div class="archive-card__body">
-
-                    {% if process == "connect" %}
-
-                        <h2>
-                            اتصال حساب
-                        </h2>
-
-                        <p>
-                            شما در حال اتصال یک حساب خارجی
-                            به حساب سامان خرد خود هستید.
-                        </p>
-
-                    {% else %}
-
-                        <h2>
-                            ورود به سامان خرد
-                        </h2>
-
-                        <p>
-                            برای ورود با سرویس خارجی،
-                            ادامهٔ فرایند را تأیید کنید.
-                        </p>
-
-                    {% endif %}
-
-
-                    <form method="post">
-
-                        {% csrf_token %}
-
-                        <div class="manifest-actions">
-
-                            <button
-                                type="submit"
-                                class="btn btn--primary">
-
-                                ادامه
-
-                            </button>
-
-                            <a
-                                href="{% url 'account_login' %}"
-                                class="btn btn--secondary">
-
-                                بازگشت به ورود
-
-                            </a>
-
-                        </div>
-
-                    </form>
-
-                </div>
-
-            </div>
-
-
-            <div class="manifest-actions">
-
-                <a
-                    href="{% url 'home' %}"
-                    class="btn btn--secondary">
-
-                    خانه
-
-                </a>
-
-            </div>
-
-        </div>
-
-    </section>
-
-</main>
-
-
-<script
-    src="{% static 'js/main.js' %}"
-    defer>
-</script>
-
-<script
-    src="{% static 'js/home.js' %}"
-    defer>
-</script>
-
-</body>
-
-</html>
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Social Account Login" %} — VORNEQ{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="account-shell">
+  <div class="account-card account-card--message">
+    <p class="account-card__eyebrow">VORNEQ / ACCOUNT</p>
+    {% if process == "connect" %}
+      <h1 class="account-card__title">{% trans "Connect Account" %}</h1>
+      <p class="account-card__subtitle">{% trans "Confirm that you want to connect this external account to your VORNEQ account." %}</p>
+    {% else %}
+      <h1 class="account-card__title">{% trans "Continue with External Account" %}</h1>
+      <p class="account-card__subtitle">{% trans "Confirm to continue signing in with the selected provider." %}</p>
+    {% endif %}
+
+    <form method="post" class="account-form">
+      {% csrf_token %}
+      <div class="account-form__actions">
+        <button type="submit" class="account-form__button account-form__button--primary">{% trans "Continue" %}</button>
+        <a href="{% url 'account_login' %}" class="account-form__button account-form__button--secondary">{% trans "Back to Sign In" %}</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
