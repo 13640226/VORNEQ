@@ -9,15 +9,10 @@
 
 {% block extra_head %}
 {{ block.super }}
-<link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-<link rel="stylesheet" href="{% static 'css/base.css' %}">
-<link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
 <link rel="stylesheet" href="{% static 'css/library.css' %}">
 {% endblock %}
 
 {% block content %}
-{% include "partials/_standalone_nav.html" %}
-
 <section class="audio-detail">
   <div class="library-shell audio-detail__inner">
     <a href="{% url 'library:index' %}" class="audio-detail__back">← {% trans "Back to Library" %}</a>

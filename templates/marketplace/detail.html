@@ -9,15 +9,10 @@
 
 {% block extra_head %}
 {{ block.super }}
-<link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-<link rel="stylesheet" href="{% static 'css/base.css' %}">
-<link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
 <link rel="stylesheet" href="{% static 'css/marketplace.css' %}">
 {% endblock %}
 
 {% block content %}
-{% include "partials/_standalone_nav.html" %}
-
 <article class="marketplace-detail">
   <div class="marketplace-detail__shell">
     <a href="{% url 'marketplace:index' %}" class="marketplace-detail__back">← {% trans "Back to Marketplace" %}</a>

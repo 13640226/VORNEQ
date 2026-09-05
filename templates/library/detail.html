@@ -9,15 +9,10 @@
 
 {% block extra_head %}
 {{ block.super }}
-<link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-<link rel="stylesheet" href="{% static 'css/base.css' %}">
-<link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
 <link rel="stylesheet" href="{% static 'css/library.css' %}">
 {% endblock %}
 
 {% block content %}
-{% include "partials/_standalone_nav.html" %}
-
 <article class="library-detail">
   <div class="library-shell library-detail__inner">
     <a href="{% url 'library:index' %}" class="library-detail__back">← {% trans "Back to Library" %}</a>
