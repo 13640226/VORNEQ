@@ -1,310 +1,81 @@
-{% load static %}
+{% extends "base.html" %}
+{% load static i18n %}
 
-<!DOCTYPE html>
-<html lang="fa" dir="rtl" data-theme="dark">
+{% block title %}{% trans "Email Addresses" %} — VORNEQ{% endblock %}
 
-<head>
-  <meta charset="UTF-8">
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
+{% block content %}
+<div class="account-shell account-shell--wide">
+  <div class="account-card account-card--wide">
+    <p class="account-card__eyebrow">VORNEQ / ACCOUNT</p>
+    <h1 class="account-card__title">{% trans "Email Addresses" %}</h1>
+    <p class="account-card__subtitle">{% trans "Manage the email addresses connected to your account." %}</p>
 
-  <meta
-    name="description"
-    content="مدیریت ایمیل‌های حساب — سامان خرد">
+    {% if emailaddresses %}
+      <form method="post" action="{% url 'account_email' %}" class="account-form">
+        {% csrf_token %}
+        <fieldset class="account-choice-list">
+          <legend class="account-section-title">{% trans "Current email addresses" %}</legend>
+          {% for emailaddress in emailaddresses %}
+            <label class="account-choice-row">
+              <input type="radio" name="email" value="{{ emailaddress.email }}" {% if emailaddress.primary %}checked{% endif %}>
+              <span class="account-choice-row__content">
+                <span class="account-choice-row__label">{{ emailaddress.email }}</span>
+                <span class="account-choice-row__meta">
+                  {% if emailaddress.verified %}
+                    <span class="account-status account-status--success">{% trans "Verified" %}</span>
+                  {% else %}
+                    <span class="account-status account-status--muted">{% trans "Unverified" %}</span>
+                  {% endif %}
+                  {% if emailaddress.primary %}<span class="account-status">{% trans "Primary" %}</span>{% endif %}
+                </span>
+              </span>
+            </label>
+          {% endfor %}
+        </fieldset>
 
-  <title>
-    مدیریت ایمیل — سامان خرد
-  </title>
-
-  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-  <link rel="stylesheet" href="{% static 'css/themes.css' %}">
-  <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  <link rel="stylesheet" href="{% static 'css/components.css' %}">
-  <link rel="stylesheet" href="{% static 'css/home.css' %}">
-  <link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
-</head>
-
-<body>
-
-  {% include "partials/_standalone_nav.html" %}
-
-  <a
-    class="skip-link"
-    href="#main">
-    رفتن به محتوای اصلی
-  </a>
-
-  <header class="site-header">
-
-    <div class="site-header__inner">
-
-      <a
-        class="site-brand brand-lockup"
-        href="{% url 'home' %}"
-        aria-label="سامان خرد — صفحه اصلی">
-
-        <span
-          class="brand-sigil brand-sigil--small"
-          aria-hidden="true">
-
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-
-        </span>
-
-        <span class="site-brand__text">
-
-          <strong>
-            سامان خرد
-          </strong>
-
-          <small>
-            بنیادِ عریانِ پرسش
-          </small>
-
-        </span>
-
-      </a>
-
-    </div>
-
-  </header>
-
-  <main
-    id="main"
-    tabindex="-1">
-
-    <section class="manifest-section">
-
-      <div class="container">
-
-        <div class="section-heading">
-
-          <p class="section-code">
-            ACCOUNT / EMAIL
-          </p>
-
-          <div>
-
-            <p class="section-kicker">
-              حساب کاربری
-            </p>
-
-            <h1>
-              مدیریت آدرس‌های ایمیل
-            </h1>
-
-            <p>
-              ایمیل‌های متصل به حساب خود را
-              مشاهده و مدیریت کنید.
-            </p>
-
-          </div>
-
+        <div class="account-form__actions account-form__actions--wrap">
+          <button type="submit" name="action_primary" class="account-form__button account-form__button--secondary">{% trans "Make Primary" %}</button>
+          <button type="submit" name="action_send" class="account-form__button account-form__button--secondary">{% trans "Re-send Verification" %}</button>
+          <button type="submit" name="action_remove" class="account-form__button account-form__button--danger">{% trans "Remove" %}</button>
         </div>
+      </form>
+    {% else %}
+      <p class="account-empty">{% trans "No email address is currently registered for this account." %}</p>
+    {% endif %}
 
-        <div
-          class="archive-card"
-          style="max-width: 760px; margin-inline: auto;">
+    <div class="account-divider" aria-hidden="true"></div>
 
-          <div class="archive-card__body">
-
-            {% if emailaddresses %}
-
-              <h2>
-                ایمیل‌های ثبت‌شده
-              </h2>
-
-              <form
-                method="post"
-                action="{% url 'account_email' %}">
-
-                {% csrf_token %}
-
-                {% for emailaddress in emailaddresses %}
-
-                  <div
-                    class="form-field"
-                    style="padding-block: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
-
-                    <label>
-
-                      <input
-                        type="radio"
-                        name="email"
-                        value="{{ emailaddress.email }}"
-                        {% if emailaddress.primary %}checked{% endif %}>
-
-                      {{ emailaddress.email }}
-
-                    </label>
-
-                    <div style="margin-top: 0.5rem;">
-
-                      {% if emailaddress.verified %}
-
-                        <span class="archive-card__meta">
-                          تأیید شده
-                        </span>
-
-                      {% else %}
-
-                        <span class="archive-card__meta">
-                          تأیید نشده
-                        </span>
-
-                      {% endif %}
-
-                      {% if emailaddress.primary %}
-
-                        <span class="archive-card__meta">
-                          / ایمیل اصلی
-                        </span>
-
-                      {% endif %}
-
-                    </div>
-
-                  </div>
-
-                {% endfor %}
-
-                <div class="manifest-actions">
-
-                  <button
-                    type="submit"
-                    name="action_primary"
-                    class="btn btn--secondary">
-
-                    انتخاب به‌عنوان ایمیل اصلی
-
-                  </button>
-
-                  <button
-                    type="submit"
-                    name="action_send"
-                    class="btn btn--secondary">
-
-                    ارسال دوباره تأییدیه
-
-                  </button>
-
-                  <button
-                    type="submit"
-                    name="action_remove"
-                    class="btn btn--secondary">
-
-                    حذف ایمیل
-
-                  </button>
-
-                </div>
-
-              </form>
-
-            {% else %}
-
-              <p>
-                هنوز هیچ آدرس ایمیلی برای این حساب ثبت نشده است.
-              </p>
-
-            {% endif %}
-
-          </div>
-
+    <h2 class="account-section-title">{% trans "Add Email Address" %}</h2>
+    <form method="post" action="{% url 'account_email' %}" class="account-form">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="account-form__errors" role="alert">
+          {% for error in form.non_field_errors %}<p class="account-form__error">{{ error }}</p>{% endfor %}
         </div>
-
-
-        <div
-          class="archive-card"
-          style="max-width: 760px; margin: 2rem auto 0;">
-
-          <div class="archive-card__body">
-
-            <h2>
-              افزودن ایمیل جدید
-            </h2>
-
-            <form
-              method="post"
-              action="{% url 'account_email' %}">
-
-              {% csrf_token %}
-
-              {% for field in form %}
-
-                <div class="form-field">
-
-                  <label for="{{ field.id_for_label }}">
-                    {{ field.label }}
-                  </label>
-
-                  {{ field }}
-
-                  {% for error in field.errors %}
-
-                    <p class="form-error">
-                      {{ error }}
-                    </p>
-
-                  {% endfor %}
-
-                </div>
-
-              {% endfor %}
-
-              <div class="manifest-actions">
-
-                <button
-                  type="submit"
-                  name="action_add"
-                  class="btn btn--primary">
-
-                  افزودن ایمیل
-
-                </button>
-
-              </div>
-
-            </form>
-
-          </div>
-
-        </div>
-
-
-        <div class="manifest-actions">
-
-          <a
-            href="{% url 'home' %}"
-            class="btn btn--secondary">
-
-            بازگشت به خانه
-
-          </a>
-
-        </div>
-
+      {% endif %}
+      <div class="account-form__fields">
+        {% for field in form %}
+          {% if field.is_hidden %}
+            {{ field }}
+          {% else %}
+            <div class="account-form__field">
+              {{ field.label_tag }}
+              {{ field }}
+              {% for error in field.errors %}<span class="account-form__field-error">{{ error }}</span>{% endfor %}
+              {% if field.help_text %}<span class="account-form__help">{{ field.help_text|safe }}</span>{% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
       </div>
-
-    </section>
-
-  </main>
-
-  <script
-    src="{% static 'js/main.js' %}"
-    defer>
-  </script>
-
-  <script
-    src="{% static 'js/home.js' %}"
-    defer>
-  </script>
-
-</body>
-
-</html>
+      <div class="account-form__actions">
+        <button type="submit" name="action_add" class="account-form__button account-form__button--primary">{% trans "Add Email" %}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
