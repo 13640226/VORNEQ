@@ -304,13 +304,13 @@ AUTHENTICATION_BACKENDS = [
 # LOGIN / LOGOUT
 # =============================================================================
 
-LOGIN_URL = "/accounts/login/"
+LOGIN_URL = "account_login"
 
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "home"
 
-LOGOUT_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "home"
 
-ACCOUNT_LOGOUT_REDIRECT_URL = "/"
+ACCOUNT_LOGOUT_REDIRECT_URL = "home"
 
 ACCOUNT_LOGOUT_ON_GET = False
 
