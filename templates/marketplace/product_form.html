@@ -1,214 +1,53 @@
-{% load static %}
+{% extends "base.html" %}
+{% load static i18n %}
 
-<!DOCTYPE html>
-<html lang="fa" dir="rtl" data-theme="dark">
+{% block title %}{{ page_title }} — VORNEQ{% endblock %}
 
-<head>
-  <meta charset="UTF-8">
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/marketplace.css' %}">
+{% endblock %}
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
+{% block content %}
+<section class="marketplace-workspace">
+  <div class="marketplace-workspace__shell">
+    <header class="marketplace-workspace__header">
+      <p class="marketplace-header__eyebrow">VORNEQ / SELLER</p>
+      <h1 class="marketplace-workspace__title">{{ page_title }}</h1>
+      <p class="marketplace-workspace__subtitle">{% trans "New and edited products return to the moderation queue before publication." %}</p>
+    </header>
 
-  <meta
-    name="description"
-    content="{{ page_title }} — بازار دیجیتال سامان خرد">
+    <div class="marketplace-form-card">
+      <form method="post" enctype="multipart/form-data" class="marketplace-form">
+        {% csrf_token %}
 
-  <title>
-    {{ page_title }} — سامان خرد
-  </title>
-
-  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-  <link rel="stylesheet" href="{% static 'css/themes.css' %}">
-  <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  <link rel="stylesheet" href="{% static 'css/components.css' %}">
-  <link rel="stylesheet" href="{% static 'css/home.css' %}">
-</head>
-
-<body>
-
-  <a
-    class="skip-link"
-    href="#main">
-    رفتن به محتوای اصلی
-  </a>
-
-  <header class="site-header">
-
-    <div class="site-header__inner">
-
-      <a
-        class="site-brand brand-lockup"
-        href="{% url 'home' %}"
-        aria-label="سامان خرد — صفحه اصلی">
-
-        <span
-          class="brand-sigil brand-sigil--small"
-          aria-hidden="true">
-
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-
-        </span>
-
-        <span class="site-brand__text">
-
-          <strong>
-            سامان خرد
-          </strong>
-
-          <small>
-            بنیادِ عریانِ پرسش
-          </small>
-
-        </span>
-
-      </a>
-
-      <nav
-        class="site-nav"
-        aria-label="منوی فرم محصول">
-
-        <a href="{% url 'home' %}">
-          خانه
-        </a>
-
-        <a href="{% url 'marketplace:index' %}">
-          بازار دیجیتال
-        </a>
-
-        <a href="{% url 'marketplace:seller_dashboard' %}">
-          پنل فروشنده
-        </a>
-
-      </nav>
-
-    </div>
-
-  </header>
-
-
-  <main
-    id="main"
-    tabindex="-1">
-
-    <section class="manifest-section">
-
-      <div class="container">
-
-        <div class="section-heading">
-
-          <p class="section-code">
-            SELLER / PRODUCT
-          </p>
-
-          <div>
-
-            <p class="section-kicker">
-              بازار دیجیتال
-            </p>
-
-            <h1>
-              {{ page_title }}
-            </h1>
-
-            <p>
-              هر محصول پس از ثبت یا ویرایش
-              دوباره وارد صف بررسی مدیر می‌شود.
-            </p>
-
+        {% if form.non_field_errors %}
+          <div class="marketplace-form__errors" role="alert">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
           </div>
+        {% endif %}
 
+        <div class="marketplace-form__fields">
+          {% for field in form %}
+            {% if field.is_hidden %}
+              {{ field }}
+            {% else %}
+              <div class="marketplace-form__field{% if field.field.widget.input_type == 'checkbox' %} marketplace-form__field--checkbox{% endif %}">
+                {{ field.label_tag }}
+                {{ field }}
+                {% for error in field.errors %}<span class="marketplace-form__field-error">{{ error }}</span>{% endfor %}
+                {% if field.help_text %}<span class="marketplace-form__help">{{ field.help_text|safe }}</span>{% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
         </div>
 
-
-        <form
-          method="post"
-          enctype="multipart/form-data">
-
-          {% csrf_token %}
-
-          {% if form.non_field_errors %}
-
-            <div class="form-errors">
-              {{ form.non_field_errors }}
-            </div>
-
-          {% endif %}
-
-
-          {% for field in form %}
-
-            <div class="form-field">
-
-              <label for="{{ field.id_for_label }}">
-                {{ field.label }}
-              </label>
-
-              {{ field }}
-
-              {% if field.help_text %}
-
-                <small>
-                  {{ field.help_text }}
-                </small>
-
-              {% endif %}
-
-              {% for error in field.errors %}
-
-                <p class="form-error">
-                  {{ error }}
-                </p>
-
-              {% endfor %}
-
-            </div>
-
-          {% endfor %}
-
-
-          <div class="manifest-actions">
-
-            <button
-              type="submit"
-              class="btn btn--primary">
-
-              ذخیره و ارسال برای بررسی
-
-            </button>
-
-            <a
-              href="{% url 'marketplace:seller_dashboard' %}"
-              class="btn btn--secondary">
-
-              انصراف
-
-            </a>
-
-          </div>
-
-        </form>
-
-      </div>
-
-    </section>
-
-  </main>
-
-
-  <script
-    src="{% static 'js/main.js' %}"
-    defer>
-  </script>
-
-  <script
-    src="{% static 'js/home.js' %}"
-    defer>
-  </script>
-
-</body>
-
-</html>
+        <div class="marketplace-workspace__actions">
+          <button type="submit" class="marketplace-workspace__button marketplace-workspace__button--primary">{% trans "Save and Submit for Review" %}</button>
+          <a href="{% url 'marketplace:seller_dashboard' %}" class="marketplace-workspace__button marketplace-workspace__button--secondary">{% trans "Cancel" %}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
