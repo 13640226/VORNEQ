@@ -1,28 +1,52 @@
 {% load i18n %}
-<nav class="standalone-nav" aria-label="{% trans 'ناوبری اصلی' %}">
+
+<header class="standalone-nav" role="banner" aria-label="{% trans 'Site header' %}">
+  <div class="standalone-nav__inner">
     <div class="standalone-nav__brand">
-        <a href="/{% if request.LANGUAGE_CODE %}{{ request.LANGUAGE_CODE }}/{% endif %}" class="standalone-nav__brand-link">
-            <span class="standalone-nav__logo" aria-hidden="true">📚</span>
-            <span class="standalone-nav__title">{% trans "سامان خرد" %}</span>
-        </a>
+      <a href="{% url 'home' %}" class="standalone-nav__wordmark" aria-label="VORNEQ — Knowledge Discovery Platform">
+        VORNEQ
+      </a>
     </div>
 
-    <ul class="standalone-nav__menu">
+    <nav class="standalone-nav__menu" aria-label="{% trans 'Primary' %}">
+      <ul class="standalone-nav__list">
         <li class="standalone-nav__item">
-            <a href="/{% if request.LANGUAGE_CODE %}{{ request.LANGUAGE_CODE }}/{% endif %}" class="standalone-nav__link {% if request.path == '/fa/' %}active{% endif %}"{% if request.path == '/fa/' %} aria-current="page"{% endif %}>{% trans "خانه" %}</a>
+          <a href="{% url 'home' %}"
+             class="standalone-nav__link {% if request.resolver_match.url_name == 'home' %}is-active{% endif %}"
+             {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>
+            {% trans "Home" %}
+          </a>
         </li>
         <li class="standalone-nav__item">
-            <a href="/{% if request.LANGUAGE_CODE %}{{ request.LANGUAGE_CODE }}/{% endif %}library/" class="standalone-nav__link {% if '/library/' in request.path %}active{% endif %}"{% if '/library/' in request.path %} aria-current="page"{% endif %}>{% trans "کتابخانه" %}</a>
+          <a href="{% url 'library:index' %}"
+             class="standalone-nav__link {% if request.resolver_match.namespace == 'library' %}is-active{% endif %}"
+             {% if request.resolver_match.namespace == 'library' %}aria-current="page"{% endif %}>
+            {% trans "Library" %}
+          </a>
         </li>
         <li class="standalone-nav__item">
-            <a href="/{% if request.LANGUAGE_CODE %}{{ request.LANGUAGE_CODE }}/{% endif %}marketplace/" class="standalone-nav__link {% if '/marketplace/' in request.path %}active{% endif %}"{% if '/marketplace/' in request.path %} aria-current="page"{% endif %}>{% trans "بازار" %}</a>
+          <a href="{% url 'marketplace:index' %}"
+             class="standalone-nav__link {% if request.resolver_match.namespace == 'marketplace' %}is-active{% endif %}"
+             {% if request.resolver_match.namespace == 'marketplace' %}aria-current="page"{% endif %}>
+            {% trans "Marketplace" %}
+          </a>
         </li>
-        <li class="standalone-nav__item">
-            {% if user.is_authenticated %}
-                <a href="{% url 'account_logout' %}" class="standalone-nav__link standalone-nav__link--outline">{% trans "خروج" %}</a>
-            {% else %}
-                <a href="{% url 'account_login' %}" class="standalone-nav__link standalone-nav__link--outline">{% trans "ورود" %}</a>
-            {% endif %}
-        </li>
-    </ul>
-</nav>
+      </ul>
+    </nav>
+
+    <div class="standalone-nav__actions">
+      {% if user.is_authenticated %}
+        <span class="standalone-nav__user" aria-hidden="true">
+          {{ user.get_short_name|default:user.username|slice:":2"|upper }}
+        </span>
+        <a href="{% url 'account_logout' %}" class="standalone-nav__action standalone-nav__action--logout">
+          {% trans "Sign out" %}
+        </a>
+      {% else %}
+        <a href="{% url 'account_login' %}" class="standalone-nav__action standalone-nav__action--login">
+          {% trans "Sign in" %}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</header>
