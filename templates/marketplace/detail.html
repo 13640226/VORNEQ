@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}{{ product.title }} — VORNEQ Marketplace{% endblock %}
+{% block title %}{{ product.title }} — VORNEQ {% trans "Marketplace" %}{% endblock %}
 
 {% block meta %}
 <meta name="description" content="{{ product.short_description|default:product.description|striptags|truncatechars:160 }}">
@@ -75,12 +75,12 @@
       {% if product.published_at %}
         <div class="marketplace-detail__meta-item">
           <dt>{% trans "Published" %}</dt>
-          <dd>{{ product.published_at|date:"F j, Y" }}</dd>
+          <dd>{{ product.published_at|date:"DATE_FORMAT" }}</dd>
         </div>
       {% endif %}
       <div class="marketplace-detail__meta-item">
         <dt>{% trans "Updated" %}</dt>
-        <dd>{{ product.updated_at|date:"F j, Y" }}</dd>
+        <dd>{{ product.updated_at|date:"DATE_FORMAT" }}</dd>
       </div>
     </dl>
 
