@@ -129,8 +129,13 @@ def home(request):
         content_type = "all"
 
     page_param = request.GET.get("page", "1").strip() or "1"
+    try:
+        requested_page = max(1, int(page_param))
+    except (TypeError, ValueError):
+        requested_page = 1
+
     is_unfiltered = not query and content_type == "all"
-    is_first_page = page_param == "1"
+    is_first_page = requested_page == 1
 
     feed_items = None
     featured = []
@@ -159,7 +164,7 @@ def home(request):
                 )
 
     paginator = Paginator(feed_items, 12)
-    page_obj = paginator.get_page(page_param)
+    page_obj = paginator.get_page(requested_page)
 
     context = {
         "featured": featured,
