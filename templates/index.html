@@ -1,1466 +1,182 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}
-سامان خرد — مرکز، خالی است
-{% endblock %}
-
+{% block title %}{% trans "Discover" %} — VORNEQ{% endblock %}
 
 {% block meta %}
-<meta
-    name="description"
-    content="سامان خرد؛ میدان معرفتی باز برای شواهد مستقل، پرسش‌های بی‌پایان و بازبینی داوری‌ها."
->
-
-<meta
-    property="og:title"
-    content="سامان خرد — مرکز، خالی است"
->
-
-<meta
-    property="og:description"
-    content="سامان خرد؛ میدان معرفتی باز برای شواهد مستقل، پرسش‌های بی‌پایان و بازبینی داوری‌ها."
->
-
-<meta
-    property="og:type"
-    content="website"
->
-
-<meta
-    name="twitter:card"
-    content="summary_large_image"
->
-
-<meta
-    name="twitter:title"
-    content="سامان خرد — مرکز، خالی است"
->
-
-<meta
-    name="twitter:description"
-    content="سامان خرد؛ میدان معرفتی باز برای شواهد مستقل، پرسش‌های بی‌پایان و بازبینی داوری‌ها."
->
+<meta name="description" content="{% trans 'Discover books, articles, audio, documents, and digital products with VORNEQ.' %}">
+<meta property="og:title" content="VORNEQ — {% trans 'Knowledge Discovery Platform' %}">
+<meta property="og:description" content="{% trans 'Search, explore, and connect knowledge across formats.' %}">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
 {% endblock %}
-
 
 {% block extra_head %}
-<style>
-    /* ============================================================
-       SAMAN KHERAD
-       V4 — BLACK METAL × EPISTEMIC MINIMALISM
-       ============================================================ */
-
-    .sk-homepage {
-        --bg: #070505;
-        --surface: #100b0b;
-        --surface-raised: #18100f;
-
-        --text-main: #e3ddd7;
-        --text-soft: #cfc2b5;
-        --text-muted: #91847b;
-
-        --accent: #842828;
-        --accent-strong: #b23a35;
-        --accent-soft: rgba(132, 40, 40, 0.16);
-
-        --line: rgba(132, 40, 40, 0.22);
-        --line-soft: rgba(207, 194, 181, 0.12);
-
-        --page-width: 1320px;
-
-        width: 100%;
-        min-height: 100vh;
-
-        position: relative;
-        isolation: isolate;
-
-        overflow: clip;
-
-        direction: rtl;
-        text-align: right;
-
-        color: var(--text-main);
-        background: var(--bg);
-    }
-
-
-    .sk-homepage *,
-    .sk-homepage *::before,
-    .sk-homepage *::after {
-        box-sizing: border-box;
-    }
-
-
-    /* ============================================================
-       GLOBAL TEXTURE
-       ============================================================ */
-
-    .sk-homepage::before {
-        content: "";
-
-        position: fixed;
-        inset: 0;
-
-        z-index: -2;
-
-        pointer-events: none;
-
-        opacity: 0.055;
-
-        background:
-            repeating-radial-gradient(
-                circle at 20% 30%,
-                rgba(255, 255, 255, 0.055) 0 1px,
-                transparent 1px 4px
-            );
-
-        background-size: 7px 7px;
-
-        mix-blend-mode: soft-light;
-    }
-
-
-    .sk-homepage::after {
-        content: "";
-
-        position: fixed;
-        inset: 0;
-
-        z-index: -3;
-
-        pointer-events: none;
-
-        opacity: 0.05;
-
-        background-image:
-            linear-gradient(
-                var(--line) 1px,
-                transparent 1px
-            ),
-            linear-gradient(
-                90deg,
-                var(--line) 1px,
-                transparent 1px
-            );
-
-        background-size: 64px 64px;
-
-        mask-image:
-            radial-gradient(
-                circle at 50% 40%,
-                black,
-                transparent 72%
-            );
-    }
-
-
-    /* ============================================================
-       HERO
-       ============================================================ */
-
-    .sk-homepage .hero {
-        position: relative;
-
-        width: 100%;
-        min-height: calc(100svh - 80px);
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        overflow: hidden;
-
-        border-bottom:
-            1px solid var(--line);
-
-        background:
-            radial-gradient(
-                circle at 25% 46%,
-                rgba(132, 40, 40, 0.12),
-                transparent 31rem
-            ),
-            radial-gradient(
-                circle at 76% 24%,
-                rgba(178, 58, 53, 0.045),
-                transparent 23rem
-            ),
-            linear-gradient(
-                135deg,
-                #050303 0%,
-                #0c0707 52%,
-                #030202 100%
-            );
-    }
-
-
-    /* empty center */
-
-    .sk-homepage .hero::before {
-        content: "";
-
-        position: absolute;
-
-        top: 50%;
-        left: 46%;
-
-        z-index: 0;
-
-        width: min(54vw, 760px);
-        aspect-ratio: 1;
-
-        border-radius: 50%;
-
-        border:
-            1px solid
-            rgba(132, 40, 40, 0.20);
-
-        transform:
-            translate(-50%, -50%);
-
-        pointer-events: none;
-
-        box-shadow:
-            0 0 0 5vw rgba(132, 40, 40, 0.018),
-            0 0 90px rgba(0, 0, 0, 0.72);
-    }
-
-
-    /* fade toward bottom */
-
-    .sk-homepage .hero::after {
-        content: "";
-
-        position: absolute;
-        inset: 0;
-
-        z-index: 1;
-
-        pointer-events: none;
-
-        background:
-            linear-gradient(
-                180deg,
-                rgba(7, 5, 5, 0.02) 0%,
-                rgba(7, 5, 5, 0.12) 48%,
-                rgba(7, 5, 5, 0.78) 100%
-            );
-    }
-
-
-    /* ============================================================
-       HERO PLACEHOLDER
-       ============================================================ */
-
-    .sk-homepage .hero-cover-placeholder {
-        position: absolute;
-
-        top: 50%;
-        left: 40%;
-
-        z-index: 0;
-
-        width: min(48vw, 620px);
-        aspect-ratio: 1;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        transform:
-            translate(-50%, -50%)
-            rotate(-1deg);
-
-        pointer-events: none;
-    }
-
-
-    .sk-homepage .hero-cover-placeholder::before,
-    .sk-homepage .hero-cover-placeholder::after {
-        content: "";
-
-        position: absolute;
-
-        border-radius: 50%;
-
-        border:
-            1px solid
-            rgba(207, 194, 181, 0.07);
-    }
-
-
-    .sk-homepage .hero-cover-placeholder::before {
-        width: 76%;
-        height: 76%;
-
-        border-style: dashed;
-
-        transform: rotate(11deg);
-    }
-
-
-    .sk-homepage .hero-cover-placeholder::after {
-        width: 46%;
-        height: 46%;
-
-        border-color:
-            rgba(132, 40, 40, 0.18);
-    }
-
-
-    /* ============================================================
-       PLACEHOLDERS
-       ============================================================ */
-
-    .sk-homepage .placeholder-text {
-        position: relative;
-
-        z-index: 1;
-
-        font-family:
-            "Courier New",
-            monospace;
-
-        font-size: 9px;
-        font-weight: 700;
-
-        letter-spacing: 0.16em;
-
-        color:
-            rgba(207, 194, 181, 0.12);
-
-        text-transform: uppercase;
-    }
-
-
-    /* ============================================================
-       HERO CONTENT
-       ============================================================ */
-
-    .sk-homepage .hero-content {
-        position: relative;
-
-        z-index: 3;
-
-        width:
-            min(
-                var(--page-width),
-                calc(100% - 56px)
-            );
-
-        margin-inline: auto;
-
-        padding:
-            clamp(82px, 11vh, 136px)
-            0
-            clamp(110px, 14vh, 164px);
-
-        display: flex;
-        flex-direction: column;
-
-        align-items: flex-start;
-
-        direction: rtl;
-        text-align: right;
-
-        pointer-events: none;
-    }
-
-
-    .sk-homepage .hero-content > * {
-        pointer-events: auto;
-    }
-
-
-    /* eyebrow */
-
-    .sk-homepage .hero-eyebrow {
-        margin:
-            0
-            0
-            22px;
-
-        display: inline-flex;
-        align-items: center;
-
-        gap: 10px;
-
-        direction: ltr;
-
-        color: var(--text-soft);
-
-        font-family:
-            "Courier New",
-            monospace;
-
-        font-size: 10px;
-        font-weight: 700;
-
-        line-height: 1.5;
-
-        letter-spacing: 0.14em;
-
-        text-transform: uppercase;
-
-        opacity: 0.50;
-    }
-
-
-    .sk-homepage .hero-eyebrow::before {
-        content: "";
-
-        width: 32px;
-        height: 1px;
-
-        background: currentColor;
-
-        opacity: 0.45;
-    }
-
-
-    /* ============================================================
-       HERO TITLE
-       ============================================================ */
-
-    .sk-homepage .hero-title {
-        max-width: 700px;
-
-        margin: 0;
-
-        display: flex;
-        flex-direction: column;
-
-        line-height: 1.10;
-
-        direction: rtl;
-        text-align: right;
-
-        letter-spacing: -0.025em;
-    }
-
-
-    .sk-homepage .hero-title > span {
-        display: block;
-    }
-
-
-    .sk-homepage .hero-title-muted {
-        margin-bottom: 0.72rem;
-
-        color: var(--text-muted);
-
-        font-size:
-            clamp(
-                1rem,
-                1.35vw,
-                1.45rem
-            );
-
-        font-weight: 300;
-
-        letter-spacing: 0.015em;
-    }
-
-
-    .sk-homepage .hero-title-main {
-        color: var(--text-main);
-
-        font-size:
-            clamp(
-                3rem,
-                4.7vw,
-                4.8rem
-            );
-
-        font-weight: 700;
-
-        letter-spacing: -0.045em;
-    }
-
-
-    .sk-homepage .hero-title-accent {
-        position: relative;
-
-        width: fit-content;
-
-        margin-top: 0.28rem;
-
-        color: var(--accent-strong);
-
-        font-size:
-            clamp(
-                3.25rem,
-                5.15vw,
-                5.2rem
-            );
-
-        font-weight: 800;
-
-        letter-spacing: -0.04em;
-
-        text-shadow:
-            0 0 18px rgba(178, 58, 53, 0.16),
-            2px 2px 0 rgba(0, 0, 0, 0.72);
-    }
-
-
-    .sk-homepage .hero-title-accent::after {
-        content: "";
-
-        position: absolute;
-
-        right: 0;
-        bottom: -13px;
-
-        width: 34%;
-        height: 1px;
-
-        opacity: 0.58;
-
-        background:
-            linear-gradient(
-                90deg,
-                transparent,
-                var(--accent-strong)
-            );
-    }
-
-
-    /* ============================================================
-       HERO DESCRIPTION
-       ============================================================ */
-
-    .sk-homepage .hero-sub {
-        max-width: 530px;
-
-        margin:
-            38px
-            0
-            0;
-
-        padding-right: 19px;
-        padding-left: 0;
-
-        color: #aa9d94;
-
-        font-size:
-            clamp(
-                14px,
-                1.15vw,
-                17px
-            );
-
-        line-height: 2.05;
-
-        border-right:
-            1px solid
-            var(--accent-soft);
-
-        border-left: 0;
-
-        direction: rtl;
-        text-align: right;
-
-        text-wrap: pretty;
-    }
-
-
-    /* ============================================================
-       CTA
-       ============================================================ */
-
-    .sk-homepage .cta-container {
-        margin-top: 36px;
-
-        display: flex;
-        flex-wrap: wrap;
-
-        gap: 14px;
-
-        justify-content: flex-start;
-
-        direction: rtl;
-    }
-
-
-    .sk-homepage .btn-cta {
-        min-height: 50px;
-
-        padding:
-            0
-            29px;
-
-        display: inline-flex;
-
-        align-items: center;
-        justify-content: center;
-
-        color: #f0e9e3;
-
-        background: var(--accent);
-
-        border:
-            1px solid
-            var(--accent-strong);
-
-        outline:
-            1px solid
-            rgba(178, 58, 53, 0.20);
-
-        outline-offset: 3px;
-
-        border-radius: 0;
-
-        font-size: 13px;
-        font-weight: 700;
-
-        letter-spacing: 0.02em;
-
-        text-decoration: none;
-
-        cursor: pointer;
-
-        transition:
-            transform 180ms ease,
-            background-color 180ms ease,
-            color 180ms ease,
-            border-color 180ms ease,
-            outline-color 180ms ease,
-            box-shadow 180ms ease;
-    }
-
-
-    .sk-homepage .btn-cta:hover {
-        transform:
-            translateY(-2px);
-
-        background:
-            var(--accent-strong);
-
-        outline-color:
-            rgba(178, 58, 53, 0.48);
-
-        box-shadow:
-            0 9px 30px
-            rgba(132, 40, 40, 0.24);
-    }
-
-
-    .sk-homepage .btn-cta:focus-visible {
-        outline:
-            2px solid
-            var(--text-soft);
-
-        outline-offset: 5px;
-    }
-
-
-    .sk-homepage .btn-cta.secondary {
-        color: var(--text-soft);
-
-        background:
-            rgba(7, 5, 5, 0.16);
-
-        border-color:
-            rgba(207, 194, 181, 0.22);
-
-        outline: none;
-    }
-
-
-    .sk-homepage .btn-cta.secondary:hover {
-        color: #e4dad1;
-
-        background:
-            rgba(132, 40, 40, 0.10);
-
-        border-color:
-            rgba(207, 194, 181, 0.55);
-    }
-
-
-    /* ============================================================
-       HERO META
-       ============================================================ */
-
-    .sk-homepage .hero-meta {
-        position: absolute;
-
-        left:
-            clamp(20px, 3vw, 56px);
-
-        bottom: 28px;
-
-        z-index: 3;
-
-        display: flex;
-
-        gap:
-            clamp(
-                12px,
-                1.8vw,
-                28px
-            );
-
-        direction: ltr;
-
-        color: var(--text-muted);
-
-        font-family:
-            "Courier New",
-            monospace;
-
-        font-size: 9px;
-        font-weight: 700;
-
-        letter-spacing: 0.16em;
-
-        text-transform: uppercase;
-
-        opacity: 0.45;
-    }
-
-
-    /* ============================================================
-       PHILOSOPHY
-       ============================================================ */
-
-    .sk-homepage .philosophy-section {
-        width:
-            min(
-                var(--page-width),
-                calc(100% - 56px)
-            );
-
-        margin-inline: auto;
-
-        padding:
-            20px
-            0
-            clamp(62px, 8vw, 105px);
-
-        display: grid;
-
-        grid-template-columns:
-            repeat(
-                3,
-                minmax(0, 1fr)
-            );
-
-        gap: 16px;
-
-        border-top:
-            1px solid
-            var(--line);
-    }
-
-
-    .sk-homepage .philosophy-item {
-        position: relative;
-
-        min-height: 260px;
-
-        padding:
-            clamp(
-                25px,
-                3vw,
-                44px
-            );
-
-        overflow: hidden;
-
-        direction: rtl;
-        text-align: right;
-
-        background:
-            linear-gradient(
-                145deg,
-                rgba(16, 11, 11, 0.94),
-                rgba(7, 5, 5, 0.98)
-            );
-
-        border:
-            1px solid
-            var(--line);
-
-        border-radius: 10px;
-
-        transition:
-            transform 250ms ease,
-            background-color 250ms ease,
-            border-color 250ms ease,
-            box-shadow 250ms ease;
-    }
-
-
-    .sk-homepage .philosophy-item::before {
-        content: "";
-
-        position: absolute;
-
-        top: 0;
-        right: 0;
-
-        width: 34%;
-        height: 1px;
-
-        opacity: 0.58;
-
-        background:
-            linear-gradient(
-                90deg,
-                transparent,
-                var(--accent)
-            );
-    }
-
-
-    .sk-homepage .philosophy-item::after {
-        content: "";
-
-        position: absolute;
-
-        top: -60px;
-        left: -50px;
-
-        width: 110px;
-        height: 110px;
-
-        border-radius: 50%;
-
-        background:
-            rgba(132, 40, 40, 0.07);
-
-        filter:
-            blur(26px);
-
-        transition:
-            transform 300ms ease;
-    }
-
-
-    .sk-homepage .philosophy-item:hover {
-        transform:
-            translateY(-3px);
-
-        background:
-            rgba(10, 7, 7, 0.98);
-
-        border-color:
-            rgba(132, 40, 40, 0.36);
-
-        box-shadow:
-            0 20px 58px
-            rgba(0, 0, 0, 0.34);
-    }
-
-
-    .sk-homepage .philosophy-item:hover::after {
-        transform:
-            translate(
-                16px,
-                16px
-            );
-    }
-
-
-    /* ============================================================
-       ITEM COVER PLACEHOLDER
-       ============================================================ */
-
-    .sk-homepage .item-cover {
-        position: relative;
-
-        min-height: 72px;
-
-        margin-bottom: 22px;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        overflow: hidden;
-
-        border:
-            1px dashed
-            rgba(132, 40, 40, 0.20);
-
-        background:
-            rgba(132, 40, 40, 0.025);
-    }
-
-
-    .sk-homepage .item-cover::before {
-        content: "";
-
-        position: absolute;
-
-        width: 42px;
-        height: 42px;
-
-        border-radius: 50%;
-
-        border:
-            1px solid
-            rgba(132, 40, 40, 0.16);
-    }
-
-
-    /* ============================================================
-       PHILOSOPHY CONTENT
-       ============================================================ */
-
-    .sk-homepage .item-number {
-        margin-bottom: 30px;
-
-        display: inline-flex;
-
-        align-items: center;
-
-        gap: 10px;
-
-        direction: ltr;
-
-        color: var(--text-soft);
-
-        font-family:
-            "Courier New",
-            monospace;
-
-        font-size: 11px;
-        font-weight: 700;
-
-        letter-spacing: 0.08em;
-
-        opacity: 0.55;
-    }
-
-
-    .sk-homepage .item-number::after {
-        content: "";
-
-        width: 36px;
-        height: 1px;
-
-        background: currentColor;
-
-        opacity: 0.4;
-    }
-
-
-    .sk-homepage .philosophy-item h2 {
-        margin:
-            0
-            0
-            14px;
-
-        color:
-            var(--accent-strong);
-
-        font-size:
-            clamp(
-                20px,
-                1.6vw,
-                26px
-            );
-
-        font-weight: 650;
-
-        text-align: right;
-
-        letter-spacing:
-            -0.025em;
-    }
-
-
-    .sk-homepage .philosophy-item p {
-        margin: 0;
-
-        color: #a2948a;
-
-        font-size: 14px;
-
-        line-height: 1.95;
-
-        text-align: right;
-
-        text-wrap: pretty;
-    }
-
-
-    /* ============================================================
-       TABLET
-       ============================================================ */
-
-    @media (max-width: 900px) {
-
-        .sk-homepage .hero-content {
-            width:
-                calc(100% - 36px);
-
-            padding:
-                70px
-                0
-                110px;
-        }
-
-
-        .sk-homepage .hero-cover-placeholder {
-            left: 50%;
-
-            width:
-                min(72vw, 520px);
-
-            opacity: 0.72;
-        }
-
-
-        .sk-homepage .hero::before {
-            left: 50%;
-
-            width:
-                min(76vw, 620px);
-        }
-
-
-        .sk-homepage .philosophy-section {
-            width:
-                calc(100% - 36px);
-
-            grid-template-columns:
-                1fr;
-
-            padding:
-                20px
-                0
-                54px;
-        }
-
-    }
-
-
-    /* ============================================================
-       MOBILE
-       ============================================================ */
-
-    @media (max-width: 640px) {
-
-        .sk-homepage .hero {
-            min-height:
-                calc(100svh - 70px);
-        }
-
-
-        .sk-homepage .hero::before {
-            left: 50%;
-
-            width: 86vw;
-        }
-
-
-        .sk-homepage .hero-content {
-            width:
-                calc(100% - 26px);
-
-            padding:
-                52px
-                0
-                88px;
-        }
-
-
-        .sk-homepage .hero-eyebrow {
-            margin-bottom: 18px;
-
-            font-size: 8px;
-        }
-
-
-        .sk-homepage .hero-title-muted {
-            font-size: 1rem;
-        }
-
-
-        .sk-homepage .hero-title-main {
-            font-size:
-                clamp(
-                    2.35rem,
-                    10vw,
-                    3.1rem
-                );
-        }
-
-
-        .sk-homepage .hero-title-accent {
-            font-size:
-                clamp(
-                    2.55rem,
-                    11vw,
-                    3.35rem
-                );
-        }
-
-
-        .sk-homepage .hero-sub {
-            margin-top: 32px;
-
-            padding-right: 14px;
-
-            font-size: 14px;
-
-            line-height: 1.95;
-        }
-
-
-        .sk-homepage .cta-container {
-            width: 100%;
-
-            flex-direction: column;
-        }
-
-
-        .sk-homepage .btn-cta {
-            width: 100%;
-        }
-
-
-        .sk-homepage .hero-meta {
-            left: 12px;
-            right: 12px;
-
-            bottom: 16px;
-
-            justify-content:
-                space-between;
-
-            gap: 6px;
-
-            font-size: 7px;
-        }
-
-
-        .sk-homepage .hero-cover-placeholder {
-            left: 50%;
-
-            width: 88vw;
-
-            opacity: 0.62;
-        }
-
-
-        .sk-homepage .philosophy-section {
-            width:
-                calc(100% - 26px);
-
-            padding:
-                16px
-                0
-                42px;
-        }
-
-
-        .sk-homepage .philosophy-item {
-            min-height: 190px;
-
-            padding: 21px;
-        }
-
-
-        .sk-homepage .item-cover {
-            min-height: 60px;
-
-            margin-bottom: 18px;
-        }
-
-    }
-
-
-    /* ============================================================
-       REDUCED MOTION
-       ============================================================ */
-
-    @media (prefers-reduced-motion: reduce) {
-
-        .sk-homepage .btn-cta,
-        .sk-homepage .philosophy-item,
-        .sk-homepage .philosophy-item::after {
-            transition: none;
-        }
-
-    }
-</style>
+<link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
 {% endblock %}
 
-
 {% block content %}
+{% include "partials/_standalone_nav.html" %}
 
-<div
-    class="sk-homepage"
-    lang="fa"
-    dir="rtl"
->
+<div class="discovery-home">
+  <section class="discovery-hero" aria-labelledby="discovery-title">
+    <div class="discovery-shell discovery-hero__inner">
+      <p class="discovery-hero__eyebrow">VORNEQ</p>
+      <h1 id="discovery-title" class="discovery-hero__title">
+        {% trans "Discover knowledge across formats." %}
+      </h1>
+      <p class="discovery-hero__subtitle">
+        {% trans "Search books, articles, documents, audio, and digital products from one place." %}
+      </p>
 
-    <section
-        class="hero"
-        aria-labelledby="sk-home-hero-title"
-    >
-
-        <!--
-            ========================================================
-            HERO COVER / SYMBOL PLACEHOLDER
-            ========================================================
-            بعداً لوگو، SVG، تصویر یا سمبل اصلی اینجا قرار می‌گیرد.
-        -->
-
-        <div
-            class="hero-cover-placeholder"
-            aria-hidden="true"
-        >
-            <span class="placeholder-text">
-                [ COVER / SYMBOL ]
-            </span>
+      <form method="get" class="discovery-search" role="search">
+        {% if current_type != "all" %}
+          <input type="hidden" name="type" value="{{ current_type }}">
+        {% endif %}
+        <div class="discovery-search__wrapper">
+          <svg class="discovery-search__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input
+            type="search"
+            name="q"
+            class="discovery-search__input"
+            placeholder="{% trans 'Search VORNEQ' %}"
+            value="{{ search_query }}"
+            aria-label="{% trans 'Search VORNEQ' %}"
+            maxlength="200"
+          >
+          <button type="submit" class="discovery-search__button">
+            {% trans "Search" %}
+          </button>
         </div>
+      </form>
 
+      <nav class="discovery-filters" aria-label="{% trans 'Filter by content type' %}">
+        <ul class="discovery-filters__list">
+          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=all" class="discovery-filters__link{% if current_type == 'all' %} is-active{% endif %}">{% trans "All" %}</a></li>
+          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=book" class="discovery-filters__link{% if current_type == 'book' %} is-active{% endif %}">{% trans "Books" %}</a></li>
+          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=article" class="discovery-filters__link{% if current_type == 'article' %} is-active{% endif %}">{% trans "Articles" %}</a></li>
+          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=document" class="discovery-filters__link{% if current_type == 'document' %} is-active{% endif %}">{% trans "Documents" %}</a></li>
+          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=audio" class="discovery-filters__link{% if current_type == 'audio' %} is-active{% endif %}">{% trans "Audio" %}</a></li>
+          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=product" class="discovery-filters__link{% if current_type == 'product' %} is-active{% endif %}">{% trans "Products" %}</a></li>
+          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=other" class="discovery-filters__link{% if current_type == 'other' %} is-active{% endif %}">{% trans "Other" %}</a></li>
+        </ul>
+      </nav>
+    </div>
+  </section>
 
-        <div class="hero-content">
-
-            <p
-                class="hero-eyebrow"
-                aria-hidden="true"
-            >
-                SAMAN KHERAD / MANIFESTO
-            </p>
-
-
-            <h1
-                id="sk-home-hero-title"
-                class="hero-title"
-            >
-
-                <span class="hero-title-muted">
-                    مرکز، خالی است.
-                </span>
-
-                <span class="hero-title-main">
-                    حقیقت از پیش
-                </span>
-
-                <span class="hero-title-accent">
-                    نوشته نشده.
-                </span>
-
-            </h1>
-
-
-            <p class="hero-sub">
-                این پلتفرم یک میدان معرفتی باز است؛
-                جایی که شواهد مستقل،
-                بدون تحمیل یک مرجع واحد،
-                در کنار هم قرار می‌گیرند.
-            </p>
-
-
-            <div class="cta-container">
-
-                <a
-                    href="{% url 'library:index' %}"
-                    class="btn-cta"
-                >
-                    ورود به کتابخانه
-                </a>
-
-
-                <a
-                    href="{% url 'marketplace:index' %}"
-                    class="btn-cta secondary"
-                >
-                    کاوش در بازار
-                </a>
-
-            </div>
-
+  {% if featured %}
+  <section class="discovery-featured" aria-labelledby="featured-title">
+    <div class="discovery-shell">
+      <div class="discovery-section-heading">
+        <div>
+          <p class="discovery-section-heading__kicker">{% trans "Curated from the latest" %}</p>
+          <h2 id="featured-title">{% trans "Featured discoveries" %}</h2>
         </div>
+      </div>
 
+      <div class="discovery-featured__grid">
+        {% for item in featured %}
+        <article class="discovery-card discovery-card--featured">
+          {% if item.image_url %}
+          <a href="{{ item.url }}" class="discovery-card__media" tabindex="-1" aria-hidden="true">
+            <img src="{{ item.image_url }}" alt="" class="discovery-card__image" loading="lazy">
+          </a>
+          {% endif %}
+          <div class="discovery-card__body">
+            <p class="discovery-card__type">{{ item.type|capfirst }}</p>
+            <h3 class="discovery-card__title"><a href="{{ item.url }}">{{ item.title }}</a></h3>
+            {% if item.description %}<p class="discovery-card__description">{{ item.description }}</p>{% endif %}
+            <div class="discovery-card__meta">
+              <span>{% if item.source %}{{ item.source }}{% else %}VORNEQ{% endif %}</span>
+              <time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:"M j, Y" }}</time>
+            </div>
+            {% if item.type == "product" %}
+            <div class="discovery-card__commerce">
+              {% if item.price == 0 %}<span class="discovery-card__free">{% trans "Free" %}</span>{% else %}<span class="discovery-card__price">{{ item.price }}</span>{% endif %}
+            </div>
+            {% endif %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
 
-        <div
-            class="hero-meta"
-            aria-hidden="true"
-        >
-            <span>OPEN</span>
-            <span>PLURAL</span>
-            <span>UNCLAIMED</span>
+  <section class="discovery-results" aria-labelledby="results-title">
+    <div class="discovery-shell">
+      <div class="discovery-results__header">
+        <div>
+          {% if is_filtered %}
+            <p class="discovery-section-heading__kicker">{% trans "Discovery results" %}</p>
+            <h2 id="results-title">
+              {% if search_query %}{% blocktrans with query=search_query %}Results for “{{ query }}”{% endblocktrans %}{% else %}{% trans "Filtered discoveries" %}{% endif %}
+            </h2>
+            <p class="discovery-results__count">{% blocktrans count counter=total_results %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}</p>
+          {% else %}
+            <p class="discovery-section-heading__kicker">{% trans "Across VORNEQ" %}</p>
+            <h2 id="results-title">{% trans "Latest discoveries" %}</h2>
+          {% endif %}
         </div>
+      </div>
 
-    </section>
-
-
-    <section
-        class="philosophy-section"
-        aria-label="در یک نگاه"
-    >
-
-        <a
-            href="{% url 'library:index' %}"
-            class="philosophy-item"
-            style="min-height: 150px; padding: 24px; text-decoration: none;"
-        >
-            <div class="item-number" aria-hidden="true">[ LIB ]</div>
-            <h2>آخرین کتابخانه</h2>
-            <p>
-                {% if library_items %}
-                    {{ library_items.0.title }}
-                {% else %}
-                    هنوز موردی منتشر نشده است.
-                {% endif %}
-            </p>
-        </a>
-
-        <a
-            href="{% if audio_items %}{% url 'library:audio_detail' audio_items.0.pk %}{% else %}{% url 'library:index' %}{% endif %}"
-            class="philosophy-item"
-            style="min-height: 150px; padding: 24px; text-decoration: none;"
-        >
-            <div class="item-number" aria-hidden="true">[ AUD ]</div>
-            <h2>آخرین صوت</h2>
-            <p>
-                {% if audio_items %}
-                    {{ audio_items.0.title }}
-                {% else %}
-                    هنوز محتوای صوتی منتشر نشده است.
-                {% endif %}
-            </p>
-        </a>
-
-        <a
-            href="{% url 'marketplace:index' %}"
-            class="philosophy-item"
-            style="min-height: 150px; padding: 24px; text-decoration: none;"
-        >
-            <div class="item-number" aria-hidden="true">[ MKT ]</div>
-            <h2>تازه‌های بازار</h2>
-            <p>
-                {% if approved_products %}
-                    {{ approved_products.0.title }}
-                {% else %}
-                    هنوز محصولی منتشر نشده است.
-                {% endif %}
-            </p>
-        </a>
-
-    </section>
-
-
-    <section
-        class="philosophy-section"
-        aria-label="اصول بنیادین سامان خرد"
-    >
-
-        <article class="philosophy-item">
-
-            <div
-                class="item-number"
-                aria-hidden="true"
-            >
-                [ 01 ]
+      {% if results %}
+      <div class="discovery-feed">
+        {% for item in results %}
+        <article class="discovery-feed-item{% if item.image_url %} has-image{% endif %}">
+          {% if item.image_url %}
+          <a href="{{ item.url }}" class="discovery-feed-item__media" tabindex="-1" aria-hidden="true">
+            <img src="{{ item.image_url }}" alt="" class="discovery-feed-item__image" loading="lazy">
+          </a>
+          {% endif %}
+          <div class="discovery-feed-item__content">
+            <div class="discovery-feed-item__topline">
+              <span class="discovery-feed-item__type">{{ item.type|capfirst }}</span>
+              <time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:"M j, Y" }}</time>
             </div>
-
-
-            <div
-                class="item-cover"
-                aria-hidden="true"
-            >
-                <span class="placeholder-text">
-                    [ SYMBOL 01 ]
-                </span>
+            <h3 class="discovery-feed-item__title"><a href="{{ item.url }}">{{ item.title }}</a></h3>
+            {% if item.description %}<p class="discovery-feed-item__description">{{ item.description }}</p>{% endif %}
+            <div class="discovery-feed-item__footer">
+              {% if item.source %}<span>{{ item.source }}</span>{% endif %}
+              {% if item.type == "product" %}
+                {% if item.price == 0 %}<span class="discovery-card__free">{% trans "Free" %}</span>{% else %}<span class="discovery-card__price">{{ item.price }}</span>{% endif %}
+              {% endif %}
             </div>
-
-
-            <h2>
-                مرکز خالی
-            </h2>
-
-
-            <p>
-                هیچ مرجع یا پاسخ نهایی
-                در مرکز قرار ندارد.
-                فضای پرسش باز می‌ماند
-                تا نتیجه از پیش تحمیل نشود.
-            </p>
-
+          </div>
         </article>
+        {% endfor %}
+      </div>
 
+      {% if page_obj.has_other_pages %}
+      <nav class="discovery-pagination" aria-label="{% trans 'Pagination' %}">
+        <div class="discovery-pagination__status">
+          {% blocktrans with current=page_obj.number total=page_obj.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}
+        </div>
+        <div class="discovery-pagination__actions">
+          {% if page_obj.has_previous %}
+          <a class="discovery-pagination__link" href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if current_type != 'all' %}type={{ current_type }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>
+          {% endif %}
+          {% if page_obj.has_next %}
+          <a class="discovery-pagination__link" href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if current_type != 'all' %}type={{ current_type }}&amp;{% endif %}page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>
+          {% endif %}
+        </div>
+      </nav>
+      {% endif %}
 
-        <article class="philosophy-item">
-
-            <div
-                class="item-number"
-                aria-hidden="true"
-            >
-                [ 02 ]
-            </div>
-
-
-            <div
-                class="item-cover"
-                aria-hidden="true"
-            >
-                <span class="placeholder-text">
-                    [ SYMBOL 02 ]
-                </span>
-            </div>
-
-
-            <h2>
-                شواهد مستقل
-            </h2>
-
-
-            <p>
-                هر شاهد هویت،
-                منشأ و زمینه خود را حفظ می‌کند.
-                رابطه میان شواهد
-                نباید استقلال آن‌ها را از بین ببرد.
-            </p>
-
-        </article>
-
-
-        <article class="philosophy-item">
-
-            <div
-                class="item-number"
-                aria-hidden="true"
-            >
-                [ 03 ]
-            </div>
-
-
-            <div
-                class="item-cover"
-                aria-hidden="true"
-            >
-                <span class="placeholder-text">
-                    [ SYMBOL 03 ]
-                </span>
-            </div>
-
-
-            <h2>
-                مسیرهای باز
-            </h2>
-
-
-            <p>
-                هیچ مسیر واحدی
-                به‌عنوان پاسخ صحیح تثبیت نمی‌شود.
-                هر داوری موقت است
-                و امکان بازبینی باقی می‌ماند.
-            </p>
-
-        </article>
-
-    </section>
-
+      {% else %}
+      <div class="discovery-empty">
+        <p class="discovery-empty__eyebrow">{% trans "Nothing matched" %}</p>
+        <h2>{% trans "No results found" %}</h2>
+        <p>{% trans "Try adjusting your keywords or choosing a different content type." %}</p>
+        <a href="?type=all" class="discovery-empty__reset">{% trans "Reset discovery" %}</a>
+      </div>
+      {% endif %}
+    </div>
+  </section>
 </div>
-
 {% endblock %}
