@@ -1,0 +1,29 @@
+databases:
+  - name: saman-kherad-staging-db
+    plan: free
+    databaseName: saman_kherad_staging
+    user: saman_kherad
+
+services:
+  - type: web
+    name: saman-kherad-staging
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && DJANGO_SETTINGS_MODULE=config.settings_render python manage.py collectstatic --noinput
+    startCommand: DJANGO_SETTINGS_MODULE=config.settings_render python manage.py migrate --noinput && gunicorn config.wsgi:application
+    healthCheckPath: /fa/
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings_render
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        value: saman-kherad-staging.onrender.com
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        value: https://saman-kherad-staging.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: saman-kherad-staging-db
+          property: connectionString
