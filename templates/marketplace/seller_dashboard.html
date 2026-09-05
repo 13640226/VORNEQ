@@ -5,15 +5,7 @@
     {% trans "داشبورد فروشنده — سامان خرد" %}
 {% endblock %}
 
-{% block extra_head %}
-    {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
-{% endblock %}
-
 {% block content %}
-
-{% include "partials/_standalone_nav.html" %}
-
 <section class="page-header">
     <div class="container">
         <div class="page-header__content">

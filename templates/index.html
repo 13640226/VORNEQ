@@ -12,15 +12,10 @@
 {% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-<link rel="stylesheet" href="{% static 'css/base.css' %}">
-<link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
 <link rel="stylesheet" href="{% static 'css/home.css' %}">
 {% endblock %}
 
 {% block content %}
-{% include "partials/_standalone_nav.html" %}
-
 <div class="discovery-home">
   <section class="discovery-hero" aria-labelledby="discovery-title">
     <div class="discovery-shell discovery-hero__inner">
