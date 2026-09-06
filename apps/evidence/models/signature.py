@@ -81,8 +81,8 @@ class SignatureEnvelope(models.Model):
             ),
         ]
         indexes = [
-            models.Index(fields=["key_id", "signed_at"], name="evidence_signature_key_time_idx"),
-            models.Index(fields=["payload_digest"], name="evidence_signature_digest_idx"),
+            models.Index(fields=["key_id", "signed_at"], name="sig_key_time_idx"),
+            models.Index(fields=["payload_digest"], name="sig_digest_idx"),
         ]
 
     @property
