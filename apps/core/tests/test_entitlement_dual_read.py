@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
 from django.test import TestCase
 
 from apps.core.models import Entitlement, Identity
@@ -62,17 +63,21 @@ class EntitlementDualReadTests(TestCase):
 
         self.assertFalse(has_valid_entitlement(self.user, self.product))
 
-    def test_incomplete_canonical_pair_fails_closed(self):
+    def test_incomplete_canonical_pair_is_rejected_by_database(self):
         identity, _ = register_user_identity(self.user)
         register_artifact(self.product)
         entitlement = grant_entitlement(self.user, self.product)
 
-        Entitlement.objects.filter(pk=entitlement.pk).update(
-            identity=identity,
-            artifact=None,
-        )
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Entitlement.objects.filter(pk=entitlement.pk).update(
+                    identity=identity,
+                    artifact=None,
+                )
 
-        self.assertFalse(has_valid_entitlement(self.user, self.product))
+        entitlement.refresh_from_db()
+        self.assertIsNotNone(entitlement.identity_id)
+        self.assertIsNotNone(entitlement.artifact_id)
 
     def test_inactive_entitlement_never_authorizes(self):
         grant_entitlement(self.user, self.product)
