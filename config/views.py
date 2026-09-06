@@ -1,5 +1,6 @@
 """Main views for VORNEQ."""
 
+from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -7,6 +8,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import get_language
 
+from apps.core.models import ContextualReputation, Entitlement
 from library.models import AudioItem, LibraryItem
 from marketplace.models import Product
 
@@ -177,3 +179,30 @@ def home(request):
     }
 
     return render(request, "index.html", context)
+
+
+@login_required
+def profile(request):
+    """Render a read-only account dashboard from existing VORNEQ data."""
+    products = Product.objects.filter(seller=request.user).order_by("-created_at")
+    entitlements = (
+        Entitlement.objects.filter(user=request.user, is_active=True)
+        .select_related("product")
+        .order_by("-granted_at")
+    )
+    reputations = (
+        ContextualReputation.objects.filter(user=request.user)
+        .select_related("verification_method")
+        .order_by("domain", "verification_method__name")
+    )
+
+    context = {
+        "profile_user": request.user,
+        "seller_products": products[:8],
+        "seller_product_count": products.count(),
+        "entitlements": entitlements[:8],
+        "entitlement_count": entitlements.count(),
+        "contextual_reputations": reputations,
+        "reputation_context_count": reputations.count(),
+    }
+    return render(request, "profile.html", context)

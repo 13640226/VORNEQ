@@ -10,7 +10,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from config.views import home
+from config.views import home, profile
 
 
 # ============================================================
@@ -46,6 +46,11 @@ urlpatterns += i18n_patterns(
         "",
         home,
         name="home",
+    ),
+    path(
+        "profile/",
+        profile,
+        name="profile",
     ),
     path(
         "accounts/",
