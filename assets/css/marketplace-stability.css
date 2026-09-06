@@ -1,0 +1,11 @@
+/* Keep marketplace filter controls from shifting when a category becomes active. */
+.marketplace-toolbar__summary {
+  min-height: 1.5rem;
+  align-items: center;
+}
+
+.marketplace-toolbar__clear--placeholder {
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+}
