@@ -178,6 +178,78 @@ h3 {
   transform: translateY(0);
 }
 
+/* ============================================================
+   RESPONSIVE / RTL UTILITIES
+   ============================================================ */
+
+.u-scroll-inline {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.u-nowrap {
+  flex-wrap: nowrap !important;
+  white-space: nowrap;
+}
+
+.u-show-mobile {
+  display: none !important;
+}
+
+.u-hide-mobile {
+  display: initial;
+}
+
+html[dir="rtl"] .u-scroll-inline {
+  direction: rtl;
+}
+
+/* Keep long desktop navigation usable on tablets instead of wrapping into
+   multiple header rows. Logical properties make the rule direction-safe. */
+@media (min-width: 641px) and (max-width: 1100px) {
+  html body .site-header__inner {
+    min-width: 0;
+    padding-inline: var(--space-3);
+  }
+
+  html body .site-nav {
+    min-width: 0;
+    max-width: min(68vw, 720px);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html body .site-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  html body .site-nav a {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  html[dir="rtl"] body .site-nav {
+    direction: rtl;
+  }
+}
+
+/* Shared 4 -> 3 -> 1 grid behavior for the prominent discovery/gallery
+   surfaces. More specialized page CSS may still control spacing and cards. */
+@media (min-width: 769px) and (max-width: 1100px) {
+  html body .pg-gallery__grid,
+  html body .discovery-featured__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
 
   *,
@@ -202,5 +274,24 @@ h3 {
 
     --reading-width:
       min(100% - 32px, 780px);
+  }
+
+  .u-show-mobile {
+    display: initial !important;
+  }
+
+  .u-hide-mobile {
+    display: none !important;
+  }
+
+  .u-stack-mobile {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  html body .pg-gallery__grid,
+  html body .discovery-featured__grid {
+    grid-template-columns: 1fr;
   }
 }
