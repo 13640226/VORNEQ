@@ -11,6 +11,7 @@
 {{ block.super }}
 <link rel="stylesheet" href="{% static 'css/marketplace.css' %}">
 <link rel="stylesheet" href="{% static 'css/marketplace-stability.css' %}">
+<link rel="stylesheet" href="{% static 'css/marketplace-index-system.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -67,79 +68,81 @@
       </div>
     </section>
 
-    {% if products %}
-      <div class="marketplace-grid">
-        {% for product in products %}
-          <article class="marketplace-card">
-            {% if product.image %}
-              <a href="{% url 'marketplace:detail' product.slug %}" class="marketplace-card__image-link" tabindex="-1" aria-hidden="true">
-                <img src="{{ product.image.url }}" alt="" class="marketplace-card__image" loading="lazy" decoding="async">
-              </a>
-            {% endif %}
-
-            <div class="marketplace-card__body">
-              <div class="marketplace-card__kicker">
-                <span class="marketplace-card__category">{{ product.get_category_display }}</span>
-                {% if product.version %}<span class="marketplace-card__version">v{{ product.version }}</span>{% endif %}
-              </div>
-
-              <h2 class="marketplace-card__title">
-                <a href="{% url 'marketplace:detail' product.slug %}" class="marketplace-card__link">{{ product.title }}</a>
-              </h2>
-
-              <p class="marketplace-card__seller">{% trans "By" %} {{ product.seller.get_username }}</p>
-
-              {% if product.short_description %}
-                <p class="marketplace-card__description">{{ product.short_description|striptags|truncatechars:140 }}</p>
+    <div class="marketplace-results-surface">
+      {% if products %}
+        <div class="marketplace-grid">
+          {% for product in products %}
+            <article class="marketplace-card">
+              {% if product.image %}
+                <a href="{% url 'marketplace:detail' product.slug %}" class="marketplace-card__image-link" tabindex="-1" aria-hidden="true">
+                  <img src="{{ product.image.url }}" alt="" class="marketplace-card__image" loading="lazy" decoding="async">
+                </a>
               {% endif %}
 
-              <div class="marketplace-card__footer">
-                <div class="marketplace-card__price">
-                  {% if product.price == 0 %}
-                    <span class="marketplace-card__badge">{% trans "Free" %}</span>
-                  {% else %}
-                    <span>{{ product.price|floatformat:2 }}</span>
-                  {% endif %}
+              <div class="marketplace-card__body">
+                <div class="marketplace-card__kicker">
+                  <span class="marketplace-card__category">{{ product.get_category_display }}</span>
+                  {% if product.version %}<span class="marketplace-card__version">v{{ product.version }}</span>{% endif %}
                 </div>
-                <a href="{% url 'marketplace:detail' product.slug %}" class="marketplace-card__action">{% trans "View details" %}</a>
+
+                <h2 class="marketplace-card__title">
+                  <a href="{% url 'marketplace:detail' product.slug %}" class="marketplace-card__link">{{ product.title }}</a>
+                </h2>
+
+                <p class="marketplace-card__seller">{% trans "By" %} {{ product.seller.get_username }}</p>
+
+                {% if product.short_description %}
+                  <p class="marketplace-card__description">{{ product.short_description|striptags|truncatechars:140 }}</p>
+                {% endif %}
+
+                <div class="marketplace-card__footer">
+                  <div class="marketplace-card__price">
+                    {% if product.price == 0 %}
+                      <span class="marketplace-card__badge">{% trans "Free" %}</span>
+                    {% else %}
+                      <span>{{ product.price|floatformat:2 }}</span>
+                    {% endif %}
+                  </div>
+                  <a href="{% url 'marketplace:detail' product.slug %}" class="marketplace-card__action">{% trans "View details" %}</a>
+                </div>
               </div>
-            </div>
-          </article>
-        {% endfor %}
-      </div>
-
-      {% if page_obj.has_other_pages %}
-        <nav class="marketplace-pagination" aria-label="{% trans 'Pagination' %}">
-          {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if category %}&category={{ category|urlencode }}{% endif %}" class="marketplace-pagination__link" rel="prev">{% trans "Previous" %}</a>
-          {% endif %}
-
-          {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-              <span class="marketplace-pagination__current" aria-current="page">{{ num }}</span>
-            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-              <a href="?page={{ num }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if category %}&category={{ category|urlencode }}{% endif %}" class="marketplace-pagination__link">{{ num }}</a>
-            {% endif %}
+            </article>
           {% endfor %}
+        </div>
 
-          {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if category %}&category={{ category|urlencode }}{% endif %}" class="marketplace-pagination__link" rel="next">{% trans "Next" %}</a>
-          {% endif %}
-        </nav>
+        {% if page_obj.has_other_pages %}
+          <nav class="marketplace-pagination" aria-label="{% trans 'Pagination' %}">
+            {% if page_obj.has_previous %}
+              <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if category %}&category={{ category|urlencode }}{% endif %}" class="marketplace-pagination__link" rel="prev">{% trans "Previous" %}</a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+                <span class="marketplace-pagination__current" aria-current="page">{{ num }}</span>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if category %}&category={{ category|urlencode }}{% endif %}" class="marketplace-pagination__link">{{ num }}</a>
+              {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if category %}&category={{ category|urlencode }}{% endif %}" class="marketplace-pagination__link" rel="next">{% trans "Next" %}</a>
+            {% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <div class="marketplace-empty">
+          <h2 class="marketplace-empty__title">{% trans "No products found" %}</h2>
+          <p class="marketplace-empty__message">
+            {% if query or category %}
+              {% trans "Try a different search term or category." %}
+            {% else %}
+              {% trans "No approved products have been published yet." %}
+            {% endif %}
+          </p>
+          {% if query or category %}<a href="{% url 'marketplace:index' %}" class="marketplace-empty__action">{% trans "View all products" %}</a>{% endif %}
+        </div>
       {% endif %}
-    {% else %}
-      <div class="marketplace-empty">
-        <h2 class="marketplace-empty__title">{% trans "No products found" %}</h2>
-        <p class="marketplace-empty__message">
-          {% if query or category %}
-            {% trans "Try a different search term or category." %}
-          {% else %}
-            {% trans "No approved products have been published yet." %}
-          {% endif %}
-        </p>
-        {% if query or category %}<a href="{% url 'marketplace:index' %}" class="marketplace-empty__action">{% trans "View all products" %}</a>{% endif %}
-      </div>
-    {% endif %}
+    </div>
 
     <aside class="marketplace-seller-cta">
       <p class="marketplace-seller-cta__eyebrow">{% trans "For creators" %}</p>

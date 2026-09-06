@@ -1,0 +1,74 @@
+/* ==========================================================
+   VORNEQ MARKETPLACE INDEX — Global Experience System
+   Stable geometry contract for Marketplace discovery only.
+   ========================================================== */
+
+.marketplace-page .marketplace-toolbar {
+  display: grid;
+  grid-template-rows: auto auto minmax(1.5rem, auto);
+  gap: var(--space-4);
+}
+
+.marketplace-page .marketplace-search__wrapper {
+  min-height: var(--control-height);
+}
+
+.marketplace-page .marketplace-filters {
+  min-block-size: var(--ges-filter-row-min-block, 44px);
+  align-items: center;
+  flex-wrap: nowrap;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.marketplace-page .marketplace-filters__link {
+  min-block-size: var(--ges-touch-target, 44px);
+}
+
+.marketplace-page .marketplace-toolbar__summary {
+  min-block-size: 1.5rem;
+  align-items: center;
+}
+
+.marketplace-page .marketplace-results-surface {
+  min-block-size: clamp(18rem, 42vh, 34rem);
+}
+
+.marketplace-page .marketplace-empty {
+  min-block-size: clamp(18rem, 42vh, 34rem);
+  display: grid;
+  align-content: center;
+}
+
+/* Discovery interactions must not move layout vertically. */
+@media (hover: hover) and (pointer: fine) {
+  .marketplace-page .marketplace-search__button:hover,
+  .marketplace-page .marketplace-card__action:hover,
+  .marketplace-page .marketplace-empty__action:hover,
+  .marketplace-page .marketplace-seller-cta__link:hover,
+  .marketplace-page .marketplace-card:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .marketplace-page .marketplace-toolbar {
+    gap: var(--space-3);
+  }
+
+  .marketplace-page .marketplace-results-surface,
+  .marketplace-page .marketplace-empty {
+    min-block-size: 16rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketplace-page .marketplace-card,
+  .marketplace-page .marketplace-search__button,
+  .marketplace-page .marketplace-card__action,
+  .marketplace-page .marketplace-empty__action,
+  .marketplace-page .marketplace-seller-cta__link,
+  .marketplace-page .marketplace-filters__link {
+    transition: none;
+  }
+}
