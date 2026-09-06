@@ -1,0 +1,53 @@
+/* ============================================================
+   LAYOUT STABILITY — REDUCE VISIBLE JUMPS BETWEEN PAGES
+   ============================================================ */
+
+:root {
+  --vorneq-footer-min-height: 72px;
+}
+
+/* Reserve stable vertical space for the application shell. */
+.standalone-nav {
+  min-height: 64px;
+}
+
+.main-content {
+  min-height: calc(100dvh - 64px - var(--vorneq-footer-min-height));
+}
+
+.site-footer {
+  min-height: var(--vorneq-footer-min-height);
+}
+
+/* Images that declare dimensions/aspect-ratio keep their footprint before
+   loading. Do not force a single ratio on editorial/product artwork. */
+img[width][height] {
+  height: auto;
+}
+
+.library-book-card__cover,
+.marketplace-card__image,
+.profile-avatar {
+  overflow: hidden;
+  background: var(--color-bg-surface, var(--color-bg-page));
+}
+
+.library-book-card__cover img,
+.marketplace-card__image img,
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Prevent scrollbar appearance/disappearance from shifting the shell where
+   supported. */
+html {
+  scrollbar-gutter: stable;
+}
+
+@media (max-width: 640px) {
+  .main-content {
+    min-height: calc(100dvh - 64px - var(--vorneq-footer-min-height));
+  }
+}
