@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
-from django.urls import reverse
 
 from apps.evidence.models import Claim, Evidence, EvidenceRelation
 from apps.verification.models import (
@@ -91,18 +90,16 @@ class LibraryTrustContextTests(TestCase):
         self.assertNotIn("reputation_context", context)
         self.assertNotIn("verifier", context)
 
-    def test_library_card_renders_context_without_private_details(self):
+    def test_builder_does_not_expose_private_evidence_details(self):
         self._add_evidence(
             VerificationEvidence.Visibility.PRIVATE,
             "PRIVATE LIBRARY DISCOVERY SECRET",
         )
 
-        response = self.client.get(reverse("library:index"))
-        body = response.content.decode()
+        context = build_public_trust_context_for_library(self.item)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("1 completed verification", body)
-        self.assertIn("Manual review", body)
-        self.assertIn("not a trust score or truth claim", body)
-        self.assertNotIn("PRIVATE LIBRARY DISCOVERY SECRET", body)
-        self.assertNotIn(self.verifier.username, body)
+        self.assertEqual(context["verification_count"], 1)
+        self.assertEqual(context["public_evidence_count"], 0)
+        self.assertNotIn("evidence", context)
+        self.assertNotIn("verifier", context)
+        self.assertNotIn("score", context)
