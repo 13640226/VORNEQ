@@ -46,6 +46,7 @@
   border-radius: var(--radius-sm);
 }
 
+.theme-selector-preview--vorneq { background: linear-gradient(90deg, #f7f8fa 0 72%, #356ae6 72%); border-color: #e4e7ec; }
 .theme-selector-preview--light { background: linear-gradient(90deg, #f8f6f2 0 72%, #8b6e3c 72%); }
 .theme-selector-preview--dark { background: linear-gradient(90deg, #0d1117 0 72%, #c8a86e 72%); }
 .theme-selector-preview--blue { background: linear-gradient(90deg, #0b1a2e 0 72%, #5b9cff 72%); }
