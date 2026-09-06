@@ -1,0 +1,48 @@
+/* ============================================================
+   FILTER LAYOUT STABILITY — HOME / LIBRARY / MARKETPLACE
+   ============================================================ */
+
+/* Keep the control strip footprint stable as only the active option changes. */
+.discovery-filters,
+.library-filters,
+.marketplace-filters {
+  min-block-size: 44px;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.discovery-filters__link,
+.library-filters__link,
+.marketplace-filters__link {
+  box-sizing: border-box;
+}
+
+/* Result metadata should not collapse enough to pull result content upward. */
+.discovery-results__header {
+  min-block-size: 76px;
+}
+
+.library-results-summary,
+.marketplace-toolbar__summary {
+  min-block-size: 32px;
+}
+
+/* Empty states get a stable starting footprint so changing a zero-result filter
+   does not visibly snap the lower page edge. */
+.library-empty,
+.marketplace-empty,
+.discovery-empty {
+  min-block-size: 180px;
+}
+
+@media (max-width: 640px) {
+  .discovery-filters,
+  .library-filters,
+  .marketplace-filters {
+    min-block-size: 42px;
+  }
+
+  .discovery-results__header {
+    min-block-size: 72px;
+  }
+}
