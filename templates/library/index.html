@@ -10,6 +10,7 @@
 {% block extra_head %}
 {{ block.super }}
 <link rel="stylesheet" href="{% static 'css/library.css' %}">
+<link rel="stylesheet" href="{% static 'css/library-index-system.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -23,99 +24,115 @@
       </p>
     </header>
 
-    <section class="library-search" aria-label="{% trans 'Search library' %}">
-      <form method="get" action="{% url 'library:index' %}" class="library-search__form" role="search">
-        <label for="library-search" class="sr-only">{% trans "Search library" %}</label>
-        <input
-          id="library-search"
-          type="search"
-          name="q"
-          value="{{ query }}"
-          class="library-search__input"
-          placeholder="{% trans 'Search books, articles, documents, and audio…' %}"
-          autocomplete="off"
-        >
-        {% if selected_type %}
-          <input type="hidden" name="type" value="{{ selected_type }}">
-        {% endif %}
-        <button type="submit" class="library-search__button">{% trans "Search" %}</button>
-      </form>
-      {% if query %}
-        <a href="{% url 'library:index' %}{% if selected_type %}?type={{ selected_type|urlencode }}{% endif %}" class="library-search__clear">
-          {% trans "Clear search" %}
-        </a>
-      {% endif %}
-    </section>
+    <section class="library-controls" aria-label="{% trans 'Library discovery controls' %}">
+      <div class="library-search">
+        <form method="get" action="{% url 'library:index' %}" class="library-search__form" role="search">
+          <label for="library-search" class="sr-only">{% trans "Search library" %}</label>
+          <input
+            id="library-search"
+            type="search"
+            name="q"
+            value="{{ query }}"
+            class="library-search__input"
+            placeholder="{% trans 'Search books, articles, documents, and audio…' %}"
+            autocomplete="off"
+          >
+          {% if selected_type %}
+            <input type="hidden" name="type" value="{{ selected_type }}">
+          {% endif %}
+          <button type="submit" class="library-search__button">{% trans "Search" %}</button>
+        </form>
+        <div class="library-search__clear-slot">
+          {% if query %}
+            <a href="{% url 'library:index' %}{% if selected_type %}?type={{ selected_type|urlencode }}{% endif %}" class="library-search__clear">
+              {% trans "Clear search" %}
+            </a>
+          {% else %}
+            <span class="library-search__clear library-search__clear--placeholder" aria-hidden="true">{% trans "Clear search" %}</span>
+          {% endif %}
+        </div>
+      </div>
 
-    <nav class="library-filters" aria-label="{% trans 'Filter by content type' %}">
-      <a
-        href="{% url 'library:index' %}{% if query %}?q={{ query|urlencode }}{% endif %}"
-        class="library-filters__link {% if not selected_type %}is-active{% endif %}"
-        {% if not selected_type %}aria-current="page"{% endif %}
-      >{% trans "All" %}</a>
-      {% for type_code, type_label in item_types %}
+      <nav class="library-filters scroll-strip" aria-label="{% trans 'Filter by content type' %}">
         <a
-          href="{% url 'library:index' %}?type={{ type_code|urlencode }}{% if query %}&q={{ query|urlencode }}{% endif %}"
-          class="library-filters__link {% if selected_type == type_code %}is-active{% endif %}"
-          {% if selected_type == type_code %}aria-current="page"{% endif %}
-        >{% include "partials/_content_type_label.html" with type=type_code %}</a>
-      {% endfor %}
-    </nav>
+          href="{% url 'library:index' %}{% if query %}?q={{ query|urlencode }}{% endif %}"
+          class="library-filters__link {% if not selected_type %}is-active{% endif %}"
+          {% if not selected_type %}aria-current="page"{% endif %}
+        >{% trans "All" %}</a>
+        {% for type_code, type_label in item_types %}
+          <a
+            href="{% url 'library:index' %}?type={{ type_code|urlencode }}{% if query %}&q={{ query|urlencode }}{% endif %}"
+            class="library-filters__link {% if selected_type == type_code %}is-active{% endif %}"
+            {% if selected_type == type_code %}aria-current="page"{% endif %}
+          >{% include "partials/_content_type_label.html" with type=type_code %}</a>
+        {% endfor %}
+      </nav>
 
-    {% if query %}
-      <div class="library-results-summary">
-        <h2>{% blocktrans with search=query %}Results for “{{ search }}”{% endblocktrans %}</h2>
+      <div class="library-results-summary" aria-live="polite" aria-atomic="true">
+        <div class="library-results-summary__copy">
+          {% if query %}
+            <h2>{% blocktrans with search=query %}Results for “{{ search }}”{% endblocktrans %}</h2>
+          {% elif selected_type %}
+            <h2>{% trans "Filtered library" %}</h2>
+          {% else %}
+            <h2>{% trans "Library items" %}</h2>
+          {% endif %}
+        </div>
         <p>{% blocktrans count total=items.paginator.count %}{{ total }} library result{% plural %}{{ total }} library results{% endblocktrans %}</p>
       </div>
-    {% endif %}
+    </section>
 
-    {% if items %}
-      <div class="library-grid">
-        {% for item in items %}
-          <article class="library-card">
-            <div class="library-card__meta">
-              <span class="library-card__type">{% include "partials/_content_type_label.html" with type=item.item_type %}</span>
-              {% if item.category %}<span>{{ item.category }}</span>{% endif %}
-              {% if item.version %}<span>{{ item.version }}</span>{% endif %}
-            </div>
-
-            <h2 class="library-card__title">
-              <a href="{% url 'library:detail' item.slug %}">
-                {% if language == 'en' and item.title_en %}{{ item.title_en }}{% elif language == 'de' and item.title_de %}{{ item.title_de }}{% else %}{{ item.title }}{% endif %}
-              </a>
-            </h2>
-
-            {% if item.author %}
-              <p class="library-card__author">{{ item.author }}</p>
-            {% endif %}
-
-            {% if language == 'en' and item.short_description_en %}
-              <p class="library-card__description">{{ item.short_description_en|striptags|truncatewords:28 }}</p>
-            {% elif language == 'de' and item.short_description_de %}
-              <p class="library-card__description">{{ item.short_description_de|striptags|truncatewords:28 }}</p>
-            {% elif item.short_description %}
-              <p class="library-card__description">{{ item.short_description|striptags|truncatewords:28 }}</p>
-            {% endif %}
-
-            <div class="library-card__footer">
-              <div class="library-card__badges">
-                {% if item.has_pdf %}<span class="library-card__badge">PDF</span>{% endif %}
+    <div class="library-results-surface">
+      {% if items %}
+        <div class="library-grid">
+          {% for item in items %}
+            <article class="library-card">
+              <div class="library-card__meta">
+                <span class="library-card__type">{% include "partials/_content_type_label.html" with type=item.item_type %}</span>
+                {% if item.category %}<span>{{ item.category }}</span>{% endif %}
+                {% if item.version %}<span>{{ item.version }}</span>{% endif %}
               </div>
-              <a href="{% url 'library:detail' item.slug %}" class="library-card__action">{% trans "Read" %}</a>
-            </div>
-          </article>
-        {% endfor %}
-      </div>
-    {% elif not audio_results %}
-      <div class="library-empty">
-        <h2>{% trans "No library items found" %}</h2>
-        {% if query %}
-          <p>{% trans "Try another keyword or clear the current search." %}</p>
-        {% else %}
-          <p>{% trans "There are no published library items yet." %}</p>
-        {% endif %}
-      </div>
-    {% endif %}
+
+              <h2 class="library-card__title">
+                <a href="{% url 'library:detail' item.slug %}">
+                  {% if language == 'en' and item.title_en %}{{ item.title_en }}{% elif language == 'de' and item.title_de %}{{ item.title_de }}{% else %}{{ item.title }}{% endif %}
+                </a>
+              </h2>
+
+              {% if item.author %}
+                <p class="library-card__author">{{ item.author }}</p>
+              {% endif %}
+
+              {% if language == 'en' and item.short_description_en %}
+                <p class="library-card__description">{{ item.short_description_en|striptags|truncatewords:28 }}</p>
+              {% elif language == 'de' and item.short_description_de %}
+                <p class="library-card__description">{{ item.short_description_de|striptags|truncatewords:28 }}</p>
+              {% elif item.short_description %}
+                <p class="library-card__description">{{ item.short_description|striptags|truncatewords:28 }}</p>
+              {% endif %}
+
+              <div class="library-card__footer">
+                <div class="library-card__badges">
+                  {% if item.has_pdf %}<span class="library-card__badge">PDF</span>{% endif %}
+                </div>
+                <a href="{% url 'library:detail' item.slug %}" class="library-card__action">{% trans "Read" %}</a>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% elif not audio_results %}
+        <div class="library-empty">
+          <h2>{% trans "No library items found" %}</h2>
+          {% if query %}
+            <p>{% trans "Try another keyword or clear the current search." %}</p>
+          {% else %}
+            <p>{% trans "There are no published library items yet." %}</p>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="library-results-placeholder" aria-hidden="true"></div>
+      {% endif %}
+    </div>
 
     {% if items.paginator.num_pages > 1 %}
       <nav class="library-pagination" aria-label="{% trans 'Library pagination' %}">
