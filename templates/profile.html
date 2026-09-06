@@ -45,12 +45,7 @@
   </nav>
 
   <section id="overview" class="profile-section" aria-labelledby="overview-title">
-    <header class="profile-section__header">
-      <div>
-        <p class="profile-eyebrow">{% trans "Dashboard" %}</p>
-        <h2 id="overview-title">{% trans "Overview" %}</h2>
-      </div>
-    </header>
+    <header class="profile-section__header"><div><p class="profile-eyebrow">{% trans "Dashboard" %}</p><h2 id="overview-title">{% trans "Overview" %}</h2></div></header>
     <div class="profile-stats">
       <article class="profile-stat"><strong>{{ entitlement_count }}</strong><span>{% trans "Accessible products" %}</span></article>
       <article class="profile-stat"><strong>{{ seller_product_count }}</strong><span>{% trans "Marketplace products" %}</span></article>
@@ -59,28 +54,14 @@
   </section>
 
   <section id="library" class="profile-section" aria-labelledby="library-title">
-    <header class="profile-section__header">
-      <div>
-        <p class="profile-eyebrow">{% trans "Access" %}</p>
-        <h2 id="library-title">{% trans "My library" %}</h2>
-      </div>
-      <a href="{% url 'marketplace:index' %}">{% trans "Browse marketplace" %}</a>
-    </header>
+    <header class="profile-section__header"><div><p class="profile-eyebrow">{% trans "Access" %}</p><h2 id="library-title">{% trans "My library" %}</h2></div><a href="{% url 'marketplace:index' %}">{% trans "Browse marketplace" %}</a></header>
     {% if entitlements %}
       <div class="profile-list">
         {% for entitlement in entitlements %}
-          <article class="profile-list__item">
-            <div>
-              <h3><a href="{{ entitlement.product.get_absolute_url }}">{{ entitlement.product.title }}</a></h3>
-              <p>{% if entitlement.expires_at %}{% blocktrans with date=entitlement.expires_at|date:"SHORT_DATE_FORMAT" %}Access until {{ date }}{% endblocktrans %}{% else %}{% trans "Active access" %}{% endif %}</p>
-            </div>
-            {% if entitlement.product.digital_file %}<a class="profile-btn" href="{% url 'marketplace:download_product' entitlement.product.id %}">{% trans "Download" %}</a>{% endif %}
-          </article>
+          <article class="profile-list__item"><div><h3><a href="{{ entitlement.product.get_absolute_url }}">{{ entitlement.product.title }}</a></h3><p>{% if entitlement.expires_at %}{% blocktrans with date=entitlement.expires_at|date:"SHORT_DATE_FORMAT" %}Access until {{ date }}{% endblocktrans %}{% else %}{% trans "Active access" %}{% endif %}</p></div>{% if entitlement.product.digital_file %}<a class="profile-btn" href="{% url 'marketplace:download_product' entitlement.product.id %}">{% trans "Download" %}</a>{% endif %}</article>
         {% endfor %}
       </div>
-    {% else %}
-      <div class="profile-empty"><p>{% trans "You do not have any active product access yet." %}</p></div>
-    {% endif %}
+    {% else %}<div class="profile-empty"><p>{% trans "You do not have any active product access yet." %}</p></div>{% endif %}
   </section>
 
   <section id="products" class="profile-section" aria-labelledby="products-title">
@@ -95,52 +76,22 @@
   </section>
 
   <section id="settings" class="profile-section" aria-labelledby="settings-title">
-    <header class="profile-section__header">
-      <div>
-        <p class="profile-eyebrow">{% trans "Account controls" %}</p>
-        <h2 id="settings-title">{% trans "Settings" %}</h2>
-        <p class="profile-settings-intro">{% trans "Manage how your profile appears and keep your account access up to date." %}</p>
-      </div>
-    </header>
+    <header class="profile-section__header"><div><p class="profile-eyebrow">{% trans "Account controls" %}</p><h2 id="settings-title">{% trans "Settings" %}</h2><p class="profile-settings-intro">{% trans "Manage how your profile appears and keep your account access up to date." %}</p></div></header>
     <div class="profile-settings-grid">
-      <a class="profile-settings-card" href="{% url 'profile_edit' %}">
-        <span class="profile-settings-card__icon" aria-hidden="true">P</span>
-        <span class="profile-settings-card__content"><strong>{% trans "Public profile" %}</strong><span>{% trans "Update your name, biography, website, and profile photo." %}</span></span>
-        <span class="profile-settings-card__chevron" aria-hidden="true">›</span>
-      </a>
-      <a class="profile-settings-card" href="{% url 'account_email' %}">
-        <span class="profile-settings-card__icon" aria-hidden="true">@</span>
-        <span class="profile-settings-card__content"><strong>{% trans "Email addresses" %}</strong><span>{% trans "Manage verified email addresses for your account." %}</span></span>
-        <span class="profile-settings-card__chevron" aria-hidden="true">›</span>
-      </a>
-      <a class="profile-settings-card" href="{% url 'account_change_password' %}">
-        <span class="profile-settings-card__icon" aria-hidden="true">S</span>
-        <span class="profile-settings-card__content"><strong>{% trans "Password & security" %}</strong><span>{% trans "Update your account password." %}</span></span>
-        <span class="profile-settings-card__chevron" aria-hidden="true">›</span>
-      </a>
-      <a class="profile-settings-card profile-settings-card--danger" href="{% url 'account_logout' %}">
-        <span class="profile-settings-card__icon" aria-hidden="true">↪</span>
-        <span class="profile-settings-card__content"><strong>{% trans "Sign out" %}</strong><span>{% trans "End the current authenticated session." %}</span></span>
-        <span class="profile-settings-card__chevron" aria-hidden="true">›</span>
-      </a>
+      <a class="profile-settings-card" href="{% url 'profile_edit' %}"><span class="profile-settings-card__icon" aria-hidden="true">P</span><span class="profile-settings-card__content"><strong>{% trans "Public profile" %}</strong><span>{% trans "Update your name, biography, website, and profile photo." %}</span></span><span class="profile-settings-card__chevron" aria-hidden="true">›</span></a>
+      <a class="profile-settings-card" href="{% url 'account_email' %}"><span class="profile-settings-card__icon" aria-hidden="true">@</span><span class="profile-settings-card__content"><strong>{% trans "Email addresses" %}</strong><span>{% trans "Manage verified email addresses for your account." %}</span></span><span class="profile-settings-card__chevron" aria-hidden="true">›</span></a>
+      <a class="profile-settings-card" href="{% url 'account_change_password' %}"><span class="profile-settings-card__icon" aria-hidden="true">S</span><span class="profile-settings-card__content"><strong>{% trans "Password & security" %}</strong><span>{% trans "Update your account password." %}</span></span><span class="profile-settings-card__chevron" aria-hidden="true">›</span></a>
+      <a class="profile-settings-card profile-settings-card--danger" href="{% url 'account_logout' %}"><span class="profile-settings-card__icon" aria-hidden="true">↪</span><span class="profile-settings-card__content"><strong>{% trans "Sign out" %}</strong><span>{% trans "End the current authenticated session." %}</span></span><span class="profile-settings-card__chevron" aria-hidden="true">›</span></a>
     </div>
 
     <div class="profile-preferences" aria-labelledby="preferences-title">
-      <div class="profile-preferences__header">
-        <p class="profile-eyebrow">{% trans "Experience" %}</p>
-        <h3 id="preferences-title">{% trans "Language and appearance" %}</h3>
-        <p>{% trans "Choose how VORNEQ is displayed on this device." %}</p>
-      </div>
+      <div class="profile-preferences__header"><p class="profile-eyebrow">{% trans "Experience" %}</p><h3 id="preferences-title">{% trans "Language and appearance" %}</h3><p>{% trans "Choose how VORNEQ is displayed on this device." %}</p></div>
 
       <div class="profile-preferences__grid">
         <section class="profile-preference-panel" aria-labelledby="language-preference-title">
-          <div class="profile-preference-panel__copy">
-            <h4 id="language-preference-title">{% trans "Language" %}</h4>
-            <p>{% trans "Choose the interface language." %}</p>
-          </div>
+          <div class="profile-preference-panel__copy"><h4 id="language-preference-title">{% trans "Language" %}</h4><p>{% trans "Choose the interface language." %}</p></div>
           <form action="{% url 'set_language' %}" method="post" class="profile-preference-options">
-            {% csrf_token %}
-            <input name="next" type="hidden" value="{{ request.get_full_path }}">
+            {% csrf_token %}<input name="next" type="hidden" value="{{ request.get_full_path }}">
             <button type="submit" name="language" value="en" class="profile-preference-option{% if LANGUAGE_CODE == 'en' %} profile-preference-option--active{% endif %}"{% if LANGUAGE_CODE == 'en' %} aria-current="true"{% endif %}>English</button>
             <button type="submit" name="language" value="fa" class="profile-preference-option{% if LANGUAGE_CODE == 'fa' %} profile-preference-option--active{% endif %}"{% if LANGUAGE_CODE == 'fa' %} aria-current="true"{% endif %}>فارسی</button>
             <button type="submit" name="language" value="de" class="profile-preference-option{% if LANGUAGE_CODE == 'de' %} profile-preference-option--active{% endif %}"{% if LANGUAGE_CODE == 'de' %} aria-current="true"{% endif %}>Deutsch</button>
@@ -148,14 +99,15 @@
         </section>
 
         <section class="profile-preference-panel" aria-labelledby="theme-preference-title">
-          <div class="profile-preference-panel__copy">
-            <h4 id="theme-preference-title">{% trans "Theme" %}</h4>
-            <p>{% trans "Use a light, dark, or system-matched appearance." %}</p>
-          </div>
-          <div class="profile-preference-options" role="group" aria-label="{% trans 'Theme preference' %}">
-            <button type="button" class="profile-preference-option" data-theme-option="light" aria-pressed="false">{% trans "Light" %}</button>
-            <button type="button" class="profile-preference-option" data-theme-option="dark" aria-pressed="false">{% trans "Dark" %}</button>
-            <button type="button" class="profile-preference-option" data-theme-option="system" aria-pressed="false">{% trans "System" %}</button>
+          <div class="profile-preference-panel__copy"><h4 id="theme-preference-title">{% trans "Theme" %}</h4><p>{% trans "Choose a color system for this device, or follow your operating system." %}</p></div>
+          <div class="theme-selector-grid" role="group" aria-label="{% trans 'Theme preference' %}">
+            <button type="button" class="theme-selector-option profile-preference-option" data-theme-option="dark" aria-pressed="false"><span class="theme-selector-preview theme-selector-preview--dark" aria-hidden="true"></span><span class="theme-selector-label">{% trans "Dark" %}</span></button>
+            <button type="button" class="theme-selector-option profile-preference-option" data-theme-option="light" aria-pressed="false"><span class="theme-selector-preview theme-selector-preview--light" aria-hidden="true"></span><span class="theme-selector-label">{% trans "Light" %}</span></button>
+            <button type="button" class="theme-selector-option profile-preference-option" data-theme-option="blue" aria-pressed="false"><span class="theme-selector-preview theme-selector-preview--blue" aria-hidden="true"></span><span class="theme-selector-label">{% trans "Blue" %}</span></button>
+            <button type="button" class="theme-selector-option profile-preference-option" data-theme-option="gold" aria-pressed="false"><span class="theme-selector-preview theme-selector-preview--gold" aria-hidden="true"></span><span class="theme-selector-label">{% trans "Gold" %}</span></button>
+            <button type="button" class="theme-selector-option profile-preference-option" data-theme-option="emerald" aria-pressed="false"><span class="theme-selector-preview theme-selector-preview--emerald" aria-hidden="true"></span><span class="theme-selector-label">{% trans "Emerald" %}</span></button>
+            <button type="button" class="theme-selector-option profile-preference-option" data-theme-option="purple" aria-pressed="false"><span class="theme-selector-preview theme-selector-preview--purple" aria-hidden="true"></span><span class="theme-selector-label">{% trans "Purple" %}</span></button>
+            <button type="button" class="theme-selector-option profile-preference-option" data-theme-option="system" aria-pressed="false"><span class="theme-selector-preview theme-selector-preview--system" aria-hidden="true"></span><span class="theme-selector-label">{% trans "System" %}</span></button>
           </div>
         </section>
       </div>
