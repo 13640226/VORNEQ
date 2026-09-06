@@ -128,7 +128,7 @@ class VerificationServiceTests(TestCase):
             reported_confidence=40,
         )
 
-        records = ReviewRecord.objects.for_target(request).order_by("timestamp", "id")
+        records = ReviewRecord.objects.for_object(request).order_by("timestamp", "id")
         self.assertEqual(
             list(records.values_list("new_state", flat=True)),
             ["requested", "in_progress", "completed"],
