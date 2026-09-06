@@ -13,54 +13,74 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/home.css' %}">
+<link rel="stylesheet" href="{% static 'css/home-hero.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="discovery-home">
   <section class="discovery-hero" aria-labelledby="discovery-title">
-    <div class="discovery-shell discovery-hero__inner">
-      <p class="discovery-hero__eyebrow">VORNEQ</p>
-      <h1 id="discovery-title" class="discovery-hero__title">
-        {% trans "Discover knowledge across formats." %}
-      </h1>
-      <p class="discovery-hero__subtitle">
-        {% trans "Search books, articles, documents, audio, and digital products from one place." %}
-      </p>
+    <div class="discovery-shell discovery-hero__grid">
+      <div class="discovery-hero__content">
+        <p class="discovery-hero__eyebrow">{% trans "Knowledge without borders" %}</p>
+        <h1 id="discovery-title" class="discovery-hero__title">
+          {% trans "Discover" %} <span>{% trans "knowledge" %}</span><br>{% trans "across formats." %}
+        </h1>
+        <p class="discovery-hero__subtitle">
+          {% trans "Books, articles, documents, audio, and digital products — all in one place." %}
+        </p>
 
-      <form method="get" class="discovery-search" role="search">
-        {% if current_type != "all" %}
-          <input type="hidden" name="type" value="{{ current_type }}">
-        {% endif %}
-        <div class="discovery-search__wrapper">
-          <svg class="discovery-search__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <input
-            type="search"
-            name="q"
-            class="discovery-search__input"
-            placeholder="{% trans 'Search VORNEQ' %}"
-            value="{{ search_query }}"
-            aria-label="{% trans 'Search VORNEQ' %}"
-            maxlength="200"
-          >
-          <button type="submit" class="discovery-search__button">
-            {% trans "Search" %}
-          </button>
+        <form method="get" class="discovery-search" role="search">
+          {% if current_type != "all" %}<input type="hidden" name="type" value="{{ current_type }}">{% endif %}
+          <div class="discovery-search__wrapper">
+            <svg class="discovery-search__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <input type="search" name="q" class="discovery-search__input" placeholder="{% trans 'Search books, articles, audio, documents, and more…' %}" value="{{ search_query }}" aria-label="{% trans 'Search VORNEQ' %}" maxlength="200">
+            <button type="submit" class="discovery-search__button">{% trans "Search" %} <span aria-hidden="true">→</span></button>
+          </div>
+        </form>
+
+        <div class="discovery-topics" aria-label="{% trans 'Popular topics' %}">
+          <button type="button" data-topic="Climate change">{% trans "Climate change" %}</button>
+          <button type="button" data-topic="Artificial intelligence">{% trans "Artificial intelligence" %}</button>
+          <button type="button" data-topic="Mental health">{% trans "Mental health" %}</button>
+          <button type="button" data-topic="Sustainable cities">{% trans "Sustainable cities" %}</button>
+          <button type="button" data-topic="Productivity">{% trans "Productivity" %}</button>
         </div>
-      </form>
+      </div>
 
-      <nav class="discovery-filters u-scroll-inline" aria-label="{% trans 'Filter by content type' %}">
-        <ul class="discovery-filters__list u-nowrap">
-          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=all" class="discovery-filters__link{% if current_type == 'all' %} is-active{% endif %}"{% if current_type == 'all' %} aria-current="page"{% endif %}>{% trans "All" %}</a></li>
-          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=book" class="discovery-filters__link{% if current_type == 'book' %} is-active{% endif %}"{% if current_type == 'book' %} aria-current="page"{% endif %}>{% trans "Books" %}</a></li>
-          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=article" class="discovery-filters__link{% if current_type == 'article' %} is-active{% endif %}"{% if current_type == 'article' %} aria-current="page"{% endif %}>{% trans "Articles" %}</a></li>
-          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=document" class="discovery-filters__link{% if current_type == 'document' %} is-active{% endif %}"{% if current_type == 'document' %} aria-current="page"{% endif %}>{% trans "Documents" %}</a></li>
-          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=audio" class="discovery-filters__link{% if current_type == 'audio' %} is-active{% endif %}"{% if current_type == 'audio' %} aria-current="page"{% endif %}>{% trans "Audio" %}</a></li>
-          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=product" class="discovery-filters__link{% if current_type == 'product' %} is-active{% endif %}"{% if current_type == 'product' %} aria-current="page"{% endif %}>{% trans "Products" %}</a></li>
-          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=other" class="discovery-filters__link{% if current_type == 'other' %} is-active{% endif %}"{% if current_type == 'other' %} aria-current="page"{% endif %}>{% trans "Other" %}</a></li>
-        </ul>
-      </nav>
+      <div class="discovery-hero__visual" aria-hidden="true">
+        <div class="discovery-orbit discovery-orbit--one"></div>
+        <div class="discovery-orbit discovery-orbit--two"></div>
+        <div class="discovery-earth">
+          <div class="discovery-earth__glow"></div>
+          <div class="discovery-earth__lights"></div>
+        </div>
+        <div class="discovery-hero__manifesto">
+          <span>{% trans "People" %}</span>
+          <span>{% trans "Ideas" %}</span>
+          <span>{% trans "Knowledge" %}</span>
+          <span>{% trans "Opportunity" %}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="discovery-paths" aria-label="{% trans 'Explore by format' %}">
+    <div class="discovery-shell">
+      <div class="discovery-paths__grid">
+        <a href="?type=book" class="discovery-path-card"><span class="discovery-path-card__icon">▤</span><span><strong>{% trans "Books" %}</strong><small>{% trans "Explore books and long-form knowledge" %}</small></span><b aria-hidden="true">→</b></a>
+        <a href="?type=article" class="discovery-path-card"><span class="discovery-path-card__icon">□</span><span><strong>{% trans "Articles" %}</strong><small>{% trans "Read curated articles" %}</small></span><b aria-hidden="true">→</b></a>
+        <a href="?type=audio" class="discovery-path-card"><span class="discovery-path-card__icon">⌁</span><span><strong>{% trans "Audio" %}</strong><small>{% trans "Listen and learn on the go" %}</small></span><b aria-hidden="true">→</b></a>
+        <a href="?type=document" class="discovery-path-card"><span class="discovery-path-card__icon">▱</span><span><strong>{% trans "Documents" %}</strong><small>{% trans "Access research and reports" %}</small></span><b aria-hidden="true">→</b></a>
+        <a href="?type=product" class="discovery-path-card"><span class="discovery-path-card__icon">⊞</span><span><strong>{% trans "Digital Products" %}</strong><small>{% trans "Discover tools and resources" %}</small></span><b aria-hidden="true">→</b></a>
+      </div>
+
+      <div class="discovery-principles">
+        <div><span>◇</span><p><strong>{% trans "Inspectable trust" %}</strong><small>{% trans "Evidence and context, not absolute truth claims" %}</small></p></div>
+        <div><span>◌</span><p><strong>{% trans "Diverse perspectives" %}</strong><small>{% trans "Knowledge from across a global community" %}</small></p></div>
+        <div><span>↗</span><p><strong>{% trans "All in one place" %}</strong><small>{% trans "Search. Learn. Grow." %}</small></p></div>
+      </div>
     </div>
   </section>
 
@@ -69,35 +89,30 @@
     <div class="discovery-shell">
       <div class="discovery-section-heading">
         <div>
-          <p class="discovery-section-heading__kicker">{% trans "Curated from the latest" %}</p>
-          <h2 id="featured-title">{% trans "Featured discoveries" %}</h2>
+          <p class="discovery-section-heading__kicker">{% trans "Handpicked content from across VORNEQ" %}</p>
+          <h2 id="featured-title">{% trans "Featured this week" %}</h2>
         </div>
+        <a href="#results-title" class="discovery-section-heading__action">{% trans "View all" %} →</a>
       </div>
 
-      <div class="discovery-featured__grid">
-        {% for item in featured %}
-        <article class="discovery-card discovery-card--featured">
-          {% if item.image_url %}
-          <a href="{{ item.url }}" class="discovery-card__media" tabindex="-1" aria-hidden="true">
-            <img src="{{ item.image_url }}" alt="" class="discovery-card__image" loading="lazy">
-          </a>
-          {% endif %}
-          <div class="discovery-card__body">
-            <p class="discovery-card__type">{% include "partials/_content_type_label.html" with type=item.type %}</p>
-            <h3 class="discovery-card__title"><a href="{{ item.url }}">{{ item.title }}</a></h3>
-            {% if item.description %}<p class="discovery-card__description">{{ item.description }}</p>{% endif %}
-            <div class="discovery-card__meta">
-              <span>{% if item.source %}{{ item.source }}{% else %}VORNEQ{% endif %}</span>
-              <time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:"DATE_FORMAT" }}</time>
-            </div>
-            {% if item.type == "product" %}
-            <div class="discovery-card__commerce">
-              {% if item.price == 0 %}<span class="discovery-card__free">{% trans "Free" %}</span>{% else %}<span class="discovery-card__price">{{ item.price }}</span>{% endif %}
-            </div>
+      <div class="discovery-featured__viewport" data-featured-viewport>
+        <div class="discovery-featured__grid">
+          {% for item in featured %}
+          <article class="discovery-card discovery-card--featured">
+            {% if item.image_url %}
+            <a href="{{ item.url }}" class="discovery-card__media" tabindex="-1" aria-hidden="true"><img src="{{ item.image_url }}" alt="" class="discovery-card__image" loading="lazy"></a>
+            {% else %}
+            <a href="{{ item.url }}" class="discovery-card__media discovery-card__media--placeholder" tabindex="-1" aria-hidden="true"><span>VORNEQ</span></a>
             {% endif %}
-          </div>
-        </article>
-        {% endfor %}
+            <div class="discovery-card__body">
+              <p class="discovery-card__type">{% include "partials/_content_type_label.html" with type=item.type %}</p>
+              <h3 class="discovery-card__title"><a href="{{ item.url }}">{{ item.title }}</a></h3>
+              {% if item.description %}<p class="discovery-card__description">{{ item.description }}</p>{% endif %}
+              <div class="discovery-card__meta"><span>{% if item.source %}{{ item.source }}{% else %}VORNEQ{% endif %}</span><time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:"DATE_FORMAT" }}</time></div>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
       </div>
     </div>
   </section>
@@ -108,14 +123,12 @@
       <div class="discovery-results__header">
         <div>
           {% if is_filtered %}
-            <p class="discovery-section-heading__kicker">{% trans "Discovery results" %}</p>
-            <h2 id="results-title">
-              {% if search_query %}{% blocktrans with query=search_query %}Results for “{{ query }}”{% endblocktrans %}{% else %}{% trans "Filtered discoveries" %}{% endif %}
-            </h2>
-            <p class="discovery-results__count" aria-live="polite">{% blocktrans count counter=total_results %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}</p>
+          <p class="discovery-section-heading__kicker">{% trans "Discovery results" %}</p>
+          <h2 id="results-title">{% if search_query %}{% blocktrans with query=search_query %}Results for “{{ query }}”{% endblocktrans %}{% else %}{% trans "Filtered discoveries" %}{% endif %}</h2>
+          <p class="discovery-results__count" aria-live="polite">{% blocktrans count counter=total_results %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}</p>
           {% else %}
-            <p class="discovery-section-heading__kicker">{% trans "Across VORNEQ" %}</p>
-            <h2 id="results-title">{% trans "Latest discoveries" %}</h2>
+          <p class="discovery-section-heading__kicker">{% trans "Across VORNEQ" %}</p>
+          <h2 id="results-title">{% trans "Latest discoveries" %}</h2>
           {% endif %}
         </div>
       </div>
@@ -124,24 +137,12 @@
       <div class="discovery-feed">
         {% for item in results %}
         <article class="discovery-feed-item{% if item.image_url %} has-image{% endif %}">
-          {% if item.image_url %}
-          <a href="{{ item.url }}" class="discovery-feed-item__media" tabindex="-1" aria-hidden="true">
-            <img src="{{ item.image_url }}" alt="" class="discovery-feed-item__image" loading="lazy">
-          </a>
-          {% endif %}
+          {% if item.image_url %}<a href="{{ item.url }}" class="discovery-feed-item__media" tabindex="-1" aria-hidden="true"><img src="{{ item.image_url }}" alt="" class="discovery-feed-item__image" loading="lazy"></a>{% endif %}
           <div class="discovery-feed-item__content">
-            <div class="discovery-feed-item__topline">
-              <span class="discovery-feed-item__type">{% include "partials/_content_type_label.html" with type=item.type %}</span>
-              <time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:"DATE_FORMAT" }}</time>
-            </div>
+            <div class="discovery-feed-item__topline"><span class="discovery-feed-item__type">{% include "partials/_content_type_label.html" with type=item.type %}</span><time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:"DATE_FORMAT" }}</time></div>
             <h3 class="discovery-feed-item__title"><a href="{{ item.url }}">{{ item.title }}</a></h3>
             {% if item.description %}<p class="discovery-feed-item__description">{{ item.description }}</p>{% endif %}
-            <div class="discovery-feed-item__footer">
-              {% if item.source %}<span>{{ item.source }}</span>{% endif %}
-              {% if item.type == "product" %}
-                {% if item.price == 0 %}<span class="discovery-card__free">{% trans "Free" %}</span>{% else %}<span class="discovery-card__price">{{ item.price }}</span>{% endif %}
-              {% endif %}
-            </div>
+            <div class="discovery-feed-item__footer">{% if item.source %}<span>{{ item.source }}</span>{% endif %}{% if item.type == "product" %}{% if item.price == 0 %}<span class="discovery-card__free">{% trans "Free" %}</span>{% else %}<span class="discovery-card__price">{{ item.price }}</span>{% endif %}{% endif %}</div>
           </div>
         </article>
         {% endfor %}
@@ -149,29 +150,21 @@
 
       {% if page_obj.has_other_pages %}
       <nav class="discovery-pagination" aria-label="{% trans 'Pagination' %}">
-        <div class="discovery-pagination__status">
-          {% blocktrans with current=page_obj.number total=page_obj.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}
-        </div>
+        <div class="discovery-pagination__status">{% blocktrans with current=page_obj.number total=page_obj.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}</div>
         <div class="discovery-pagination__actions">
-          {% if page_obj.has_previous %}
-          <a class="discovery-pagination__link" href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if current_type != 'all' %}type={{ current_type }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>
-          {% endif %}
-          {% if page_obj.has_next %}
-          <a class="discovery-pagination__link" href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if current_type != 'all' %}type={{ current_type }}&amp;{% endif %}page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>
-          {% endif %}
+          {% if page_obj.has_previous %}<a class="discovery-pagination__link" href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if current_type != 'all' %}type={{ current_type }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}
+          {% if page_obj.has_next %}<a class="discovery-pagination__link" href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if current_type != 'all' %}type={{ current_type }}&amp;{% endif %}page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>{% endif %}
         </div>
       </nav>
       {% endif %}
-
       {% else %}
-      <div class="discovery-empty">
-        <p class="discovery-empty__eyebrow">{% trans "Nothing matched" %}</p>
-        <h2>{% trans "No results found" %}</h2>
-        <p>{% trans "Try adjusting your keywords or choosing a different content type." %}</p>
-        <a href="?type=all" class="discovery-empty__reset">{% trans "Reset discovery" %}</a>
-      </div>
+      <div class="discovery-empty"><p class="discovery-empty__eyebrow">{% trans "Nothing matched" %}</p><h2>{% trans "No results found" %}</h2><p>{% trans "Try adjusting your keywords or choosing a different content type." %}</p><a href="?type=all" class="discovery-empty__reset">{% trans "Reset discovery" %}</a></div>
       {% endif %}
     </div>
   </section>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/home.js' %}" defer></script>
 {% endblock %}

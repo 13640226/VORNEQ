@@ -1,0 +1,155 @@
+/* Premium Home hero visual — presentation only, no trust semantics. */
+.discovery-hero__visual {
+  position: relative;
+  min-height: 520px;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-border-strong) 72%, transparent);
+  border-radius: clamp(24px, 3vw, 40px);
+  background:
+    linear-gradient(180deg, rgba(10, 22, 49, .1), rgba(2, 8, 23, .55)),
+    radial-gradient(circle at 68% 35%, rgba(47, 126, 255, .16), transparent 38%),
+    var(--surface-subtle);
+  box-shadow: inset 0 1px rgba(255,255,255,.04), 0 28px 80px rgba(0,0,0,.28);
+}
+
+.discovery-hero__visual::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,.45) 0 1px, transparent 1.2px);
+  background-size: 57px 57px;
+  opacity: .09;
+  mask-image: linear-gradient(to bottom, #000, transparent 92%);
+}
+
+.discovery-earth {
+  position: absolute;
+  width: min(46vw, 560px);
+  aspect-ratio: 1;
+  right: -7%;
+  top: 50%;
+  transform: translateY(-48%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 31%, rgba(157,210,255,.36), transparent 9%),
+    radial-gradient(circle at 57% 36%, rgba(25,85,158,.92) 0 14%, transparent 15%),
+    radial-gradient(circle at 63% 54%, rgba(16,66,118,.94) 0 10%, transparent 11%),
+    radial-gradient(circle at 45% 68%, rgba(18,71,127,.95) 0 7%, transparent 8%),
+    radial-gradient(circle at 31% 46%, rgba(21,75,130,.94) 0 8%, transparent 9%),
+    radial-gradient(circle at 38% 38%, #1477c9 0, #0b4a8f 30%, #062a59 58%, #020817 74%);
+  box-shadow:
+    -24px -6px 80px rgba(50,145,255,.28),
+    -8px 0 22px rgba(87,166,255,.3),
+    inset 18px 6px 40px rgba(112,192,255,.2),
+    inset -70px -10px 120px rgba(0,0,0,.84);
+}
+
+.discovery-earth::before {
+  content: "";
+  position: absolute;
+  inset: 5%;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 32% 44%, rgba(255,215,132,.95) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 42% 51%, rgba(255,221,149,.9) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 38% 58%, rgba(255,218,132,.85) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 47% 62%, rgba(255,228,160,.82) 0 1px, transparent 1.4px);
+  background-size: 21px 19px, 28px 24px, 35px 27px, 44px 33px;
+  opacity: .5;
+  mask-image: radial-gradient(circle at 36% 50%, #000 0 34%, transparent 63%);
+}
+
+.discovery-earth::after {
+  content: "";
+  position: absolute;
+  inset: -2%;
+  border: 1px solid rgba(105,184,255,.28);
+  border-radius: 50%;
+  filter: blur(.2px);
+}
+
+.discovery-earth__glow {
+  position: absolute;
+  inset: -12%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(31,118,255,.18), transparent 65%);
+  filter: blur(18px);
+}
+
+.discovery-earth__lights {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(110deg, rgba(255,255,255,.12), transparent 31% 70%, rgba(0,0,0,.22));
+}
+
+.discovery-orbit {
+  position: absolute;
+  right: -8%;
+  top: 51%;
+  width: 78%;
+  height: 24%;
+  border: 1px solid rgba(77,151,255,.24);
+  border-radius: 50%;
+  transform: rotate(-8deg);
+}
+
+.discovery-orbit--two {
+  top: 42%;
+  width: 68%;
+  transform: rotate(16deg);
+  opacity: .58;
+}
+
+.discovery-hero__manifesto {
+  position: absolute;
+  right: clamp(18px, 2.5vw, 38px);
+  bottom: clamp(20px, 3vw, 42px);
+  z-index: 3;
+  display: grid;
+  gap: 4px;
+  color: rgba(220,232,255,.72);
+  font-size: .68rem;
+  font-weight: 650;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+
+html[dir="rtl"] .discovery-earth {
+  right: auto;
+  left: -7%;
+}
+
+html[dir="rtl"] .discovery-hero__manifesto {
+  right: auto;
+  left: clamp(18px, 2.5vw, 38px);
+}
+
+@media (max-width: 980px) {
+  .discovery-hero__visual { min-height: 390px; }
+  .discovery-earth { width: min(78vw, 460px); }
+}
+
+@media (max-width: 640px) {
+  .discovery-hero__visual { min-height: 310px; }
+  .discovery-earth { width: 360px; right: -28%; }
+  html[dir="rtl"] .discovery-earth { left: -28%; }
+  .discovery-hero__manifesto { font-size: .58rem; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .discovery-earth { animation: vorneq-earth-drift 16s ease-in-out infinite alternate; }
+  .discovery-orbit { animation: vorneq-orbit-pulse 9s ease-in-out infinite alternate; }
+}
+
+@keyframes vorneq-earth-drift {
+  from { transform: translateY(-49%) rotate(-1deg); }
+  to { transform: translateY(-47%) rotate(1deg); }
+}
+
+@keyframes vorneq-orbit-pulse {
+  from { opacity: .35; }
+  to { opacity: .8; }
+}
