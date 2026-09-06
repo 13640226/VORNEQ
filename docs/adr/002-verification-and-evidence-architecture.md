@@ -14,105 +14,145 @@ ADR 001 established VORNEQ as trust infrastructure for the digital economy and d
 Discover → Verify → Transact → Deliver → Attest
 ```
 
-PR #50 implemented the first concrete Deliver primitive through Core Entitlement and protected Marketplace delivery. The next architectural responsibility to formalize is **Verify**.
+The governing principle for Verify is:
 
-Verification is inherently more sensitive than a delivery permission check. A verification result can influence user decisions, marketplace behavior, reputation, access, pricing, and future automated systems. If VORNEQ represents verification as an unexplained badge or an absolute declaration of truth, it creates false certainty and weakens the trust model it is intended to build.
+> **Verification is evidence about a claim; it is not truth itself.**
 
-The central question for this ADR is:
+Verification must preserve enough context to answer what was examined, which claim was evaluated, which method was used, who performed the verification, what outcome was reported, how confident the verifier was, what evidence supports that assertion, when the assertion was made, and what uncertainty remains.
 
-> **How should VORNEQ record and present a claim and its supporting evidence without confusing verification with truth?**
-
-This ADR defines the semantics, data boundaries, state transitions, evidence rules, and threat assumptions for the first Verification Layer implementation.
+An audit of the existing codebase showed that VORNEQ already has a substantial canonical Evidence Kernel in `apps.evidence`. This ADR is amended to make Verification an orchestration layer over that kernel rather than a second evidence system.
 
 ---
 
 ## 2. Decision
 
-VORNEQ will model verification as an **auditable assertion produced through a defined method**, not as an absolute truth claim.
+VORNEQ will model Verification as an **auditable workflow that evaluates a Claim using canonical Evidence**.
 
-A verification result must preserve enough provenance to answer:
+Verification does not own the canonical knowledge primitives. The following existing models remain authoritative in `apps.evidence`:
 
-- what artifact was examined;
-- what verification method was used;
-- who requested the verification;
-- who performed or submitted the verification;
-- what outcome was reported;
-- how confident the verifier was in that outcome;
-- what evidence supports the result;
-- when the verification occurred;
-- what limitations or uncertainty remain.
+| Existing primitive | Responsibility |
+| --- | --- |
+| `Claim` | Canonical scoped assertion that can be evaluated. |
+| `Evidence` | Canonical evidence object with integrity digest and provenance. |
+| `EvidenceRelation` | Canonical relation between Claim and Evidence: supports, contradicts, contextualizes, or unclear. |
+| `ProvenanceStep` | Immutable chain describing evidence origin and transformations. |
+| `ReviewRecord` | Append-only review/state-transition event history. |
 
-The first implementation will use four primary models:
+Verification will not create duplicate versions of these models.
+
+The first Verification implementation therefore introduces only orchestration-specific models:
 
 ```text
 VerificationMethod
 VerificationRequest
 VerificationResult
-Evidence
+VerificationEvidence
 ```
 
-The existing Core Reputation system will remain the single reputation source of truth. Verification will not introduce a second Reputation model.
+The existing Core Reputation system remains the single reputation source of truth.
 
 ---
 
 ## 3. Verification Is Not Truth
 
-VORNEQ must not collapse verification into a single universal `verified = true` state.
+A `VerificationResult` is a scoped assertion produced through a known method. It is not a universal `verified = true` flag and it is not a declaration of objective truth.
 
-A VerificationResult is a scoped assertion. Its meaning depends on the method, verifier, artifact state, evidence, and time of evaluation.
+Different verification methods may legitimately produce different conclusions. Results may become stale, apply only to one artifact version, contain uncertainty, or conflict with other results.
 
-For example:
+Public and internal interfaces should therefore preserve and expose context such as:
 
-- a malware scan may pass at one point in time but become outdated later;
-- a human quality review may be subjective;
-- an authenticity check may establish provenance without proving authorship with certainty;
-- a statistical test may support one claim while saying nothing about another;
-- two credible verifiers may reasonably disagree.
+- method;
+- verifier;
+- reported outcome;
+- reported confidence;
+- claim;
+- evidence and evidence relations where authorized;
+- timestamp;
+- limitations and uncertainty.
 
-Therefore public and internal interfaces should use language such as:
-
-- "verification result";
-- "reported outcome";
-- "evidence";
-- "reported confidence";
-- "method";
-- "verified on <date>";
-
-and should avoid presenting an unexplained "trusted" or "true" label.
+VORNEQ must avoid unexplained labels such as "true", "trusted", or universally "verified".
 
 ---
 
-## 4. Initial Domain Models
+## 4. Evidence Kernel Ownership
+
+### Claim
+
+`apps.evidence.models.Claim` is the canonical statement being evaluated. VerificationRequest references a Claim rather than storing a second free-form claim representation.
+
+A Verification workflow may create a Claim through an explicit Evidence-domain service when appropriate, but the resulting Claim belongs to `apps.evidence`, not Verification.
+
+### Evidence
+
+`apps.evidence.models.Evidence` is the canonical evidence object.
+
+Evidence already provides:
+
+- UUID identity;
+- integrity digest;
+- observed timestamp;
+- content type;
+- metadata;
+- creator attribution;
+- immutable canonical fields.
+
+Evidence creation must use the canonical Evidence service so digest generation and initial provenance are preserved atomically.
+
+### EvidenceRelation
+
+`EvidenceRelation` records the interpretation between a Claim and Evidence:
+
+```text
+supports
+contradicts
+contextualizes
+unclear
+```
+
+A relation is not a verdict. Verification may create or reference relations through explicit Evidence-domain services, but the relation remains part of the Evidence Kernel.
+
+### Provenance
+
+`ProvenanceStep` remains the authoritative chain of origin and transformation for Evidence. Verification must not duplicate provenance fields that already belong to this chain.
+
+### Review history
+
+`ReviewRecord` is an append-only mechanism already available for auditable state-transition records. Verification services may use it where appropriate, but workflow state itself remains explicit on VerificationRequest.
+
+---
+
+## 5. Verification Orchestration Models
 
 ### VerificationMethod
 
-Defines a known way in which a verification can be performed.
+Defines how a verification is performed.
 
 Expected responsibilities include:
 
-- stable name and identifier;
+- stable identifier/name;
 - human-readable description;
-- whether the method is manual, automated, or hybrid;
-- optional version information;
-- optional configuration or metadata needed by future implementations;
+- manual, automated, or hybrid classification;
+- optional method version;
+- optional configuration metadata;
 - active/inactive lifecycle.
-
-Examples may eventually include:
-
-- manual editorial review;
-- malware scanning;
-- document provenance review;
-- automated schema validation;
-- statistical analysis;
-- reproducibility checks.
 
 A method describes **how a check is performed**, not whether its result should automatically be trusted.
 
 ### VerificationRequest
 
-Represents a request to verify one supported artifact using one VerificationMethod.
+Represents a request to evaluate a Claim in the context of one supported artifact using one VerificationMethod.
 
-The initial request lifecycle is intentionally small:
+Expected fields include:
+
+- artifact reference;
+- `claim` FK to canonical `apps.evidence.Claim`;
+- `method`;
+- `requested_by` using `AUTH_USER_MODEL`;
+- status;
+- optional instructions/context;
+- timestamps.
+
+Initial lifecycle:
 
 ```text
 requested → in_progress → completed
@@ -120,34 +160,23 @@ requested → in_progress → completed
                       ↘ cancelled
 ```
 
-Expected request data includes:
-
-- artifact reference;
-- requested_by (`AUTH_USER_MODEL`);
-- method;
-- state/status;
-- creation and update timestamps;
-- optional request context or instructions.
-
-State transitions must be explicit and validated by service functions. Business-critical transitions should not rely on hidden Django signals.
+State transitions must be explicit and service-controlled.
 
 ### VerificationResult
 
-Represents one verifier's assertion produced for a VerificationRequest.
+Represents one verifier's assertion for a VerificationRequest.
 
-A request may eventually have more than one result. This keeps multi-verifier verification possible without changing the request model.
-
-Expected result data includes:
+Expected fields include:
 
 - request;
 - verifier (`AUTH_USER_MODEL` in V1);
 - outcome;
 - reported confidence;
 - summary;
-- created timestamp;
-- optional structured metadata.
+- optional structured metadata;
+- timestamps.
 
-The first outcome vocabulary should remain small and explicit, for example:
+Initial outcome vocabulary:
 
 ```text
 pass
@@ -156,158 +185,155 @@ partial
 inconclusive
 ```
 
-The precise values will be finalized in the data-model PR, but the model must preserve the distinction between a negative result and an inability to reach a conclusion.
+A request may have multiple results in the future.
 
-### Evidence
+`VerificationResult` does **not** own Evidence and does not replace `EvidenceRelation`.
 
-Represents supporting material attached to a VerificationResult.
+### VerificationEvidence
 
-Evidence may include:
+`VerificationEvidence` is a context-specific link/policy object between a VerificationResult and canonical Evidence.
 
-- uploaded files;
-- external references or URLs;
-- machine-generated reports;
-- structured metadata;
-- textual descriptions;
-- hashes or provenance identifiers.
+Expected responsibilities:
 
-Evidence must be treated as potentially sensitive.
+- result FK;
+- evidence FK to `apps.evidence.Evidence`;
+- context-specific visibility;
+- optional note or role describing how the evidence is used in that verification context.
+
+This model exists because Evidence itself should not carry a single universal visibility classification. The same canonical Evidence may participate in multiple contexts with different access policies.
 
 ---
 
-## 5. Artifact Boundary in V1
+## 6. Evidence Visibility
+
+Evidence access is **private by default in Verification contexts**.
+
+Visibility belongs on `VerificationEvidence`, not canonical `Evidence`.
+
+Initial visibility levels should support at least:
+
+```text
+private
+participants
+public
+```
+
+Working interpretation:
+
+| Visibility | Intended access |
+| --- | --- |
+| `private` | Authorized platform/admin workflows only unless explicitly granted. |
+| `participants` | Relevant requester/verifier participants and authorized staff. |
+| `public` | Explicitly approved for public presentation. |
+
+A public verification summary must never expose Evidence merely because that Evidence exists. Publication requires an explicit public VerificationEvidence policy.
+
+Changing visibility is an explicit policy action and must not mutate canonical Evidence content or provenance.
+
+---
+
+## 7. Artifact Boundary in V1
 
 VORNEQ does not yet have a generalized Artifact registry.
 
-For the initial Verification implementation, a GenericForeignKey may be used as a **temporary bridge** between VerificationRequest and supported vertical models.
+VerificationRequest may use a GenericForeignKey as a **temporary bridge**, but the service layer must allow only explicitly supported targets.
 
-V1 must support only an allowlisted set of artifact types, initially expected to be:
+V1 target allowlist:
 
-- Marketplace `Product`;
-- `LibraryItem`.
+```text
+marketplace.Product
+library.LibraryItem
+```
 
-The service layer must reject arbitrary content types even if the database representation is technically capable of referencing them.
+The validation must compare stable app/model identifiers rather than human class names.
 
-This is intentionally transitional. Generic relations provide flexibility but weaken referential integrity and queryability compared with explicit relationships.
-
-A future Artifact ADR must choose the long-term registry or polymorphism strategy. Verification code should therefore isolate artifact validation and resolution behind explicit service boundaries where practical.
-
----
-
-## 6. Identity Boundary in V1
-
-Verifier and requester identities will use Django's configured `AUTH_USER_MODEL` in the first implementation.
-
-VORNEQ will **not** create a speculative universal Identity abstraction or Agent relation in this phase.
-
-AI Agents are part of the long-term architecture but are not yet a stable runtime entity in the codebase. When Agent participation becomes concrete, Identity generalization must be evaluated separately so that human and machine identity semantics are not conflated prematurely.
+Generic relations are transitional because they weaken database referential integrity and queryability. Artifact Registry design remains a future architecture decision after concrete Verification usage is established.
 
 ---
 
-## 7. Confidence Semantics
+## 8. Identity Boundary in V1
 
-Confidence is separated into distinct concepts.
+Requester and verifier identities use Django's configured `AUTH_USER_MODEL`.
+
+V1 does not introduce a speculative universal Identity or Agent abstraction. Human/Agent identity generalization will be addressed only after Agents become a concrete runtime entity.
+
+Self-verification is denied by default unless a future method explicitly represents self-attestation.
+
+---
+
+## 9. Confidence Semantics
+
+Three concepts remain separate.
 
 ### Outcome
 
-The verifier's reported result of the verification process.
-
-Example:
+The verifier's reported result:
 
 ```text
 pass / fail / partial / inconclusive
 ```
 
-### Reported Confidence
+### Reported confidence
 
-The verifier's stated confidence in its own result.
+The verifier's stated confidence in their own result. V1 may use a validated `0–100` scale.
 
-This value describes the verifier's assessment. It is **not** the platform's universal trust score.
+This is **not** VORNEQ's universal trust score.
 
-The storage format may use a constrained numeric scale such as `0.0–1.0` or `0–100`, to be finalized in the data-model PR. Validation must enforce the declared range.
+### Aggregate confidence
 
-### Aggregate Confidence
+Any future platform-derived score combining multiple results, methods, recency, reputation, or evidence quality.
 
-A future VORNEQ-generated assessment combining multiple results, methods, verifier reputation, recency, evidence quality, or other factors.
-
-**Aggregate confidence is explicitly out of scope for the first Verification model and service PRs.**
-
-No algorithm should be treated as an official trust score until its semantics, abuse resistance, calibration, and explainability have been separately designed and reviewed.
+Aggregate confidence is explicitly out of scope for the initial Verification model and service PRs and requires a separately reviewed, explainable design.
 
 ---
 
-## 8. Evidence Visibility and Access
+## 10. Canonical Write Boundaries
 
-Evidence is **private by default**.
+Verification must respect existing Evidence-domain write paths.
 
-This is required because evidence may contain:
+Rules:
 
-- personal information;
-- copyrighted material;
-- private customer data;
-- vulnerability or security details;
-- scanner output that exposes implementation information;
-- proprietary reports;
-- data unsuitable for public redistribution.
-
-The initial Evidence visibility model should support at least:
-
-```text
-private
-verifier
-public
-```
-
-The exact meaning must be enforced at the service/query level.
-
-A working interpretation is:
-
-| Visibility | Intended access |
-| --- | --- |
-| `private` | restricted to authorized platform/admin workflows and explicitly authorized participants |
-| `verifier` | available to the relevant verification participants and authorized staff |
-| `public` | explicitly approved for public presentation |
-
-A public verification summary must never automatically expose non-public evidence.
-
-Changing evidence visibility should be an explicit action. Uploading evidence must not imply permission to publish it.
+1. New Evidence must be created through the canonical Evidence service that generates integrity digests and initial Provenance atomically.
+2. Evidence canonical fields must not be mutated by Verification.
+3. EvidenceRelation creation/retirement should use Evidence-domain services rather than ad-hoc model mutation.
+4. VerificationEvidence controls contextual access only; it does not alter canonical Evidence.
+5. Verification orchestration services may coordinate transactions across Verification and Evidence domains when necessary, but ownership boundaries remain explicit.
 
 ---
 
-## 9. Service Boundaries
+## 11. Verification Service Boundaries
 
-Verification business rules should be expressed through explicit services rather than scattered model mutations or hidden signals.
+Business rules belong in explicit services rather than hidden signals.
 
-Expected services include concepts such as:
+Expected orchestration services include concepts such as:
 
 ```python
 request_verification(...)
 start_verification(...)
 submit_verification_result(...)
+attach_verification_evidence(...)
 cancel_verification(...)
 fail_verification(...)
 get_artifact_verification_summary(...)
 ```
 
-The service layer will be responsible for:
+Services are responsible for:
 
-- artifact allowlist validation;
+- target allowlist validation;
+- Claim association;
 - method validation;
-- state transitions;
 - requester/verifier authorization;
+- state transitions;
 - confidence validation;
-- evidence handling policies;
-- transaction boundaries where multiple records change together.
-
-The final API names may differ, but explicit transition-oriented services are required.
+- VerificationEvidence visibility policy;
+- coordination with canonical Evidence/EvidenceRelation services;
+- transaction boundaries where multiple records must remain consistent.
 
 ---
 
-## 10. State Transition Rules
+## 12. State Transition Rules
 
-The request state machine should reject invalid transitions.
-
-Initial intended transitions:
+Initial allowed transitions:
 
 ```text
 requested   → in_progress
@@ -318,230 +344,203 @@ in_progress → failed
 in_progress → cancelled
 ```
 
-Completed, failed, and cancelled requests are terminal in V1.
+Completed, failed, and cancelled are terminal in V1.
 
-Direct transitions such as:
+Invalid reverse transitions must be rejected unless a future design introduces explicit retry/reopen semantics.
 
-```text
-completed → in_progress
-cancelled → completed
-failed    → completed
-```
-
-must be rejected unless a future ADR introduces an explicit reopen/retry concept.
-
-Result submission that completes a request should occur atomically where possible so the system cannot persist a completed request without its corresponding result.
+Result submission that completes a request should be atomic with the corresponding workflow changes.
 
 ---
 
-## 11. Threat Model
+## 13. Threat Model
 
-The Verification Layer is a trust-sensitive system and must be designed under adversarial assumptions.
+### False certainty
 
-### Sybil and reputation manipulation
+A result or confidence number may be interpreted as guaranteed truth.
 
-An attacker may create multiple identities to submit favorable verification outcomes or manufacture reputation.
+Mitigation:
 
-Initial mitigation:
+- preserve Claim, method, verifier, date, evidence context, and limitations;
+- avoid universal trust badges;
+- keep aggregate scoring out of scope until separately designed.
 
-- verifier eligibility is restricted rather than open to all accounts;
-- verification events do not automatically modify reputation in the first implementation;
-- reputation integration is deferred to a dedicated PR and policy review.
+### Sybil and coordinated verification
 
-### Biased or conflicted verifiers
+Multiple accounts may collude to manufacture favorable results.
 
-A creator may verify their own artifact or coordinate with related accounts.
+Mitigation:
 
-Initial mitigation:
+- conservative verifier authorization;
+- no automatic Reputation mutation in the initial implementation;
+- later contextual Reputation policy.
 
-- authorization policy must be explicit;
-- self-verification should be disallowed by default unless a method specifically represents self-attestation;
-- future conflict-of-interest metadata may be added if required.
+### Conflicted verifiers
+
+Creators or related accounts may verify their own artifacts.
+
+Mitigation:
+
+- explicit authorization checks;
+- self-verification denied by default.
 
 ### Evidence poisoning
 
-Evidence may be misleading, malicious, oversized, unsafe, or intentionally crafted to exploit downstream tools.
+Evidence may be malicious, misleading, oversized, or unsafe for downstream tools.
 
-Mitigation requirements:
+Mitigation:
 
-- reuse or extend safe upload validation;
-- evidence is not executed merely because it is uploaded;
-- automated analysis must run in appropriately isolated environments when introduced;
-- file type and size policies must be explicit.
+- canonical creation path;
+- upload/content policies;
+- no execution merely because Evidence is stored;
+- sandboxing for future automated analysis.
 
 ### Sensitive evidence disclosure
 
-Private evidence could be exposed through templates, APIs, storage URLs, logs, or object serialization.
+Evidence may contain private, copyrighted, proprietary, or security-sensitive information.
 
-Mitigation requirements:
+Mitigation:
 
-- private-by-default visibility;
-- public serializers/templates include only explicitly public evidence;
-- protected evidence delivery must use controlled authorization rather than direct file URLs;
-- regression tests must cover unauthorized access and URL disclosure.
+- context visibility is private by default;
+- public output uses only explicitly public VerificationEvidence links;
+- protected delivery rather than direct storage URLs;
+- regression tests for unauthorized access and disclosure.
 
-### False certainty and misleading UI
+### Evidence tampering
 
-Users may interpret a confidence number or badge as a guarantee.
+Stored evidence may be altered after a verification result.
 
-Mitigation requirements:
+Mitigation:
 
-- preserve method, date, verifier, outcome, and limitations;
-- avoid universal "verified = true" semantics;
-- do not introduce aggregate trust scores before their meaning is documented;
-- public UI should communicate scope and uncertainty.
+- canonical Evidence immutability;
+- integrity digest verification;
+- immutable provenance.
 
 ### Stale verification
 
-An artifact may change after verification or a verification may become outdated.
+An artifact may change after verification.
 
-Initial design requirement:
+Mitigation direction:
 
-- verification records must preserve timestamps;
-- future model work should retain enough artifact/version context to determine whether a result applies to the current artifact state;
-- verification should not be silently transferred to materially changed artifacts.
-
-A full artifact-version binding strategy is deferred until Product/Library version semantics are audited.
+- preserve timestamps and sufficient artifact/version context;
+- do not silently transfer a result to a materially changed artifact;
+- defer the complete artifact-version binding strategy until Artifact Registry design.
 
 ---
 
-## 12. Reputation Integration
+## 14. Reputation Integration
 
-The existing `apps/core` Reputation and ReputationHistory models remain authoritative.
+Existing `apps/core` Reputation and ReputationHistory remain authoritative.
 
-The Verification Layer will not create a new reputation table.
+Verification introduces no new Reputation table and initial Verification outcomes do not automatically mutate Reputation.
 
-Verification outcomes also will **not** immediately mutate reputation in the initial model/services PRs.
-
-Reputation integration requires a later explicit policy defining:
-
-- which events affect which reputation dimensions;
-- how outcomes are judged correct or incorrect over time;
-- whether a verifier can lose reputation;
-- how disputes, reversals, stale results, and conflicting verifications are handled;
-- how to prevent circular logic in which reputation determines confidence and confidence immediately determines reputation.
-
-This work is planned as a separate PR after the basic Verification Layer is proven.
+Future Reputation integration must be contextual rather than a universal score. Policy must consider domain, method, recency, evidence, disputes, reversals, and conflicts before any automated update is accepted.
 
 ---
 
-## 13. Authorization Direction
+## 15. Public Presentation
 
-The first implementation should not allow every authenticated user to act as a verifier by default.
+Public presentation is deferred until models and services are stable.
 
-V1 verifier authorization should use a conservative policy such as staff permission or an explicit Django permission/group.
+Future public summaries may show:
 
-The exact permission name belongs in the implementation PR, but authorization must be independently testable and must not rely solely on UI visibility.
-
-Automated verifiers and Agents are out of scope for V1.
-
----
-
-## 14. Public Presentation
-
-Public verification presentation is deferred until the model and services are stable.
-
-When added, the public summary should be read-only and should expose only information appropriate for public trust decisions, such as:
-
+- Claim;
 - method;
 - reported outcome;
 - verification timestamp;
-- verifier identity or an appropriately public verifier representation;
+- appropriate verifier representation;
 - reported confidence when meaningful;
 - summary;
-- explicitly public evidence.
+- only Evidence connected through explicitly public VerificationEvidence policies.
 
-It must not expose:
+They must not expose:
 
-- private/verifier-only evidence;
-- internal security metadata;
-- arbitrary storage URLs;
-- hidden reviewer notes;
-- a platform aggregate confidence score before such a score has a separately accepted design.
+- private/participants-only Evidence;
+- direct protected storage URLs;
+- internal notes or security metadata;
+- an unexplained aggregate trust score.
 
 ---
 
-## 15. Consequences
+## 16. Consequences
 
 ### Positive
 
-- Verification remains auditable and explainable rather than badge-driven.
-- Evidence privacy is protected by default.
-- Existing Reputation remains the single source of truth.
-- The first implementation can support Product and LibraryItem without prematurely committing to a universal Artifact model.
-- Multi-verifier workflows remain possible because Request and Result are separate concepts.
-- Explicit state transitions make business rules testable and resistant to accidental mutation.
+- Reuses the mature Evidence Kernel rather than creating a parallel source of truth.
+- Preserves canonical Evidence integrity, provenance, and Claim semantics.
+- Keeps Verification focused on workflow and authorization.
+- Allows context-specific evidence visibility without contaminating canonical Evidence.
+- Maintains compatibility with future multi-verifier workflows.
+- Reduces migration and long-term conceptual debt.
 
 ### Costs and risks
 
-- GenericForeignKey is a transitional compromise with weaker referential integrity.
-- Supporting private evidence requires careful access control and storage practices.
-- Verification UI must communicate uncertainty clearly, which is more complex than a simple badge.
-- A conservative verifier policy may limit early marketplace scale.
-- Aggregate confidence and reputation integration require additional design work before they can be safely automated.
+- Verification services must coordinate cleanly across app boundaries.
+- GenericForeignKey remains a transitional compromise for artifacts.
+- Access policy for shared Evidence requires careful query/service design.
+- Existing Evidence primitives are sophisticated enough that new Verification code must respect their invariants.
 
 ---
 
-## 16. Implementation Sequence
+## 17. Implementation Sequence
 
-The Verification Layer should be introduced incrementally:
+The amended sequence is:
 
 | PR | Scope |
 | --- | --- |
-| **#52** | ADR 002: Verification and Evidence Architecture — design only |
-| **#53** | Verification data models, migrations, model validation, and admin |
-| **#54** | Verification services, authorization, evidence handling, and state-transition tests |
-| **#55** | Read-only public verification summary for supported artifacts and limited API surface |
-| **#56** | Explicit integration with the existing Reputation/ReputationHistory system |
+| **#52** | ADR 002 initial design |
+| **ADR 002 amendment** | Record Evidence Kernel reuse and Verification-as-orchestration boundary |
+| **#53** | `VerificationMethod`, `VerificationRequest`, `VerificationResult`, `VerificationEvidence`, migrations, admin, and model validation |
+| **#54** | Verification orchestration services, authorization, Evidence/EvidenceRelation integration, and state-transition tests |
+| **#55** | Read-only public verification summary and limited API surface |
+| **Future ADR** | Artifact Registry and Contextual Trust Architecture after real Verification usage is observed |
+| **#56 or later** | Explicit contextual Reputation integration |
 
-Aggregate confidence scoring is not implied by PR #56 and may require its own ADR or PR.
-
----
-
-## 17. Evolution Toward Artifact Registry
-
-The GenericForeignKey bridge is not the long-term Artifact architecture.
-
-When multiple trust primitives require stable cross-vertical artifact identity, VORNEQ should introduce a separate Artifact architecture decision that evaluates:
-
-- explicit registry records;
-- vertical-to-artifact relationships;
-- artifact versions and immutable fingerprints;
-- ownership and provenance;
-- query and referential-integrity requirements;
-- migration from existing Product and LibraryItem records.
-
-Verification services should minimize assumptions that would make this future migration unnecessarily difficult.
+Aggregate confidence remains outside this sequence until separately designed.
 
 ---
 
-## 18. Decision Rules for Verification Work
+## 18. Decision Rules
 
 Future Verification work must follow these rules:
 
-1. **Verification records assertions, not absolute truth.**
-2. **Every result must retain provenance: method, verifier, time, outcome, and supporting context.**
-3. **Evidence is private unless explicitly made public.**
-4. **Reported confidence is the verifier's assessment, not VORNEQ's aggregate trust score.**
-5. **Aggregate confidence requires a separate, explainable design.**
-6. **The existing Reputation system remains authoritative.**
-7. **Verification must not automatically modify Reputation until a dedicated policy is accepted.**
-8. **V1 identities are Django users; Agent identity is deferred.**
-9. **V1 artifacts are allowlisted Product and LibraryItem references through a temporary generic bridge.**
-10. **State changes and authorization belong in explicit services and must be regression-tested.**
-11. **Public interfaces must never expose private evidence or direct protected file URLs.**
-12. **Self-verification is denied by default unless a method explicitly represents self-attestation.**
+1. **Verification records scoped assertions, not truth.**
+2. **`apps.evidence` owns canonical Claim, Evidence, EvidenceRelation, Provenance, and Evidence review history.**
+3. **Verification is an orchestration/workflow layer and must not duplicate Evidence Kernel models.**
+4. **VerificationRequest references a canonical Claim.**
+5. **VerificationEvidence links a result to canonical Evidence and owns context-specific visibility only.**
+6. **Evidence remains immutable and is created through its canonical service path.**
+7. **EvidenceRelation remains the canonical interpretation between Claim and Evidence.**
+8. **Reported confidence is the verifier's assessment, not VORNEQ's aggregate trust score.**
+9. **Aggregate confidence requires separate explainable design.**
+10. **The existing Reputation system remains authoritative and is not automatically mutated in initial Verification work.**
+11. **V1 identities are Django users; Agent identity is deferred.**
+12. **V1 targets are allowlisted Product and LibraryItem references through a temporary generic bridge.**
+13. **State changes and authorization belong in explicit services.**
+14. **Private evidence must never be exposed through public templates, APIs, logs, or direct storage URLs.**
+15. **Artifact Registry generalization is deferred until real integration patterns justify it.**
 
 ---
 
 ## 19. Conclusion
 
-VORNEQ's Verification Layer will be built as an evidence-based, auditable system for recording scoped assertions.
+VORNEQ's Verification Layer is an orchestration system built on an existing canonical Evidence Kernel.
 
-The governing principle is:
+The architecture is therefore:
+
+```text
+Artifact context
+      ↓
+VerificationRequest ───→ Claim
+      ↓                  ↓
+VerificationResult   EvidenceRelation
+      ↓                  ↑
+VerificationEvidence ─→ Evidence
+                         ↓
+                    Provenance
+```
+
+The governing principle remains:
 
 > **Verification is evidence about a claim; it is not truth itself.**
 
-The initial architecture deliberately favors explicit provenance, conservative access, private evidence, constrained identities, and incremental generalization.
-
-This creates a foundation on which later capabilities — multi-verifier analysis, public summaries, Reputation integration, automated Agents, Attestation, and eventually aggregate trust assessments — can be built without turning an early heuristic into an opaque universal trust score.
+The amendment prevents a second Evidence system from emerging and establishes a clearer ownership boundary: Evidence Kernel records canonical knowledge and provenance; Verification organizes controlled workflows that evaluate claims against that evidence.
