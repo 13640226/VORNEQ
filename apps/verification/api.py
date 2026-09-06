@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_GET
 
 from library.models import LibraryItem
 from marketplace.models import Product
@@ -17,6 +18,7 @@ def _summary_response(artifact, artifact_type):
     )
 
 
+@require_GET
 def product_verification_summary(request, pk):
     product = get_object_or_404(
         Product,
@@ -27,6 +29,7 @@ def product_verification_summary(request, pk):
     return _summary_response(product, "product")
 
 
+@require_GET
 def library_verification_summary(request, pk):
     item = get_object_or_404(
         LibraryItem,
