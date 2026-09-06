@@ -1,0 +1,93 @@
+name: Seed Staging Search Data
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_seed:
+        description: 'Type "yes" to replace synthetic benchmark seed data in staging'
+        required: true
+        default: 'no'
+        type: string
+      articles:
+        description: 'Number of synthetic articles'
+        required: true
+        default: '1000'
+        type: string
+      products:
+        description: 'Number of synthetic products'
+        required: true
+        default: '500'
+        type: string
+      library_items:
+        description: 'Number of synthetic library items'
+        required: true
+        default: '500'
+        type: string
+      media_assets:
+        description: 'Number of synthetic media assets'
+        required: true
+        default: '200'
+        type: string
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify staging database secret
+        env:
+          STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+        run: |
+          if [ -z "$STAGING_DATABASE_URL" ]; then
+            echo "STAGING_DATABASE_URL is not configured in GitHub Actions secrets." >&2
+            exit 1
+          fi
+
+      - name: Migration preflight
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DJANGO_SETTINGS_MODULE: config.settings_render
+        run: python manage.py migration_preflight
+
+      - name: Preview seed plan
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DJANGO_SETTINGS_MODULE: config.settings_render
+        run: |
+          python manage.py seed_staging_data \
+            --articles "${{ inputs.articles }}" \
+            --products "${{ inputs.products }}" \
+            --library-items "${{ inputs.library_items }}" \
+            --media-assets "${{ inputs.media_assets }}" \
+            --dry-run
+
+      - name: Require explicit seed confirmation
+        if: github.event.inputs.confirm_seed != 'yes'
+        run: |
+          echo 'Seed was not applied. Re-run with confirm_seed exactly "yes".' >&2
+          exit 1
+
+      - name: Apply synthetic staging seed
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DJANGO_SETTINGS_MODULE: config.settings_render
+          VORNEQ_ALLOW_STAGING_SEED: 'yes'
+        run: |
+          python manage.py seed_staging_data \
+            --articles "${{ inputs.articles }}" \
+            --products "${{ inputs.products }}" \
+            --library-items "${{ inputs.library_items }}" \
+            --media-assets "${{ inputs.media_assets }}" \
+            --force
