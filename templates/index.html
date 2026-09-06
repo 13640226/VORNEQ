@@ -14,19 +14,22 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/home.css' %}">
 <link rel="stylesheet" href="{% static 'css/home-hero.css' %}">
+<link rel="stylesheet" href="{% static 'css/home-world-class.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="discovery-home">
-  <section class="discovery-hero" aria-labelledby="discovery-title">
-    <div class="discovery-shell discovery-hero__grid">
-      <div class="discovery-hero__content">
-        <p class="discovery-hero__eyebrow">{% trans "Knowledge without borders" %}</p>
-        <h1 id="discovery-title" class="discovery-hero__title">
-          {% trans "Discover" %} <span>{% trans "knowledge" %}</span><br>{% trans "across formats." %}
+  <section class="world-hero" aria-labelledby="discovery-title">
+    <div class="discovery-shell world-hero__grid">
+      <div class="world-hero__content">
+        <p class="world-hero__eyebrow">{% trans "Knowledge without borders" %}</p>
+        <h1 id="discovery-title" class="world-hero__title">
+          {% trans "Discover knowledge." %}<br>
+          <em>{% trans "Verify context." %}</em><br>
+          {% trans "Build trust." %}
         </h1>
-        <p class="discovery-hero__subtitle">
-          {% trans "Books, articles, documents, audio, and digital products — all in one place." %}
+        <p class="world-hero__copy">
+          {% trans "Search books, articles, audio, documents, and digital products — all in one place." %}
         </p>
 
         <form method="get" class="discovery-search" role="search">
@@ -49,38 +52,66 @@
         </div>
       </div>
 
-      <div class="discovery-hero__visual" aria-hidden="true">
-        <div class="discovery-orbit discovery-orbit--one"></div>
-        <div class="discovery-orbit discovery-orbit--two"></div>
-        <div class="discovery-earth">
-          <div class="discovery-earth__glow"></div>
-          <div class="discovery-earth__lights"></div>
-        </div>
-        <div class="discovery-hero__manifesto">
-          <span>{% trans "People" %}</span>
-          <span>{% trans "Ideas" %}</span>
-          <span>{% trans "Knowledge" %}</span>
-          <span>{% trans "Opportunity" %}</span>
-        </div>
+      <div class="world-network" aria-hidden="true">
+        <span class="world-network__line world-network__line--a"></span>
+        <span class="world-network__line world-network__line--b"></span>
+        <span class="world-network__line world-network__line--c"></span>
+        <span class="world-network__line world-network__line--d"></span>
+        <span class="world-network__core">VORNEQ</span>
+        <span class="world-network__node world-network__node--artifact">{% trans "Artifact" %}</span>
+        <span class="world-network__node world-network__node--identity">{% trans "Identity" %}</span>
+        <span class="world-network__node world-network__node--evidence">{% trans "Evidence" %}</span>
+        <span class="world-network__node world-network__node--context">{% trans "Context" %}</span>
       </div>
     </div>
   </section>
 
-  <section class="discovery-paths" aria-label="{% trans 'Explore by format' %}">
+  <section class="world-cycle" aria-labelledby="core-cycle-title">
     <div class="discovery-shell">
-      <div class="discovery-paths__grid">
-        <a href="?type=book" class="discovery-path-card"><span class="discovery-path-card__icon">▤</span><span><strong>{% trans "Books" %}</strong><small>{% trans "Explore books and long-form knowledge" %}</small></span><b aria-hidden="true">→</b></a>
-        <a href="?type=article" class="discovery-path-card"><span class="discovery-path-card__icon">□</span><span><strong>{% trans "Articles" %}</strong><small>{% trans "Read curated articles" %}</small></span><b aria-hidden="true">→</b></a>
-        <a href="?type=audio" class="discovery-path-card"><span class="discovery-path-card__icon">⌁</span><span><strong>{% trans "Audio" %}</strong><small>{% trans "Listen and learn on the go" %}</small></span><b aria-hidden="true">→</b></a>
-        <a href="?type=document" class="discovery-path-card"><span class="discovery-path-card__icon">▱</span><span><strong>{% trans "Documents" %}</strong><small>{% trans "Access research and reports" %}</small></span><b aria-hidden="true">→</b></a>
-        <a href="?type=product" class="discovery-path-card"><span class="discovery-path-card__icon">⊞</span><span><strong>{% trans "Digital Products" %}</strong><small>{% trans "Discover tools and resources" %}</small></span><b aria-hidden="true">→</b></a>
+      <div class="world-section__heading">
+        <div>
+          <p class="world-section__eyebrow">{% trans "The VORNEQ Core Cycle" %}</p>
+          <h2 id="core-cycle-title">{% trans "Discover. Verify. Transact. Deliver. Attest." %}</h2>
+        </div>
+        <p>{% trans "A clear path from discovery to accountable digital exchange — without turning trust into a single score." %}</p>
       </div>
 
-      <div class="discovery-principles">
-        <div><span>◇</span><p><strong>{% trans "Inspectable trust" %}</strong><small>{% trans "Evidence and context, not absolute truth claims" %}</small></p></div>
-        <div><span>◌</span><p><strong>{% trans "Diverse perspectives" %}</strong><small>{% trans "Knowledge from across a global community" %}</small></p></div>
-        <div><span>↗</span><p><strong>{% trans "All in one place" %}</strong><small>{% trans "Search. Learn. Grow." %}</small></p></div>
+      <div class="world-cycle__grid">
+        <article class="world-cycle__item">
+          <span class="world-cycle__index">01</span>
+          <h3>{% trans "Discover" %}</h3>
+          <p>{% trans "Find relevant knowledge and digital artifacts across VORNEQ." %}</p>
+        </article>
+        <article class="world-cycle__item">
+          <span class="world-cycle__index">02</span>
+          <h3>{% trans "Verify" %}</h3>
+          <p>{% trans "Inspect evidence, provenance, and contextual verification signals." %}</p>
+        </article>
+        <article class="world-cycle__item">
+          <span class="world-cycle__index">03</span>
+          <h3>{% trans "Transact" %}</h3>
+          <p>{% trans "Exchange value with explicit identities, permissions, and context." %}</p>
+        </article>
+        <article class="world-cycle__item">
+          <span class="world-cycle__index">04</span>
+          <h3>{% trans "Deliver" %}</h3>
+          <p>{% trans "Provide controlled access to the artifact or digital resource." %}</p>
+        </article>
+        <article class="world-cycle__item">
+          <span class="world-cycle__index">05</span>
+          <h3>{% trans "Attest" %}</h3>
+          <p>{% trans "Record accountable outcomes, evidence, and provenance for later inspection." %}</p>
+        </article>
       </div>
+    </div>
+  </section>
+
+  <section class="world-trust" aria-label="{% trans 'Trust context principles' %}">
+    <div class="discovery-shell world-trust__grid">
+      <span class="world-trust__item">{% trans "Verifiable evidence" %}</span>
+      <span class="world-trust__item">{% trans "Contextual reputation" %}</span>
+      <span class="world-trust__item">{% trans "Identity-based trust" %}</span>
+      <span class="world-trust__item">{% trans "Auditable provenance" %}</span>
     </div>
   </section>
 
