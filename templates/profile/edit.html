@@ -20,7 +20,7 @@
     <a class="profile-btn" href="{% url 'profile' %}">{% trans "Back to profile" %}</a>
   </header>
 
-  <form class="profile-edit-form" method="post" enctype="multipart/form-data" novalidate>
+  <form class="profile-edit-form" method="post" enctype="multipart/form-data" novalidate data-profile-edit-form>
     {% csrf_token %}
 
     <div class="profile-field__message">
@@ -32,13 +32,26 @@
         <h2 id="avatar-title">{% trans "Profile photo" %}</h2>
         <p>{% trans "JPG, PNG or WebP. Maximum 5 MB and 4096 × 4096 pixels." %}</p>
       </div>
-      <div class="profile-avatar-editor" data-profile-avatar-editor data-initials="{{ profile_user.get_short_name|default:profile_user.username|slice:':2'|upper }}"{% if user_profile.avatar %} data-avatar-server-url="{% url 'profile_avatar' %}"{% endif %}>
+      <div class="profile-avatar-editor"
+           data-profile-avatar-editor
+           data-initials="{{ profile_user.get_short_name|default:profile_user.username|slice:':2'|upper }}"
+           data-previewing-label="{% trans 'Previewing selected photo' %}"
+           data-removed-label="{% trans 'Photo will be removed after saving' %}"
+           data-reset-label="{% trans 'Photo changes reset' %}"
+           data-refreshing-label="{% trans 'Refreshing current photo' %}"
+           data-refreshed-label="{% trans 'Current photo refreshed' %}"
+           data-saving-label="{% trans 'Saving profile changes' %}"
+           data-load-error-label="{% trans 'Could not load the profile photo. Please try again.' %}"
+           {% if user_profile.avatar %}data-avatar-server-url="{% url 'profile_avatar' %}"{% endif %}>
         <div class="profile-avatar profile-avatar--large profile-avatar-editor__preview" aria-hidden="true" data-avatar-preview>
           {% if user_profile.avatar %}
             <img class="profile-avatar__image" src="{% url 'profile_avatar' %}" alt="" width="112" height="112" data-avatar-image>
           {% else %}
             <span data-avatar-fallback>{{ profile_user.get_short_name|default:profile_user.username|slice:":2"|upper }}</span>
           {% endif %}
+          <span class="profile-avatar-editor__loading" data-avatar-loading hidden aria-hidden="true">
+            <span class="profile-avatar-editor__spinner"></span>
+          </span>
         </div>
         <div class="profile-avatar-editor__controls">
           <div class="profile-avatar-editor__upload">
@@ -49,10 +62,14 @@
           <div class="profile-avatar-editor__message">
             {% if form.avatar.errors %}<div class="profile-form-errors" role="alert">{{ form.avatar.errors }}</div>{% endif %}
           </div>
-          {% if user_profile.avatar %}
-            <button type="button" class="profile-btn" data-avatar-refresh>{% trans "Refresh photo" %}</button>
-            <label class="profile-check profile-check--remove" for="{{ form.remove_avatar.id_for_label }}">{{ form.remove_avatar }} <span>{% trans "Remove current photo" %}</span></label>
-          {% endif %}
+          <div class="profile-avatar-editor__actions">
+            {% if user_profile.avatar %}
+              <button type="button" class="profile-btn" data-avatar-refresh>{% trans "Refresh photo" %}</button>
+              <label class="profile-check profile-check--remove" for="{{ form.remove_avatar.id_for_label }}">{{ form.remove_avatar }} <span>{% trans "Remove current photo" %}</span></label>
+            {% endif %}
+            <button type="button" class="profile-btn" data-avatar-reset hidden>{% trans "Reset photo changes" %}</button>
+          </div>
+          <div class="profile-avatar-editor__status" data-avatar-status role="status" aria-live="polite" aria-atomic="true"></div>
         </div>
       </div>
     </section>
@@ -91,7 +108,7 @@
     </section>
 
     <div class="profile-edit-actions">
-      <button type="submit" class="profile-btn profile-btn--primary">{% trans "Save changes" %}</button>
+      <button type="submit" class="profile-btn profile-btn--primary" data-profile-save>{% trans "Save changes" %}</button>
       <a class="profile-btn" href="{% url 'profile' %}">{% trans "Cancel" %}</a>
     </div>
   </form>
