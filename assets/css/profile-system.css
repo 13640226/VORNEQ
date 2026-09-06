@@ -1,0 +1,100 @@
+/* VORNEQ Profile / Account — Global Experience System migration layer.
+   Keeps profile geometry stable without changing account or trust semantics. */
+
+.profile-shell,
+.profile-edit-shell {
+  container-type: inline-size;
+}
+
+.profile-hero,
+.profile-section,
+.profile-edit-card {
+  border-color: var(--ges-border, var(--color-border));
+  background: var(--ges-surface, var(--color-bg-elevated));
+}
+
+.profile-btn,
+.profile-settings-card,
+.profile-nav a {
+  min-block-size: var(--ges-control-min, 44px);
+}
+
+.profile-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  line-height: 1.2;
+}
+
+.profile-avatar,
+.profile-avatar--large {
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+/* Stable form contract: every field owns a predictable message row. */
+.profile-field__message,
+.profile-avatar-editor__message {
+  min-block-size: 1.5em;
+  line-height: 1.5;
+  font-size: var(--font-size-small);
+}
+
+.profile-field__message:empty,
+.profile-avatar-editor__message:empty {
+  visibility: hidden;
+}
+
+.profile-field__message .profile-form-errors,
+.profile-avatar-editor__message .profile-form-errors {
+  margin: 0;
+}
+
+.profile-field input,
+.profile-field textarea,
+.profile-avatar-editor input[type="file"] {
+  box-sizing: border-box;
+}
+
+.profile-field input:not([type="checkbox"]),
+.profile-avatar-editor input[type="file"] {
+  min-block-size: var(--ges-control-min, var(--control-height, 44px));
+}
+
+.profile-edit-actions {
+  min-block-size: var(--ges-control-min, 44px);
+  align-items: stretch;
+}
+
+.profile-edit-actions .profile-btn {
+  min-block-size: var(--ges-control-min, 44px);
+  white-space: nowrap;
+}
+
+/* Validation must not alter control geometry. */
+.profile-field [aria-invalid="true"],
+.profile-avatar-editor [aria-invalid="true"] {
+  border-color: var(--color-error, #b42318);
+}
+
+/* Interaction feedback must not move profile geometry. */
+.profile-shell a,
+.profile-edit-shell a,
+.profile-shell button,
+.profile-edit-shell button {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-shell *,
+  .profile-edit-shell * {
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .profile-edit-actions {
+    min-block-size: 0;
+  }
+}
