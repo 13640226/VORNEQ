@@ -1,13 +1,21 @@
+from contextlib import ExitStack
 import re
 import time
 import uuid
 
 import structlog
+from django.db import connections
+from prometheus_client import Counter
 from structlog.contextvars import bind_contextvars, clear_contextvars, merge_contextvars
 
 
 CORRELATION_ID_HEADER = "X-Correlation-ID"
 _CORRELATION_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,128}$")
+DB_QUERIES_TOTAL = Counter(
+    "vorneq_db_queries_total",
+    "Database queries executed during HTTP requests.",
+    ["alias"],
+)
 
 _SHARED_PROCESSORS = [
     merge_contextvars,
@@ -51,6 +59,15 @@ def _correlation_id(request):
     return str(uuid.uuid4())
 
 
+def _query_counter(alias, request_counts):
+    def wrapper(execute, sql, params, many, context):
+        DB_QUERIES_TOTAL.labels(alias=alias).inc()
+        request_counts[alias] = request_counts.get(alias, 0) + 1
+        return execute(sql, params, many, context)
+
+    return wrapper
+
+
 class RequestObservabilityMiddleware:
     """Attach a safe correlation ID and emit one structured event per request."""
 
@@ -64,9 +81,16 @@ class RequestObservabilityMiddleware:
         request.correlation_id = correlation_id
         bind_contextvars(correlation_id=correlation_id)
         started = time.monotonic()
+        query_counts = {}
 
         try:
-            response = self.get_response(request)
+            with ExitStack() as stack:
+                for alias in connections:
+                    connection = connections[alias]
+                    stack.enter_context(
+                        connection.execute_wrapper(_query_counter(alias, query_counts))
+                    )
+                response = self.get_response(request)
         except Exception:
             self.logger.exception(
                 "request.exception",
@@ -84,6 +108,7 @@ class RequestObservabilityMiddleware:
             "path": request.path,
             "status_code": response.status_code,
             "duration_ms": duration_ms,
+            "db_queries": sum(query_counts.values()),
         }
         if response.status_code >= 500:
             self.logger.error("request.completed", **event)
