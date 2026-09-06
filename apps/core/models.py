@@ -195,6 +195,106 @@ class ContextualReputationEvent(models.Model):
         return f"{self.contextual_reputation_id}:{self.event_type}:{self.verification_result_id}"
 
 
+class QualitySignal(models.Model):
+    """Append-only quality assessment signal for one VerificationResult.
+
+    Eligibility is a versioned policy decision, not a truth claim and not a score.
+    The canonical Evidence/Claim relationship stays in apps.evidence.
+    """
+
+    class SignalType(models.TextChoices):
+        EXTERNAL_REFERENCE = "external_reference", "External reference"
+        REPRODUCIBILITY = "reproducibility", "Reproducibility"
+        ADJUDICATION = "adjudication", "Adjudication"
+        INDEPENDENT_CORROBORATION = (
+            "independent_corroboration",
+            "Independent corroboration",
+        )
+        PROXY_STATISTICAL = "proxy_statistical", "Statistical or proxy"
+        CONTESTATION_CORRECTION = (
+            "contestation_correction",
+            "Contestation or correction",
+        )
+        CONSENSUS = "consensus", "Consensus"
+
+    verification_result = models.ForeignKey(
+        "verification.VerificationResult",
+        on_delete=models.PROTECT,
+        related_name="quality_signals",
+    )
+    signal_type = models.CharField(max_length=50, choices=SignalType.choices)
+    assessor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="quality_signals_assessed",
+    )
+    source_ref = models.CharField(max_length=255)
+    provenance_ref = models.CharField(max_length=500, blank=True)
+    evidence_relation = models.ForeignKey(
+        "evidence.EvidenceRelation",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="quality_signals",
+    )
+    independence_declared = models.BooleanField(default=False)
+    independence_basis = models.TextField(blank=True)
+    domain = models.SlugField(max_length=100)
+    method = models.ForeignKey(
+        "verification.VerificationMethod",
+        on_delete=models.PROTECT,
+        related_name="quality_signals",
+    )
+    observed_at = models.DateTimeField(default=timezone.now)
+    policy_version = models.CharField(max_length=40, default="eligibility-v1")
+    is_eligible = models.BooleanField(default=False, editable=False)
+    eligibility_reasons = models.JSONField(default=list, blank=True, editable=False)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "verification_result",
+                    "signal_type",
+                    "source_ref",
+                    "method",
+                    "policy_version",
+                ],
+                name="core_quality_signal_unique",
+            )
+        ]
+        indexes = [
+            models.Index(
+                fields=["verification_result", "signal_type"],
+                name="core_quality_result_type_idx",
+            ),
+            models.Index(
+                fields=["domain", "method"],
+                name="core_quality_domain_method_idx",
+            ),
+            models.Index(
+                fields=["is_eligible", "created_at"],
+                name="core_quality_eligible_time_idx",
+            ),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise RuntimeError("QualitySignal is append-only and cannot be updated.")
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise RuntimeError("QualitySignal is append-only and cannot be deleted.")
+
+    def __str__(self):
+        return f"{self.signal_type}:{self.source_ref}:{self.is_eligible}"
+
+
 class Entitlement(models.Model):
     """Proof of a user's right to access a digital product."""
 
