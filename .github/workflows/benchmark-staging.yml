@@ -40,6 +40,13 @@ jobs:
             exit 1
           fi
 
+      - name: Check migration status
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DJANGO_SETTINGS_MODULE: config.settings_render
+        run: |
+          python manage.py showmigrations --plan
+
       - name: Run search benchmark
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
