@@ -5,6 +5,7 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/profile-edit.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -12,17 +13,24 @@
   <header class="profile-hero">
     <div class="profile-identity">
       <div class="profile-avatar" aria-hidden="true">
-        {{ profile_user.get_short_name|default:profile_user.username|slice:":2"|upper }}
+        {% if profile_user.profile_data.avatar %}
+          <img class="profile-avatar__image" src="{% url 'profile_avatar' %}" alt="">
+        {% else %}
+          {{ profile_user.get_short_name|default:profile_user.username|slice:":2"|upper }}
+        {% endif %}
       </div>
       <div class="profile-identity__meta">
         <p class="profile-eyebrow">{% trans "Account" %}</p>
         <h1 id="profile-title" class="profile-identity__name">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
         <p class="profile-identity__handle">@{{ profile_user.username }}</p>
+        {% if profile_user.profile_data.bio %}<p class="profile-identity__bio">{{ profile_user.profile_data.bio }}</p>{% endif %}
+        {% if profile_user.profile_data.website %}<p class="profile-identity__website"><a href="{{ profile_user.profile_data.website }}" rel="noopener noreferrer" target="_blank">{{ profile_user.profile_data.website }}</a></p>{% endif %}
       </div>
     </div>
     <div class="profile-actions">
+      <a class="profile-btn profile-btn--primary" href="{% url 'profile_edit' %}">{% trans "Edit profile" %}</a>
       <a class="profile-btn" href="{% url 'account_email' %}">{% trans "Email settings" %}</a>
-      <a class="profile-btn profile-btn--primary" href="{% url 'account_change_password' %}">{% trans "Security" %}</a>
+      <a class="profile-btn" href="{% url 'account_change_password' %}">{% trans "Security" %}</a>
     </div>
   </header>
 
@@ -142,6 +150,7 @@
       </div>
     </header>
     <div class="profile-settings-grid">
+      <a class="profile-settings-card" href="{% url 'profile_edit' %}"><strong>{% trans "Public profile" %}</strong><span>{% trans "Update your name, biography, website, and profile photo." %}</span></a>
       <a class="profile-settings-card" href="{% url 'account_email' %}"><strong>{% trans "Email addresses" %}</strong><span>{% trans "Manage verified email addresses for your account." %}</span></a>
       <a class="profile-settings-card" href="{% url 'account_change_password' %}"><strong>{% trans "Password & security" %}</strong><span>{% trans "Update your account password." %}</span></a>
       <a class="profile-settings-card" href="{% url 'account_logout' %}"><strong>{% trans "Sign out" %}</strong><span>{% trans "End the current authenticated session." %}</span></a>
