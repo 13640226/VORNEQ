@@ -18,13 +18,6 @@
           </a>
         </li>
         <li class="standalone-nav__item">
-          <a href="{% url 'library:index' %}"
-             class="standalone-nav__link {% if request.resolver_match.namespace == 'library' %}is-active{% endif %}"
-             {% if request.resolver_match.namespace == 'library' %}aria-current="page"{% endif %}>
-            {% trans "Library" %}
-          </a>
-        </li>
-        <li class="standalone-nav__item">
           <a href="{% url 'marketplace:index' %}"
              class="standalone-nav__link {% if request.resolver_match.namespace == 'marketplace' %}is-active{% endif %}"
              {% if request.resolver_match.namespace == 'marketplace' %}aria-current="page"{% endif %}>
