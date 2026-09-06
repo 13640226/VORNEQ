@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-import pytest
+from django.test import SimpleTestCase
 from django.urls import reverse
 
 
@@ -18,32 +18,45 @@ EXPECTED_PATHS = {
 }
 
 
-def test_openapi_contract_is_valid_json_and_tracks_current_surface():
-    document = json.loads(OPENAPI_PATH.read_text(encoding="utf-8"))
+class APIContractTests(SimpleTestCase):
+    def test_openapi_contract_is_valid_json_and_tracks_current_surface(self):
+        document = json.loads(OPENAPI_PATH.read_text(encoding="utf-8"))
 
-    assert document["openapi"] == "3.1.0"
-    assert document["info"]["version"] == "1.0.0"
-    assert set(document["paths"]) == EXPECTED_PATHS
+        self.assertEqual(document["openapi"], "3.1.0")
+        self.assertEqual(document["info"]["version"], "1.0.0")
+        self.assertEqual(set(document["paths"]), EXPECTED_PATHS)
 
+    def test_verification_summaries_are_get_only(self):
+        product_url = reverse("verification:product_summary", kwargs={"pk": 999999})
+        library_url = reverse("verification:library_summary", kwargs={"pk": 999999})
 
-@pytest.mark.django_db
-def test_verification_summaries_are_get_only(client):
-    product_url = reverse("verification:product_summary", kwargs={"pk": 999999})
-    library_url = reverse("verification:library_summary", kwargs={"pk": 999999})
+        self.assertEqual(self.client.post(product_url).status_code, 405)
+        self.assertEqual(self.client.post(library_url).status_code, 405)
 
-    assert client.post(product_url).status_code == 405
-    assert client.post(library_url).status_code == 405
-
-
-def test_documented_routes_reverse_to_current_paths():
-    assert reverse("search:unified") == "/api/search/"
-    assert reverse("verification:product_summary", kwargs={"pk": 7}) == "/api/verification/product/7/"
-    assert reverse("verification:library_summary", kwargs={"pk": 7}) == "/api/verification/library/7/"
-    assert reverse("core:public-reputation-list", kwargs={"user_id": 7}) == "/api/reputation/user/7/"
-    assert reverse(
-        "core:public-reputation-context",
-        kwargs={"user_id": 7, "domain": "knowledge", "method_code": "peer"},
-    ) == "/api/reputation/user/7/knowledge/peer/"
-    assert reverse("core:reputation-detail", kwargs={"user_id": 7}) == "/api/reputation/7/"
-    assert reverse("media:search_text") == "/api/media/search/text/"
-    assert reverse("media:search_image") == "/api/media/search/image/"
+    def test_documented_routes_reverse_to_current_paths(self):
+        self.assertEqual(reverse("search:unified"), "/api/search/")
+        self.assertEqual(
+            reverse("verification:product_summary", kwargs={"pk": 7}),
+            "/api/verification/product/7/",
+        )
+        self.assertEqual(
+            reverse("verification:library_summary", kwargs={"pk": 7}),
+            "/api/verification/library/7/",
+        )
+        self.assertEqual(
+            reverse("core:public-reputation-list", kwargs={"user_id": 7}),
+            "/api/reputation/user/7/",
+        )
+        self.assertEqual(
+            reverse(
+                "core:public-reputation-context",
+                kwargs={"user_id": 7, "domain": "knowledge", "method_code": "peer"},
+            ),
+            "/api/reputation/user/7/knowledge/peer/",
+        )
+        self.assertEqual(
+            reverse("core:reputation-detail", kwargs={"user_id": 7}),
+            "/api/reputation/7/",
+        )
+        self.assertEqual(reverse("media:search_text"), "/api/media/search/text/")
+        self.assertEqual(reverse("media:search_image"), "/api/media/search/image/")
