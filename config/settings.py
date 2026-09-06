@@ -96,6 +96,7 @@ INSTALLED_APPS = [
     "apps.evidence.apps.EvidenceConfig",
     "apps.graph.apps.GraphConfig",
     "apps.core.apps.CoreConfig",
+    "apps.verification.apps.VerificationConfig",
 ]
 
 
