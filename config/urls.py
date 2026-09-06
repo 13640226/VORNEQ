@@ -30,6 +30,10 @@ urlpatterns = [
         "api/verification/",
         include("apps.verification.urls"),
     ),
+    path(
+        "api/media/",
+        include("apps.media.urls"),
+    ),
 ]
 
 

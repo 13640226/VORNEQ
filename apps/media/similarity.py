@@ -83,11 +83,16 @@ class MediaSimilarityService:
             with media_asset.file.open("rb") as file_handle:
                 data = file_handle.read()
             vector = self.provider.embed_image(data, mime_type=media_asset.mime_type)
+            descriptor = self.provider.descriptor
             self.index.upsert(
                 VectorRecord(
                     media_asset_id=str(media_asset.pk),
                     vector=vector,
-                    embedding_policy=self.provider.descriptor.policy,
+                    embedding_policy=descriptor.policy,
+                    provider=descriptor.provider,
+                    model=descriptor.model,
+                    model_version=descriptor.version,
+                    dimensions=descriptor.dimensions,
                 )
             )
         except Exception:
