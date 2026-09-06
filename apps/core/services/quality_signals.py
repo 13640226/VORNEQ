@@ -71,6 +71,7 @@ def create_quality_signal(
     source_ref,
     domain,
     method,
+    direction=QualitySignal.Direction.INCONCLUSIVE,
     assessor=None,
     provenance_ref="",
     evidence_relation=None,
@@ -84,6 +85,7 @@ def create_quality_signal(
     signal = QualitySignal(
         verification_result=verification_result,
         signal_type=signal_type,
+        direction=direction,
         assessor=assessor,
         source_ref=source_ref,
         provenance_ref=provenance_ref,
