@@ -30,7 +30,7 @@
     <section class="profile-edit-card" aria-labelledby="avatar-title">
       <div class="profile-edit-card__heading">
         <h2 id="avatar-title">{% trans "Profile photo" %}</h2>
-        <p>{% trans "JPG, PNG or WebP. Maximum 2 MB and 4096 × 4096 pixels." %}</p>
+        <p>{% trans "JPG, PNG or WebP. Maximum 5 MB and 4096 × 4096 pixels." %}</p>
       </div>
       <div class="profile-avatar-editor" data-profile-avatar-editor data-initials="{{ profile_user.get_short_name|default:profile_user.username|slice:':2'|upper }}">
         <div class="profile-avatar profile-avatar--large profile-avatar-editor__preview" aria-hidden="true" data-avatar-preview>
