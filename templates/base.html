@@ -65,6 +65,21 @@
     <!-- Global Header (VORNEQ) -->
     {% include "partials/_standalone_nav.html" %}
 
+    <nav class="global-back" aria-label="{% trans 'Page navigation' %}">
+        <div class="global-back__inner">
+            <button
+                type="button"
+                class="global-back__button"
+                data-global-back
+                data-home-url="{% url 'home' %}"
+                aria-label="{% trans 'Go back to the previous page' %}"
+            >
+                <span class="global-back__icon" aria-hidden="true">←</span>
+                <span>{% trans "Back" %}</span>
+            </button>
+        </div>
+    </nav>
+
     <main id="main-content" class="main-content" role="main">
         {% block content %}{% endblock %}
     </main>
@@ -79,6 +94,7 @@
     </footer>
 
     <script src="{% static 'js/theme-preference.js' %}" defer></script>
+    <script src="{% static 'js/global-back.js' %}" defer></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
