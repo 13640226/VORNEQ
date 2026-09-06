@@ -1,0 +1,139 @@
+/* ============================================================
+   VORNEQ LIBRARY INDEX — GLOBAL EXPERIENCE SYSTEM MIGRATION
+   Stable discovery geometry for search, filters, summary, results.
+   ============================================================ */
+
+.library-controls {
+  --library-clear-slot-size: 1.5rem;
+  --library-filter-row-size: calc(var(--touch-target) + (2 * var(--space-1)));
+  --library-summary-row-size: 3.75rem;
+
+  display: grid;
+  grid-template-rows:
+    auto
+    minmax(var(--library-filter-row-size), auto)
+    minmax(var(--library-summary-row-size), auto);
+  row-gap: var(--space-3);
+  margin-block-end: var(--space-4);
+}
+
+.library-controls .library-search,
+.library-controls .library-filters,
+.library-controls .library-results-summary {
+  margin: 0;
+}
+
+.library-search {
+  display: grid;
+  grid-template-rows: auto var(--library-clear-slot-size);
+  row-gap: var(--space-2);
+}
+
+.library-search__clear-slot {
+  min-block-size: var(--library-clear-slot-size);
+  display: flex;
+  align-items: center;
+}
+
+.library-search__clear {
+  margin: 0;
+}
+
+.library-search__clear--placeholder {
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.library-filters {
+  min-block-size: var(--library-filter-row-size);
+  align-items: center;
+  padding-block: var(--space-1);
+}
+
+.library-filters__link {
+  min-block-size: var(--touch-target);
+  flex: 0 0 auto;
+}
+
+.library-results-summary {
+  min-block-size: var(--library-summary-row-size);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+}
+
+.library-results-summary__copy {
+  min-width: 0;
+}
+
+.library-results-summary h2,
+.library-results-summary p {
+  min-block-size: 1.5em;
+}
+
+.library-results-summary h2 {
+  overflow-wrap: anywhere;
+}
+
+.library-results-summary p {
+  white-space: nowrap;
+}
+
+.library-results-surface {
+  min-block-size: 12rem;
+}
+
+.library-results-placeholder {
+  min-block-size: 12rem;
+}
+
+/* Keep all Library discovery interactions visually steady. */
+.library-search__button:hover,
+.library-card__action:hover,
+.library-audio__action:hover,
+.library-detail__action--primary:hover,
+.library-card:hover {
+  transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .library-card:hover {
+    border-color: var(--color-accent-border);
+    box-shadow: var(--shadow-medium);
+  }
+}
+
+@media (max-width: 640px) {
+  .library-controls {
+    --library-summary-row-size: 4.75rem;
+    row-gap: var(--space-2);
+  }
+
+  .library-results-summary {
+    grid-template-columns: 1fr;
+    align-content: center;
+    gap: var(--space-1);
+  }
+
+  .library-results-summary p {
+    white-space: normal;
+  }
+
+  .library-results-surface,
+  .library-results-placeholder {
+    min-block-size: 10rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .library-search__button,
+  .library-filters__link,
+  .library-card,
+  .library-card__action,
+  .library-audio__action {
+    transition: none;
+  }
+}
