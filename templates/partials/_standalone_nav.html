@@ -40,7 +40,11 @@
            class="standalone-nav__user"
            aria-label="{% trans 'Open profile' %}"
            {% if request.resolver_match.url_name == 'profile' %}aria-current="page"{% endif %}>
-          {{ user.get_short_name|default:user.username|slice:":2"|upper }}
+          {% if user.profile_data.avatar %}
+            <img class="standalone-nav__user-image" src="{% url 'profile_avatar' %}" alt="">
+          {% else %}
+            {{ user.get_short_name|default:user.username|slice:":2"|upper }}
+          {% endif %}
         </a>
         <a href="{% url 'account_logout' %}" class="standalone-nav__action standalone-nav__action--logout">
           {% trans "Sign out" %}
