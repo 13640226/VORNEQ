@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n entitlements %}
+{% load static i18n entitlements verification_public %}
 
 {% block title %}{{ product.title }} — VORNEQ {% trans "Marketplace" %}{% endblock %}
 
@@ -51,6 +51,23 @@
       <section class="marketplace-detail__section" aria-labelledby="product-description-title">
         <h2 id="product-description-title" class="marketplace-detail__section-title">{% trans "About this product" %}</h2>
         <div class="marketplace-detail__content">{{ product.description|linebreaks }}</div>
+      </section>
+    {% endif %}
+
+    {% public_verification_summary product as verification_summary %}
+    {% if verification_summary.total_verifications %}
+      <section class="marketplace-detail__section" aria-labelledby="product-verification-title">
+        <h2 id="product-verification-title" class="marketplace-detail__section-title">{% trans "Verification summary" %}</h2>
+        <p>
+          {% blocktrans count counter=verification_summary.total_verifications %}{{ counter }} completed verification{% plural %}{{ counter }} completed verifications{% endblocktrans %}
+        </p>
+        <p>
+          {% trans "Outcomes" %}: {% trans "Pass" %} {{ verification_summary.outcomes.pass }}, {% trans "Fail" %} {{ verification_summary.outcomes.fail }}, {% trans "Partial" %} {{ verification_summary.outcomes.partial }}, {% trans "Inconclusive" %} {{ verification_summary.outcomes.inconclusive }}
+        </p>
+        {% if verification_summary.average_reported_confidence != None %}
+          <p>{% trans "Average reported confidence" %}: {{ verification_summary.average_reported_confidence }}%</p>
+        {% endif %}
+        <p>{% trans "Public evidence references" %}: {{ verification_summary.public_evidence_count }}</p>
       </section>
     {% endif %}
 
