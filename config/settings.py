@@ -10,72 +10,34 @@ from pathlib import Path
 from csp.constants import NONE, SELF, UNSAFE_INLINE
 
 
-# =============================================================================
-# PATHS
-# =============================================================================
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# =============================================================================
-# HELPERS
-# =============================================================================
-
 def env_bool(name, default=False):
     value = os.environ.get(name)
-
     if value is None:
         return default
-
-    return value.strip().lower() in {
-        "1",
-        "true",
-        "yes",
-        "on",
-    }
+    return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
 def env_list(name, default=""):
     value = os.environ.get(name, default)
+    return [item.strip() for item in value.split(",") if item.strip()]
 
-    return [
-        item.strip()
-        for item in value.split(",")
-        if item.strip()
-    ]
-
-
-# =============================================================================
-# CORE SECURITY
-# =============================================================================
 
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
     "django-insecure-development-only-change-me",
 )
-
-DEBUG = env_bool(
-    "DJANGO_DEBUG",
-    True,
-)
-
-ALLOWED_HOSTS = env_list(
-    "DJANGO_ALLOWED_HOSTS",
-    "127.0.0.1,localhost",
-)
-
+DEBUG = env_bool("DJANGO_DEBUG", True)
+ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost")
 CSRF_TRUSTED_ORIGINS = env_list(
     "DJANGO_CSRF_TRUSTED_ORIGINS",
     "http://127.0.0.1:8000,http://localhost:8000",
 )
 
 
-# =============================================================================
-# APPLICATIONS
-# =============================================================================
-
 INSTALLED_APPS = [
-    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -83,17 +45,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
-
-    # django-allauth
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-
-    # Security
     "axes",
     "csp",
-
-    # Local applications
+    "django_prometheus",
     "library",
     "marketplace",
     "apps.evidence.apps.EvidenceConfig",
@@ -106,65 +63,34 @@ INSTALLED_APPS = [
 ]
 
 
-# =============================================================================
-# MIDDLEWARE
-# =============================================================================
-
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
+    "config.observability.RequestObservabilityMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "csp.middleware.CSPMiddleware",
-
-    # Static files
     "whitenoise.middleware.WhiteNoiseMiddleware",
-
-    # Sessions
     "django.contrib.sessions.middleware.SessionMiddleware",
-
-    # Languages
     "django.middleware.locale.LocaleMiddleware",
-
-    # Django
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-
-    # django-allauth
     "allauth.account.middleware.AccountMiddleware",
-
-    # Messages
     "django.contrib.messages.middleware.MessageMiddleware",
-
-    # Clickjacking protection
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-
-    # Login protection
     "axes.middleware.AxesMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 
-# =============================================================================
-# URL / WSGI
-# =============================================================================
-
 ROOT_URLCONF = "config.urls"
-
 WSGI_APPLICATION = "config.wsgi.application"
 
-
-# =============================================================================
-# TEMPLATES
-# =============================================================================
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-
-        "DIRS": [
-            BASE_DIR / "templates",
-        ],
-
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
-
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
@@ -178,10 +104,6 @@ TEMPLATES = [
 ]
 
 
-# =============================================================================
-# DATABASE
-# =============================================================================
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -190,195 +112,84 @@ DATABASES = {
 }
 
 
-# =============================================================================
-# PASSWORD VALIDATION
-# =============================================================================
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME":
-        "django.contrib.auth.password_validation."
-        "UserAttributeSimilarityValidator",
+        "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
         "NAME":
-        "django.contrib.auth.password_validation."
-        "MinimumLengthValidator",
+        "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
         "NAME":
-        "django.contrib.auth.password_validation."
-        "CommonPasswordValidator",
+        "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
         "NAME":
-        "django.contrib.auth.password_validation."
-        "NumericPasswordValidator",
+        "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 
-# =============================================================================
-# INTERNATIONALIZATION
-# =============================================================================
-
 LANGUAGE_CODE = "fa"
-
 LANGUAGES = [
     ("fa", "فارسی"),
     ("en", "English"),
     ("de", "Deutsch"),
 ]
-
 TIME_ZONE = "Asia/Tehran"
-
 USE_I18N = True
 USE_TZ = True
+LOCALE_PATHS = [BASE_DIR / "locale"]
 
-LOCALE_PATHS = [
-    BASE_DIR / "locale",
-]
-
-
-# =============================================================================
-# STATIC FILES
-# =============================================================================
 
 STATIC_URL = "/static/"
-
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-STATICFILES_DIRS = [
-    BASE_DIR / "assets",
-]
-
-
-# Django 4.2+ storage configuration
+STATICFILES_DIRS = [BASE_DIR / "assets"]
 
 STORAGES = {
     "default": {
-        "BACKEND":
-        "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
-
     "staticfiles": {
-        "BACKEND":
-        "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 
-
-# =============================================================================
-# MEDIA
-# =============================================================================
-
 MEDIA_URL = "/media/"
-
 MEDIA_ROOT = BASE_DIR / "media"
-
-
-# =============================================================================
-# DEFAULT PRIMARY KEY
-# =============================================================================
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-
-# =============================================================================
-# DJANGO SITES
-# =============================================================================
-
 SITE_ID = 1
 
 
-# =============================================================================
-# AUTHENTICATION BACKENDS
-# =============================================================================
-
 AUTHENTICATION_BACKENDS = [
-    # IMPORTANT:
-    # Axes must be first so locked accounts cannot bypass the lockout.
     "axes.backends.AxesStandaloneBackend",
-
-    # Django authentication
     "django.contrib.auth.backends.ModelBackend",
-
-    # django-allauth
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-
-# =============================================================================
-# LOGIN / LOGOUT
-# =============================================================================
-
 LOGIN_URL = "account_login"
-
 LOGIN_REDIRECT_URL = "home"
-
 LOGOUT_REDIRECT_URL = "home"
-
 ACCOUNT_LOGOUT_REDIRECT_URL = "home"
-
 ACCOUNT_LOGOUT_ON_GET = False
 
-
-# =============================================================================
-# DJANGO-ALLAUTH — MODERN CONFIGURATION
-# =============================================================================
-
-# Users can login using either username or email.
-
-ACCOUNT_LOGIN_METHODS = {
-    "username",
-    "email",
-}
-
-
-# Fields shown during registration.
-#
-# * means required.
-
+ACCOUNT_LOGIN_METHODS = {"username", "email"}
 ACCOUNT_SIGNUP_FIELDS = [
     "username*",
     "email*",
     "password1*",
     "password2*",
 ]
-
-
 ACCOUNT_UNIQUE_EMAIL = True
-
-
-# Development:
-# email verification is disabled for easier local testing.
-#
-# Production:
-# change this to "mandatory".
-
 ACCOUNT_EMAIL_VERIFICATION = os.environ.get(
     "ACCOUNT_EMAIL_VERIFICATION",
     "none" if DEBUG else "mandatory",
 )
-
-
-# Prevent account enumeration where possible.
-
 ACCOUNT_PREVENT_ENUMERATION = True
-
-
-# Remember sessions.
-
 ACCOUNT_SESSION_REMEMBER = True
-
-
-# Do not automatically login merely by visiting a confirmation URL.
-
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
-
-
-# Native django-allauth rate limiting. These limits are cache-backed and are
-# intentionally separate from django-axes lockout handling.
 
 ACCOUNT_RATE_LIMITS = {
     "login": "20/m/ip",
@@ -387,73 +198,29 @@ ACCOUNT_RATE_LIMITS = {
     "reset_password": "5/15m/ip,3/15m/key",
     "reset_password_from_key": "10/m/ip",
 }
-
-
-# Client IP detection must match the deployment topology. By default no proxy
-# is trusted. Production can opt in explicitly with environment variables.
-
 ALLAUTH_TRUSTED_PROXY_COUNT = int(
     os.environ.get("ALLAUTH_TRUSTED_PROXY_COUNT", "0")
 )
-
 ALLAUTH_TRUSTED_CLIENT_IP_HEADER = (
     os.environ.get("ALLAUTH_TRUSTED_CLIENT_IP_HEADER") or None
 )
 
-
-# =============================================================================
-# SOCIAL ACCOUNT
-# =============================================================================
-
 SOCIALACCOUNT_AUTO_SIGNUP = True
-
 SOCIALACCOUNT_LOGIN_ON_GET = False
 
 
-# =============================================================================
-# EMAIL
-# =============================================================================
-
 if DEBUG:
-
-    EMAIL_BACKEND = (
-        "django.core.mail.backends.console.EmailBackend"
-    )
-
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
-
     EMAIL_BACKEND = os.environ.get(
         "EMAIL_BACKEND",
         "django.core.mail.backends.smtp.EmailBackend",
     )
-
-    EMAIL_HOST = os.environ.get(
-        "EMAIL_HOST",
-        "",
-    )
-
-    EMAIL_PORT = int(
-        os.environ.get(
-            "EMAIL_PORT",
-            "587",
-        )
-    )
-
-    EMAIL_HOST_USER = os.environ.get(
-        "EMAIL_HOST_USER",
-        "",
-    )
-
-    EMAIL_HOST_PASSWORD = os.environ.get(
-        "EMAIL_HOST_PASSWORD",
-        "",
-    )
-
-    EMAIL_USE_TLS = env_bool(
-        "EMAIL_USE_TLS",
-        True,
-    )
-
+    EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
+    EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+    EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
 
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
@@ -461,117 +228,39 @@ DEFAULT_FROM_EMAIL = os.environ.get(
 )
 
 
-# =============================================================================
-# CACHE
-# =============================================================================
-
-REDIS_URL = os.environ.get(
-    "REDIS_URL",
-)
-
-
+REDIS_URL = os.environ.get("REDIS_URL")
 if REDIS_URL:
-
     CACHES = {
         "default": {
-            "BACKEND":
-            "django.core.cache.backends.redis.RedisCache",
-
-            "LOCATION":
-            REDIS_URL,
-
-            "TIMEOUT":
-            300,
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+            "TIMEOUT": 300,
         }
     }
-
 else:
-
     CACHES = {
         "default": {
-            "BACKEND":
-            "django.core.cache.backends.locmem.LocMemCache",
-
-            "LOCATION":
-            "saman-kherad-local-cache",
-
-            "TIMEOUT":
-            300,
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "saman-kherad-local-cache",
+            "TIMEOUT": 300,
         }
     }
 
-
-# =============================================================================
-# DJANGO AXES
-# =============================================================================
 
 AXES_ENABLED = True
-
 AXES_FAILURE_LIMIT = 5
-
 AXES_COOLOFF_TIME = 1
-
-
-# Lock the combination of username + IP.
-#
-# This is the modern replacement for older
-# AXES_LOCK_OUT_BY_* settings.
-
-AXES_LOCKOUT_PARAMETERS = [
-    [
-        "username",
-        "ip_address",
-    ],
-]
-
-
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
 AXES_RESET_ON_SUCCESS = True
-
 AXES_ENABLE_ADMIN = True
-
 AXES_VERBOSE = DEBUG
 
-
-# Optional custom template.
-#
-# Enable this only after creating:
-#
-# templates/account/lockout.html
-
-# AXES_LOCKOUT_TEMPLATE = "account/lockout.html"
-
-
-# =============================================================================
-# SESSION SECURITY
-# =============================================================================
-
 SESSION_COOKIE_HTTPONLY = True
-
 SESSION_COOKIE_SAMESITE = "Lax"
-
 CSRF_COOKIE_SAMESITE = "Lax"
-
-
-# =============================================================================
-# CLICKJACKING
-# =============================================================================
-
 X_FRAME_OPTIONS = "DENY"
-
-
-# =============================================================================
-# MIME / CONTENT SECURITY
-# =============================================================================
-
 SECURE_CONTENT_TYPE_NOSNIFF = True
-
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
-
-
-# Content Security Policy. Inline script/style remains temporarily allowed
-# because the current theme bootstrap and templates contain intentional inline
-# content. A later nonce migration can tighten this further without changing
-# this baseline's behavior.
 
 CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
@@ -590,100 +279,47 @@ CONTENT_SECURITY_POLICY = {
     }
 }
 
-
-# =============================================================================
-# PRODUCTION SECURITY
-# =============================================================================
-
 if not DEBUG:
-
-    # -------------------------------------------------------------------------
-    # HTTPS
-    # -------------------------------------------------------------------------
-
     SECURE_SSL_REDIRECT = True
-
-    SECURE_PROXY_SSL_HEADER = (
-        "HTTP_X_FORWARDED_PROTO",
-        "https",
-    )
-
-
-    # -------------------------------------------------------------------------
-    # HSTS
-    # -------------------------------------------------------------------------
-
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_HSTS_SECONDS = 31536000
-
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-
     SECURE_HSTS_PRELOAD = True
-
-
-    # -------------------------------------------------------------------------
-    # Secure cookies
-    # -------------------------------------------------------------------------
-
     SESSION_COOKIE_SECURE = True
-
     CSRF_COOKIE_SECURE = True
-
-
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["upgrade-insecure-requests"] = True
 
 
-# =============================================================================
-# LOGGING
-# =============================================================================
+PROMETHEUS_EXPORT_MIGRATIONS = False
 
 LOGGING = {
     "version": 1,
-
     "disable_existing_loggers": False,
-
     "formatters": {
-        "verbose": {
-            "format":
-            "[{levelname}] {asctime} {name}: {message}",
-
-            "style":
-            "{",
+        "structured": {
+            "()": "config.observability.build_processor_formatter",
         },
     },
-
     "handlers": {
         "console": {
-            "class":
-            "logging.StreamHandler",
-
-            "formatter":
-            "verbose",
+            "class": "logging.StreamHandler",
+            "formatter": "structured",
         },
     },
-
+    "root": {
+        "handlers": ["console"],
+        "level": os.environ.get("DJANGO_LOG_LEVEL", "INFO"),
+    },
     "loggers": {
         "django": {
-            "handlers": [
-                "console",
-            ],
-
-            "level":
-            "INFO",
-
-            "propagate":
-            False,
+            "handlers": ["console"],
+            "level": os.environ.get("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
-
         "axes": {
-            "handlers": [
-                "console",
-            ],
-
-            "level":
-            "WARNING",
-
-            "propagate":
-            False,
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
         },
     },
 }
