@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n %}
+{% load static i18n verification_public %}
 
 {% block title %}{{ title }} — VORNEQ {% trans "Library" %}{% endblock %}
 
@@ -34,6 +34,19 @@
       <div class="library-empty">
         <p>{% trans "The full text for this library item is not available yet." %}</p>
       </div>
+    {% endif %}
+
+    {% public_verification_summary item as verification_summary %}
+    {% if verification_summary.total_verifications %}
+      <section class="library-detail__content" aria-labelledby="library-verification-title">
+        <h2 id="library-verification-title">{% trans "Verification summary" %}</h2>
+        <p>{% blocktrans count counter=verification_summary.total_verifications %}{{ counter }} completed verification{% plural %}{{ counter }} completed verifications{% endblocktrans %}</p>
+        <p>{% trans "Outcomes" %}: {% trans "Pass" %} {{ verification_summary.outcomes.pass }}, {% trans "Fail" %} {{ verification_summary.outcomes.fail }}, {% trans "Partial" %} {{ verification_summary.outcomes.partial }}, {% trans "Inconclusive" %} {{ verification_summary.outcomes.inconclusive }}</p>
+        {% if verification_summary.average_reported_confidence != None %}
+          <p>{% trans "Average reported confidence" %}: {{ verification_summary.average_reported_confidence }}%</p>
+        {% endif %}
+        <p>{% trans "Public evidence references" %}: {{ verification_summary.public_evidence_count }}</p>
+      </section>
     {% endif %}
 
     <div class="library-detail__meta">

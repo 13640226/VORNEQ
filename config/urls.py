@@ -26,6 +26,10 @@ urlpatterns = [
         "api/",
         include("apps.core.urls"),
     ),
+    path(
+        "api/verification/",
+        include("apps.verification.urls"),
+    ),
 ]
 
 
