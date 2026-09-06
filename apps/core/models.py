@@ -501,6 +501,7 @@ class ArtifactBinding(models.Model):
     ALLOWED_TARGETS = {
         ("marketplace", "product"),
         ("library", "libraryitem"),
+        ("content", "article"),
     }
 
     artifact = models.OneToOneField(
