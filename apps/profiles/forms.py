@@ -1,5 +1,3 @@
-from io import BytesIO
-
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -85,6 +83,6 @@ class ProfileEditForm(forms.Form):
         if old_avatar_name and (remove_avatar or new_avatar):
             storage = self.profile._meta.get_field("avatar").storage
             if old_avatar_name != self.profile.avatar.name:
-                storage.delete(old_avatar_name)
+                transaction.on_commit(lambda: storage.delete(old_avatar_name))
 
         return self.profile
