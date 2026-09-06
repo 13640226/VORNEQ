@@ -1,0 +1,194 @@
+/* ============================================================
+   VORNEQ GLOBAL EXPERIENCE SYSTEM — 2026 FOUNDATION
+   Shared interaction and presentation contracts across surfaces.
+   ============================================================ */
+
+:root {
+  /* Semantic surfaces */
+  --surface-page: var(--color-bg-page);
+  --surface-subtle: var(--color-bg-surface);
+  --surface-raised: var(--color-bg-elevated);
+
+  /* Shared component geometry */
+  --page-inline-padding: clamp(1rem, 3vw, 2rem);
+  --page-block-start: clamp(2rem, 4vw, 3.5rem);
+  --page-block-end: clamp(3rem, 6vw, 5rem);
+  --section-gap: clamp(2rem, 5vw, 4rem);
+  --content-gap: clamp(1rem, 2.5vw, 1.5rem);
+  --control-radius: var(--radius-pill);
+  --card-radius: var(--radius-md);
+  --touch-target: 44px;
+}
+
+html {
+  color-scheme: light;
+  scrollbar-gutter: stable;
+  font-synthesis: none;
+  text-size-adjust: 100%;
+}
+
+/* Typography rhythm */
+:is(h1, h2, h3, .library-header__title, .marketplace-header__title, .discovery-hero__title, .profile-title) {
+  text-wrap: balance;
+}
+
+:is(p, .library-header__subtitle, .marketplace-header__subtitle, .discovery-hero__subtitle, .profile-subtitle) {
+  text-wrap: pretty;
+}
+
+/* Shared page shells */
+:is(.library-shell, .marketplace-shell, .discovery-shell, .profile-shell) {
+  width: 100%;
+  max-width: var(--container-width);
+  margin-inline: auto;
+}
+
+:is(.library-page, .marketplace-page, .discovery-home, .profile-page) {
+  color: var(--color-text-primary);
+}
+
+/* Shared header rhythm */
+:is(.library-header, .marketplace-header, .profile-header) {
+  margin-block-end: var(--space-6);
+}
+
+:is(.library-header__subtitle, .marketplace-header__subtitle) {
+  max-width: 72ch;
+}
+
+/* Shared interactive controls */
+:is(
+  button,
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea,
+  .library-filters__link,
+  .marketplace-filters__link,
+  .discovery-filters__link,
+  .standalone-nav__action
+) {
+  min-height: var(--touch-target);
+}
+
+:is(
+  .library-search__input,
+  .marketplace-search__input,
+  .discovery-search__input,
+  .profile-form input,
+  .profile-form textarea,
+  .profile-form select
+) {
+  border-color: var(--color-border);
+  background: var(--surface-raised);
+  color: var(--color-text-primary);
+  transition:
+    border-color var(--motion-duration-fast) var(--motion-easing-standard),
+    box-shadow var(--motion-duration-fast) var(--motion-easing-standard),
+    background-color var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+:is(
+  .library-search__input,
+  .marketplace-search__input,
+  .discovery-search__input,
+  .profile-form input,
+  .profile-form textarea,
+  .profile-form select
+):focus {
+  border-color: var(--color-focus);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+/* Shared filter language */
+:is(.library-filters, .marketplace-filters, .discovery-filters__list) {
+  align-items: center;
+  gap: var(--space-2);
+}
+
+:is(.library-filters__link, .marketplace-filters__link, .discovery-filters__link) {
+  min-height: var(--touch-target);
+  padding-inline: var(--space-3);
+  border-radius: var(--control-radius);
+  white-space: nowrap;
+}
+
+/* Shared cards */
+:is(.library-card, .marketplace-card, .discovery-card, .discovery-feed-item, .profile-card) {
+  border-radius: var(--card-radius);
+  background: var(--surface-raised);
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-low);
+}
+
+/* Shared empty states */
+:is(.library-empty, .marketplace-empty, .discovery-empty, .profile-empty) {
+  min-height: 11rem;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+/* Shared feedback and state semantics */
+:is([aria-current="page"], .is-active) {
+  scroll-margin-inline: var(--space-4);
+}
+
+/* Let hover remain a desktop affordance instead of a sticky touch state. */
+@media (hover: hover) and (pointer: fine) {
+  :is(.library-card, .marketplace-card, .discovery-card, .discovery-feed-item) {
+    transition:
+      border-color var(--motion-duration-fast) var(--motion-easing-standard),
+      box-shadow var(--motion-duration-fast) var(--motion-easing-standard);
+  }
+}
+
+/* Stronger visibility for users explicitly requesting contrast. */
+@media (prefers-contrast: more) {
+  :root {
+    --color-border: #aeb8c6;
+    --color-border-strong: #7e8b9c;
+  }
+
+  :focus-visible {
+    outline-width: 3px;
+  }
+
+  :is(.library-filters__link, .marketplace-filters__link, .discovery-filters__link) {
+    border-width: 2px;
+  }
+}
+
+/* Direction-safe mobile behavior */
+@media (max-width: 768px) {
+  :root {
+    --page-inline-padding: 1rem;
+    --section-gap: 2.5rem;
+  }
+
+  :is(.library-filters, .marketplace-filters, .discovery-filters) {
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :is(.library-filters__link, .marketplace-filters__link, .discovery-filters__link) {
+    scroll-snap-align: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(
+    .library-search__input,
+    .marketplace-search__input,
+    .discovery-search__input,
+    .profile-form input,
+    .profile-form textarea,
+    .profile-form select
+  ) {
+    transition: none;
+  }
+}
