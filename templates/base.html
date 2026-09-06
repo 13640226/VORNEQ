@@ -8,6 +8,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#ffffff">
+    <script>
+        (function () {
+            var preference = 'system';
+            try {
+                preference = localStorage.getItem('vorneq-theme') || 'system';
+            } catch (error) {
+                preference = 'system';
+            }
+
+            if (preference !== 'light' && preference !== 'dark' && preference !== 'system') {
+                preference = 'system';
+            }
+
+            var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            var resolved = preference === 'system' ? (systemDark ? 'dark' : 'light') : preference;
+            var root = document.documentElement;
+
+            root.dataset.theme = resolved;
+            root.dataset.themePreference = preference;
+            root.style.colorScheme = resolved;
+
+            var themeColor = document.querySelector('meta[name="theme-color"]');
+            if (themeColor) {
+                themeColor.content = resolved === 'dark' ? '#0b1120' : '#ffffff';
+            }
+        }());
+    </script>
 
     {% block meta %}
     <meta
@@ -51,6 +78,7 @@
         </div>
     </footer>
 
+    <script src="{% static 'js/theme-preference.js' %}" defer></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
