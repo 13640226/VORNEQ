@@ -4,7 +4,8 @@ services:
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt && python manage.py compilemessages && DJANGO_SETTINGS_MODULE=config.settings_render python manage.py collectstatic --noinput
-    startCommand: DJANGO_SETTINGS_MODULE=config.settings_render python manage.py migration_preflight && DJANGO_SETTINGS_MODULE=config.settings_render python manage.py migrate --noinput && gunicorn config.wsgi:application
+    preDeployCommand: DJANGO_SETTINGS_MODULE=config.settings_render python manage.py migration_preflight && DJANGO_SETTINGS_MODULE=config.settings_render python manage.py migrate --noinput
+    startCommand: gunicorn config.wsgi:application
     healthCheckPath: /health/
     envVars:
       - key: DJANGO_SETTINGS_MODULE
