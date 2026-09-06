@@ -1,0 +1,78 @@
+name: Benchmark Staging Search
+
+on:
+  workflow_dispatch:
+    inputs:
+      repeat:
+        description: Number of repetitions per query
+        required: false
+        default: "5"
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify staging database secret
+        env:
+          STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+        run: |
+          if [ -z "$STAGING_DATABASE_URL" ]; then
+            echo "STAGING_DATABASE_URL is not configured in GitHub Actions secrets." >&2
+            exit 1
+          fi
+
+      - name: Run search benchmark
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DJANGO_SETTINGS_MODULE: config.settings_render
+        run: |
+          set -euo pipefail
+          python manage.py benchmark_search \
+            --query "" \
+            --query "ai" \
+            --query "knowledge" \
+            --query "science" \
+            --repeat "${{ inputs.repeat }}" \
+            --json | tee benchmark_results.jsonl
+
+      - name: Validate benchmark JSONL
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("benchmark_results.jsonl")
+          rows = [line for line in path.read_text().splitlines() if line.strip()]
+          if len(rows) != 4:
+              raise SystemExit(f"Expected 4 benchmark rows, found {len(rows)}")
+          for line in rows:
+              json.loads(line)
+          print("Validated 4 benchmark JSON rows.")
+          PY
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-search-benchmark-${{ github.run_id }}
+          path: benchmark_results.jsonl
+          retention-days: 7
+          if-no-files-found: error
