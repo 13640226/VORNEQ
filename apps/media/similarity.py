@@ -33,41 +33,25 @@ def _noop_telemetry(_: SimilarityTelemetryEvent) -> None:
 class MediaSimilarityService:
     """Discovery-only similarity service over active image MediaAssets."""
 
-    def __init__(
-        self,
-        *,
-        provider: BaseEmbeddingProvider,
-        index: BaseVectorIndex,
-        telemetry_sink: TelemetrySink | None = None,
-    ):
+    def __init__(self, *, provider: BaseEmbeddingProvider, index: BaseVectorIndex, telemetry_sink: TelemetrySink | None = None):
         self.provider = provider
         self.index = index
         self.telemetry_sink = telemetry_sink or _noop_telemetry
 
-    def _emit(
-        self,
-        *,
-        operation: str,
-        started_at: float,
-        input_size: int | None,
-        result_count: int | None,
-        status: str,
-    ) -> None:
+    def _emit(self, *, operation: str, started_at: float, input_size: int | None, result_count: int | None, status: str) -> None:
         descriptor = self.provider.descriptor
-        self.telemetry_sink(
-            SimilarityTelemetryEvent(
-                operation=operation,
-                provider=descriptor.provider,
-                model=descriptor.model,
-                model_version=descriptor.version,
-                embedding_policy=descriptor.policy,
-                latency_ms=(perf_counter() - started_at) * 1000,
-                input_size=input_size,
-                result_count=result_count,
-                estimated_cost=None,
-                status=status,
-            )
-        )
+        self.telemetry_sink(SimilarityTelemetryEvent(
+            operation=operation,
+            provider=descriptor.provider,
+            model=descriptor.model,
+            model_version=descriptor.version,
+            embedding_policy=descriptor.policy,
+            latency_ms=(perf_counter() - started_at) * 1000,
+            input_size=input_size,
+            result_count=result_count,
+            estimated_cost=None,
+            status=status,
+        ))
 
     def index_media_asset(self, media_asset: MediaAsset) -> None:
         if media_asset.pk is None:
@@ -83,38 +67,26 @@ class MediaSimilarityService:
             with media_asset.file.open("rb") as file_handle:
                 data = file_handle.read()
             vector = self.provider.embed_image(data, mime_type=media_asset.mime_type)
-            self.index.upsert(
-                VectorRecord(
-                    media_asset_id=str(media_asset.pk),
-                    vector=vector,
-                    embedding_policy=self.provider.descriptor.policy,
-                )
-            )
+            descriptor = self.provider.descriptor
+            self.index.upsert(VectorRecord(
+                media_asset_id=str(media_asset.pk),
+                vector=vector,
+                embedding_policy=descriptor.policy,
+                provider=descriptor.provider,
+                model=descriptor.model,
+                model_version=descriptor.version,
+                dimensions=descriptor.dimensions,
+            ))
         except Exception:
-            self._emit(
-                operation="index",
-                started_at=started_at,
-                input_size=None,
-                result_count=None,
-                status="failed",
-            )
+            self._emit(operation="index", started_at=started_at, input_size=None, result_count=None, status="failed")
             raise
-        self._emit(
-            operation="index",
-            started_at=started_at,
-            input_size=media_asset.byte_size,
-            result_count=None,
-            status="success",
-        )
+        self._emit(operation="index", started_at=started_at, input_size=media_asset.byte_size, result_count=None, status="success")
 
     def reindex_active_images(self) -> int:
         policy = self.provider.descriptor.policy
         self.index.clear(embedding_policy=policy)
         count = 0
-        queryset = MediaAsset.objects.filter(
-            is_active=True,
-            media_type=MediaAsset.MediaType.IMAGE,
-        ).order_by("pk")
+        queryset = MediaAsset.objects.filter(is_active=True, media_type=MediaAsset.MediaType.IMAGE).order_by("pk")
         for media_asset in queryset.iterator():
             self.index_media_asset(media_asset)
             count += 1
@@ -124,38 +96,16 @@ class MediaSimilarityService:
         if media_asset.pk is not None:
             self.index.remove(str(media_asset.pk))
 
-    def search_by_image(
-        self,
-        image_data: bytes,
-        *,
-        mime_type: str,
-        limit: int = 10,
-    ) -> list[dict]:
+    def search_by_image(self, image_data: bytes, *, mime_type: str, limit: int = 10) -> list[dict]:
         started_at = perf_counter()
         try:
             query_vector = self.provider.embed_image(image_data, mime_type=mime_type)
-            raw_results = self.index.search(
-                query_vector,
-                embedding_policy=self.provider.descriptor.policy,
-                limit=limit,
-            )
+            raw_results = self.index.search(query_vector, embedding_policy=self.provider.descriptor.policy, limit=limit)
             results = self._resolve_results(raw_results)
         except Exception:
-            self._emit(
-                operation="search_image",
-                started_at=started_at,
-                input_size=len(image_data),
-                result_count=None,
-                status="failed",
-            )
+            self._emit(operation="search_image", started_at=started_at, input_size=len(image_data), result_count=None, status="failed")
             raise
-        self._emit(
-            operation="search_image",
-            started_at=started_at,
-            input_size=len(image_data),
-            result_count=len(results),
-            status="success",
-        )
+        self._emit(operation="search_image", started_at=started_at, input_size=len(image_data), result_count=len(results), status="success")
         return results
 
     def search_by_text(self, text: str, *, limit: int = 10) -> list[dict]:
@@ -164,28 +114,12 @@ class MediaSimilarityService:
         started_at = perf_counter()
         try:
             query_vector = self.provider.embed_text(text)
-            raw_results = self.index.search(
-                query_vector,
-                embedding_policy=self.provider.descriptor.policy,
-                limit=limit,
-            )
+            raw_results = self.index.search(query_vector, embedding_policy=self.provider.descriptor.policy, limit=limit)
             results = self._resolve_results(raw_results)
         except Exception:
-            self._emit(
-                operation="search_text",
-                started_at=started_at,
-                input_size=len(text.encode("utf-8")),
-                result_count=None,
-                status="failed",
-            )
+            self._emit(operation="search_text", started_at=started_at, input_size=len(text.encode("utf-8")), result_count=None, status="failed")
             raise
-        self._emit(
-            operation="search_text",
-            started_at=started_at,
-            input_size=len(text.encode("utf-8")),
-            result_count=len(results),
-            status="success",
-        )
+        self._emit(operation="search_text", started_at=started_at, input_size=len(text.encode("utf-8")), result_count=len(results), status="success")
         return results
 
     def _resolve_results(self, raw_results: list[tuple[str, float]]) -> list[dict]:
@@ -197,13 +131,11 @@ class MediaSimilarityService:
             asset = assets.get(media_id)
             if asset is None:
                 continue
-            formatted.append(
-                {
-                    "id": str(asset.pk),
-                    "title": asset.title,
-                    "media_type": asset.media_type,
-                    "similarity_score": score,
-                    "embedding_policy": self.provider.descriptor.policy,
-                }
-            )
+            formatted.append({
+                "id": str(asset.pk),
+                "title": asset.title,
+                "media_type": asset.media_type,
+                "similarity_score": score,
+                "embedding_policy": self.provider.descriptor.policy,
+            })
         return formatted
