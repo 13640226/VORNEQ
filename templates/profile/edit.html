@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Edit profile" %} — VORNEQ{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/profile-edit.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="profile-edit-shell" aria-labelledby="profile-edit-title">
+  <header class="profile-edit-header">
+    <div>
+      <p class="profile-eyebrow">{% trans "Account" %}</p>
+      <h1 id="profile-edit-title">{% trans "Edit profile" %}</h1>
+      <p>{% trans "Update the public presentation of your account. This does not change your VORNEQ Identity or reputation history." %}</p>
+    </div>
+    <a class="profile-btn" href="{% url 'profile' %}">{% trans "Back to profile" %}</a>
+  </header>
+
+  <form class="profile-edit-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="profile-form-errors" role="alert">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <section class="profile-edit-card" aria-labelledby="avatar-title">
+      <div class="profile-edit-card__heading">
+        <h2 id="avatar-title">{% trans "Profile photo" %}</h2>
+        <p>{% trans "JPG, PNG or WebP. Maximum 2 MB and 4096 × 4096 pixels." %}</p>
+      </div>
+      <div class="profile-avatar-editor">
+        <div class="profile-avatar profile-avatar--large" aria-hidden="true">
+          {% if user_profile.avatar %}
+            <img class="profile-avatar__image" src="{% url 'profile_avatar' %}" alt="">
+          {% else %}
+            {{ profile_user.get_short_name|default:profile_user.username|slice:":2"|upper }}
+          {% endif %}
+        </div>
+        <div class="profile-avatar-editor__controls">
+          <label for="{{ form.avatar.id_for_label }}">{% trans "Choose a new photo" %}</label>
+          {{ form.avatar }}
+          {% if form.avatar.errors %}<div class="profile-form-errors" role="alert">{{ form.avatar.errors }}</div>{% endif %}
+          {% if user_profile.avatar %}
+            <label class="profile-check" for="{{ form.remove_avatar.id_for_label }}">{{ form.remove_avatar }} <span>{% trans "Remove current photo" %}</span></label>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <section class="profile-edit-card" aria-labelledby="details-title">
+      <div class="profile-edit-card__heading">
+        <h2 id="details-title">{% trans "Profile details" %}</h2>
+        <p>{% trans "Your username and email are managed separately for account security." %}</p>
+      </div>
+
+      <div class="profile-form-grid">
+        <div class="profile-field">
+          <label for="{{ form.first_name.id_for_label }}">{% trans "First name" %}</label>
+          {{ form.first_name }}
+          {% if form.first_name.errors %}<div class="profile-form-errors" role="alert">{{ form.first_name.errors }}</div>{% endif %}
+        </div>
+        <div class="profile-field">
+          <label for="{{ form.last_name.id_for_label }}">{% trans "Last name" %}</label>
+          {{ form.last_name }}
+          {% if form.last_name.errors %}<div class="profile-form-errors" role="alert">{{ form.last_name.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="profile-field">
+        <label for="{{ form.bio.id_for_label }}">{% trans "Bio" %}</label>
+        {{ form.bio }}
+        <small>{% trans "Up to 500 characters." %}</small>
+        {% if form.bio.errors %}<div class="profile-form-errors" role="alert">{{ form.bio.errors }}</div>{% endif %}
+      </div>
+
+      <div class="profile-field">
+        <label for="{{ form.website.id_for_label }}">{% trans "Website" %}</label>
+        {{ form.website }}
+        {% if form.website.errors %}<div class="profile-form-errors" role="alert">{{ form.website.errors }}</div>{% endif %}
+      </div>
+    </section>
+
+    <div class="profile-edit-actions">
+      <button type="submit" class="profile-btn profile-btn--primary">{% trans "Save changes" %}</button>
+      <a class="profile-btn" href="{% url 'profile' %}">{% trans "Cancel" %}</a>
+    </div>
+  </form>
+</section>
+{% endblock %}
