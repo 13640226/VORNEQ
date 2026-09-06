@@ -33,7 +33,11 @@ urlpatterns += i18n_patterns(
     path("accounts/", include("allauth.urls")),
     path(
         "library/",
-        RedirectView.as_view(pattern_name="marketplace:index", permanent=True),
+        RedirectView.as_view(
+            pattern_name="marketplace:index",
+            permanent=True,
+            query_string=True,
+        ),
         name="legacy_library_index",
     ),
     # Keep legacy detail/reader routes alive until Marketplace has explicit
