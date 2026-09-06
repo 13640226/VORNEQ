@@ -4,8 +4,8 @@ services:
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt && python manage.py compilemessages && DJANGO_SETTINGS_MODULE=config.settings_render python manage.py collectstatic --noinput
-    startCommand: DJANGO_SETTINGS_MODULE=config.settings_render python manage.py migrate --noinput && gunicorn config.wsgi:application
-    healthCheckPath: /fa/
+    startCommand: DJANGO_SETTINGS_MODULE=config.settings_render python manage.py migration_preflight && DJANGO_SETTINGS_MODULE=config.settings_render python manage.py migrate --noinput && gunicorn config.wsgi:application
+    healthCheckPath: /health/
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings_render
@@ -18,4 +18,16 @@ services:
       - key: DJANGO_CSRF_TRUSTED_ORIGINS
         value: https://saman-kherad-staging.onrender.com
       - key: DATABASE_URL
+        sync: false
+      - key: USE_OBJECT_STORAGE
+        value: "False"
+      - key: OBJECT_STORAGE_BUCKET
+        sync: false
+      - key: OBJECT_STORAGE_ENDPOINT_URL
+        sync: false
+      - key: OBJECT_STORAGE_REGION
+        sync: false
+      - key: OBJECT_STORAGE_ACCESS_KEY_ID
+        sync: false
+      - key: OBJECT_STORAGE_SECRET_ACCESS_KEY
         sync: false

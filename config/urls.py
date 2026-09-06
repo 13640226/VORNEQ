@@ -10,6 +10,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from config.health import health_check
 from config.views import home, profile
 
 
@@ -18,6 +19,11 @@ from config.views import home, profile
 # ============================================================
 
 urlpatterns = [
+    path(
+        "health/",
+        health_check,
+        name="health",
+    ),
     path(
         "i18n/",
         include("django.conf.urls.i18n"),
