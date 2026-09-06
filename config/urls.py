@@ -40,6 +40,10 @@ urlpatterns = [
         "api/media/",
         include("apps.media.urls"),
     ),
+    path(
+        "api/search/",
+        include("apps.search.urls"),
+    ),
 ]
 
 
