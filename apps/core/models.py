@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 
 
@@ -92,8 +93,8 @@ class ReputationHistory(models.Model):
 class ContextualReputation(models.Model):
     """Method- and domain-scoped reputation projection.
 
-    The score is intentionally neutral in this phase. Verification submission
-    contributes activity/sample history only; it does not imply accuracy.
+    Verification activity and scored quality signals are recorded as immutable
+    events. This row is only the current projection of those events.
     """
 
     user = models.ForeignKey(
@@ -136,65 +137,6 @@ class ContextualReputation(models.Model):
         return f"{self.user_id}:{self.domain}:{self.verification_method_id}"
 
 
-class ContextualReputationEvent(models.Model):
-    """Append-only evidence-backed activity event for contextual reputation."""
-
-    class EventType(models.TextChoices):
-        VERIFICATION_SUBMITTED = "verification_submitted", "Verification submitted"
-
-    contextual_reputation = models.ForeignKey(
-        ContextualReputation,
-        on_delete=models.PROTECT,
-        related_name="events",
-    )
-    verification_result = models.ForeignKey(
-        "verification.VerificationResult",
-        on_delete=models.PROTECT,
-        related_name="reputation_events",
-    )
-    event_type = models.CharField(
-        max_length=50,
-        choices=EventType.choices,
-        default=EventType.VERIFICATION_SUBMITTED,
-    )
-    metadata = models.JSONField(default=dict, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["-created_at", "-id"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["contextual_reputation", "verification_result", "event_type"],
-                name="core_ctx_rep_event_unique",
-            )
-        ]
-        indexes = [
-            models.Index(
-                fields=["contextual_reputation", "created_at"],
-                name="core_ctx_rep_event_time_idx",
-            ),
-            models.Index(
-                fields=["verification_result"],
-                name="core_ctx_rep_result_idx",
-            ),
-        ]
-
-    def save(self, *args, **kwargs):
-        if not self._state.adding:
-            raise RuntimeError(
-                "ContextualReputationEvent is append-only and cannot be updated."
-            )
-        return super().save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        raise RuntimeError(
-            "ContextualReputationEvent is append-only and cannot be deleted."
-        )
-
-    def __str__(self):
-        return f"{self.contextual_reputation_id}:{self.event_type}:{self.verification_result_id}"
-
-
 class QualitySignal(models.Model):
     """Append-only quality assessment signal for one VerificationResult.
 
@@ -217,12 +159,22 @@ class QualitySignal(models.Model):
         )
         CONSENSUS = "consensus", "Consensus"
 
+    class Direction(models.TextChoices):
+        SUPPORTS_RESULT = "supports_result", "Supports result"
+        CONTRADICTS_RESULT = "contradicts_result", "Contradicts result"
+        INCONCLUSIVE = "inconclusive", "Inconclusive"
+
     verification_result = models.ForeignKey(
         "verification.VerificationResult",
         on_delete=models.PROTECT,
         related_name="quality_signals",
     )
     signal_type = models.CharField(max_length=50, choices=SignalType.choices)
+    direction = models.CharField(
+        max_length=30,
+        choices=Direction.choices,
+        default=Direction.INCONCLUSIVE,
+    )
     assessor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -293,6 +245,136 @@ class QualitySignal(models.Model):
 
     def __str__(self):
         return f"{self.signal_type}:{self.source_ref}:{self.is_eligible}"
+
+
+class ScoringPolicy(models.Model):
+    """Immutable, versioned interpretation policy for contextual reputation."""
+
+    domain = models.SlugField(max_length=100)
+    verification_method = models.ForeignKey(
+        "verification.VerificationMethod",
+        on_delete=models.PROTECT,
+        related_name="scoring_policies",
+    )
+    version = models.CharField(max_length=40)
+    active = models.BooleanField(default=False)
+    direction_weights = models.JSONField(default=dict)
+    base_weight = models.FloatField(default=1.0)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["domain", "verification_method_id", "version"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["domain", "verification_method", "version"],
+                name="core_score_policy_scope_version_unique",
+            )
+        ]
+        indexes = [
+            models.Index(
+                fields=["domain", "verification_method", "version"],
+                name="core_score_policy_scope_idx",
+            )
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise RuntimeError("ScoringPolicy is immutable; create a new version instead.")
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise RuntimeError("ScoringPolicy is immutable and cannot be deleted.")
+
+    def __str__(self):
+        return f"{self.domain}:{self.verification_method_id}:{self.version}"
+
+
+class ContextualReputationEvent(models.Model):
+    """Append-only audit event for contextual reputation activity and scoring."""
+
+    class EventType(models.TextChoices):
+        VERIFICATION_SUBMITTED = "verification_submitted", "Verification submitted"
+        SCORE_APPLIED = "score_applied", "Score applied"
+
+    contextual_reputation = models.ForeignKey(
+        ContextualReputation,
+        on_delete=models.PROTECT,
+        related_name="events",
+    )
+    verification_result = models.ForeignKey(
+        "verification.VerificationResult",
+        on_delete=models.PROTECT,
+        related_name="reputation_events",
+    )
+    quality_signal = models.ForeignKey(
+        QualitySignal,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="reputation_events",
+    )
+    scoring_policy = models.ForeignKey(
+        ScoringPolicy,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="reputation_events",
+    )
+    event_type = models.CharField(
+        max_length=50,
+        choices=EventType.choices,
+        default=EventType.VERIFICATION_SUBMITTED,
+    )
+    old_score = models.FloatField(null=True, blank=True)
+    delta = models.FloatField(null=True, blank=True)
+    new_score = models.FloatField(null=True, blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["contextual_reputation", "verification_result", "event_type"],
+                condition=Q(event_type="verification_submitted"),
+                name="core_ctx_rep_activity_unique",
+            ),
+            models.UniqueConstraint(
+                fields=["contextual_reputation", "quality_signal", "scoring_policy"],
+                condition=Q(event_type="score_applied"),
+                name="core_ctx_rep_score_event_unique",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["contextual_reputation", "created_at"],
+                name="core_ctx_rep_event_time_idx",
+            ),
+            models.Index(
+                fields=["verification_result"],
+                name="core_ctx_rep_result_idx",
+            ),
+            models.Index(
+                fields=["quality_signal", "scoring_policy"],
+                name="core_ctx_rep_score_signal_idx",
+            ),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise RuntimeError(
+                "ContextualReputationEvent is append-only and cannot be updated."
+            )
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise RuntimeError(
+            "ContextualReputationEvent is append-only and cannot be deleted."
+        )
+
+    def __str__(self):
+        return f"{self.contextual_reputation_id}:{self.event_type}:{self.verification_result_id}"
 
 
 class Entitlement(models.Model):
