@@ -383,7 +383,7 @@ class ContextualReputationEvent(models.Model):
 
 
 class Entitlement(models.Model):
-    """Proof of a user's right to access a digital product."""
+    """Proof of a user's right to access a digital product during migration."""
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -393,6 +393,20 @@ class Entitlement(models.Model):
     product = models.ForeignKey(
         "marketplace.Product",
         on_delete=models.CASCADE,
+        related_name="entitlements",
+    )
+    identity = models.ForeignKey(
+        "core.Identity",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="entitlements",
+    )
+    artifact = models.ForeignKey(
+        "core.Artifact",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
         related_name="entitlements",
     )
     granted_at = models.DateTimeField(auto_now_add=True)
@@ -406,6 +420,18 @@ class Entitlement(models.Model):
                 fields=["user", "product"],
                 name="core_ent_user_product_unique",
             ),
+            models.UniqueConstraint(
+                fields=["identity", "artifact"],
+                condition=Q(identity__isnull=False, artifact__isnull=False),
+                name="core_ent_identity_artifact_unique",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(identity__isnull=True, artifact__isnull=True)
+                    | Q(identity__isnull=False, artifact__isnull=False)
+                ),
+                name="core_ent_canonical_pair_complete",
+            ),
         ]
         indexes = [
             models.Index(
@@ -413,10 +439,21 @@ class Entitlement(models.Model):
                 name="core_ent_user_prod_active_idx",
             ),
             models.Index(
+                fields=["identity", "artifact", "is_active"],
+                name="core_ent_id_art_active_idx",
+            ),
+            models.Index(
                 fields=["expires_at"],
                 name="core_ent_expires_idx",
             ),
         ]
+
+    def clean(self):
+        super().clean()
+        if (self.identity_id is None) != (self.artifact_id is None):
+            raise ValidationError(
+                "Canonical entitlement references must be provided together or both omitted."
+            )
 
     def is_valid(self):
         if not self.is_active:
