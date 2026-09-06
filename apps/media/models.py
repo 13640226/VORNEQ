@@ -50,3 +50,50 @@ class MediaAsset(models.Model):
 
     def __str__(self):
         return self.title or f"{self.media_type}:{self.id}"
+
+
+class MediaEmbedding(models.Model):
+    """Derived, rebuildable similarity data for a MediaAsset.
+
+    This is operational discovery infrastructure. It is not Evidence,
+    Verification, Provenance, Reputation, or a canonical trust record.
+    """
+
+    media_asset = models.ForeignKey(
+        MediaAsset,
+        on_delete=models.CASCADE,
+        related_name="similarity_embeddings",
+    )
+    embedding_policy = models.CharField(max_length=200)
+    provider = models.CharField(max_length=100)
+    model = models.CharField(max_length=120)
+    model_version = models.CharField(max_length=120)
+    dimensions = models.PositiveIntegerField()
+    vector = models.JSONField()
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["media_asset", "embedding_policy"],
+                name="uniq_media_embedding_policy",
+            )
+        ]
+        indexes = [
+            models.Index(fields=["embedding_policy"], name="media_embed_policy_idx"),
+        ]
+
+    def clean(self):
+        super().clean()
+        if not isinstance(self.vector, list) or not self.vector:
+            raise ValidationError({"vector": "Embedding vector must be a non-empty list."})
+        if len(self.vector) != self.dimensions:
+            raise ValidationError(
+                {"dimensions": "Embedding dimensions must match the stored vector length."}
+            )
+        if any(not isinstance(value, (int, float)) for value in self.vector):
+            raise ValidationError({"vector": "Embedding vector values must be numeric."})
+
+    def __str__(self):
+        return f"{self.media_asset_id}:{self.embedding_policy}"
