@@ -1,4 +1,9 @@
+import uuid
+
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
@@ -422,3 +427,191 @@ class Entitlement(models.Model):
 
     def __str__(self):
         return f"{self.user_id} -> product:{self.product_id}"
+
+
+class Artifact(models.Model):
+    """Stable Core registry identity for a vertical artifact.
+
+    Domain-specific content remains in Product, LibraryItem, and future vertical
+    models. Registration alone does not imply publication or trustworthiness.
+    """
+
+    class Kind(models.TextChoices):
+        PRODUCT = "product", "Product"
+        LIBRARY_ITEM = "library_item", "Library item"
+        OTHER = "other", "Other"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    kind = models.CharField(max_length=40, choices=Kind.choices, default=Kind.OTHER)
+    is_active = models.BooleanField(default=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+        indexes = [
+            models.Index(fields=["kind", "is_active"], name="core_art_kind_active_idx"),
+        ]
+
+    def __str__(self):
+        return f"artifact:{self.id}:{self.kind}"
+
+
+class ArtifactBinding(models.Model):
+    """Transitional binding from a canonical Artifact to one vertical object."""
+
+    ALLOWED_TARGETS = {
+        ("marketplace", "product"),
+        ("library", "libraryitem"),
+    }
+
+    artifact = models.OneToOneField(
+        Artifact,
+        on_delete=models.PROTECT,
+        related_name="binding",
+    )
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.PROTECT,
+        related_name="core_artifact_bindings",
+    )
+    object_id = models.CharField(max_length=255)
+    content_object = GenericForeignKey("content_type", "object_id")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="artifact_bindings_created",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["content_type", "object_id"],
+                name="core_art_binding_target_unique",
+            )
+        ]
+        indexes = [
+            models.Index(
+                fields=["content_type", "object_id"],
+                name="core_art_binding_target_idx",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        target = (self.content_type.app_label, self.content_type.model)
+        if target not in self.ALLOWED_TARGETS:
+            raise ValidationError({"content_type": "Unsupported artifact binding target."})
+        try:
+            self.content_type.get_object_for_this_type(pk=self.object_id)
+        except (ValueError, TypeError, self.content_type.model_class().DoesNotExist):
+            raise ValidationError({"object_id": "Bound object does not exist."})
+
+    def __str__(self):
+        return f"{self.artifact_id} -> {self.content_type.app_label}.{self.content_type.model}:{self.object_id}"
+
+
+class Identity(models.Model):
+    """Canonical trust-actor identity, separate from authentication."""
+
+    class Kind(models.TextChoices):
+        HUMAN = "human", "Human"
+        ORGANIZATION = "organization", "Organization"
+        AGENT = "agent", "AI agent"
+        SYSTEM = "system", "System/service"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    kind = models.CharField(max_length=30, choices=Kind.choices)
+    display_name = models.CharField(max_length=200)
+    is_active = models.BooleanField(default=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["display_name", "id"]
+        indexes = [
+            models.Index(fields=["kind", "is_active"], name="core_identity_kind_active_idx"),
+        ]
+
+    def __str__(self):
+        return f"{self.display_name} ({self.kind})"
+
+
+class UserIdentity(models.Model):
+    """Typed binding between Django authentication and a human Identity."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="identity_binding",
+    )
+    identity = models.OneToOneField(
+        Identity,
+        on_delete=models.PROTECT,
+        related_name="user_binding",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        super().clean()
+        if self.identity_id and self.identity.kind != Identity.Kind.HUMAN:
+            raise ValidationError({"identity": "UserIdentity requires a human Identity."})
+
+    def __str__(self):
+        return f"user:{self.user_id} -> identity:{self.identity_id}"
+
+
+class ArtifactIdentityRole(models.Model):
+    """Explicit role of an Identity in relation to an Artifact."""
+
+    class Role(models.TextChoices):
+        AUTHOR = "author", "Author"
+        SELLER = "seller", "Seller"
+        CREATOR = "creator", "Creator"
+        PUBLISHER = "publisher", "Publisher"
+        OWNER = "owner", "Owner"
+        CONTRIBUTOR = "contributor", "Contributor"
+
+    artifact = models.ForeignKey(
+        Artifact,
+        on_delete=models.PROTECT,
+        related_name="identity_roles",
+    )
+    identity = models.ForeignKey(
+        Identity,
+        on_delete=models.PROTECT,
+        related_name="artifact_roles",
+    )
+    role = models.CharField(max_length=30, choices=Role.choices)
+    is_primary = models.BooleanField(default=False)
+    valid_from = models.DateTimeField(default=timezone.now)
+    valid_until = models.DateTimeField(null=True, blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["artifact", "identity", "role"],
+                name="core_art_identity_role_unique",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["artifact", "role"], name="core_art_role_artifact_idx"),
+            models.Index(fields=["identity", "role"], name="core_art_role_identity_idx"),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.valid_until and self.valid_until <= self.valid_from:
+            raise ValidationError({"valid_until": "valid_until must be after valid_from."})
+
+    def __str__(self):
+        return f"{self.identity_id}:{self.role}:{self.artifact_id}"
