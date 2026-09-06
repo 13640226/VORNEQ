@@ -3,6 +3,33 @@
    Palette overrides only. Structural design tokens remain in tokens.css.
    ========================================================== */
 
+[data-theme="vorneq"] {
+  --color-bg-page: #f7f8fa;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-text-primary: #172033;
+  --color-text-secondary: #667085;
+  --color-text-muted: #98a2b3;
+  --color-text-disabled: #b0b8c4;
+  --color-border: #e4e7ec;
+  --color-border-strong: #d0d5dd;
+  --color-accent: #356ae6;
+  --color-accent-hover: #2a56c4;
+  --color-accent-muted: #5f7fd4;
+  --color-accent-subtle: rgba(53, 106, 230, 0.08);
+  --color-accent-border: rgba(53, 106, 230, 0.20);
+  --color-text-on-accent: #ffffff;
+  --color-focus: #356ae6;
+  --color-focus-ring: rgba(53, 106, 230, 0.25);
+  --color-editorial: #8b6e3c;
+  --color-editorial-subtle: #f7f2e9;
+  --color-overlay: rgba(23, 32, 51, 0.52);
+  --color-bg-hover: rgba(23, 32, 51, 0.045);
+  --shadow-low: 0 1px 2px rgba(23, 32, 51, 0.04);
+  --shadow-medium: 0 4px 12px rgba(23, 32, 51, 0.06);
+  --shadow-high: 0 12px 40px rgba(23, 32, 51, 0.08);
+}
+
 [data-theme="blue"] {
   --color-bg-page: #0b1a2e;
   --color-bg-surface: #12243a;
