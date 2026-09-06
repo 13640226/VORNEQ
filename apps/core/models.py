@@ -96,16 +96,37 @@ class ReputationHistory(models.Model):
 
 
 class ContextualReputation(models.Model):
-    """Method- and domain-scoped reputation projection.
+    """Method-, role-, and domain-scoped reputation projection.
 
-    Verification activity and scored quality signals are recorded as immutable
-    events. This row is only the current projection of those events.
+    ``user`` remains the required legacy subject during the staged migration.
+    ``identity`` is the canonical subject when a pre-existing UserIdentity binding
+    can be resolved. Verification activity and scored quality signals remain
+    immutable events; this row is only their current projection.
     """
+
+    class ActorRole(models.TextChoices):
+        VERIFIER = "verifier", "Verifier"
+        SELLER = "seller", "Seller"
+        CREATOR = "creator", "Creator"
+        PUBLISHER = "publisher", "Publisher"
+        AUTHOR = "author", "Author"
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="contextual_reputations",
+    )
+    identity = models.ForeignKey(
+        "core.Identity",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="contextual_reputations",
+    )
+    actor_role = models.CharField(
+        max_length=20,
+        choices=ActorRole.choices,
+        default=ActorRole.VERIFIER,
     )
     domain = models.SlugField(max_length=100)
     verification_method = models.ForeignKey(
@@ -125,12 +146,21 @@ class ContextualReputation(models.Model):
             models.UniqueConstraint(
                 fields=["user", "domain", "verification_method"],
                 name="core_ctx_rep_user_domain_method_unique",
-            )
+            ),
+            models.UniqueConstraint(
+                fields=["identity", "actor_role", "domain", "verification_method"],
+                condition=Q(identity__isnull=False),
+                name="core_ctx_rep_identity_role_domain_method_unique",
+            ),
         ]
         indexes = [
             models.Index(
                 fields=["user", "domain"],
                 name="core_ctx_rep_user_domain_idx",
+            ),
+            models.Index(
+                fields=["identity", "actor_role"],
+                name="core_ctx_rep_identity_role_idx",
             ),
             models.Index(
                 fields=["verification_method", "last_event_at"],
@@ -139,7 +169,11 @@ class ContextualReputation(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user_id}:{self.domain}:{self.verification_method_id}"
+        subject = self.identity_id or self.user_id
+        return (
+            f"{subject}:{self.actor_role}:{self.domain}:"
+            f"{self.verification_method_id}"
+        )
 
 
 class QualitySignal(models.Model):
