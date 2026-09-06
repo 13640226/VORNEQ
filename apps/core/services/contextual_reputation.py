@@ -3,16 +3,26 @@ from django.db import transaction
 from django.db.models import F
 from django.utils.text import slugify
 
-from apps.core.models import ContextualReputation, ContextualReputationEvent
+from apps.core.models import (
+    ContextualReputation,
+    ContextualReputationEvent,
+    UserIdentity,
+)
 from apps.verification.models import VerificationRequest, VerificationResult
 
 
 @transaction.atomic
 def record_verification_activity(*, verification_result, domain, metadata=None):
-    """Record one idempotent verification activity event.
+    """Record one idempotent verifier reputation activity event.
 
-    This service deliberately does not change reputation score. A submitted
-    outcome is an assertion, not proof of verifier accuracy.
+    During the staged Identity migration, the legacy ``user`` subject remains
+    required. If that user already has a canonical UserIdentity binding, the
+    same projection row is dual-written with ``identity`` and the explicit
+    ``verifier`` actor role. This service never creates an Identity and never
+    infers another actor role.
+
+    A submitted verification outcome remains an assertion, not proof of
+    verifier accuracy, so this service does not change reputation score.
     """
 
     if not isinstance(verification_result, VerificationResult):
@@ -30,12 +40,45 @@ def record_verification_activity(*, verification_result, domain, metadata=None):
     if not normalized_domain:
         raise ValidationError("A non-empty reputation domain is required.")
 
+    user_identity = (
+        UserIdentity.objects.select_related("identity")
+        .filter(user_id=verification_result.verifier_id)
+        .first()
+    )
+    identity = user_identity.identity if user_identity else None
+
+    defaults = {
+        "score": 0.0,
+        "sample_count": 0,
+        "actor_role": ContextualReputation.ActorRole.VERIFIER,
+    }
+    if identity is not None:
+        defaults["identity"] = identity
+
     reputation, _ = ContextualReputation.objects.select_for_update().get_or_create(
         user_id=verification_result.verifier_id,
         domain=normalized_domain,
         verification_method=verification_result.request.method,
-        defaults={"score": 0.0, "sample_count": 0},
+        defaults=defaults,
     )
+
+    if reputation.actor_role != ContextualReputation.ActorRole.VERIFIER:
+        raise ValidationError(
+            "Verifier activity cannot be written to a reputation projection "
+            "with a different actor role."
+        )
+
+    if identity is not None:
+        if reputation.identity_id is None:
+            ContextualReputation.objects.filter(pk=reputation.pk).update(
+                identity=identity,
+                actor_role=ContextualReputation.ActorRole.VERIFIER,
+            )
+            reputation.refresh_from_db()
+        elif reputation.identity_id != identity.id:
+            raise ValidationError(
+                "Resolved UserIdentity conflicts with the reputation projection identity."
+            )
 
     event, created = ContextualReputationEvent.objects.get_or_create(
         contextual_reputation=reputation,
