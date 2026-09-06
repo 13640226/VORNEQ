@@ -1,22 +1,11 @@
 /* ==========================================================
    VORNEQ DISCOVERY HOME
-   PR-D — Specification v1.2
+   Page-specific presentation on top of Global Experience System.
    ========================================================== */
 
 .discovery-home {
   min-height: 100vh;
-  color: var(--color-text-primary);
-  background: var(--color-bg-page);
-  font-family: var(--font-family-ui);
-}
-
-html[dir="rtl"] .discovery-home {
-  font-family: var(--font-family-fa);
-}
-
-.discovery-shell {
-  width: min(var(--content-width, 1200px), calc(100% - 48px));
-  margin-inline: auto;
+  background: var(--surface-page);
 }
 
 /* ==========================================================
@@ -30,7 +19,7 @@ html[dir="rtl"] .discovery-home {
   border-bottom: 1px solid var(--color-border);
   background:
     radial-gradient(circle at 50% -20%, var(--color-accent-subtle), transparent 48rem),
-    linear-gradient(180deg, var(--color-bg-surface), var(--color-bg-page));
+    linear-gradient(180deg, var(--surface-subtle), var(--surface-page));
 }
 
 .discovery-hero::after {
@@ -67,12 +56,10 @@ html[dir="rtl"] .discovery-home {
 .discovery-hero__title {
   max-width: 13ch;
   margin: 0;
-  color: var(--color-text-primary);
   font-size: clamp(2.5rem, 6vw, 5.25rem);
   font-weight: var(--font-weight-display);
   line-height: 0.98;
   letter-spacing: -0.045em;
-  text-wrap: balance;
 }
 
 html[dir="rtl"] .discovery-hero__title {
@@ -86,7 +73,6 @@ html[dir="rtl"] .discovery-hero__title {
   color: var(--color-text-secondary);
   font-size: clamp(1rem, 2vw, 1.2rem);
   line-height: 1.7;
-  text-wrap: pretty;
 }
 
 /* ==========================================================
@@ -108,7 +94,7 @@ html[dir="rtl"] .discovery-hero__title {
   padding: 6px 6px 6px var(--space-4);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-lg);
-  background: var(--color-bg-elevated);
+  background: var(--surface-raised);
   box-shadow: var(--shadow-medium);
   transition:
     border-color var(--motion-duration-fast) var(--motion-easing-standard),
@@ -137,7 +123,6 @@ html[dir="rtl"] .discovery-search__wrapper {
   border: 0;
   outline: 0;
   padding: 0;
-  color: var(--color-text-primary);
   background: transparent;
   font: inherit;
   font-size: var(--font-size-body);
@@ -158,25 +143,22 @@ html[dir="rtl"] .discovery-search__wrapper {
   font: inherit;
   font-size: var(--font-size-small);
   font-weight: 650;
-  cursor: pointer;
-  transition:
-    background var(--motion-duration-fast) var(--motion-easing-standard),
-    transform var(--motion-duration-fast) var(--motion-easing-standard);
 }
 
-.discovery-search__button:hover {
-  background: var(--color-accent-hover);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .discovery-search__button:hover {
+    background: var(--color-accent-hover);
+  }
 }
 
 /* ==========================================================
    FILTERS
+   Geometry is provided by the Global Experience System.
    ========================================================== */
 
 .discovery-filters {
   width: 100%;
   margin-top: var(--space-4);
-  overflow-x: auto;
   scrollbar-width: none;
 }
 
@@ -187,7 +169,6 @@ html[dir="rtl"] .discovery-search__wrapper {
 .discovery-filters__list {
   display: flex;
   justify-content: center;
-  gap: var(--space-2);
   min-width: max-content;
   margin: 0;
   padding: 0;
@@ -198,26 +179,12 @@ html[dir="rtl"] .discovery-search__wrapper {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 36px;
-  padding-inline: var(--space-4);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
   color: var(--color-text-secondary);
-  background: var(--color-bg-elevated);
+  background: var(--surface-raised);
   font-size: var(--font-size-small);
   font-weight: 550;
   text-decoration: none;
-  white-space: nowrap;
-  transition:
-    color var(--motion-duration-fast) var(--motion-easing-standard),
-    background var(--motion-duration-fast) var(--motion-easing-standard),
-    border-color var(--motion-duration-fast) var(--motion-easing-standard);
-}
-
-.discovery-filters__link:hover {
-  color: var(--color-text-primary);
-  border-color: var(--color-border-strong);
-  background: var(--color-bg-surface);
 }
 
 .discovery-filters__link.is-active {
@@ -226,8 +193,22 @@ html[dir="rtl"] .discovery-search__wrapper {
   background: var(--color-accent);
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .discovery-filters__link:hover {
+    color: var(--color-text-primary);
+    border-color: var(--color-border-strong);
+    background: var(--surface-subtle);
+  }
+
+  .discovery-filters__link.is-active:hover {
+    color: var(--color-text-on-accent);
+    border-color: var(--color-accent-hover);
+    background: var(--color-accent-hover);
+  }
+}
+
 /* ==========================================================
-   SHARED SECTION LANGUAGE
+   SECTION LANGUAGE
    ========================================================== */
 
 .discovery-featured,
@@ -237,11 +218,6 @@ html[dir="rtl"] .discovery-search__wrapper {
 
 .discovery-featured {
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg-page);
-}
-
-.discovery-results {
-  background: var(--color-bg-page);
 }
 
 .discovery-section-heading,
@@ -264,7 +240,6 @@ html[dir="rtl"] .discovery-search__wrapper {
 .discovery-results__header h2,
 .discovery-empty h2 {
   margin: 0;
-  color: var(--color-text-primary);
   font-size: clamp(1.8rem, 4vw, 2.9rem);
   line-height: 1.12;
   letter-spacing: -0.03em;
@@ -284,6 +259,7 @@ html[dir="rtl"] .discovery-empty h2 {
 
 /* ==========================================================
    FEATURED CARDS
+   Shared surface/radius/shadow comes from the global system.
    ========================================================== */
 
 .discovery-featured__grid {
@@ -295,35 +271,20 @@ html[dir="rtl"] .discovery-empty h2 {
 .discovery-card {
   min-width: 0;
   overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-elevated);
-  box-shadow: var(--shadow-low);
-  transition:
-    transform var(--motion-duration-base) var(--motion-easing-standard),
-    box-shadow var(--motion-duration-base) var(--motion-easing-standard),
-    border-color var(--motion-duration-base) var(--motion-easing-standard);
-}
-
-.discovery-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-accent-border);
-  box-shadow: var(--shadow-medium);
 }
 
 .discovery-card--featured {
-  background: linear-gradient(180deg, var(--color-bg-elevated), var(--color-bg-surface));
+  background: linear-gradient(180deg, var(--surface-raised), var(--surface-subtle));
 }
 
 .discovery-card__media {
   display: block;
-  background: var(--color-bg-surface);
+  background: var(--surface-subtle);
 }
 
 .discovery-card__image {
   width: 100%;
   aspect-ratio: 16 / 10;
-  display: block;
   object-fit: cover;
 }
 
@@ -340,7 +301,7 @@ html[dir="rtl"] .discovery-empty h2 {
   padding-inline: var(--space-2);
   border-radius: var(--radius-pill);
   color: var(--color-text-tertiary, var(--color-text-muted));
-  background: var(--color-bg-surface);
+  background: var(--surface-subtle);
   font-size: var(--font-size-caption);
   font-weight: 650;
   letter-spacing: 0.02em;
@@ -356,11 +317,6 @@ html[dir="rtl"] .discovery-empty h2 {
 .discovery-feed-item__title a {
   color: var(--color-text-primary);
   text-decoration: none;
-}
-
-.discovery-card__title a:hover,
-.discovery-feed-item__title a:hover {
-  color: var(--color-accent-hover);
 }
 
 .discovery-card__description {
@@ -391,7 +347,6 @@ html[dir="rtl"] .discovery-empty h2 {
 }
 
 .discovery-card__price {
-  color: var(--color-text-primary);
   font-size: var(--font-size-small);
   font-weight: 700;
 }
@@ -402,10 +357,16 @@ html[dir="rtl"] .discovery-empty h2 {
   align-items: center;
   padding-inline: var(--space-2);
   border-radius: var(--radius-pill);
-  color: var(--color-text-primary);
-  background: var(--color-bg-surface);
+  background: var(--surface-subtle);
   font-size: var(--font-size-caption);
   font-weight: 650;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .discovery-card__title a:hover,
+  .discovery-feed-item__title a:hover {
+    color: var(--color-accent-hover);
+  }
 }
 
 /* ==========================================================
@@ -435,13 +396,12 @@ html[dir="rtl"] .discovery-empty h2 {
   align-self: start;
   overflow: hidden;
   border-radius: var(--radius-md);
-  background: var(--color-bg-surface);
+  background: var(--surface-subtle);
 }
 
 .discovery-feed-item__image {
   width: 100%;
   aspect-ratio: 4 / 3;
-  display: block;
   object-fit: cover;
 }
 
@@ -460,7 +420,6 @@ html[dir="rtl"] .discovery-empty h2 {
 
 .discovery-feed-item__title {
   margin: var(--space-2) 0 0;
-  color: var(--color-text-primary);
   font-size: clamp(1.05rem, 2vw, 1.35rem);
   line-height: 1.4;
 }
@@ -514,7 +473,7 @@ html[dir="rtl"] .discovery-empty h2 {
 
 .discovery-pagination__link,
 .discovery-empty__reset {
-  min-height: 40px;
+  min-height: var(--touch-target);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -522,32 +481,29 @@ html[dir="rtl"] .discovery-empty h2 {
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
   color: var(--color-text-primary);
-  background: var(--color-bg-elevated);
+  background: var(--surface-raised);
   font-size: var(--font-size-small);
   font-weight: 600;
   text-decoration: none;
-  transition:
-    color var(--motion-duration-fast) var(--motion-easing-standard),
-    border-color var(--motion-duration-fast) var(--motion-easing-standard),
-    background var(--motion-duration-fast) var(--motion-easing-standard);
 }
 
-.discovery-pagination__link:hover,
-.discovery-empty__reset:hover {
-  color: var(--color-accent-hover);
-  border-color: var(--color-accent-border);
-  background: var(--color-accent-subtle);
+@media (hover: hover) and (pointer: fine) {
+  .discovery-pagination__link:hover,
+  .discovery-empty__reset:hover {
+    color: var(--color-accent-hover);
+    border-color: var(--color-accent-border);
+    background: var(--color-accent-subtle);
+  }
 }
 
 /* ==========================================================
    EMPTY STATE
+   Core geometry is provided by the global system.
    ========================================================== */
 
 .discovery-empty {
   width: min(680px, 100%);
   margin-inline: auto;
-  padding-block: var(--space-8);
-  text-align: center;
 }
 
 .discovery-empty h2 {
@@ -572,10 +528,6 @@ html[dir="rtl"] .discovery-empty h2 {
 }
 
 @media (max-width: 768px) {
-  .discovery-shell {
-    width: min(100% - 28px, var(--content-width, 1200px));
-  }
-
   .discovery-hero {
     padding-block: var(--space-7) var(--space-6);
   }
@@ -602,14 +554,8 @@ html[dir="rtl"] .discovery-empty h2 {
     width: 100%;
   }
 
-  .discovery-filters {
-    overscroll-behavior-inline: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-
   .discovery-filters__list {
     justify-content: flex-start;
-    flex-wrap: nowrap;
   }
 
   .discovery-featured,
@@ -651,10 +597,6 @@ html[dir="rtl"] .discovery-empty h2 {
   .discovery-hero__title {
     font-size: var(--font-size-h2);
   }
-
-  .discovery-empty {
-    padding-block: var(--space-6);
-  }
 }
 
 @media (max-width: 440px) {
@@ -668,31 +610,5 @@ html[dir="rtl"] .discovery-empty h2 {
 
   .discovery-feed-item__image {
     aspect-ratio: 16 / 9;
-  }
-}
-
-/* ==========================================================
-   ACCESSIBILITY / MOTION
-   ========================================================== */
-
-.discovery-search__button:focus-visible,
-.discovery-filters__link:focus-visible,
-.discovery-card__title a:focus-visible,
-.discovery-feed-item__title a:focus-visible,
-.discovery-pagination__link:focus-visible,
-.discovery-empty__reset:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 3px;
-  box-shadow: 0 0 0 3px var(--color-focus-ring);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .discovery-search__wrapper,
-  .discovery-search__button,
-  .discovery-filters__link,
-  .discovery-card,
-  .discovery-pagination__link,
-  .discovery-empty__reset {
-    transition: none;
   }
 }

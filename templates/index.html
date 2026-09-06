@@ -50,15 +50,15 @@
         </div>
       </form>
 
-      <nav class="discovery-filters" aria-label="{% trans 'Filter by content type' %}">
-        <ul class="discovery-filters__list">
-          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=all" class="discovery-filters__link{% if current_type == 'all' %} is-active{% endif %}">{% trans "All" %}</a></li>
-          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=book" class="discovery-filters__link{% if current_type == 'book' %} is-active{% endif %}">{% trans "Books" %}</a></li>
-          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=article" class="discovery-filters__link{% if current_type == 'article' %} is-active{% endif %}">{% trans "Articles" %}</a></li>
-          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=document" class="discovery-filters__link{% if current_type == 'document' %} is-active{% endif %}">{% trans "Documents" %}</a></li>
-          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=audio" class="discovery-filters__link{% if current_type == 'audio' %} is-active{% endif %}">{% trans "Audio" %}</a></li>
-          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=product" class="discovery-filters__link{% if current_type == 'product' %} is-active{% endif %}">{% trans "Products" %}</a></li>
-          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=other" class="discovery-filters__link{% if current_type == 'other' %} is-active{% endif %}">{% trans "Other" %}</a></li>
+      <nav class="discovery-filters u-scroll-inline" aria-label="{% trans 'Filter by content type' %}">
+        <ul class="discovery-filters__list u-nowrap">
+          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=all" class="discovery-filters__link{% if current_type == 'all' %} is-active{% endif %}"{% if current_type == 'all' %} aria-current="page"{% endif %}>{% trans "All" %}</a></li>
+          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=book" class="discovery-filters__link{% if current_type == 'book' %} is-active{% endif %}"{% if current_type == 'book' %} aria-current="page"{% endif %}>{% trans "Books" %}</a></li>
+          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=article" class="discovery-filters__link{% if current_type == 'article' %} is-active{% endif %}"{% if current_type == 'article' %} aria-current="page"{% endif %}>{% trans "Articles" %}</a></li>
+          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=document" class="discovery-filters__link{% if current_type == 'document' %} is-active{% endif %}"{% if current_type == 'document' %} aria-current="page"{% endif %}>{% trans "Documents" %}</a></li>
+          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=audio" class="discovery-filters__link{% if current_type == 'audio' %} is-active{% endif %}"{% if current_type == 'audio' %} aria-current="page"{% endif %}>{% trans "Audio" %}</a></li>
+          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=product" class="discovery-filters__link{% if current_type == 'product' %} is-active{% endif %}"{% if current_type == 'product' %} aria-current="page"{% endif %}>{% trans "Products" %}</a></li>
+          <li><a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}type=other" class="discovery-filters__link{% if current_type == 'other' %} is-active{% endif %}"{% if current_type == 'other' %} aria-current="page"{% endif %}>{% trans "Other" %}</a></li>
         </ul>
       </nav>
     </div>
@@ -112,7 +112,7 @@
             <h2 id="results-title">
               {% if search_query %}{% blocktrans with query=search_query %}Results for “{{ query }}”{% endblocktrans %}{% else %}{% trans "Filtered discoveries" %}{% endif %}
             </h2>
-            <p class="discovery-results__count">{% blocktrans count counter=total_results %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}</p>
+            <p class="discovery-results__count" aria-live="polite">{% blocktrans count counter=total_results %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}</p>
           {% else %}
             <p class="discovery-section-heading__kicker">{% trans "Across VORNEQ" %}</p>
             <h2 id="results-title">{% trans "Latest discoveries" %}</h2>
