@@ -47,7 +47,7 @@ jobs:
         run: |
           python manage.py showmigrations --plan
 
-      - name: Profile search phases
+      - name: Profile production search path
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
           DJANGO_SETTINGS_MODULE: config.settings_render
@@ -71,12 +71,14 @@ jobs:
           rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
           if len(rows) != 4:
               raise SystemExit(f"Expected 4 profiler rows, found {len(rows)}")
-          required = {"count", "fetch", "merge", "total", "adapters"}
+          required = {"mode", "total", "avg_db_queries", "total_results"}
           for row in rows:
               missing = required - row.keys()
               if missing:
                   raise SystemExit(f"Profiler row missing fields: {sorted(missing)}")
-          print("Validated 4 search phase profiler rows.")
+              if row["mode"] != "production":
+                  raise SystemExit(f"Unexpected profiler mode: {row['mode']}")
+          print("Validated 4 production search profiler rows.")
           PY
 
       - name: Upload profiler results
