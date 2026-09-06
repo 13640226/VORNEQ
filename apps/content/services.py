@@ -19,10 +19,7 @@ def register_article_as_artifact(article: Article, author_identity: Identity, *,
     artifact, artifact_created = register_artifact(
         article,
         created_by=created_by,
-        metadata={
-            "content_domain": "article",
-            "title": article.title,
-        },
+        metadata={"content_domain": "article"},
     )
 
     role, role_created = ArtifactIdentityRole.objects.get_or_create(
