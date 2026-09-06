@@ -32,22 +32,25 @@
         <h2 id="avatar-title">{% trans "Profile photo" %}</h2>
         <p>{% trans "JPG, PNG or WebP. Maximum 2 MB and 4096 × 4096 pixels." %}</p>
       </div>
-      <div class="profile-avatar-editor">
-        <div class="profile-avatar profile-avatar--large" aria-hidden="true">
+      <div class="profile-avatar-editor" data-profile-avatar-editor data-initials="{{ profile_user.get_short_name|default:profile_user.username|slice:':2'|upper }}">
+        <div class="profile-avatar profile-avatar--large profile-avatar-editor__preview" aria-hidden="true" data-avatar-preview>
           {% if user_profile.avatar %}
-            <img class="profile-avatar__image" src="{% url 'profile_avatar' %}" alt="" width="112" height="112">
+            <img class="profile-avatar__image" src="{% url 'profile_avatar' %}" alt="" width="112" height="112" data-avatar-image>
           {% else %}
-            {{ profile_user.get_short_name|default:profile_user.username|slice:":2"|upper }}
+            <span data-avatar-fallback>{{ profile_user.get_short_name|default:profile_user.username|slice:":2"|upper }}</span>
           {% endif %}
         </div>
         <div class="profile-avatar-editor__controls">
-          <label for="{{ form.avatar.id_for_label }}">{% trans "Choose a new photo" %}</label>
-          {{ form.avatar }}
+          <div class="profile-avatar-editor__upload">
+            <label class="profile-avatar-editor__choose" for="{{ form.avatar.id_for_label }}">{% trans "Choose a new photo" %}</label>
+            {{ form.avatar }}
+            <span class="profile-avatar-editor__filename" data-avatar-filename aria-live="polite">{% trans "No new photo selected" %}</span>
+          </div>
           <div class="profile-avatar-editor__message">
             {% if form.avatar.errors %}<div class="profile-form-errors" role="alert">{{ form.avatar.errors }}</div>{% endif %}
           </div>
           {% if user_profile.avatar %}
-            <label class="profile-check" for="{{ form.remove_avatar.id_for_label }}">{{ form.remove_avatar }} <span>{% trans "Remove current photo" %}</span></label>
+            <label class="profile-check profile-check--remove" for="{{ form.remove_avatar.id_for_label }}">{{ form.remove_avatar }} <span>{% trans "Remove current photo" %}</span></label>
           {% endif %}
         </div>
       </div>
@@ -92,4 +95,9 @@
     </div>
   </form>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'js/profile-avatar.js' %}" defer></script>
 {% endblock %}
