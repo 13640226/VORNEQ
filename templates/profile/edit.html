@@ -44,7 +44,7 @@
           <div class="profile-avatar-editor__upload">
             <label class="profile-avatar-editor__choose" for="{{ form.avatar.id_for_label }}">{% trans "Choose a new photo" %}</label>
             {{ form.avatar }}
-            <span class="profile-avatar-editor__filename" data-avatar-filename aria-live="polite">{% trans "No new photo selected" %}</span>
+            <span class="profile-avatar-editor__filename" data-avatar-filename data-empty-label="{% trans 'No new photo selected' %}" aria-live="polite">{% trans "No new photo selected" %}</span>
           </div>
           <div class="profile-avatar-editor__message">
             {% if form.avatar.errors %}<div class="profile-form-errors" role="alert">{{ form.avatar.errors }}</div>{% endif %}
