@@ -6,6 +6,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/profile-edit.css' %}">
+<link rel="stylesheet" href="{% static 'css/profile-system.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -22,9 +23,9 @@
   <form class="profile-edit-form" method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
 
-    {% if form.non_field_errors %}
-      <div class="profile-form-errors" role="alert">{{ form.non_field_errors }}</div>
-    {% endif %}
+    <div class="profile-field__message">
+      {% if form.non_field_errors %}<div class="profile-form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+    </div>
 
     <section class="profile-edit-card" aria-labelledby="avatar-title">
       <div class="profile-edit-card__heading">
@@ -42,7 +43,9 @@
         <div class="profile-avatar-editor__controls">
           <label for="{{ form.avatar.id_for_label }}">{% trans "Choose a new photo" %}</label>
           {{ form.avatar }}
-          {% if form.avatar.errors %}<div class="profile-form-errors" role="alert">{{ form.avatar.errors }}</div>{% endif %}
+          <div class="profile-avatar-editor__message">
+            {% if form.avatar.errors %}<div class="profile-form-errors" role="alert">{{ form.avatar.errors }}</div>{% endif %}
+          </div>
           {% if user_profile.avatar %}
             <label class="profile-check" for="{{ form.remove_avatar.id_for_label }}">{{ form.remove_avatar }} <span>{% trans "Remove current photo" %}</span></label>
           {% endif %}
@@ -60,12 +63,12 @@
         <div class="profile-field">
           <label for="{{ form.first_name.id_for_label }}">{% trans "First name" %}</label>
           {{ form.first_name }}
-          {% if form.first_name.errors %}<div class="profile-form-errors" role="alert">{{ form.first_name.errors }}</div>{% endif %}
+          <div class="profile-field__message">{% if form.first_name.errors %}<div class="profile-form-errors" role="alert">{{ form.first_name.errors }}</div>{% endif %}</div>
         </div>
         <div class="profile-field">
           <label for="{{ form.last_name.id_for_label }}">{% trans "Last name" %}</label>
           {{ form.last_name }}
-          {% if form.last_name.errors %}<div class="profile-form-errors" role="alert">{{ form.last_name.errors }}</div>{% endif %}
+          <div class="profile-field__message">{% if form.last_name.errors %}<div class="profile-form-errors" role="alert">{{ form.last_name.errors }}</div>{% endif %}</div>
         </div>
       </div>
 
@@ -73,13 +76,13 @@
         <label for="{{ form.bio.id_for_label }}">{% trans "Bio" %}</label>
         {{ form.bio }}
         <small>{% trans "Up to 500 characters." %}</small>
-        {% if form.bio.errors %}<div class="profile-form-errors" role="alert">{{ form.bio.errors }}</div>{% endif %}
+        <div class="profile-field__message">{% if form.bio.errors %}<div class="profile-form-errors" role="alert">{{ form.bio.errors }}</div>{% endif %}</div>
       </div>
 
       <div class="profile-field">
         <label for="{{ form.website.id_for_label }}">{% trans "Website" %}</label>
         {{ form.website }}
-        {% if form.website.errors %}<div class="profile-form-errors" role="alert">{{ form.website.errors }}</div>{% endif %}
+        <div class="profile-field__message">{% if form.website.errors %}<div class="profile-form-errors" role="alert">{{ form.website.errors }}</div>{% endif %}</div>
       </div>
     </section>
 

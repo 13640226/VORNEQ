@@ -6,6 +6,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/profile-edit.css' %}">
+<link rel="stylesheet" href="{% static 'css/profile-system.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -70,17 +71,9 @@
           <article class="profile-list__item">
             <div>
               <h3><a href="{{ entitlement.product.get_absolute_url }}">{{ entitlement.product.title }}</a></h3>
-              <p>
-                {% if entitlement.expires_at %}
-                  {% blocktrans with date=entitlement.expires_at|date:"SHORT_DATE_FORMAT" %}Access until {{ date }}{% endblocktrans %}
-                {% else %}
-                  {% trans "Active access" %}
-                {% endif %}
-              </p>
+              <p>{% if entitlement.expires_at %}{% blocktrans with date=entitlement.expires_at|date:"SHORT_DATE_FORMAT" %}Access until {{ date }}{% endblocktrans %}{% else %}{% trans "Active access" %}{% endif %}</p>
             </div>
-            {% if entitlement.product.digital_file %}
-              <a class="profile-btn" href="{% url 'marketplace:download_product' entitlement.product.id %}">{% trans "Download" %}</a>
-            {% endif %}
+            {% if entitlement.product.digital_file %}<a class="profile-btn" href="{% url 'marketplace:download_product' entitlement.product.id %}">{% trans "Download" %}</a>{% endif %}
           </article>
         {% endfor %}
       </div>
@@ -90,65 +83,18 @@
   </section>
 
   <section id="products" class="profile-section" aria-labelledby="products-title">
-    <header class="profile-section__header">
-      <div>
-        <p class="profile-eyebrow">{% trans "Marketplace" %}</p>
-        <h2 id="products-title">{% trans "My products" %}</h2>
-      </div>
-      <a href="{% url 'marketplace:seller_dashboard' %}">{% trans "Seller dashboard" %}</a>
-    </header>
-    {% if seller_products %}
-      <div class="profile-grid">
-        {% for product in seller_products %}
-          <article class="profile-card">
-            <p class="profile-card__meta">{{ product.get_status_display }}</p>
-            <h3><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3>
-            <p>{{ product.short_description|default:product.description|truncatechars:140 }}</p>
-          </article>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="profile-empty"><p>{% trans "You have not created any marketplace products yet." %}</p></div>
-    {% endif %}
+    <header class="profile-section__header"><div><p class="profile-eyebrow">{% trans "Marketplace" %}</p><h2 id="products-title">{% trans "My products" %}</h2></div><a href="{% url 'marketplace:seller_dashboard' %}">{% trans "Seller dashboard" %}</a></header>
+    {% if seller_products %}<div class="profile-grid">{% for product in seller_products %}<article class="profile-card"><p class="profile-card__meta">{{ product.get_status_display }}</p><h3><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3><p>{{ product.short_description|default:product.description|truncatechars:140 }}</p></article>{% endfor %}</div>{% else %}<div class="profile-empty"><p>{% trans "You have not created any marketplace products yet." %}</p></div>{% endif %}
   </section>
 
   <section id="reputation" class="profile-section" aria-labelledby="reputation-title">
-    <header class="profile-section__header">
-      <div>
-        <p class="profile-eyebrow">{% trans "Contextual reputation" %}</p>
-        <h2 id="reputation-title">{% trans "Reputation" %}</h2>
-      </div>
-    </header>
+    <header class="profile-section__header"><div><p class="profile-eyebrow">{% trans "Contextual reputation" %}</p><h2 id="reputation-title">{% trans "Reputation" %}</h2></div></header>
     <p class="profile-note">{% trans "These scores are context-specific projections. They are not a global trust score and do not represent truth." %}</p>
-    {% if contextual_reputations %}
-      <div class="profile-table-wrap u-scroll-inline">
-        <table class="profile-table">
-          <thead><tr><th>{% trans "Domain" %}</th><th>{% trans "Method" %}</th><th>{% trans "Score" %}</th><th>{% trans "Samples" %}</th><th>{% trans "Last activity" %}</th></tr></thead>
-          <tbody>
-            {% for reputation in contextual_reputations %}
-              <tr>
-                <td>{{ reputation.domain }}</td>
-                <td>{{ reputation.verification_method.name }}</td>
-                <td>{{ reputation.score|floatformat:2 }}</td>
-                <td>{{ reputation.sample_count }}</td>
-                <td>{{ reputation.last_event_at|date:"SHORT_DATE_FORMAT"|default:"—" }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% else %}
-      <div class="profile-empty"><p>{% trans "No contextual reputation has been recorded yet." %}</p></div>
-    {% endif %}
+    {% if contextual_reputations %}<div class="profile-table-wrap u-scroll-inline"><table class="profile-table"><thead><tr><th>{% trans "Domain" %}</th><th>{% trans "Method" %}</th><th>{% trans "Score" %}</th><th>{% trans "Samples" %}</th><th>{% trans "Last activity" %}</th></tr></thead><tbody>{% for reputation in contextual_reputations %}<tr><td>{{ reputation.domain }}</td><td>{{ reputation.verification_method.name }}</td><td>{{ reputation.score|floatformat:2 }}</td><td>{{ reputation.sample_count }}</td><td>{{ reputation.last_event_at|date:"SHORT_DATE_FORMAT"|default:"—" }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="profile-empty"><p>{% trans "No contextual reputation has been recorded yet." %}</p></div>{% endif %}
   </section>
 
   <section id="settings" class="profile-section" aria-labelledby="settings-title">
-    <header class="profile-section__header">
-      <div>
-        <p class="profile-eyebrow">{% trans "Account controls" %}</p>
-        <h2 id="settings-title">{% trans "Settings" %}</h2>
-      </div>
-    </header>
+    <header class="profile-section__header"><div><p class="profile-eyebrow">{% trans "Account controls" %}</p><h2 id="settings-title">{% trans "Settings" %}</h2></div></header>
     <div class="profile-settings-grid">
       <a class="profile-settings-card" href="{% url 'profile_edit' %}"><strong>{% trans "Public profile" %}</strong><span>{% trans "Update your name, biography, website, and profile photo." %}</span></a>
       <a class="profile-settings-card" href="{% url 'account_email' %}"><strong>{% trans "Email addresses" %}</strong><span>{% trans "Manage verified email addresses for your account." %}</span></a>
