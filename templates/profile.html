@@ -15,7 +15,7 @@
     <div class="profile-identity">
       <div class="profile-avatar" aria-hidden="true">
         {% if profile_user.profile_data.avatar %}
-          <img class="profile-avatar__image" src="{% url 'profile_avatar' %}" alt="">
+          <img class="profile-avatar__image" src="{% url 'profile_avatar' %}" alt="" width="80" height="80">
         {% else %}
           {{ profile_user.get_short_name|default:profile_user.username|slice:":2"|upper }}
         {% endif %}
