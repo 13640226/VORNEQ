@@ -7,6 +7,8 @@ Development / Production aware configuration.
 import os
 from pathlib import Path
 
+from csp.constants import NONE, SELF, UNSAFE_INLINE
+
 
 # =============================================================================
 # PATHS
@@ -89,6 +91,7 @@ INSTALLED_APPS = [
 
     # Security
     "axes",
+    "csp",
 
     # Local applications
     "library",
@@ -109,6 +112,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "csp.middleware.CSPMiddleware",
 
     # Static files
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -373,6 +377,30 @@ ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
 
 
+# Native django-allauth rate limiting. These limits are cache-backed and are
+# intentionally separate from django-axes lockout handling.
+
+ACCOUNT_RATE_LIMITS = {
+    "login": "20/m/ip",
+    "login_failed": "10/m/ip,5/5m/key",
+    "signup": "5/10m/ip",
+    "reset_password": "5/15m/ip,3/15m/key",
+    "reset_password_from_key": "10/m/ip",
+}
+
+
+# Client IP detection must match the deployment topology. By default no proxy
+# is trusted. Production can opt in explicitly with environment variables.
+
+ALLAUTH_TRUSTED_PROXY_COUNT = int(
+    os.environ.get("ALLAUTH_TRUSTED_PROXY_COUNT", "0")
+)
+
+ALLAUTH_TRUSTED_CLIENT_IP_HEADER = (
+    os.environ.get("ALLAUTH_TRUSTED_CLIENT_IP_HEADER") or None
+)
+
+
 # =============================================================================
 # SOCIAL ACCOUNT
 # =============================================================================
@@ -540,6 +568,29 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
 
+# Content Security Policy. Inline script/style remains temporarily allowed
+# because the current theme bootstrap and templates contain intentional inline
+# content. A later nonce migration can tighten this further without changing
+# this baseline's behavior.
+
+CONTENT_SECURITY_POLICY = {
+    "DIRECTIVES": {
+        "default-src": [SELF],
+        "script-src": [SELF, UNSAFE_INLINE],
+        "style-src": [SELF, UNSAFE_INLINE],
+        "img-src": [SELF, "data:", "blob:", "https:"],
+        "font-src": [SELF, "data:"],
+        "connect-src": [SELF],
+        "media-src": [SELF, "https:"],
+        "frame-src": [SELF],
+        "frame-ancestors": [NONE],
+        "object-src": [NONE],
+        "base-uri": [SELF],
+        "form-action": [SELF],
+    }
+}
+
+
 # =============================================================================
 # PRODUCTION SECURITY
 # =============================================================================
@@ -576,6 +627,9 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
 
     CSRF_COOKIE_SECURE = True
+
+
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["upgrade-insecure-requests"] = True
 
 
 # =============================================================================
