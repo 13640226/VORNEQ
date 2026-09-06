@@ -190,7 +190,8 @@ class MediaSimilarityService:
 
     def _resolve_results(self, raw_results: list[tuple[str, float]]) -> list[dict]:
         ids = [media_id for media_id, _ in raw_results]
-        assets = MediaAsset.objects.filter(pk__in=ids, is_active=True).in_bulk()
+        assets_by_pk = MediaAsset.objects.filter(pk__in=ids, is_active=True).in_bulk()
+        assets = {str(pk): asset for pk, asset in assets_by_pk.items()}
         formatted = []
         for media_id, score in raw_results:
             asset = assets.get(media_id)
