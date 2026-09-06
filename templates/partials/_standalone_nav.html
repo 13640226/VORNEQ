@@ -41,7 +41,7 @@
            aria-label="{% trans 'Open profile' %}"
            {% if request.resolver_match.url_name == 'profile' %}aria-current="page"{% endif %}>
           {% if user.profile_data.avatar %}
-            <img class="standalone-nav__user-image" src="{% url 'profile_avatar' %}" alt="">
+            <img class="standalone-nav__user-image" src="{% url 'profile_avatar' %}" alt="" width="44" height="44">
           {% else %}
             {{ user.get_short_name|default:user.username|slice:":2"|upper }}
           {% endif %}
