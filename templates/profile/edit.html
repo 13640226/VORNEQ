@@ -35,7 +35,7 @@
       <div class="profile-avatar-editor">
         <div class="profile-avatar profile-avatar--large" aria-hidden="true">
           {% if user_profile.avatar %}
-            <img class="profile-avatar__image" src="{% url 'profile_avatar' %}" alt="">
+            <img class="profile-avatar__image" src="{% url 'profile_avatar' %}" alt="" width="112" height="112">
           {% else %}
             {{ profile_user.get_short_name|default:profile_user.username|slice:":2"|upper }}
           {% endif %}
