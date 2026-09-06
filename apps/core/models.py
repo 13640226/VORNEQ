@@ -89,6 +89,112 @@ class ReputationHistory(models.Model):
         return f"{self.user_id} {self.dimension}: {self.old_value} -> {self.new_value}"
 
 
+class ContextualReputation(models.Model):
+    """Method- and domain-scoped reputation projection.
+
+    The score is intentionally neutral in this phase. Verification submission
+    contributes activity/sample history only; it does not imply accuracy.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="contextual_reputations",
+    )
+    domain = models.SlugField(max_length=100)
+    verification_method = models.ForeignKey(
+        "verification.VerificationMethod",
+        on_delete=models.PROTECT,
+        related_name="contextual_reputations",
+    )
+    score = models.FloatField(default=0.0)
+    sample_count = models.PositiveIntegerField(default=0)
+    last_event_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["user_id", "domain", "verification_method_id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "domain", "verification_method"],
+                name="core_ctx_rep_user_domain_method_unique",
+            )
+        ]
+        indexes = [
+            models.Index(
+                fields=["user", "domain"],
+                name="core_ctx_rep_user_domain_idx",
+            ),
+            models.Index(
+                fields=["verification_method", "last_event_at"],
+                name="core_ctx_rep_method_time_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.user_id}:{self.domain}:{self.verification_method_id}"
+
+
+class ContextualReputationEvent(models.Model):
+    """Append-only evidence-backed activity event for contextual reputation."""
+
+    class EventType(models.TextChoices):
+        VERIFICATION_SUBMITTED = "verification_submitted", "Verification submitted"
+
+    contextual_reputation = models.ForeignKey(
+        ContextualReputation,
+        on_delete=models.PROTECT,
+        related_name="events",
+    )
+    verification_result = models.ForeignKey(
+        "verification.VerificationResult",
+        on_delete=models.PROTECT,
+        related_name="reputation_events",
+    )
+    event_type = models.CharField(
+        max_length=50,
+        choices=EventType.choices,
+        default=EventType.VERIFICATION_SUBMITTED,
+    )
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["contextual_reputation", "verification_result", "event_type"],
+                name="core_ctx_rep_event_unique",
+            )
+        ]
+        indexes = [
+            models.Index(
+                fields=["contextual_reputation", "created_at"],
+                name="core_ctx_rep_event_time_idx",
+            ),
+            models.Index(
+                fields=["verification_result"],
+                name="core_ctx_rep_result_idx",
+            ),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise RuntimeError(
+                "ContextualReputationEvent is append-only and cannot be updated."
+            )
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise RuntimeError(
+            "ContextualReputationEvent is append-only and cannot be deleted."
+        )
+
+    def __str__(self):
+        return f"{self.contextual_reputation_id}:{self.event_type}:{self.verification_result_id}"
+
+
 class Entitlement(models.Model):
     """Proof of a user's right to access a digital product."""
 
