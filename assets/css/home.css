@@ -353,18 +353,46 @@ html[dir="rtl"] .discovery-search__wrapper { padding: 7px var(--space-4) 7px 7px
 
 @media (max-width: 760px) {
   .discovery-shell { width: min(calc(100% - 28px), var(--home-max)); }
-  .discovery-hero { padding-top: var(--space-7); }
-  .discovery-hero__title { font-size: clamp(3rem, 15vw, 5rem); }
+  .discovery-hero { padding-block: var(--space-7) var(--space-6); }
+  .discovery-hero__title {
+    max-width: 12ch;
+    font-size: clamp(2.35rem, 10.5vw, 3.6rem);
+    line-height: 1.02;
+    letter-spacing: -.04em;
+  }
+  html[dir="rtl"] .discovery-hero__title {
+    max-width: 14ch;
+    line-height: 1.12;
+  }
+  .discovery-hero__subtitle {
+    max-width: 36ch;
+    margin-top: var(--space-4);
+    font-size: .96rem;
+    line-height: 1.6;
+  }
+  .discovery-search { margin-top: var(--space-5); }
   .discovery-search__wrapper, html[dir="rtl"] .discovery-search__wrapper { grid-template-columns: auto minmax(0, 1fr); padding: 12px 14px; }
   .discovery-search__button { grid-column: 1 / -1; width: 100%; justify-content: center; }
   .discovery-principles { grid-template-columns: 1fr; }
   .discovery-principles > div + div { border-inline-start: 0; border-top: 1px solid var(--color-border); }
-  .discovery-section-heading, .discovery-results__header { align-items: start; }
+  .discovery-featured,
+  .discovery-results { padding-block: var(--space-7); }
+  .discovery-section-heading,
+  .discovery-results__header {
+    align-items: start;
+    margin-bottom: var(--space-5);
+  }
+  .discovery-results.is-empty { padding-block: var(--space-6); }
+  .discovery-empty > p:not(.discovery-empty__eyebrow) { margin-bottom: var(--space-4); }
 }
 
 @media (max-width: 540px) {
+  .discovery-hero { padding-top: var(--space-6); }
+  .discovery-hero__title { font-size: clamp(2.2rem, 10vw, 3.1rem); }
   .discovery-paths__grid { grid-template-columns: 1fr; }
   .discovery-path-card { min-height: 96px; }
+  .discovery-featured,
+  .discovery-results { padding-block: var(--space-6); }
   .discovery-feed-item.has-image { grid-template-columns: 96px minmax(0, 1fr); }
   .discovery-pagination { align-items: stretch; flex-direction: column; }
   .discovery-pagination__actions { width: 100%; }
