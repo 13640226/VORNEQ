@@ -1,0 +1,127 @@
+/* ==========================================================
+   VORNEQ MULTI-THEME PALETTES
+   Palette overrides only. Structural design tokens remain in tokens.css.
+   ========================================================== */
+
+[data-theme="vorneq"] {
+  --color-bg-page: #f7f8fa;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-text-primary: #172033;
+  --color-text-secondary: #667085;
+  --color-text-muted: #98a2b3;
+  --color-text-disabled: #b0b8c4;
+  --color-border: #e4e7ec;
+  --color-border-strong: #d0d5dd;
+  --color-accent: #356ae6;
+  --color-accent-hover: #2a56c4;
+  --color-accent-muted: #5f7fd4;
+  --color-accent-subtle: rgba(53, 106, 230, 0.08);
+  --color-accent-border: rgba(53, 106, 230, 0.20);
+  --color-text-on-accent: #ffffff;
+  --color-focus: #356ae6;
+  --color-focus-ring: rgba(53, 106, 230, 0.25);
+  --color-editorial: #8b6e3c;
+  --color-editorial-subtle: #f7f2e9;
+  --color-overlay: rgba(23, 32, 51, 0.52);
+  --color-bg-hover: rgba(23, 32, 51, 0.045);
+  --shadow-low: 0 1px 2px rgba(23, 32, 51, 0.04);
+  --shadow-medium: 0 4px 12px rgba(23, 32, 51, 0.06);
+  --shadow-high: 0 12px 40px rgba(23, 32, 51, 0.08);
+}
+
+[data-theme="blue"] {
+  --color-bg-page: #0b1a2e;
+  --color-bg-surface: #12243a;
+  --color-bg-elevated: #1a2f48;
+  --color-text-primary: #e8f0f8;
+  --color-text-secondary: #a9bfd4;
+  --color-text-muted: #7f9ab5;
+  --color-text-disabled: #5f7890;
+  --color-border: #24415f;
+  --color-border-strong: #315579;
+  --color-accent: #5b9cff;
+  --color-accent-hover: #78adff;
+  --color-accent-muted: #76a1d8;
+  --color-accent-subtle: rgba(59, 130, 246, 0.16);
+  --color-accent-border: rgba(91, 156, 255, 0.38);
+  --color-text-on-accent: #07111f;
+  --color-focus: #78adff;
+  --color-focus-ring: rgba(91, 156, 255, 0.32);
+  --color-editorial: #d3b171;
+  --color-editorial-subtle: #24251f;
+  --color-overlay: rgba(3, 11, 24, 0.74);
+  --color-bg-hover: rgba(232, 240, 248, 0.07);
+}
+
+[data-theme="gold"] {
+  --color-bg-page: #1a140e;
+  --color-bg-surface: #241d15;
+  --color-bg-elevated: #2f261c;
+  --color-text-primary: #f2eadc;
+  --color-text-secondary: #c2b397;
+  --color-text-muted: #95856a;
+  --color-text-disabled: #746650;
+  --color-border: #3b3025;
+  --color-border-strong: #51412f;
+  --color-accent: #d4af37;
+  --color-accent-hover: #e1c45c;
+  --color-accent-muted: #bd9e4c;
+  --color-accent-subtle: rgba(212, 175, 55, 0.14);
+  --color-accent-border: rgba(212, 175, 55, 0.34);
+  --color-text-on-accent: #171008;
+  --color-focus: #e1c45c;
+  --color-focus-ring: rgba(212, 175, 55, 0.32);
+  --color-editorial: #e0bd68;
+  --color-editorial-subtle: #2b2116;
+  --color-overlay: rgba(12, 8, 4, 0.76);
+  --color-bg-hover: rgba(242, 234, 220, 0.07);
+}
+
+[data-theme="emerald"] {
+  --color-bg-page: #0d1f1a;
+  --color-bg-surface: #142a22;
+  --color-bg-elevated: #1b362c;
+  --color-text-primary: #e4f2ed;
+  --color-text-secondary: #a1c7b9;
+  --color-text-muted: #73a08f;
+  --color-text-disabled: #557b6d;
+  --color-border: #234438;
+  --color-border-strong: #315d4d;
+  --color-accent: #20c58c;
+  --color-accent-hover: #43d9a5;
+  --color-accent-muted: #4eb793;
+  --color-accent-subtle: rgba(16, 185, 129, 0.15);
+  --color-accent-border: rgba(32, 197, 140, 0.34);
+  --color-text-on-accent: #061712;
+  --color-focus: #43d9a5;
+  --color-focus-ring: rgba(32, 197, 140, 0.30);
+  --color-editorial: #d0ad70;
+  --color-editorial-subtle: #21271e;
+  --color-overlay: rgba(4, 17, 13, 0.74);
+  --color-bg-hover: rgba(228, 242, 237, 0.07);
+}
+
+[data-theme="purple"] {
+  --color-bg-page: #1a0f2e;
+  --color-bg-surface: #24173a;
+  --color-bg-elevated: #2e1f48;
+  --color-text-primary: #f1eafb;
+  --color-text-secondary: #c1add9;
+  --color-text-muted: #9278b0;
+  --color-text-disabled: #705a89;
+  --color-border: #3b2a59;
+  --color-border-strong: #523a78;
+  --color-accent: #9b72ff;
+  --color-accent-hover: #b296ff;
+  --color-accent-muted: #9e88d2;
+  --color-accent-subtle: rgba(139, 92, 246, 0.16);
+  --color-accent-border: rgba(155, 114, 255, 0.36);
+  --color-text-on-accent: #120923;
+  --color-focus: #b296ff;
+  --color-focus-ring: rgba(155, 114, 255, 0.30);
+  --color-editorial: #d5ae71;
+  --color-editorial-subtle: #271d2f;
+  --color-overlay: rgba(10, 5, 20, 0.76);
+  --color-bg-hover: rgba(241, 234, 251, 0.07);
+}

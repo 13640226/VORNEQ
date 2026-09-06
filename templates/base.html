@@ -7,32 +7,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#f7f8fa">
     <script>
         (function () {
-            var preference = 'system';
+            var valid = ['vorneq', 'light', 'dark', 'blue', 'gold', 'emerald', 'purple', 'system'];
+            var preference = 'vorneq';
             try {
-                preference = localStorage.getItem('vorneq-theme') || 'system';
+                preference = localStorage.getItem('vorneq-theme') || 'vorneq';
             } catch (error) {
-                preference = 'system';
+                preference = 'vorneq';
             }
 
-            if (preference !== 'light' && preference !== 'dark' && preference !== 'system') {
-                preference = 'system';
-            }
+            if (valid.indexOf(preference) === -1) preference = 'vorneq';
 
             var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             var resolved = preference === 'system' ? (systemDark ? 'dark' : 'light') : preference;
             var root = document.documentElement;
+            var nativeScheme = (resolved === 'light' || resolved === 'vorneq') ? 'light' : 'dark';
+            var themeColors = {
+                vorneq: '#f7f8fa',
+                light: '#f8f6f2',
+                dark: '#0d1117',
+                blue: '#0b1a2e',
+                gold: '#1a140e',
+                emerald: '#0d1f1a',
+                purple: '#1a0f2e'
+            };
 
             root.dataset.theme = resolved;
             root.dataset.themePreference = preference;
-            root.style.colorScheme = resolved;
+            root.style.colorScheme = nativeScheme;
 
             var themeColor = document.querySelector('meta[name="theme-color"]');
-            if (themeColor) {
-                themeColor.content = resolved === 'dark' ? '#0b1120' : '#ffffff';
-            }
+            if (themeColor) themeColor.content = themeColors[resolved] || '#f7f8fa';
         }());
     </script>
 
@@ -46,6 +53,8 @@
     <title>{% block title %}{% trans "VORNEQ — Knowledge Discovery Platform" %}{% endblock %}</title>
 
     <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme-palettes.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme-selector.css' %}">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/global-experience.css' %}">
     <link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">

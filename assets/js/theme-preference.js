@@ -1,14 +1,33 @@
 (function () {
   const STORAGE_KEY = 'vorneq-theme';
-  const VALID_PREFERENCES = new Set(['light', 'dark', 'system']);
+  const DEFAULT_THEME = 'vorneq';
+  const VALID_PREFERENCES = new Set([
+    'vorneq',
+    'light',
+    'dark',
+    'blue',
+    'gold',
+    'emerald',
+    'purple',
+    'system',
+  ]);
+  const THEME_COLORS = {
+    vorneq: '#f7f8fa',
+    light: '#f8f6f2',
+    dark: '#0d1117',
+    blue: '#0b1a2e',
+    gold: '#1a140e',
+    emerald: '#0d1f1a',
+    purple: '#1a0f2e',
+  };
   const media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
   function readPreference() {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      return VALID_PREFERENCES.has(stored) ? stored : 'system';
+      return VALID_PREFERENCES.has(stored) ? stored : DEFAULT_THEME;
     } catch (error) {
-      return 'system';
+      return DEFAULT_THEME;
     }
   }
 
@@ -22,14 +41,15 @@
   function applyTheme(preference) {
     const resolved = resolveTheme(preference);
     const root = document.documentElement;
+    const nativeScheme = (resolved === 'light' || resolved === 'vorneq') ? 'light' : 'dark';
 
     root.dataset.theme = resolved;
     root.dataset.themePreference = preference;
-    root.style.colorScheme = resolved;
+    root.style.colorScheme = nativeScheme;
 
     const themeColor = document.querySelector('meta[name="theme-color"]');
     if (themeColor) {
-      themeColor.content = resolved === 'dark' ? '#0b1120' : '#ffffff';
+      themeColor.content = THEME_COLORS[resolved] || THEME_COLORS.vorneq;
     }
 
     document.querySelectorAll('[data-theme-option]').forEach((button) => {
@@ -47,6 +67,9 @@
       // The current page still gets the preference even when storage is unavailable.
     }
     applyTheme(preference);
+    document.dispatchEvent(new CustomEvent('vorneq:theme-changed', {
+      detail: { preference, resolved: resolveTheme(preference) },
+    }));
   }
 
   document.addEventListener('DOMContentLoaded', () => {
