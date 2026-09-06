@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n %}
+{% load static i18n library_trust_context %}
 
 {% block title %}{% trans "Library" %} — VORNEQ{% endblock %}
 
@@ -11,6 +11,7 @@
 {{ block.super }}
 <link rel="stylesheet" href="{% static 'css/library.css' %}">
 <link rel="stylesheet" href="{% static 'css/library-index-system.css' %}">
+<link rel="stylesheet" href="{% static 'css/trust-context.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -110,6 +111,8 @@
               {% elif item.short_description %}
                 <p class="library-card__description">{{ item.short_description|striptags|truncatewords:28 }}</p>
               {% endif %}
+
+              {% library_public_trust_context item %}
 
               <div class="library-card__footer">
                 <div class="library-card__badges">
