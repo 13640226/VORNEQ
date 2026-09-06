@@ -108,3 +108,14 @@ class UnifiedSearchTests(TestCase):
         data = response.json()
         self.assertEqual(data["total"], 1)
         self.assertEqual(data["results"][0]["type"], "product")
+
+    def test_api_library_type_contract_preserves_subtype(self):
+        response = self.client.get(
+            reverse("search:unified"),
+            {"q": "test", "type": "libraryitem", "item_type": "book"},
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["total"], 1)
+        self.assertEqual(data["results"][0]["type"], "libraryitem")
+        self.assertEqual(data["results"][0]["subtype"], "book")
