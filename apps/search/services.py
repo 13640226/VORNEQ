@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from django.core.paginator import Paginator
-from django.db.models import Q, QuerySet
+from django.db.models import CharField, F, Q, QuerySet
+from django.db.models.functions import Cast, Coalesce
 from django.urls import reverse
 from django.utils.translation import get_language
 
@@ -56,6 +57,28 @@ class SearchAdapter(ABC):
     def serialize(self, instance, *, language: str) -> SearchResult:
         raise NotImplementedError
 
+    @abstractmethod
+    def global_time_expression(self):
+        """Return the database expression matching SearchResult.published_at."""
+        raise NotImplementedError
+
+    def top_candidates(self, queryset: QuerySet, limit: int) -> QuerySet:
+        """Return this adapter's top candidates using the global ordering semantics.
+
+        The public search ordering is ``(published_at, key)`` descending. Each
+        adapter has a fixed key prefix, so ordering by the text form of the PK
+        is equivalent to ordering by the complete key within that adapter.
+        """
+        if limit <= 0:
+            return queryset.none()
+        return (
+            queryset.annotate(
+                _search_published_at=self.global_time_expression(),
+                _search_pk_text=Cast("pk", output_field=CharField()),
+            )
+            .order_by("-_search_published_at", "-_search_pk_text")[:limit]
+        )
+
 
 class ArticleAdapter(SearchAdapter):
     type_name = "article"
@@ -72,6 +95,9 @@ class ArticleAdapter(SearchAdapter):
         if category:
             qs = qs.filter(category__slug=category)
         return qs
+
+    def global_time_expression(self):
+        return Coalesce("published_at", "created_at")
 
     def serialize(self, article: Article, *, language: str) -> SearchResult:
         image_url = article.image.url if article.image else None
@@ -111,6 +137,9 @@ class ProductAdapter(SearchAdapter):
         if filters.get("price_max") not in (None, ""):
             qs = qs.filter(price__lte=filters["price_max"])
         return qs
+
+    def global_time_expression(self):
+        return Coalesce("published_at", "created_at")
 
     def serialize(self, product: Product, *, language: str) -> SearchResult:
         return SearchResult(
@@ -154,6 +183,9 @@ class LibraryItemAdapter(SearchAdapter):
             qs = qs.filter(category__icontains=category)
         return qs
 
+    def global_time_expression(self):
+        return Coalesce("published_at", "created_at")
+
     def serialize(self, item: LibraryItem, *, language: str) -> SearchResult:
         return SearchResult(
             key=f"library:{item.pk}",
@@ -184,6 +216,9 @@ class MediaAssetAdapter(SearchAdapter):
             qs = qs.filter(media_type=media_type)
         return qs
 
+    def global_time_expression(self):
+        return F("created_at")
+
     def serialize(self, asset: MediaAsset, *, language: str) -> SearchResult:
         return SearchResult(
             key=f"media:{asset.pk}",
@@ -210,6 +245,9 @@ class AudioItemAdapter(SearchAdapter):
         if query:
             qs = qs.filter(Q(title__icontains=query) | Q(description__icontains=query))
         return qs
+
+    def global_time_expression(self):
+        return F("created_at")
 
     def serialize(self, item: AudioItem, *, language: str) -> SearchResult:
         return SearchResult(
@@ -250,18 +288,31 @@ class UnifiedSearch:
     def normalize_query(query: str) -> str:
         return " ".join((query or "").strip().lower().split())[:200]
 
-    def collect(self, query: str = "", filters: dict | None = None, *, language: str | None = None) -> list[dict]:
+    @staticmethod
+    def _requested_types(filters: dict) -> set[str] | None:
+        requested_types = filters.get("types")
+        if isinstance(requested_types, str):
+            return {requested_types}
+        if requested_types:
+            return set(requested_types)
+        return None
+
+    def collect(
+        self,
+        query: str = "",
+        filters: dict | None = None,
+        *,
+        language: str | None = None,
+    ) -> list[dict]:
+        """Collect the complete result set.
+
+        Kept as the compatibility/reference path for callers that explicitly need
+        every matching result. Paginated ``search()`` uses bounded candidates.
+        """
         normalized_query = self.normalize_query(query)
         filters = filters or {}
         language = language or get_language() or "en"
-
-        requested_types = filters.get("types")
-        if isinstance(requested_types, str):
-            requested_types = {requested_types}
-        elif requested_types:
-            requested_types = set(requested_types)
-        else:
-            requested_types = None
+        requested_types = self._requested_types(filters)
 
         results: list[SearchResult] = []
         for adapter in self.adapters:
@@ -290,13 +341,47 @@ class UnifiedSearch:
             page_size = self.DEFAULT_PAGE_SIZE
         page_size = min(max(1, page_size), self.MAX_PAGE_SIZE)
 
-        results = self.collect(query, filters, language=language)
-        paginator = Paginator(results, page_size)
+        normalized_query = self.normalize_query(query)
+        filters = filters or {}
+        language = language or get_language() or "en"
+        requested_types = self._requested_types(filters)
+
+        querysets: list[tuple[SearchAdapter, QuerySet, int]] = []
+        total = 0
+        for adapter in self.adapters:
+            if requested_types is not None and adapter.type_name not in requested_types:
+                continue
+            queryset = adapter.get_queryset(normalized_query, filters)
+            count = queryset.count()
+            total += count
+            querysets.append((adapter, queryset, count))
+
+        # Use Paginator itself to preserve the historical get_page() contract for
+        # non-integer, zero/negative, and out-of-range page values without
+        # materializing the result set.
+        paginator = Paginator(range(total), page_size)
         page_obj = paginator.get_page(page)
+        page_number = page_obj.number
+        candidate_limit = page_number * page_size
+
+        candidates: list[SearchResult] = []
+        for adapter, queryset, count in querysets:
+            if count == 0:
+                continue
+            candidates.extend(
+                adapter.serialize(instance, language=language)
+                for instance in adapter.top_candidates(queryset, candidate_limit)
+            )
+
+        candidates.sort(key=lambda item: (item.published_at, item.key), reverse=True)
+        start = (page_number - 1) * page_size
+        end = start + page_size
+        page_results = [item.as_dict() for item in candidates[start:end]]
+
         return {
-            "results": page_obj.object_list,
-            "total": paginator.count,
-            "page": page_obj.number,
+            "results": page_results,
+            "total": total,
+            "page": page_number,
             "total_pages": paginator.num_pages,
             "has_next": page_obj.has_next(),
             "has_previous": page_obj.has_previous(),
