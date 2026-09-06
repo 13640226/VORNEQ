@@ -97,7 +97,8 @@ class EditableProfileTest(TestCase):
             },
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Upload a valid image")
+        self.assertIn("avatar", response.context["form"].errors)
+        self.assertTrue(response.context["form"].errors["avatar"])
 
     def test_profile_edit_does_not_change_trust_identity(self):
         identity = Identity.objects.create(
@@ -128,16 +129,17 @@ class EditableProfileTest(TestCase):
         self.assertTrue(storage.exists(old_name))
 
         self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("profile_edit"),
-            {
-                "first_name": "",
-                "last_name": "",
-                "bio": "",
-                "website": "",
-                "remove_avatar": "on",
-            },
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(
+                reverse("profile_edit"),
+                {
+                    "first_name": "",
+                    "last_name": "",
+                    "bio": "",
+                    "website": "",
+                    "remove_avatar": "on",
+                },
+            )
         self.assertRedirects(response, reverse("profile"))
 
         profile.refresh_from_db()
