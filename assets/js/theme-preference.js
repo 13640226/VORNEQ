@@ -1,6 +1,8 @@
 (function () {
   const STORAGE_KEY = 'vorneq-theme';
+  const DEFAULT_THEME = 'vorneq';
   const VALID_PREFERENCES = new Set([
+    'vorneq',
     'light',
     'dark',
     'blue',
@@ -10,6 +12,7 @@
     'system',
   ]);
   const THEME_COLORS = {
+    vorneq: '#f7f8fa',
     light: '#f8f6f2',
     dark: '#0d1117',
     blue: '#0b1a2e',
@@ -22,9 +25,9 @@
   function readPreference() {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      return VALID_PREFERENCES.has(stored) ? stored : 'dark';
+      return VALID_PREFERENCES.has(stored) ? stored : DEFAULT_THEME;
     } catch (error) {
-      return 'dark';
+      return DEFAULT_THEME;
     }
   }
 
@@ -38,7 +41,7 @@
   function applyTheme(preference) {
     const resolved = resolveTheme(preference);
     const root = document.documentElement;
-    const nativeScheme = resolved === 'light' ? 'light' : 'dark';
+    const nativeScheme = (resolved === 'light' || resolved === 'vorneq') ? 'light' : 'dark';
 
     root.dataset.theme = resolved;
     root.dataset.themePreference = preference;
@@ -46,7 +49,7 @@
 
     const themeColor = document.querySelector('meta[name="theme-color"]');
     if (themeColor) {
-      themeColor.content = THEME_COLORS[resolved] || THEME_COLORS.dark;
+      themeColor.content = THEME_COLORS[resolved] || THEME_COLORS.vorneq;
     }
 
     document.querySelectorAll('[data-theme-option]').forEach((button) => {
