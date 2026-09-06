@@ -1,18 +1,23 @@
-import logging
+import os
+import time
 
+import structlog
+from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.db import connection
 from django.http import JsonResponse
 
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def health_check(request):
-    """Read-only liveness/readiness check for database and default storage."""
+    """Read-only readiness check for database, storage, and cache."""
+    started = time.monotonic()
     checks = {
         "database": "ok",
         "storage": "ok",
+        "cache": "ok",
     }
 
     try:
@@ -20,21 +25,33 @@ def health_check(request):
             cursor.execute("SELECT 1")
             cursor.fetchone()
     except Exception:
-        logger.exception("Database health check failed")
+        logger.exception("health.database_failed")
         checks["database"] = "error"
 
     try:
-        # ``exists`` is intentionally read-only. The sentinel is not expected
-        # to exist; the call is used to verify that the storage backend can be
-        # reached/configured without creating or deleting objects.
         default_storage.exists("__vorneq_healthcheck__")
     except Exception:
-        logger.exception("Storage health check failed")
+        logger.exception("health.storage_failed")
         checks["storage"] = "error"
 
+    try:
+        cache.get("__vorneq_healthcheck__")
+    except Exception:
+        logger.exception("health.cache_failed")
+        checks["cache"] = "error"
+
     healthy = all(value == "ok" for value in checks.values())
+    duration_ms = round((time.monotonic() - started) * 1000, 2)
     payload = {
         "status": "ok" if healthy else "degraded",
         "checks": checks,
+        "duration_ms": duration_ms,
+        "release": os.environ.get("VORNEQ_RELEASE", "unknown"),
     }
+
+    logger.info(
+        "health.completed",
+        status=payload["status"],
+        duration_ms=duration_ms,
+    )
     return JsonResponse(payload, status=200 if healthy else 503)
