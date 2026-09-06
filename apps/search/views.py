@@ -32,6 +32,20 @@ def _decimal_filter(value):
     return parsed if parsed >= 0 else None
 
 
+def _normalize_api_result(result):
+    """Keep API type identifiers adapter-oriented while preserving UI subtype."""
+    item = dict(result)
+    if item.get("key", "").startswith("library:"):
+        item["subtype"] = item.get("type")
+        item["type"] = "libraryitem"
+    elif item.get("key", "").startswith("media:"):
+        item["subtype"] = item.get("media_type")
+        item["type"] = "mediaasset"
+    else:
+        item["subtype"] = None
+    return item
+
+
 @require_GET
 def unified_search(request):
     query = request.GET.get("q", "")
@@ -74,6 +88,7 @@ def unified_search(request):
         page_size=page_size,
         language=getattr(request, "LANGUAGE_CODE", None),
     )
+    payload["results"] = [_normalize_api_result(item) for item in payload["results"]]
     return JsonResponse(
         {
             "query": query.strip()[:200],
