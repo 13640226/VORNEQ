@@ -2,11 +2,11 @@ import json
 from io import StringIO
 from unittest.mock import patch
 
-from django.core.management import call_command
-from django.test import SimpleTestCase
+from django.core.management import CommandError, call_command
+from django.test import TestCase
 
 
-class BenchmarkSearchCommandTests(SimpleTestCase):
+class BenchmarkSearchCommandTests(TestCase):
     @patch("apps.core.management.commands.benchmark_search.UnifiedSearch.search")
     def test_json_output_reports_baseline_metrics(self, mock_search):
         mock_search.return_value = {
@@ -21,7 +21,7 @@ class BenchmarkSearchCommandTests(SimpleTestCase):
 
         call_command(
             "benchmark_search",
-            query=["  Knowledge  "],
+            queries=["  Knowledge  "],
             repeat=2,
             page=1,
             page_size=12,
@@ -40,5 +40,5 @@ class BenchmarkSearchCommandTests(SimpleTestCase):
         self.assertEqual(mock_search.call_count, 2)
 
     def test_rejects_invalid_repeat(self):
-        with self.assertRaisesMessage(Exception, "--repeat must be at least 1"):
+        with self.assertRaisesMessage(CommandError, "--repeat must be at least 1"):
             call_command("benchmark_search", repeat=0)
