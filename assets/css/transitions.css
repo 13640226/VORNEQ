@@ -1,0 +1,75 @@
+/* ============================================================
+   SEAMLESS NAVIGATION — CROSS-DOCUMENT VIEW TRANSITIONS
+   ============================================================ */
+
+/* Keep normal Django navigation and let the browser animate same-origin
+   document changes. Browsers without support simply perform a normal load. */
+@view-transition {
+  navigation: auto;
+}
+
+.standalone-nav {
+  view-transition-name: vorneq-nav;
+}
+
+.main-content {
+  view-transition-name: vorneq-main;
+}
+
+.site-footer {
+  view-transition-name: vorneq-footer;
+}
+
+::view-transition-group(vorneq-nav),
+::view-transition-group(vorneq-footer) {
+  animation-duration: 140ms;
+  animation-timing-function: ease-out;
+}
+
+::view-transition-old(vorneq-nav),
+::view-transition-new(vorneq-nav),
+::view-transition-old(vorneq-footer),
+::view-transition-new(vorneq-footer) {
+  animation: none;
+}
+
+::view-transition-old(vorneq-main) {
+  animation: vorneq-main-out 120ms ease-in both;
+}
+
+::view-transition-new(vorneq-main) {
+  animation: vorneq-main-in 160ms ease-out both;
+}
+
+@keyframes vorneq-main-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes vorneq-main-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+  }
+}
