@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt && python manage.py compilemessages && DJANGO_SETTINGS_MODULE=config.settings_render python manage.py collectstatic --noinput
-    startCommand: DJANGO_SETTINGS_MODULE=config.settings_render python manage.py inspect_media_schema && DJANGO_SETTINGS_MODULE=config.settings_render python manage.py migrate --noinput && gunicorn config.wsgi:application
+    startCommand: DJANGO_SETTINGS_MODULE=config.settings_render python manage.py inspect_media_schema && DJANGO_SETTINGS_MODULE=config.settings_render python manage.py repair_media_embedding_orphan_type && DJANGO_SETTINGS_MODULE=config.settings_render python manage.py migrate --noinput && gunicorn config.wsgi:application
     healthCheckPath: /fa/
     envVars:
       - key: DJANGO_SETTINGS_MODULE
