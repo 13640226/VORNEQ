@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n entitlements verification_public %}
+{% load static i18n entitlements verification_public reputation_public %}
 
 {% block title %}{{ product.title }} — VORNEQ {% trans "Marketplace" %}{% endblock %}
 
@@ -70,6 +70,8 @@
         <p>{% trans "Public evidence references" %}: {{ verification_summary.public_evidence_count }}</p>
       </section>
     {% endif %}
+
+    {% public_contextual_reputation_widget product.seller %}
 
     {% if product.tags %}
       <section class="marketplace-detail__section marketplace-detail__tags" aria-labelledby="product-tags-title">
