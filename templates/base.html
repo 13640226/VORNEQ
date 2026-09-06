@@ -45,7 +45,6 @@
 
     <title>{% block title %}{% trans "VORNEQ — Knowledge Discovery Platform" %}{% endblock %}</title>
 
-    <!-- Core VORNEQ Styles (Global) -->
     <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/global-experience.css' %}">
@@ -57,14 +56,13 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <!-- Skip to main content (accessibility) -->
     <a href="#main-content" class="skip-link">
         {% trans "Skip to main content" %}
     </a>
 
-    <!-- Global Header (VORNEQ) -->
     {% include "partials/_standalone_nav.html" %}
 
+    {% if request.resolver_match.url_name != 'home' %}
     <nav class="global-back" aria-label="{% trans 'Page navigation' %}">
         <div class="global-back__inner">
             <button
@@ -79,6 +77,7 @@
             </button>
         </div>
     </nav>
+    {% endif %}
 
     <main id="main-content" class="main-content" role="main">
         {% block content %}{% endblock %}
