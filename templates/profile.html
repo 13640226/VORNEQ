@@ -1,108 +1,151 @@
-{% load static %}
-<!doctype html>
-<html lang="{{ LANGUAGE_CODE|default:'en' }}" dir="{% if LANGUAGE_CODE == 'fa' %}rtl{% else %}ltr{% endif %}">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Profile · VORNEQ</title>
-  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-  <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  <link rel="stylesheet" href="{% static 'css/components.css' %}">
-  <link rel="stylesheet" href="{% static 'css/profile.css' %}">
-  <link rel="stylesheet" href="{% static 'css/profile-dashboard.css' %}">
-  <link rel="stylesheet" href="{% static 'css/profile-library.css' %}">
-  <link rel="stylesheet" href="{% static 'css/profile-settings.css' %}">
-</head>
-<body class="profile-page">
-<main class="profile-shell" data-profile>
-  <section class="profile-hero" aria-labelledby="profile-name">
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Profile" %} — VORNEQ{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="profile-shell" aria-labelledby="profile-title">
+  <header class="profile-hero">
     <div class="profile-identity">
-      <div class="profile-avatar" aria-hidden="true">{{ user.username|default:'V'|slice:':1'|upper }}</div>
+      <div class="profile-avatar" aria-hidden="true">
+        {{ profile_user.get_short_name|default:profile_user.username|slice:":2"|upper }}
+      </div>
       <div class="profile-identity__meta">
-        <h1 class="profile-identity__name" id="profile-name">{{ user.get_full_name|default:user.username|default:'VORNEQ User' }}</h1>
-        <div class="profile-identity__handle">@{{ user.username|default:'member' }}</div>
-        <p class="profile-muted">Reader · Contributor · VORNEQ member</p>
+        <p class="profile-eyebrow">{% trans "Account" %}</p>
+        <h1 id="profile-title" class="profile-identity__name">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
+        <p class="profile-identity__handle">@{{ profile_user.username }}</p>
       </div>
     </div>
     <div class="profile-actions">
-      <button class="profile-btn">Share profile</button>
-      <button class="profile-btn profile-btn--primary" data-profile-tab="settings">Edit profile</button>
+      <a class="profile-btn" href="{% url 'account_email' %}">{% trans "Email settings" %}</a>
+      <a class="profile-btn profile-btn--primary" href="{% url 'account_change_password' %}">{% trans "Security" %}</a>
+    </div>
+  </header>
+
+  <nav class="profile-nav u-scroll-inline" aria-label="{% trans 'Profile sections' %}">
+    <a href="#overview">{% trans "Overview" %}</a>
+    <a href="#library">{% trans "My library" %}</a>
+    <a href="#products">{% trans "My products" %}</a>
+    <a href="#reputation">{% trans "Reputation" %}</a>
+    <a href="#settings">{% trans "Settings" %}</a>
+  </nav>
+
+  <section id="overview" class="profile-section" aria-labelledby="overview-title">
+    <header class="profile-section__header">
+      <div>
+        <p class="profile-eyebrow">{% trans "Dashboard" %}</p>
+        <h2 id="overview-title">{% trans "Overview" %}</h2>
+      </div>
+    </header>
+    <div class="profile-stats">
+      <article class="profile-stat"><strong>{{ entitlement_count }}</strong><span>{% trans "Accessible products" %}</span></article>
+      <article class="profile-stat"><strong>{{ seller_product_count }}</strong><span>{% trans "Marketplace products" %}</span></article>
+      <article class="profile-stat"><strong>{{ reputation_context_count }}</strong><span>{% trans "Reputation contexts" %}</span></article>
     </div>
   </section>
 
-  <div class="profile-layout">
-    <nav class="profile-nav" aria-label="Profile sections">
-      <button class="profile-nav__button" data-profile-tab="dashboard" aria-selected="true">Dashboard</button>
-      <button class="profile-nav__button" data-profile-tab="library" aria-selected="false">Library</button>
-      <button class="profile-nav__button" data-profile-tab="activity" aria-selected="false">Activity</button>
-      <button class="profile-nav__button" data-profile-tab="subscription" aria-selected="false">Subscription</button>
-      <button class="profile-nav__button" data-profile-tab="goals" aria-selected="false">Goals</button>
-      <button class="profile-nav__button" data-profile-tab="settings" aria-selected="false">Settings</button>
-    </nav>
-
-    <section class="profile-panel">
-      <div class="profile-section" data-profile-section="dashboard">
-        <header class="profile-section__header"><h2>Dashboard</h2><span class="profile-badge">This week</span></header>
-        <div class="profile-stats">
-          <div class="profile-stat"><span class="profile-stat__value">12</span><span class="profile-stat__label">Books read</span></div>
-          <div class="profile-stat"><span class="profile-stat__value">8.4h</span><span class="profile-stat__label">Reading time</span></div>
-          <div class="profile-stat"><span class="profile-stat__value">27</span><span class="profile-stat__label">Saved items</span></div>
-          <div class="profile-stat"><span class="profile-stat__value">6</span><span class="profile-stat__label">Friends active</span></div>
-        </div>
-        <div class="profile-grid" style="margin-block-start:var(--space-4)">
-          <div class="profile-card profile-col-8">
-            <h3>Weekly progress</h3>
-            <div class="profile-progress">
-              <div class="profile-progress__row"><span>Reading</span><div class="profile-progress__track"><div class="profile-progress__bar" style="--progress:72%"></div></div><strong>72%</strong></div>
-              <div class="profile-progress__row"><span>Goal</span><div class="profile-progress__track"><div class="profile-progress__bar" style="--progress:58%"></div></div><strong>58%</strong></div>
+  <section id="library" class="profile-section" aria-labelledby="library-title">
+    <header class="profile-section__header">
+      <div>
+        <p class="profile-eyebrow">{% trans "Access" %}</p>
+        <h2 id="library-title">{% trans "My library" %}</h2>
+      </div>
+      <a href="{% url 'marketplace:index' %}">{% trans "Browse marketplace" %}</a>
+    </header>
+    {% if entitlements %}
+      <div class="profile-list">
+        {% for entitlement in entitlements %}
+          <article class="profile-list__item">
+            <div>
+              <h3><a href="{{ entitlement.product.get_absolute_url }}">{{ entitlement.product.title }}</a></h3>
+              <p>
+                {% if entitlement.expires_at %}
+                  {% blocktrans with date=entitlement.expires_at|date:"SHORT_DATE_FORMAT" %}Access until {{ date }}{% endblocktrans %}
+                {% else %}
+                  {% trans "Active access" %}
+                {% endif %}
+              </p>
             </div>
-          </div>
-          <div class="profile-card profile-col-4"><h3>Notifications</h3><ul class="profile-list"><li class="profile-notification" data-notification="demo"><span class="profile-notification__dot"></span><span>A friend reviewed a saved title.</span><button class="profile-btn" data-mark-read>Read</button></li></ul></div>
-          <div class="profile-card profile-col-12"><h3>Friends' activity</h3><ul class="profile-list"><li class="profile-list__item"><div><span class="profile-feed__actor">Sara</span> finished <strong>The Design of Everyday Things</strong><div class="profile-feed__time">2 hours ago</div></div></li><li class="profile-list__item"><div><span class="profile-feed__actor">Reza</span> rated a book ★★★★★<div class="profile-feed__time">Yesterday</div></div></li></ul></div>
-        </div>
+            {% if entitlement.product.digital_file %}
+              <a class="profile-btn" href="{% url 'marketplace:download_product' entitlement.product.id %}">{% trans "Download" %}</a>
+            {% endif %}
+          </article>
+        {% endfor %}
       </div>
+    {% else %}
+      <div class="profile-empty"><p>{% trans "You do not have any active product access yet." %}</p></div>
+    {% endif %}
+  </section>
 
-      <div class="profile-section" data-profile-section="library" hidden>
-        <header class="profile-section__header"><h2>Library</h2><span class="profile-badge">27 items</span></header>
-        <div class="profile-shelves" aria-label="Library shelves"><button class="profile-shelf" data-shelf="all" aria-pressed="true">All</button><button class="profile-shelf" data-shelf="reading" aria-pressed="false">Reading</button><button class="profile-shelf" data-shelf="read" aria-pressed="false">Read</button><button class="profile-shelf" data-shelf="want" aria-pressed="false">Want to read</button><button class="profile-shelf" data-shelf="favorite" aria-pressed="false">Favorites</button></div>
-        <div class="profile-library-grid">
-          <article class="profile-card profile-book" data-book-shelf="reading favorite"><div class="profile-book__cover"></div><div><div class="profile-book__title">Deep Work</div><div class="profile-book__meta">Currently reading</div><div class="profile-rating">★★★★☆</div><div class="profile-book__actions"><button class="profile-btn">Update</button></div></div></article>
-          <article class="profile-card profile-book" data-book-shelf="read"><div class="profile-book__cover"></div><div><div class="profile-book__title">Atomic Habits</div><div class="profile-book__meta">Read</div><div class="profile-rating">★★★★★</div></div></article>
-          <article class="profile-card profile-book" data-book-shelf="want"><div class="profile-book__cover"></div><div><div class="profile-book__title">Thinking, Fast and Slow</div><div class="profile-book__meta">Want to read</div></div></article>
-        </div>
+  <section id="products" class="profile-section" aria-labelledby="products-title">
+    <header class="profile-section__header">
+      <div>
+        <p class="profile-eyebrow">{% trans "Marketplace" %}</p>
+        <h2 id="products-title">{% trans "My products" %}</h2>
       </div>
+      <a href="{% url 'marketplace:seller_dashboard' %}">{% trans "Seller dashboard" %}</a>
+    </header>
+    {% if seller_products %}
+      <div class="profile-grid">
+        {% for product in seller_products %}
+          <article class="profile-card">
+            <p class="profile-card__meta">{{ product.get_status_display }}</p>
+            <h3><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3>
+            <p>{{ product.short_description|default:product.description|truncatechars:140 }}</p>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="profile-empty"><p>{% trans "You have not created any marketplace products yet." %}</p></div>
+    {% endif %}
+  </section>
 
-      <div class="profile-section" data-profile-section="activity" hidden>
-        <header class="profile-section__header"><h2>Activity</h2></header>
-        <div class="profile-card"><ul class="profile-list"><li class="profile-list__item">Finished a reading session · 42 minutes</li><li class="profile-list__item">Commented on a public review</li><li class="profile-list__item">Rated “Atomic Habits” 5 stars</li></ul></div>
+  <section id="reputation" class="profile-section" aria-labelledby="reputation-title">
+    <header class="profile-section__header">
+      <div>
+        <p class="profile-eyebrow">{% trans "Contextual reputation" %}</p>
+        <h2 id="reputation-title">{% trans "Reputation" %}</h2>
       </div>
+    </header>
+    <p class="profile-note">{% trans "These scores are context-specific projections. They are not a global trust score and do not represent truth." %}</p>
+    {% if contextual_reputations %}
+      <div class="profile-table-wrap u-scroll-inline">
+        <table class="profile-table">
+          <thead><tr><th>{% trans "Domain" %}</th><th>{% trans "Method" %}</th><th>{% trans "Score" %}</th><th>{% trans "Samples" %}</th><th>{% trans "Last activity" %}</th></tr></thead>
+          <tbody>
+            {% for reputation in contextual_reputations %}
+              <tr>
+                <td>{{ reputation.domain }}</td>
+                <td>{{ reputation.verification_method.name }}</td>
+                <td>{{ reputation.score|floatformat:2 }}</td>
+                <td>{{ reputation.sample_count }}</td>
+                <td>{{ reputation.last_event_at|date:"SHORT_DATE_FORMAT"|default:"—" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="profile-empty"><p>{% trans "No contextual reputation has been recorded yet." %}</p></div>
+    {% endif %}
+  </section>
 
-      <div class="profile-section" data-profile-section="subscription" hidden>
-        <header class="profile-section__header"><h2>Subscription</h2></header>
-        <div class="profile-grid"><div class="profile-card profile-col-6"><h3>Current plan</h3><p><strong>VORNEQ Plus</strong></p><p class="profile-muted">Renews monthly</p><button class="profile-btn profile-btn--primary">Upgrade</button></div><div class="profile-card profile-col-6"><h3>Billing history</h3><ul class="profile-list"><li class="profile-list__item">Aug 2026 · Paid</li><li class="profile-list__item">Jul 2026 · Paid</li></ul></div></div>
+  <section id="settings" class="profile-section" aria-labelledby="settings-title">
+    <header class="profile-section__header">
+      <div>
+        <p class="profile-eyebrow">{% trans "Account controls" %}</p>
+        <h2 id="settings-title">{% trans "Settings" %}</h2>
       </div>
-
-      <div class="profile-section" data-profile-section="goals" hidden>
-        <header class="profile-section__header"><h2>Goals</h2><button class="profile-btn profile-btn--primary">Set target</button></header>
-        <div class="profile-card"><h3>2026 reading goal</h3><div class="profile-progress__row"><span>36 books</span><div class="profile-progress__track"><div class="profile-progress__bar" style="--progress:67%"></div></div><strong>24 / 36</strong></div></div>
-      </div>
-
-      <div class="profile-section" data-profile-section="settings" hidden>
-        <header class="profile-section__header"><h2>Settings</h2></header>
-        <form class="profile-form" data-settings-form>
-          <div class="profile-card"><h3>Profile</h3><div class="profile-form__row"><label class="profile-form__group"><span class="profile-label">Display name</span><input class="profile-input" name="display_name" value="{{ user.get_full_name|default:user.username }}"></label><label class="profile-form__group"><span class="profile-label">Language</span><select class="profile-select" name="language"><option value="en">English</option><option value="fa">فارسی</option></select></label></div><label class="profile-form__group"><span class="profile-label">Bio</span><textarea class="profile-textarea" name="bio"></textarea></label></div>
-          <div class="profile-card"><h3>Security & privacy</h3><div class="profile-setting"><div><strong>Two-factor authentication</strong><div class="profile-muted">Add an extra layer of account security.</div></div><label class="profile-switch"><input type="checkbox" name="two_factor"><span></span></label></div><div class="profile-setting"><div><strong>Private profile</strong><div class="profile-muted">Limit activity visibility to approved connections.</div></div><label class="profile-switch"><input type="checkbox" name="private_profile"><span></span></label></div></div>
-          <div class="profile-card"><h3>Notifications</h3><div class="profile-setting"><div><strong>Email notifications</strong><div class="profile-muted">Reading goals, replies, and account updates.</div></div><label class="profile-switch"><input type="checkbox" name="email_notifications" checked><span></span></label></div></div>
-          <div class="profile-card profile-danger"><h3>Advanced</h3><p class="profile-muted">Export your data or manage account deletion.</p><button class="profile-btn" type="button">Export data</button></div>
-          <div><button class="profile-btn profile-btn--primary" type="submit">Save settings</button></div>
-        </form>
-      </div>
-    </section>
-  </div>
-</main>
-<script src="{% static 'js/profile-dashboard.js' %}"></script>
-<script src="{% static 'js/profile-library.js' %}"></script>
-<script src="{% static 'js/profile-settings.js' %}"></script>
-<script src="{% static 'js/profile.js' %}"></script>
-</body>
-</html>
+    </header>
+    <div class="profile-settings-grid">
+      <a class="profile-settings-card" href="{% url 'account_email' %}"><strong>{% trans "Email addresses" %}</strong><span>{% trans "Manage verified email addresses for your account." %}</span></a>
+      <a class="profile-settings-card" href="{% url 'account_change_password' %}"><strong>{% trans "Password & security" %}</strong><span>{% trans "Update your account password." %}</span></a>
+      <a class="profile-settings-card" href="{% url 'account_logout' %}"><strong>{% trans "Sign out" %}</strong><span>{% trans "End the current authenticated session." %}</span></a>
+    </div>
+  </section>
+</section>
+{% endblock %}
