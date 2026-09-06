@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from django.core.paginator import Paginator
-from django.db.models import CharField, F, Q, QuerySet
+from django.db import connection
+from django.db.models import CharField, Count, F, Q, QuerySet, Window
 from django.db.models.functions import Cast, Coalesce
 from django.urls import reverse
 from django.utils.translation import get_language
@@ -63,16 +64,24 @@ class SearchAdapter(ABC):
         raise NotImplementedError
 
     def top_candidates(self, queryset: QuerySet, limit: int) -> QuerySet:
-        """Return this adapter's top candidates using the global ordering semantics.
-
-        The public search ordering is ``(published_at, key)`` descending. Each
-        adapter has a fixed key prefix, so ordering by the text form of the PK
-        is equivalent to ordering by the complete key within that adapter.
-        """
+        """Return this adapter's top candidates using the global ordering semantics."""
         if limit <= 0:
             return queryset.none()
         return (
             queryset.annotate(
+                _search_published_at=self.global_time_expression(),
+                _search_pk_text=Cast("pk", output_field=CharField()),
+            )
+            .order_by("-_search_published_at", "-_search_pk_text")[:limit]
+        )
+
+    def window_count_candidates(self, queryset: QuerySet, limit: int) -> list:
+        """Fetch bounded candidates and the exact adapter total in one query."""
+        if limit <= 0:
+            return []
+        return list(
+            queryset.annotate(
+                _search_total=Window(expression=Count("pk")),
                 _search_published_at=self.global_time_expression(),
                 _search_pk_text=Cast("pk", output_field=CharField()),
             )
@@ -263,11 +272,7 @@ class AudioItemAdapter(SearchAdapter):
 
 
 class UnifiedSearch:
-    """Retrieval-only search across public VORNEQ content surfaces.
-
-    This service intentionally does not inspect Verification, Reputation, Evidence,
-    or any trust score. Results are ordered by recency only in this foundation.
-    """
+    """Retrieval-only search across public VORNEQ content surfaces."""
 
     DEFAULT_PAGE_SIZE = 12
     MAX_PAGE_SIZE = 50
@@ -297,6 +302,14 @@ class UnifiedSearch:
             return set(requested_types)
         return None
 
+    @classmethod
+    def _normalize_page_size(cls, page_size) -> int:
+        try:
+            page_size = int(page_size)
+        except (TypeError, ValueError):
+            page_size = cls.DEFAULT_PAGE_SIZE
+        return min(max(1, page_size), cls.MAX_PAGE_SIZE)
+
     def collect(
         self,
         query: str = "",
@@ -304,11 +317,7 @@ class UnifiedSearch:
         *,
         language: str | None = None,
     ) -> list[dict]:
-        """Collect the complete result set.
-
-        Kept as the compatibility/reference path for callers that explicitly need
-        every matching result. Paginated ``search()`` uses bounded candidates.
-        """
+        """Collect the complete result set for compatibility/reference callers."""
         normalized_query = self.normalize_query(query)
         filters = filters or {}
         language = language or get_language() or "en"
@@ -326,24 +335,17 @@ class UnifiedSearch:
         results.sort(key=lambda item: (item.published_at, item.key), reverse=True)
         return [item.as_dict() for item in results]
 
-    def search(
+    def _search_bounded(
         self,
-        query: str = "",
-        filters: dict | None = None,
-        page: int = 1,
-        page_size: int = DEFAULT_PAGE_SIZE,
+        query: str,
+        filters: dict,
+        page,
+        page_size: int,
         *,
-        language: str | None = None,
+        language: str,
     ) -> dict:
-        try:
-            page_size = int(page_size)
-        except (TypeError, ValueError):
-            page_size = self.DEFAULT_PAGE_SIZE
-        page_size = min(max(1, page_size), self.MAX_PAGE_SIZE)
-
+        """Pre-window production path retained as a compatibility fallback."""
         normalized_query = self.normalize_query(query)
-        filters = filters or {}
-        language = language or get_language() or "en"
         requested_types = self._requested_types(filters)
 
         querysets: list[tuple[SearchAdapter, QuerySet, int]] = []
@@ -356,9 +358,6 @@ class UnifiedSearch:
             total += count
             querysets.append((adapter, queryset, count))
 
-        # Use Paginator itself to preserve the historical get_page() contract for
-        # non-integer, zero/negative, and out-of-range page values without
-        # materializing the result set.
         paginator = Paginator(range(total), page_size)
         page_obj = paginator.get_page(page)
         page_number = page_obj.number
@@ -373,6 +372,54 @@ class UnifiedSearch:
                 for instance in adapter.top_candidates(queryset, candidate_limit)
             )
 
+        return self._build_page_payload(
+            candidates=candidates,
+            total=total,
+            page=page,
+            page_size=page_size,
+        )
+
+    def _search_with_window_count(
+        self,
+        query: str,
+        filters: dict,
+        page: int,
+        page_size: int,
+        *,
+        language: str,
+    ) -> dict:
+        """Primary path: exact count and bounded candidates in one query/adapter."""
+        normalized_query = self.normalize_query(query)
+        requested_types = self._requested_types(filters)
+        candidate_limit = page * page_size
+
+        candidates: list[SearchResult] = []
+        total = 0
+        for adapter in self.adapters:
+            if requested_types is not None and adapter.type_name not in requested_types:
+                continue
+            queryset = adapter.get_queryset(normalized_query, filters)
+            rows = adapter.window_count_candidates(queryset, candidate_limit)
+            if not rows:
+                continue
+            total += int(rows[0]._search_total)
+            candidates.extend(
+                adapter.serialize(instance, language=language) for instance in rows
+            )
+
+        return self._build_page_payload(
+            candidates=candidates,
+            total=total,
+            page=page,
+            page_size=page_size,
+        )
+
+    @staticmethod
+    def _build_page_payload(*, candidates, total: int, page, page_size: int) -> dict:
+        paginator = Paginator(range(total), page_size)
+        page_obj = paginator.get_page(page)
+        page_number = page_obj.number
+
         candidates.sort(key=lambda item: (item.published_at, item.key), reverse=True)
         start = (page_number - 1) * page_size
         end = start + page_size
@@ -386,3 +433,41 @@ class UnifiedSearch:
             "has_next": page_obj.has_next(),
             "has_previous": page_obj.has_previous(),
         }
+
+    def search(
+        self,
+        query: str = "",
+        filters: dict | None = None,
+        page: int = 1,
+        page_size: int = DEFAULT_PAGE_SIZE,
+        *,
+        language: str | None = None,
+    ) -> dict:
+        page_size = self._normalize_page_size(page_size)
+        filters = filters or {}
+        language = language or get_language() or "en"
+
+        try:
+            requested_page = int(page)
+        except (TypeError, ValueError):
+            requested_page = 0
+
+        # Window functions cannot resolve Django's historical get_page() behavior
+        # for invalid/non-positive pages before the exact total is known. Keep the
+        # bounded path for those edge cases and for databases without OVER support.
+        if requested_page <= 0 or not connection.features.supports_over_clause:
+            return self._search_bounded(
+                query,
+                filters,
+                page,
+                page_size,
+                language=language,
+            )
+
+        return self._search_with_window_count(
+            query,
+            filters,
+            requested_page,
+            page_size,
+            language=language,
+        )
