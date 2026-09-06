@@ -1,0 +1,365 @@
+/* ==========================================================
+   VORNEQ ACCOUNT EXPERIENCE SYSTEM
+   Shared presentation contract for account-management pages.
+   ========================================================== */
+
+.account-experience {
+  width: min(100%, 760px);
+  margin-inline: auto;
+  padding: var(--space-7) var(--space-4) var(--space-8);
+  color: var(--color-text-primary);
+}
+
+.account-experience--compact {
+  width: min(100%, 560px);
+}
+
+.account-experience__header {
+  margin-block-end: var(--space-5);
+}
+
+.account-experience__eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--color-accent);
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.account-experience__title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: clamp(var(--font-size-h2), 4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.account-experience__subtitle {
+  max-width: 62ch;
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  text-wrap: pretty;
+}
+
+.account-panel {
+  padding: var(--space-5);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-low);
+}
+
+.account-panel + .account-panel {
+  margin-block-start: var(--space-4);
+}
+
+.account-panel__title {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-h3);
+}
+
+.account-panel__description {
+  margin: calc(var(--space-3) * -1) 0 var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+  line-height: 1.55;
+}
+
+.account-system-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.account-system-form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.account-system-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.account-system-field label {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+  font-weight: 650;
+}
+
+.account-system-field input:not([type="checkbox"]):not([type="radio"]),
+.account-system-field select,
+.account-system-field textarea {
+  inline-size: 100%;
+  min-block-size: var(--control-height);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  transition: border-color var(--motion-duration-fast) var(--motion-easing-standard),
+              box-shadow var(--motion-duration-fast) var(--motion-easing-standard),
+              background var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.account-system-field input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+.account-system-field select:focus-visible,
+.account-system-field textarea:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.account-system-message {
+  min-block-size: 1.5em;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+  line-height: 1.5;
+}
+
+.account-system-message--error {
+  color: var(--color-error);
+}
+
+.account-system-help {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+  line-height: 1.5;
+}
+
+.account-system-help ul {
+  margin: var(--space-1) 0 0;
+  padding-inline-start: var(--space-4);
+}
+
+.account-system-errors {
+  padding: var(--space-3);
+  color: var(--color-error);
+  background: rgba(185, 28, 28, 0.06);
+  border: 1px solid rgba(185, 28, 28, 0.18);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-small);
+}
+
+.account-system-errors p {
+  margin: 0;
+}
+
+.account-system-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block-start: var(--space-4);
+  border-block-start: 1px solid var(--color-border);
+}
+
+.account-system-actions--plain {
+  padding-block-start: 0;
+  border-block-start: 0;
+}
+
+.account-system-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--control-height);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  transition: background var(--motion-duration-fast) var(--motion-easing-standard),
+              border-color var(--motion-duration-fast) var(--motion-easing-standard),
+              color var(--motion-duration-fast) var(--motion-easing-standard),
+              box-shadow var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.account-system-button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--color-focus-ring);
+}
+
+.account-system-button--primary {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+
+.account-system-button--primary:hover {
+  background: var(--color-accent-hover);
+}
+
+.account-system-button--secondary {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.account-system-button--secondary:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.account-system-button--danger {
+  background: var(--color-error);
+  color: #fff;
+}
+
+.account-system-button--danger:hover {
+  background: #991b1b;
+}
+
+.account-system-button--small {
+  padding-inline: var(--space-3);
+  font-size: var(--font-size-small);
+}
+
+.account-email-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.account-email-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-bg-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.account-email-row:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.account-email-row input[type="radio"] {
+  inline-size: 18px;
+  block-size: 18px;
+  margin-block-start: 0.15rem;
+  accent-color: var(--color-accent);
+}
+
+.account-email-row__body {
+  min-inline-size: 0;
+}
+
+.account-email-row__address {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--color-text-primary);
+  font-weight: 650;
+}
+
+.account-email-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-block-start: var(--space-1);
+}
+
+.account-email-badge {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 24px;
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+}
+
+.account-email-badge--primary {
+  color: var(--color-accent);
+  background: var(--color-accent-subtle);
+}
+
+.account-email-badge--verified {
+  color: var(--color-success);
+  background: rgba(21, 128, 61, 0.08);
+}
+
+.account-email-badge--unverified {
+  color: var(--color-text-muted);
+  background: var(--color-bg-surface);
+}
+
+.account-system-divider {
+  block-size: 1px;
+  margin-block: var(--space-5);
+  background: var(--color-border);
+}
+
+.account-system-link-row {
+  display: flex;
+  justify-content: center;
+  margin-block-start: var(--space-3);
+  font-size: var(--font-size-small);
+}
+
+.account-system-link {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.account-system-link:hover {
+  text-decoration: underline;
+}
+
+.account-system-empty {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .account-experience {
+    padding: var(--space-4) var(--space-3) var(--space-6);
+  }
+
+  .account-panel {
+    padding: var(--space-4);
+  }
+
+  .account-system-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .account-system-button {
+    inline-size: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-system-field input,
+  .account-system-field select,
+  .account-system-field textarea,
+  .account-system-button {
+    transition: none;
+  }
+}
