@@ -7,32 +7,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#0d1117">
     <script>
         (function () {
-            var preference = 'system';
+            var valid = ['light', 'dark', 'blue', 'gold', 'emerald', 'purple', 'system'];
+            var preference = 'dark';
             try {
-                preference = localStorage.getItem('vorneq-theme') || 'system';
+                preference = localStorage.getItem('vorneq-theme') || 'dark';
             } catch (error) {
-                preference = 'system';
+                preference = 'dark';
             }
 
-            if (preference !== 'light' && preference !== 'dark' && preference !== 'system') {
-                preference = 'system';
-            }
+            if (valid.indexOf(preference) === -1) preference = 'dark';
 
             var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             var resolved = preference === 'system' ? (systemDark ? 'dark' : 'light') : preference;
             var root = document.documentElement;
+            var nativeScheme = resolved === 'light' ? 'light' : 'dark';
+            var themeColors = {
+                light: '#f8f6f2',
+                dark: '#0d1117',
+                blue: '#0b1a2e',
+                gold: '#1a140e',
+                emerald: '#0d1f1a',
+                purple: '#1a0f2e'
+            };
 
             root.dataset.theme = resolved;
             root.dataset.themePreference = preference;
-            root.style.colorScheme = resolved;
+            root.style.colorScheme = nativeScheme;
 
             var themeColor = document.querySelector('meta[name="theme-color"]');
-            if (themeColor) {
-                themeColor.content = resolved === 'dark' ? '#0b1120' : '#ffffff';
-            }
+            if (themeColor) themeColor.content = themeColors[resolved] || '#0d1117';
         }());
     </script>
 
@@ -46,6 +52,7 @@
     <title>{% block title %}{% trans "VORNEQ — Knowledge Discovery Platform" %}{% endblock %}</title>
 
     <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme-palettes.css' %}">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/global-experience.css' %}">
     <link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
