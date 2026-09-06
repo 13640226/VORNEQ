@@ -100,8 +100,43 @@ def revoke_entitlement(user, product):
 
 
 def has_valid_entitlement(user, product):
-    """Legacy authorization path; canonical dual-read is introduced separately."""
+    """Authorize with canonical-first validation and legacy fallback.
+
+    During the migration window ``user`` + ``product`` remain the request key and
+    canonical-only rows are intentionally unsupported. If the matched Entitlement
+    has canonical references, they must form a complete pair and exactly match the
+    registry bindings for the supplied legacy key. Missing or conflicting registry
+    state fails closed. A row with no canonical references may still authorize via
+    the legacy pair until backfill is complete.
+    """
     if not getattr(user, "is_authenticated", False):
         return False
-    entitlement = Entitlement.objects.filter(user=user, product=product).first()
-    return bool(entitlement and entitlement.is_valid())
+
+    entitlement = (
+        Entitlement.objects.select_related("identity", "artifact")
+        .filter(user=user, product=product)
+        .first()
+    )
+    if entitlement is None or not entitlement.is_valid():
+        return False
+
+    has_identity = entitlement.identity_id is not None
+    has_artifact = entitlement.artifact_id is not None
+
+    # Corrupt or partially migrated canonical state must never fall back silently.
+    if has_identity != has_artifact:
+        return False
+
+    # Legacy fallback remains valid only while this row has not yet been backfilled.
+    if not has_identity:
+        return True
+
+    expected_identity = resolve_identity_for_user(user)
+    expected_artifact = resolve_artifact(product)
+    if expected_identity is None or expected_artifact is None:
+        return False
+
+    return (
+        entitlement.identity_id == expected_identity.pk
+        and entitlement.artifact_id == expected_artifact.pk
+    )
