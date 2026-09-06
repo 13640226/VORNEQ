@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
 {% block title %}{% trans "Profile" %} — VORNEQ{% endblock %}
 
@@ -122,6 +123,42 @@
         <span class="profile-settings-card__content"><strong>{% trans "Sign out" %}</strong><span>{% trans "End the current authenticated session." %}</span></span>
         <span class="profile-settings-card__chevron" aria-hidden="true">›</span>
       </a>
+    </div>
+
+    <div class="profile-preferences" aria-labelledby="preferences-title">
+      <div class="profile-preferences__header">
+        <p class="profile-eyebrow">{% trans "Experience" %}</p>
+        <h3 id="preferences-title">{% trans "Language and appearance" %}</h3>
+        <p>{% trans "Choose how VORNEQ is displayed on this device." %}</p>
+      </div>
+
+      <div class="profile-preferences__grid">
+        <section class="profile-preference-panel" aria-labelledby="language-preference-title">
+          <div class="profile-preference-panel__copy">
+            <h4 id="language-preference-title">{% trans "Language" %}</h4>
+            <p>{% trans "Choose the interface language." %}</p>
+          </div>
+          <form action="{% url 'set_language' %}" method="post" class="profile-preference-options">
+            {% csrf_token %}
+            <input name="next" type="hidden" value="{{ request.get_full_path }}">
+            <button type="submit" name="language" value="en" class="profile-preference-option{% if LANGUAGE_CODE == 'en' %} profile-preference-option--active{% endif %}"{% if LANGUAGE_CODE == 'en' %} aria-current="true"{% endif %}>English</button>
+            <button type="submit" name="language" value="fa" class="profile-preference-option{% if LANGUAGE_CODE == 'fa' %} profile-preference-option--active{% endif %}"{% if LANGUAGE_CODE == 'fa' %} aria-current="true"{% endif %}>فارسی</button>
+            <button type="submit" name="language" value="de" class="profile-preference-option{% if LANGUAGE_CODE == 'de' %} profile-preference-option--active{% endif %}"{% if LANGUAGE_CODE == 'de' %} aria-current="true"{% endif %}>Deutsch</button>
+          </form>
+        </section>
+
+        <section class="profile-preference-panel" aria-labelledby="theme-preference-title">
+          <div class="profile-preference-panel__copy">
+            <h4 id="theme-preference-title">{% trans "Theme" %}</h4>
+            <p>{% trans "Use a light, dark, or system-matched appearance." %}</p>
+          </div>
+          <div class="profile-preference-options" role="group" aria-label="{% trans 'Theme preference' %}">
+            <button type="button" class="profile-preference-option" data-theme-option="light" aria-pressed="false">{% trans "Light" %}</button>
+            <button type="button" class="profile-preference-option" data-theme-option="dark" aria-pressed="false">{% trans "Dark" %}</button>
+            <button type="button" class="profile-preference-option" data-theme-option="system" aria-pressed="false">{% trans "System" %}</button>
+          </div>
+        </section>
+      </div>
     </div>
   </section>
 </section>
