@@ -10,6 +10,7 @@
 {% block extra_head %}
 {{ block.super }}
 <link rel="stylesheet" href="{% static 'css/marketplace.css' %}">
+<link rel="stylesheet" href="{% static 'css/marketplace-stability.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -56,12 +57,14 @@
         {% endfor %}
       </nav>
 
-      {% if query or category %}
-        <div class="marketplace-toolbar__summary" aria-live="polite">
-          <span>{% blocktrans count total=paginator.count %}{{ total }} product{% plural %}{{ total }} products{% endblocktrans %}</span>
+      <div class="marketplace-toolbar__summary" aria-live="polite">
+        <span>{% blocktrans count total=paginator.count %}{{ total }} product{% plural %}{{ total }} products{% endblocktrans %}</span>
+        {% if query or category %}
           <a href="{% url 'marketplace:index' %}" class="marketplace-toolbar__clear">{% trans "Clear filters" %}</a>
-        </div>
-      {% endif %}
+        {% else %}
+          <span class="marketplace-toolbar__clear marketplace-toolbar__clear--placeholder" aria-hidden="true">{% trans "Clear filters" %}</span>
+        {% endif %}
+      </div>
     </section>
 
     {% if products %}

@@ -20,8 +20,16 @@
   view-transition-name: vorneq-footer;
 }
 
+/* Filter controls keep a stable visual identity while query parameters change. */
+.discovery-filters,
+.library-filters,
+.marketplace-filters {
+  view-transition-name: vorneq-filters;
+}
+
 ::view-transition-group(vorneq-nav),
-::view-transition-group(vorneq-footer) {
+::view-transition-group(vorneq-footer),
+::view-transition-group(vorneq-filters) {
   animation-duration: 140ms;
   animation-timing-function: ease-out;
 }
@@ -33,36 +41,24 @@
   animation: none;
 }
 
+/* Main content now cross-fades only. No translateY: even a 2–3px movement can
+   feel like a jump when rapidly switching filters. */
 ::view-transition-old(vorneq-main) {
-  animation: vorneq-main-out 120ms ease-in both;
+  animation: vorneq-main-out 110ms ease-in both;
 }
 
 ::view-transition-new(vorneq-main) {
-  animation: vorneq-main-in 160ms ease-out both;
+  animation: vorneq-main-in 140ms ease-out both;
 }
 
 @keyframes vorneq-main-out {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  to {
-    opacity: 0;
-    transform: translateY(-2px);
-  }
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 @keyframes vorneq-main-in {
-  from {
-    opacity: 0;
-    transform: translateY(3px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
