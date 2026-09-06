@@ -58,6 +58,7 @@ class PersistentSimilarityTests(TestCase):
         )
         self.assertEqual(results, [])
 
+    @override_settings(DEBUG=True)
     def test_image_api_is_ephemeral_and_returns_discovery_note(self):
         asset = self._image()
         MediaSimilarityService(
@@ -85,6 +86,7 @@ class PersistentSimilarityTests(TestCase):
         self.assertEqual(MediaAsset.objects.count(), before_count)
         self.assertNotIn("url", payload["results"][0])
 
+    @override_settings(DEBUG=True)
     def test_text_api_searches_compatible_local_space(self):
         response = self.client.post(
             reverse("media:search_text"),
