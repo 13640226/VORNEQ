@@ -20,7 +20,7 @@ def get_public_verification_summary(artifact):
         request__artifact_content_type=content_type,
         request__artifact_object_id=str(artifact.pk),
         request__status=VerificationRequest.Status.COMPLETED,
-    )
+    ).select_related("request__method")
 
     outcome_counts = {
         choice: 0
@@ -39,6 +39,13 @@ def get_public_verification_summary(artifact):
         visibility=VerificationEvidence.Visibility.PUBLIC,
     ).count()
 
+    verification_methods = list(
+        results.order_by("request__method__name")
+        .values_list("request__method__name", flat=True)
+        .distinct()
+    )
+    last_result = results.order_by("-created_at", "-id").first()
+
     average = aggregates["average_reported_confidence"]
 
     return {
@@ -46,4 +53,6 @@ def get_public_verification_summary(artifact):
         "outcomes": outcome_counts,
         "average_reported_confidence": round(average, 1) if average is not None else None,
         "public_evidence_count": public_evidence_count,
+        "verification_methods": verification_methods,
+        "last_verified_at": last_result.created_at if last_result else None,
     }
