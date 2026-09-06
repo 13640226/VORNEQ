@@ -94,12 +94,34 @@
   </section>
 
   <section id="settings" class="profile-section" aria-labelledby="settings-title">
-    <header class="profile-section__header"><div><p class="profile-eyebrow">{% trans "Account controls" %}</p><h2 id="settings-title">{% trans "Settings" %}</h2></div></header>
+    <header class="profile-section__header">
+      <div>
+        <p class="profile-eyebrow">{% trans "Account controls" %}</p>
+        <h2 id="settings-title">{% trans "Settings" %}</h2>
+        <p class="profile-settings-intro">{% trans "Manage how your profile appears and keep your account access up to date." %}</p>
+      </div>
+    </header>
     <div class="profile-settings-grid">
-      <a class="profile-settings-card" href="{% url 'profile_edit' %}"><strong>{% trans "Public profile" %}</strong><span>{% trans "Update your name, biography, website, and profile photo." %}</span></a>
-      <a class="profile-settings-card" href="{% url 'account_email' %}"><strong>{% trans "Email addresses" %}</strong><span>{% trans "Manage verified email addresses for your account." %}</span></a>
-      <a class="profile-settings-card" href="{% url 'account_change_password' %}"><strong>{% trans "Password & security" %}</strong><span>{% trans "Update your account password." %}</span></a>
-      <a class="profile-settings-card" href="{% url 'account_logout' %}"><strong>{% trans "Sign out" %}</strong><span>{% trans "End the current authenticated session." %}</span></a>
+      <a class="profile-settings-card" href="{% url 'profile_edit' %}">
+        <span class="profile-settings-card__icon" aria-hidden="true">P</span>
+        <span class="profile-settings-card__content"><strong>{% trans "Public profile" %}</strong><span>{% trans "Update your name, biography, website, and profile photo." %}</span></span>
+        <span class="profile-settings-card__chevron" aria-hidden="true">›</span>
+      </a>
+      <a class="profile-settings-card" href="{% url 'account_email' %}">
+        <span class="profile-settings-card__icon" aria-hidden="true">@</span>
+        <span class="profile-settings-card__content"><strong>{% trans "Email addresses" %}</strong><span>{% trans "Manage verified email addresses for your account." %}</span></span>
+        <span class="profile-settings-card__chevron" aria-hidden="true">›</span>
+      </a>
+      <a class="profile-settings-card" href="{% url 'account_change_password' %}">
+        <span class="profile-settings-card__icon" aria-hidden="true">S</span>
+        <span class="profile-settings-card__content"><strong>{% trans "Password & security" %}</strong><span>{% trans "Update your account password." %}</span></span>
+        <span class="profile-settings-card__chevron" aria-hidden="true">›</span>
+      </a>
+      <a class="profile-settings-card profile-settings-card--danger" href="{% url 'account_logout' %}">
+        <span class="profile-settings-card__icon" aria-hidden="true">↪</span>
+        <span class="profile-settings-card__content"><strong>{% trans "Sign out" %}</strong><span>{% trans "End the current authenticated session." %}</span></span>
+        <span class="profile-settings-card__chevron" aria-hidden="true">›</span>
+      </a>
     </div>
   </section>
 </section>
