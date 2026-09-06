@@ -7,24 +7,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0d1117">
+    <meta name="theme-color" content="#f7f8fa">
     <script>
         (function () {
-            var valid = ['light', 'dark', 'blue', 'gold', 'emerald', 'purple', 'system'];
-            var preference = 'dark';
+            var valid = ['vorneq', 'light', 'dark', 'blue', 'gold', 'emerald', 'purple', 'system'];
+            var preference = 'vorneq';
             try {
-                preference = localStorage.getItem('vorneq-theme') || 'dark';
+                preference = localStorage.getItem('vorneq-theme') || 'vorneq';
             } catch (error) {
-                preference = 'dark';
+                preference = 'vorneq';
             }
 
-            if (valid.indexOf(preference) === -1) preference = 'dark';
+            if (valid.indexOf(preference) === -1) preference = 'vorneq';
 
             var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             var resolved = preference === 'system' ? (systemDark ? 'dark' : 'light') : preference;
             var root = document.documentElement;
-            var nativeScheme = resolved === 'light' ? 'light' : 'dark';
+            var nativeScheme = (resolved === 'light' || resolved === 'vorneq') ? 'light' : 'dark';
             var themeColors = {
+                vorneq: '#f7f8fa',
                 light: '#f8f6f2',
                 dark: '#0d1117',
                 blue: '#0b1a2e',
@@ -38,7 +39,7 @@
             root.style.colorScheme = nativeScheme;
 
             var themeColor = document.querySelector('meta[name="theme-color"]');
-            if (themeColor) themeColor.content = themeColors[resolved] || '#0d1117';
+            if (themeColor) themeColor.content = themeColors[resolved] || '#f7f8fa';
         }());
     </script>
 
