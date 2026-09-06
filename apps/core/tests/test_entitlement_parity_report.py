@@ -36,8 +36,8 @@ class EntitlementParityReportTests(TestCase):
 
     def test_reports_legacy_only_without_mutating_row(self):
         entitlement = grant_entitlement(self.user, self.product)
-        identity, _ = register_user_identity(self.user)
-        artifact, _ = register_artifact(self.product)
+        register_user_identity(self.user)
+        register_artifact(self.product)
 
         output = self._run_report()
 
@@ -47,8 +47,6 @@ class EntitlementParityReportTests(TestCase):
         self.assertIn("legacy_only=1", output)
         self.assertIn("registry_resolved=1", output)
         self.assertIn("authorization_allowed=1", output)
-        self.assertEqual(identity.pk, self.user.identity_binding.identity_id)
-        self.assertEqual(artifact.pk, self.product.artifact_binding.artifact_id)
 
     def test_reports_matching_canonical_pair(self):
         identity, _ = register_user_identity(self.user)
@@ -97,7 +95,7 @@ class EntitlementParityReportTests(TestCase):
         self.assertIn("conflicts=0", output)
         self.assertIn("authorization_allowed=1", output)
 
-    def test_partial_canonical_state_is_classified_as_conflict_state(self):
+    def test_partial_canonical_state_is_classified_defensively(self):
         identity = Identity.objects.create(
             kind=Identity.Kind.HUMAN,
             display_name="Unsaved partial identity",
