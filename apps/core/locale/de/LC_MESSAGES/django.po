@@ -1,0 +1,101 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: VORNEQ\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Knowledge without borders"
+msgstr "Wissen ohne Grenzen"
+
+msgid "knowledge"
+msgstr "Wissen"
+
+msgid "across formats."
+msgstr "in allen Formaten."
+
+msgid "Books, articles, documents, audio, and digital products — all in one place."
+msgstr "Bücher, Artikel, Dokumente, Audio und digitale Produkte – alles an einem Ort."
+
+msgid "Search books, articles, audio, documents, and more…"
+msgstr "Bücher, Artikel, Audio, Dokumente und mehr durchsuchen…"
+
+msgid "Popular topics"
+msgstr "Beliebte Themen"
+
+msgid "Climate change"
+msgstr "Klimawandel"
+
+msgid "Artificial intelligence"
+msgstr "Künstliche Intelligenz"
+
+msgid "Mental health"
+msgstr "Psychische Gesundheit"
+
+msgid "Sustainable cities"
+msgstr "Nachhaltige Städte"
+
+msgid "Productivity"
+msgstr "Produktivität"
+
+msgid "People"
+msgstr "Menschen"
+
+msgid "Ideas"
+msgstr "Ideen"
+
+msgid "Opportunity"
+msgstr "Möglichkeiten"
+
+msgid "Explore by format"
+msgstr "Nach Format entdecken"
+
+msgid "Explore books and long-form knowledge"
+msgstr "Bücher und ausführliches Wissen entdecken"
+
+msgid "Read curated articles"
+msgstr "Kuratierte Artikel lesen"
+
+msgid "Listen and learn on the go"
+msgstr "Unterwegs hören und lernen"
+
+msgid "Access research and reports"
+msgstr "Auf Forschung und Berichte zugreifen"
+
+msgid "Digital Products"
+msgstr "Digitale Produkte"
+
+msgid "Discover tools and resources"
+msgstr "Werkzeuge und Ressourcen entdecken"
+
+msgid "Inspectable trust"
+msgstr "Nachvollziehbares Vertrauen"
+
+msgid "Evidence and context, not absolute truth claims"
+msgstr "Belege und Kontext statt absoluter Wahrheitsansprüche"
+
+msgid "Diverse perspectives"
+msgstr "Vielfältige Perspektiven"
+
+msgid "Knowledge from across a global community"
+msgstr "Wissen aus einer globalen Gemeinschaft"
+
+msgid "All in one place"
+msgstr "Alles an einem Ort"
+
+msgid "Search. Learn. Grow."
+msgstr "Suchen. Lernen. Wachsen."
+
+msgid "Handpicked content from across VORNEQ"
+msgstr "Ausgewählte Inhalte aus ganz VORNEQ"
+
+msgid "Featured this week"
+msgstr "Diese Woche im Fokus"
+
+msgid "View all"
+msgstr "Alle anzeigen"
+
+msgid "Try adjusting your keywords or choosing a different content type."
+msgstr "Passe deine Suchbegriffe an oder wähle einen anderen Inhaltstyp."
