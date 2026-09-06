@@ -52,10 +52,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="signatureenvelope",
-            index=models.Index(fields=["key_id", "signed_at"], name="evidence_signature_key_time_idx"),
+            index=models.Index(fields=["key_id", "signed_at"], name="sig_key_time_idx"),
         ),
         migrations.AddIndex(
             model_name="signatureenvelope",
-            index=models.Index(fields=["payload_digest"], name="evidence_signature_digest_idx"),
+            index=models.Index(fields=["payload_digest"], name="sig_digest_idx"),
         ),
     ]
