@@ -52,7 +52,7 @@ class Migration(migrations.Migration):
             model_name="entitlement",
             index=models.Index(
                 fields=["identity", "artifact", "is_active"],
-                name="core_ent_identity_art_active_idx",
+                name="core_ent_id_art_active_idx",
             ),
         ),
     ]
