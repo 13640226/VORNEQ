@@ -502,6 +502,7 @@ class ArtifactBinding(models.Model):
         ("marketplace", "product"),
         ("library", "libraryitem"),
         ("content", "article"),
+        ("media", "mediaasset"),
     }
 
     artifact = models.OneToOneField(

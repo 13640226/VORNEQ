@@ -99,6 +99,7 @@ INSTALLED_APPS = [
     "apps.verification.apps.VerificationConfig",
     "apps.profiles.apps.ProfilesConfig",
     "apps.content.apps.ContentConfig",
+    "apps.media.apps.MediaConfig",
 ]
 
 
