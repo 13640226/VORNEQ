@@ -6,7 +6,7 @@ from PIL import Image, UnidentifiedImageError
 from .models import UserProfile
 
 
-MAX_AVATAR_BYTES = 2 * 1024 * 1024
+MAX_AVATAR_BYTES = 5 * 1024 * 1024
 MAX_AVATAR_DIMENSION = 4096
 ALLOWED_AVATAR_FORMATS = {"JPEG", "PNG", "WEBP"}
 
@@ -39,7 +39,7 @@ class ProfileEditForm(forms.Form):
             return avatar
 
         if avatar.size > MAX_AVATAR_BYTES:
-            raise ValidationError("Avatar must be 2 MB or smaller.")
+            raise ValidationError("Avatar must be 5 MB or smaller.")
 
         try:
             position = avatar.tell()
