@@ -32,7 +32,9 @@
 }
 
 .standalone-nav__wordmark {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
   font-size: 1.5rem;
   font-weight: var(--font-weight-display);
   color: var(--color-accent);
@@ -66,7 +68,9 @@
 }
 
 .standalone-nav__link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
   padding-block: var(--space-1);
   border-bottom: 2px solid transparent;
   color: var(--color-text-secondary);
@@ -100,8 +104,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  inline-size: 44px;
+  block-size: 44px;
+  flex: 0 0 44px;
   overflow: hidden;
   border-radius: 50%;
   background: var(--color-accent-subtle);
@@ -113,14 +118,16 @@
 }
 
 .standalone-nav__user-image {
-  width: 100%;
-  height: 100%;
+  inline-size: 100%;
+  block-size: 100%;
   display: block;
   object-fit: cover;
 }
 
 .standalone-nav__action {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
   font-size: var(--font-size-small);
@@ -190,7 +197,6 @@
   }
 
   .standalone-nav__link {
-    padding-block: var(--space-1);
     font-size: var(--font-size-small);
   }
 
