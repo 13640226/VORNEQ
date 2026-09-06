@@ -53,6 +53,10 @@ urlpatterns += i18n_patterns(
         name="profile",
     ),
     path(
+        "",
+        include("apps.profiles.urls"),
+    ),
+    path(
         "accounts/",
         include("allauth.urls"),
     ),
