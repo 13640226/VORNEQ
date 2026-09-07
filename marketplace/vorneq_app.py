@@ -10,5 +10,8 @@ registry.register(
         url_name="marketplace:index",
         order=30,
         active_namespaces=("marketplace",),
+        urlconf="marketplace.urls",
+        route_prefix="marketplace/",
+        capabilities=("commerce.catalog", "commerce.entitlement"),
     )
 )
