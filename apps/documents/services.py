@@ -161,7 +161,7 @@ class DocumentService:
             actor_identity=actor_identity,
             event_type=DocumentAuditLog.EventType.SHARED,
             metadata={
-                "target_identity": collaborator_identity.pk,
+                "target_identity": str(collaborator_identity.pk),
                 "role": role,
             },
         )
@@ -195,7 +195,7 @@ class DocumentService:
             actor_identity=actor_identity,
             event_type=DocumentAuditLog.EventType.REVOKED,
             metadata={
-                "target_identity": collaborator_identity.pk,
+                "target_identity": str(collaborator_identity.pk),
                 "previous_role": previous_role,
             },
         )
