@@ -84,3 +84,75 @@ class DocumentAccess(models.Model):
 
     def __str__(self):
         return f"{self.identity_id}:{self.role}:{self.document_id}"
+
+
+class DocumentAuditMutationForbidden(Exception):
+    """Raised when attempting to mutate an append-only document audit row."""
+
+
+class DocumentAuditLogQuerySet(models.QuerySet):
+    def update(self, *args, **kwargs):
+        raise DocumentAuditMutationForbidden("Bulk update on DocumentAuditLog is not allowed.")
+
+    def delete(self, *args, **kwargs):
+        raise DocumentAuditMutationForbidden("Bulk delete on DocumentAuditLog is not allowed.")
+
+
+class DocumentAuditLogManager(models.Manager):
+    def get_queryset(self):
+        return DocumentAuditLogQuerySet(self.model, using=self._db)
+
+
+class DocumentAuditLog(models.Model):
+    """Append-only, domain-owned audit trail for Documents."""
+
+    class EventType(models.TextChoices):
+        CREATED = "created", "Created"
+        UPDATED = "updated", "Updated"
+        DEACTIVATED = "deactivated", "Deactivated"
+        SHARED = "shared", "Shared"
+        REVOKED = "revoked", "Revoked"
+        VIEWED = "viewed", "Viewed"
+
+    document = models.ForeignKey(
+        Document,
+        on_delete=models.PROTECT,
+        related_name="audit_log",
+    )
+    actor_identity = models.ForeignKey(
+        "core.Identity",
+        on_delete=models.PROTECT,
+        related_name="document_audit_events",
+    )
+    event_type = models.CharField(max_length=20, choices=EventType.choices)
+    metadata = models.JSONField(default=dict, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    objects = DocumentAuditLogManager()
+
+    class Meta:
+        ordering = ["-timestamp", "-id"]
+        indexes = [
+            models.Index(fields=["document", "timestamp"], name="docs_audit_doc_time_idx"),
+            models.Index(fields=["actor_identity", "timestamp"], name="docs_audit_actor_time_idx"),
+        ]
+
+    def clean(self):
+        super().clean()
+        if not isinstance(self.metadata, dict):
+            raise ValidationError({"metadata": "Document audit metadata must be an object."})
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise DocumentAuditMutationForbidden(
+                "DocumentAuditLog is append-only; update is not allowed."
+            )
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise DocumentAuditMutationForbidden(
+            "DocumentAuditLog is append-only; deletion is not allowed."
+        )
+
+    def __str__(self):
+        return f"{self.event_type}:{self.document_id}:{self.actor_identity_id}"
