@@ -28,23 +28,46 @@
 
 /* ----- Brand / Wordmark ----- */
 .standalone-nav__brand {
+  display: inline-flex;
   flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-3);
+  min-block-size: var(--control-height);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition: color var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.standalone-nav__symbol {
+  display: block;
+  inline-size: 32px;
+  block-size: 32px;
+  flex: 0 0 32px;
+  background-color: currentColor;
+  -webkit-mask-image: url("../images/brand/ia-s.svg");
+  mask-image: url("../images/brand/ia-s.svg");
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
 }
 
 .standalone-nav__wordmark {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: 44px;
   font-size: 1.5rem;
   font-weight: var(--font-weight-display);
   color: var(--color-accent);
   letter-spacing: -0.5px;
   line-height: 1.2;
-  text-decoration: none;
   transition: color var(--motion-duration-fast) var(--motion-easing-standard);
 }
 
-.standalone-nav__wordmark:hover {
+.standalone-nav__brand:hover {
+  color: var(--color-accent);
+}
+
+.standalone-nav__brand:hover .standalone-nav__wordmark {
   color: var(--color-accent-hover);
 }
 
@@ -174,6 +197,12 @@
     flex: 0 1 auto;
   }
 
+  .standalone-nav__symbol {
+    inline-size: 24px;
+    block-size: 24px;
+    flex-basis: 24px;
+  }
+
   .standalone-nav__actions {
     margin-inline-start: 0;
   }
@@ -209,7 +238,7 @@
    ACCESSIBILITY — Focus & Reduced Motion
    ========================================================== */
 
-.standalone-nav__wordmark:focus-visible,
+.standalone-nav__brand:focus-visible,
 .standalone-nav__link:focus-visible,
 .standalone-nav__action:focus-visible,
 .standalone-nav__user:focus-visible {
@@ -218,7 +247,16 @@
   box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
+.standalone-nav__brand:focus-visible {
+  color: var(--color-accent);
+}
+
+.standalone-nav__brand:focus-visible .standalone-nav__wordmark {
+  color: var(--color-accent-hover);
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .standalone-nav__brand,
   .standalone-nav__wordmark,
   .standalone-nav__link,
   .standalone-nav__action {
