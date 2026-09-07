@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{{ app.label }} — {% trans "Workspace" %}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'platform_shell/workspace.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="workspace workspace--app" aria-labelledby="workspace-app-title">
+    <header class="workspace__header">
+        <a class="workspace__back" href="{% url 'platform_shell:workspace_index' %}">
+            ← {% trans "Back to Workspace" %}
+        </a>
+        <p class="workspace__eyebrow">{% trans "Workspace context" %}</p>
+        <h1 id="workspace-app-title">{{ app.label }}</h1>
+        <p class="workspace__subtitle">{{ app.slug }}</p>
+    </header>
+
+    <dl class="workspace-details">
+        <div class="workspace-details__row">
+            <dt>{% trans "Slug" %}</dt>
+            <dd>{{ app.slug }}</dd>
+        </div>
+        <div class="workspace-details__row">
+            <dt>{% trans "Order" %}</dt>
+            <dd>{{ app.order }}</dd>
+        </div>
+        <div class="workspace-details__row">
+            <dt>{% trans "Capabilities" %}</dt>
+            <dd>{% if app.capabilities %}{{ app.capabilities|join:", " }}{% else %}—{% endif %}</dd>
+        </div>
+        <div class="workspace-details__row">
+            <dt>{% trans "Route prefix" %}</dt>
+            <dd>{{ app.route_prefix|default:"—" }}</dd>
+        </div>
+        <div class="workspace-details__row">
+            <dt>{% trans "Active namespaces" %}</dt>
+            <dd>{% if app.active_namespaces %}{{ app.active_namespaces|join:", " }}{% else %}—{% endif %}</dd>
+        </div>
+    </dl>
+
+    <div class="workspace__actions">
+        {% if has_launchable_url %}
+        <a class="workspace-button" href="{{ app_url }}">{% trans "Open App" %}</a>
+        {% else %}
+        <p class="workspace__neutral">{% trans "App does not have a launchable URL." %}</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
