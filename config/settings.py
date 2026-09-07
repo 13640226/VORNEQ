@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "apps.graph.apps.GraphConfig",
     "apps.core.apps.CoreConfig",
     "apps.verification.apps.VerificationConfig",
+    "apps.audit.apps.AuditConfig",
     "apps.profiles.apps.ProfilesConfig",
     "apps.content.apps.ContentConfig",
     "apps.media.apps.MediaConfig",
