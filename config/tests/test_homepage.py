@@ -27,8 +27,8 @@ class HomepageSignalNavigationTests(TestCase):
     def test_homepage_loads_signal_navigation_assets_without_replacing_global_nav(self):
         response = self.client.get(reverse("home"))
 
-        self.assertContains(response, 'css/homepage-signal-nav.css')
-        self.assertContains(response, 'js/homepage-signal-nav.js')
+        self.assertContains(response, 'href="/static/css/homepage-signal-nav')
+        self.assertContains(response, 'src="/static/js/homepage-signal-nav')
         self.assertContains(response, 'class="standalone-nav"')
         self.assertContains(response, 'aria-label="Primary"')
 
