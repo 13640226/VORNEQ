@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Notes — VORNEQ" %}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'notes/notes.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="notes" aria-labelledby="notes-title">
+    <header class="notes__header">
+        <div>
+            <p class="notes__eyebrow">{% trans "App" %}</p>
+            <h1 id="notes-title">{% trans "My Notes" %}</h1>
+            <p class="notes__subtitle">{% trans "Private notes owned by your bound VORNEQ identity." %}</p>
+        </div>
+        <a class="notes-button" href="{% url 'notes:create' %}">{% trans "New Note" %}</a>
+    </header>
+
+    <div class="notes-list">
+        {% for note in notes %}
+        <article class="note-card">
+            <div>
+                <h2><a href="{% url 'notes:detail' note_id=note.pk %}">{{ note.title }}</a></h2>
+                <p>{{ note.updated_at|date:"Y-m-d" }}</p>
+            </div>
+        </article>
+        {% empty %}
+        <p class="notes__empty">{% trans "No notes yet." %}</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
