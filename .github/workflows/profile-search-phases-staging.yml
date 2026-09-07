@@ -7,6 +7,11 @@ on:
         description: Number of repetitions per query
         required: false
         default: "20"
+      interleaved:
+        description: Run query scenarios round-robin to reduce time-order drift
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -51,33 +56,51 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
           DJANGO_SETTINGS_MODULE: config.settings_render
+          INTERLEAVED: ${{ inputs.interleaved }}
         run: |
           set -euo pipefail
+          interleaved_flag=""
+          if [ "$INTERLEAVED" = "true" ]; then
+            interleaved_flag="--interleaved"
+          fi
           python manage.py profile_search_phases \
             --query "" \
             --query "ai" \
             --query "knowledge" \
             --query "science" \
             --repeat "${{ inputs.repeat }}" \
+            $interleaved_flag \
             --json | tee search_phase_profile.jsonl
 
       - name: Validate profiler JSONL
+        env:
+          INTERLEAVED: ${{ inputs.interleaved }}
         run: |
           python - <<'PY'
           import json
+          import os
           from pathlib import Path
 
           path = Path("search_phase_profile.jsonl")
           rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
           if len(rows) != 4:
               raise SystemExit(f"Expected 4 profiler rows, found {len(rows)}")
-          required = {"mode", "total", "avg_db_queries", "total_results"}
+          required = {"mode", "total", "avg_db_queries", "total_results", "interleaved"}
+          expected_interleaved = os.environ.get("INTERLEAVED", "false").lower() == "true"
           for row in rows:
               missing = required - row.keys()
               if missing:
                   raise SystemExit(f"Profiler row missing fields: {sorted(missing)}")
               if row["mode"] != "production":
                   raise SystemExit(f"Unexpected profiler mode: {row['mode']}")
+              if row["interleaved"] != expected_interleaved:
+                  raise SystemExit(
+                      f"Interleaved mode mismatch: expected {expected_interleaved}, "
+                      f"got {row['interleaved']}"
+                  )
+              for percentile in ("p50_ms", "p95_ms", "p99_ms"):
+                  if percentile not in row["total"]:
+                      raise SystemExit(f"Profiler row missing total.{percentile}")
           print("Validated 4 production search profiler rows.")
           PY
 
