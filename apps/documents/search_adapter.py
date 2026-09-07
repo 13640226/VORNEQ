@@ -1,4 +1,4 @@
-from django.db.models import F, Q
+from django.db.models import Exists, F, OuterRef, Q
 
 from apps.search.services import SearchAdapter, SearchResult
 
@@ -18,19 +18,21 @@ class DocumentSearchAdapter(SearchAdapter):
         self.identity = identity
 
     def get_queryset(self, query: str, filters: dict):
+        collaborator_access = DocumentAccess.objects.filter(
+            document_id=OuterRef("pk"),
+            identity=self.identity,
+            role__in=(
+                DocumentAccess.Role.EDITOR,
+                DocumentAccess.Role.VIEWER,
+            ),
+        )
         queryset = (
             Document.objects.filter(is_active=True)
+            .annotate(_has_document_access=Exists(collaborator_access))
             .filter(
                 Q(owner_identity=self.identity)
-                | Q(
-                    access_entries__identity=self.identity,
-                    access_entries__role__in=(
-                        DocumentAccess.Role.EDITOR,
-                        DocumentAccess.Role.VIEWER,
-                    ),
-                )
+                | Q(_has_document_access=True)
             )
-            .distinct()
         )
         if query:
             queryset = queryset.filter(
