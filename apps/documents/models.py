@@ -1,15 +1,10 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q
 
 
 class Document(models.Model):
-    """Domain-owned document state.
-
-    Artifact representation, shared search, and platform audit integration are
-    intentionally outside this model's boundary.
-    """
+    """Domain-owned document state."""
 
     title = models.CharField(max_length=255)
     content = models.TextField(blank=True)
@@ -18,6 +13,11 @@ class Document(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="documents_created",
+    )
+    owner_identity = models.ForeignKey(
+        "core.Identity",
+        on_delete=models.PROTECT,
+        related_name="documents_owned",
     )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -40,10 +40,9 @@ class Document(models.Model):
 
 
 class DocumentAccess(models.Model):
-    """Domain-owned effective role for one subject on one Document."""
+    """Domain-owned collaborator role for one Identity on one Document."""
 
     class Role(models.TextChoices):
-        OWNER = "owner", "Owner"
         EDITOR = "editor", "Editor"
         VIEWER = "viewer", "Viewer"
 
@@ -52,9 +51,9 @@ class DocumentAccess(models.Model):
         on_delete=models.CASCADE,
         related_name="access_entries",
     )
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+    identity = models.ForeignKey(
+        "core.Identity",
+        on_delete=models.PROTECT,
         related_name="document_access_entries",
     )
     role = models.CharField(max_length=20, choices=Role.choices)
@@ -69,29 +68,19 @@ class DocumentAccess(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["document", "user"],
-                name="docs_access_document_user_unique",
-            ),
-            models.UniqueConstraint(
-                fields=["document"],
-                condition=Q(role="owner"),
-                name="docs_access_single_owner",
+                fields=["document", "identity"],
+                name="docs_access_document_identity_unique",
             ),
         ]
         indexes = [
-            models.Index(fields=["user", "role"], name="docs_access_user_role_idx"),
+            models.Index(fields=["identity", "role"], name="docs_access_identity_role_idx"),
             models.Index(fields=["document", "role"], name="docs_access_doc_role_idx"),
         ]
 
     def clean(self):
         super().clean()
-        if self.role == self.Role.OWNER:
-            if self.user_id != self.document.created_by_id:
-                raise ValidationError({"role": "Only the document creator can hold the owner role."})
-            if self.granted_by_id != self.document.created_by_id:
-                raise ValidationError({"granted_by": "The owner role must be self-granted at creation."})
-        elif self.user_id == self.document.created_by_id:
-            raise ValidationError({"user": "The document creator must retain the owner role."})
+        if self.identity_id == self.document.owner_identity_id:
+            raise ValidationError({"identity": "The document owner cannot have a collaborator access row."})
 
     def __str__(self):
-        return f"{self.user_id}:{self.role}:{self.document_id}"
+        return f"{self.identity_id}:{self.role}:{self.document_id}"
