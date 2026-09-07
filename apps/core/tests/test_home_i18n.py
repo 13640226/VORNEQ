@@ -8,7 +8,7 @@ class GermanHomeTranslationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         for translated_text in (
             "Wissen ohne Grenzen",
-            "Bücher, Artikel, Dokumente, Audio und digitale Produkte",
+            "Bücher, Artikel, Dokumente, Audioinhalte und digitale Produkte",
             "Künstliche Intelligenz",
         ):
             self.assertContains(response, translated_text)
