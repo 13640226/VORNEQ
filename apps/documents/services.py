@@ -97,6 +97,43 @@ class DocumentService:
         ).distinct()
 
     @classmethod
+    def personal_home_recent_documents(cls, *, user, limit=5):
+        """Return currently readable documents ordered by creation time."""
+        if limit <= 0:
+            return []
+        return list(cls.list_documents(user=user).order_by("-created_at", "-id")[:limit])
+
+    @classmethod
+    def personal_home_recently_viewed(cls, *, user, limit=5):
+        """Return distinct, currently readable documents by the user's latest views."""
+        if limit <= 0:
+            return []
+
+        identity = IdentityResolver.resolve(user)
+        readable_ids = cls.list_documents(user=user).values("pk")
+        view_events = (
+            DocumentAuditLog.objects.filter(
+                actor_identity=identity,
+                event_type=DocumentAuditLog.EventType.VIEWED,
+                document__is_active=True,
+                document_id__in=readable_ids,
+            )
+            .select_related("document")
+            .order_by("-timestamp", "-id")
+        )
+
+        documents = []
+        seen_document_ids = set()
+        for event in view_events.iterator():
+            if event.document_id in seen_document_ids:
+                continue
+            seen_document_ids.add(event.document_id)
+            documents.append(event.document)
+            if len(documents) >= limit:
+                break
+        return documents
+
+    @classmethod
     @transaction.atomic
     def update_document(cls, *, user, document_id, title=None, content=None, tags=None):
         document = cls._get_active_document(document_id)

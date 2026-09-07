@@ -1,0 +1,83 @@
+.personal-home {
+    padding-block: var(--space-8, 2rem) var(--space-12, 3rem);
+}
+
+.personal-home__header {
+    max-width: 48rem;
+    margin-bottom: var(--space-8, 2rem);
+}
+
+.personal-home__eyebrow {
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.personal-home__header h1 {
+    margin-block: 0.35rem 0.75rem;
+}
+
+.personal-home__sections {
+    display: grid;
+    gap: var(--space-8, 2rem);
+}
+
+.personal-home__section {
+    min-width: 0;
+}
+
+.personal-home__section-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.personal-home__section-heading h2 {
+    margin: 0;
+}
+
+.personal-home__cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.personal-home__card {
+    display: flex;
+    min-height: 7rem;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 1px solid var(--border-color, currentColor);
+    border-radius: var(--radius-lg, 0.75rem);
+    color: inherit;
+    text-decoration: none;
+}
+
+.personal-home__card:hover,
+.personal-home__card:focus-visible {
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.personal-home__card span,
+.personal-home__empty {
+    opacity: 0.75;
+}
+
+@media (max-width: 720px) {
+    .personal-home__cards {
+        grid-template-columns: 1fr;
+    }
+
+    .personal-home__section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
