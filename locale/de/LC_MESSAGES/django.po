@@ -748,26 +748,399 @@ msgstr "Dein Browser unterstützt das Audioelement nicht."
 msgid "Your changes were saved. The product has been returned to the review queue."
 msgstr "Deine Änderungen wurden gespeichert. Das Produkt wurde wieder in die Prüfwarteschlange gestellt."
 
-msgid "Your password has been changed. You can now sign in with your new password."
-msgstr "Dein Passwort wurde geändert. Du kannst dich jetzt mit dem neuen Passwort anmelden."
-
-msgid "Your product was submitted for review."
-msgstr "Dein Produkt wurde zur Prüfung eingereicht."
-
-msgid "philosophy, logic, method"
-msgstr "Philosophie, Logik, Methode"
+# Homepage + Profile additions (formal German)
 
 msgid "%(counter)s result"
 msgid_plural "%(counter)s results"
 msgstr[0] "%(counter)s Ergebnis"
 msgstr[1] "%(counter)s Ergebnisse"
 
-msgid "%(total)s library result"
-msgid_plural "%(total)s library results"
-msgstr[0] "%(total)s Bibliotheksergebnis"
-msgstr[1] "%(total)s Bibliotheksergebnisse"
+msgid "Knowledge without borders"
+msgstr "Wissen ohne Grenzen"
 
-msgid "%(total)s product"
-msgid_plural "%(total)s products"
-msgstr[0] "%(total)s Produkt"
-msgstr[1] "%(total)s Produkte"
+msgid "The Global"
+msgstr "Global"
+
+msgid "Knowledge"
+msgstr "Wissen"
+
+msgid "Platform"
+msgstr "Plattform"
+
+msgid "Books, articles, documents, audio, and digital products — all in one place."
+msgstr "Bücher, Artikel, Dokumente, Audioinhalte und digitale Produkte — alles an einem Ort."
+
+msgid "Search books, articles, audio, documents, and more…"
+msgstr "Durchsuchen Sie Bücher, Artikel, Audioinhalte, Dokumente und mehr…"
+
+msgid "Search across VORNEQ"
+msgstr "VORNEQ durchsuchen"
+
+msgid "Suggested topics"
+msgstr "Vorgeschlagene Themen"
+
+msgid "Climate change"
+msgstr "Klimawandel"
+
+msgid "Artificial intelligence"
+msgstr "Künstliche Intelligenz"
+
+msgid "Mental health"
+msgstr "Psychische Gesundheit"
+
+msgid "Sustainable cities"
+msgstr "Nachhaltige Städte"
+
+msgid "Productivity"
+msgstr "Produktivität"
+
+msgid "A unified knowledge ecosystem"
+msgstr "Ein einheitliches Wissensökosystem"
+
+msgid "One world. One platform."
+msgstr "Eine Welt. Eine Plattform."
+
+msgid "Built for real scale"
+msgstr "Für reale Skalierung ausgelegt"
+
+msgid "Credibility comes from what exists, not invented numbers."
+msgstr "Glaubwürdigkeit entsteht durch das, was tatsächlich vorhanden ist — nicht durch erfundene Zahlen."
+
+msgid "Public scale metrics and verified ecosystem partners will appear here when production data and relationships are available."
+msgstr "Öffentliche Skalierungskennzahlen und verifizierte Ökosystempartner werden hier angezeigt, sobald reale Produktionsdaten und entsprechende Beziehungen vorliegen."
+
+msgid "Knowledge resources"
+msgstr "Wissensressourcen"
+
+msgid "Global users"
+msgstr "Nutzer weltweit"
+
+msgid "Countries"
+msgstr "Länder"
+
+msgid "Verified partners"
+msgstr "Verifizierte Partner"
+
+msgid "Explore VORNEQ"
+msgstr "VORNEQ erkunden"
+
+msgid "More than search. One connected application ecosystem."
+msgstr "Mehr als Suche. Ein vernetztes Anwendungsökosystem."
+
+msgid "Installed VORNEQ apps are discovered from the canonical Platform Registry rather than hard-coded into the homepage."
+msgstr "Installierte VORNEQ-Apps werden über die kanonische Platform Registry erkannt und nicht fest in die Startseite einprogrammiert."
+
+msgid "Search and explore knowledge across supported formats using VORNEQ's current unified retrieval layer."
+msgstr "Durchsuchen und erkunden Sie Wissen in unterstützten Formaten mit der aktuellen einheitlichen Retrieval-Schicht von VORNEQ."
+
+msgid "Start exploring"
+msgstr "Erkundung starten"
+
+msgid "Installed platform app · %(slug)s"
+msgstr "Installierte Plattform-App · %(slug)s"
+
+msgid "Open in Workspace"
+msgstr "Im Workspace öffnen"
+
+msgid "Apps"
+msgstr "Apps"
+
+msgid "No installable platform apps are currently registered."
+msgstr "Derzeit sind keine installierbaren Plattform-Apps registriert."
+
+msgid "Open Launcher"
+msgstr "Launcher öffnen"
+
+msgid "Build on VORNEQ"
+msgstr "Auf VORNEQ aufbauen"
+
+msgid "A platform with explicit boundaries."
+msgstr "Eine Plattform mit klar definierten Grenzen."
+
+msgid "The homepage reflects the current reviewed platform contract and does not present future capabilities as implemented APIs."
+msgstr "Die Startseite bildet den aktuell geprüften Plattformvertrag ab und stellt zukünftige Capabilities nicht als bereits implementierte APIs dar."
+
+msgid "Stable for current development"
+msgstr "Stabil für die aktuelle Entwicklung"
+
+msgid "Apps, Registry, Launcher & Workspace"
+msgstr "Apps, Registry, Launcher & Workspace"
+
+msgid "Deploy-time app manifests, canonical registry metadata, localized route contribution, Launcher discovery, Workspace context, Identity and Artifact foundations."
+msgstr "App-Manifeste zur Bereitstellungszeit, kanonische Registry-Metadaten, lokalisierte Routenbeiträge, Launcher-Erkennung, Workspace-Kontext sowie Identity- und Artifact-Grundlagen."
+
+msgid "Experimental"
+msgstr "Experimentell"
+
+msgid "Capability discovery"
+msgstr "Capability-Erkennung"
+
+msgid "Capability strings are descriptive discovery metadata only. They do not execute code, grant permissions, or authorize cross-app access."
+msgstr "Capability-Strings sind ausschließlich beschreibende Discovery-Metadaten. Sie führen keinen Code aus, vergeben keine Berechtigungen und autorisieren keinen appübergreifenden Zugriff."
+
+msgid "Future contract"
+msgstr "Künftiger Plattformvertrag"
+
+msgid "Executable providers & integrations"
+msgstr "Ausführbare Provider und Integrationen"
+
+msgid "Executable capabilities, search providers, notifications, external integrations, and other provider contracts require separate versioned design and review."
+msgstr "Ausführbare Capabilities, Suchanbieter, Benachrichtigungen, externe Integrationen und weitere Provider-Verträge erfordern eine separate, versionierte Ausarbeitung und Prüfung."
+
+msgid "Search results"
+msgstr "Suchergebnisse"
+
+msgid "No matches"
+msgstr "Keine Übereinstimmungen"
+
+msgid "Try adjusting your keywords or content type."
+msgstr "Passen Sie Ihre Suchbegriffe oder den Inhaltstyp an."
+
+msgid "The Global Knowledge Platform"
+msgstr "Die globale Wissensplattform"
+
+msgid "Discover knowledge, explore VORNEQ apps, and build on an open platform for connected knowledge."
+msgstr "Entdecken Sie Wissen, erkunden Sie VORNEQ-Apps und bauen Sie auf einer offenen Plattform für vernetztes Wissen auf."
+
+msgid "Knowledge without borders: discover, organize, and build on one connected platform."
+msgstr "Wissen ohne Grenzen: Entdecken, organisieren und entwickeln Sie auf einer vernetzten Plattform."
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Account workspace"
+msgstr "Konto-Workspace"
+
+msgid "My Profile"
+msgstr "Mein Profil"
+
+msgid "Manage your account, access, marketplace activity, and contextual reputation."
+msgstr "Verwalten Sie Ihr Konto, Zugriffe, Marktplatzaktivitäten und Ihre kontextuelle Reputation."
+
+msgid "Edit profile"
+msgstr "Profil bearbeiten"
+
+msgid "Profile navigation"
+msgstr "Profilnavigation"
+
+msgid "Profile sections"
+msgstr "Profilbereiche"
+
+msgid "Overview"
+msgstr "Übersicht"
+
+msgid "My library"
+msgstr "Meine Bibliothek"
+
+msgid "Reputation"
+msgstr "Reputation"
+
+msgid "Settings"
+msgstr "Einstellungen"
+
+msgid "Welcome back, %(name)s"
+msgstr "Willkommen zurück, %(name)s"
+
+msgid "Discover, organize, and build with the account context you already have in VORNEQ."
+msgstr "Entdecken, organisieren und entwickeln Sie mit dem Kontokontext, den Sie bereits in VORNEQ haben."
+
+msgid "Explore marketplace"
+msgstr "Marktplatz erkunden"
+
+msgid "Account summary"
+msgstr "Kontoübersicht"
+
+msgid "Accessible products"
+msgstr "Verfügbare Produkte"
+
+msgid "Active product access currently available to this account."
+msgstr "Derzeit für dieses Konto verfügbarer aktiver Produktzugriff."
+
+msgid "Marketplace products"
+msgstr "Marktplatzprodukte"
+
+msgid "Products created by this account in the marketplace."
+msgstr "Produkte, die von diesem Konto im Marktplatz erstellt wurden."
+
+msgid "Reputation contexts"
+msgstr "Reputationskontexte"
+
+msgid "Context-specific reputation records, never a global trust score."
+msgstr "Kontextspezifische Reputationsdaten, niemals ein globaler Vertrauenswert."
+
+msgid "Account Information"
+msgstr "Kontoinformationen"
+
+msgid "Display name"
+msgstr "Anzeigename"
+
+msgid "Username"
+msgstr "Benutzername"
+
+msgid "Member since"
+msgstr "Mitglied seit"
+
+msgid "Shortcuts"
+msgstr "Verknüpfungen"
+
+msgid "Quick Actions"
+msgstr "Schnellaktionen"
+
+msgid "Review your current product access."
+msgstr "Überprüfen Sie Ihren aktuellen Produktzugriff."
+
+msgid "Seller dashboard"
+msgstr "Verkäufer-Dashboard"
+
+msgid "Manage products you publish in the marketplace."
+msgstr "Verwalten Sie Produkte, die Sie im Marktplatz veröffentlichen."
+
+msgid "Email settings"
+msgstr "E-Mail-Einstellungen"
+
+msgid "Manage email addresses connected to your account."
+msgstr "Verwalten Sie die mit Ihrem Konto verbundenen E-Mail-Adressen."
+
+msgid "Account settings"
+msgstr "Kontoeinstellungen"
+
+msgid "Update security, language, and appearance."
+msgstr "Aktualisieren Sie Sicherheit, Sprache und Darstellung."
+
+msgid "Activity"
+msgstr "Aktivität"
+
+msgid "Recent Activity"
+msgstr "Letzte Aktivitäten"
+
+msgid "No recent activity yet."
+msgstr "Noch keine aktuellen Aktivitäten."
+
+msgid "Access"
+msgstr "Zugriff"
+
+msgid "Products this account can currently access through the existing library mechanism."
+msgstr "Produkte, auf die dieses Konto derzeit über den bestehenden Bibliotheksmechanismus zugreifen kann."
+
+msgid "Browse marketplace"
+msgstr "Marktplatz durchsuchen"
+
+msgid "Access until %(date)s"
+msgstr "Zugriff bis %(date)s"
+
+msgid "Active access"
+msgstr "Aktiver Zugriff"
+
+msgid "Download"
+msgstr "Herunterladen"
+
+msgid "You do not have any active product access yet."
+msgstr "Sie haben noch keinen aktiven Produktzugriff."
+
+msgid "Products created by this account in the VORNEQ marketplace."
+msgstr "Produkte, die von diesem Konto im VORNEQ-Marktplatz erstellt wurden."
+
+msgid "You have not created any marketplace products yet."
+msgstr "Sie haben noch keine Marktplatzprodukte erstellt."
+
+msgid "Contextual reputation"
+msgstr "Kontextuelle Reputation"
+
+msgid "These scores are context-specific projections. They are not a global trust score and do not represent truth."
+msgstr "Diese Bewertungen sind kontextspezifische Projektionen. Sie sind kein globaler Vertrauenswert und stellen keine Wahrheit dar."
+
+msgid "Domain"
+msgstr "Domäne"
+
+msgid "Role"
+msgstr "Rolle"
+
+msgid "Method"
+msgstr "Methode"
+
+msgid "Score"
+msgstr "Bewertung"
+
+msgid "Samples"
+msgstr "Stichproben"
+
+msgid "Last activity"
+msgstr "Letzte Aktivität"
+
+msgid "No contextual reputation has been recorded yet."
+msgstr "Es wurde noch keine kontextuelle Reputation erfasst."
+
+msgid "Account controls"
+msgstr "Kontosteuerung"
+
+msgid "Manage how your profile appears and keep your account access up to date."
+msgstr "Verwalten Sie die Darstellung Ihres Profils und halten Sie Ihren Kontozugriff aktuell."
+
+msgid "Public profile"
+msgstr "Öffentliches Profil"
+
+msgid "Update your name, biography, website, and profile photo."
+msgstr "Aktualisieren Sie Ihren Namen, Ihre Biografie, Ihre Website und Ihr Profilfoto."
+
+msgid "Email addresses"
+msgstr "E-Mail-Adressen"
+
+msgid "Manage verified email addresses for your account."
+msgstr "Verwalten Sie die verifizierten E-Mail-Adressen Ihres Kontos."
+
+msgid "Password & security"
+msgstr "Passwort & Sicherheit"
+
+msgid "Update your account password."
+msgstr "Aktualisieren Sie Ihr Kontopasswort."
+
+msgid "End the current authenticated session."
+msgstr "Beenden Sie die aktuelle authentifizierte Sitzung."
+
+msgid "Experience"
+msgstr "Nutzungserlebnis"
+
+msgid "Language and appearance"
+msgstr "Sprache und Darstellung"
+
+msgid "Choose how VORNEQ is displayed on this device."
+msgstr "Wählen Sie, wie VORNEQ auf diesem Gerät dargestellt wird."
+
+msgid "Language"
+msgstr "Sprache"
+
+msgid "Choose the interface language."
+msgstr "Wählen Sie die Oberflächensprache."
+
+msgid "Theme"
+msgstr "Farbschema"
+
+msgid "Choose a color system for this device, or follow your operating system."
+msgstr "Wählen Sie ein Farbschema für dieses Gerät oder übernehmen Sie die Einstellung Ihres Betriebssystems."
+
+msgid "Theme preference"
+msgstr "Farbschema-Einstellung"
+
+msgid "VORNEQ"
+msgstr "VORNEQ"
+
+msgid "Dark"
+msgstr "Dunkel"
+
+msgid "Light"
+msgstr "Hell"
+
+msgid "Blue"
+msgstr "Blau"
+
+msgid "Gold"
+msgstr "Gold"
+
+msgid "Emerald"
+msgstr "Smaragd"
+
+msgid "Purple"
+msgstr "Lila"
+
+msgid "System"
+msgstr "System"
