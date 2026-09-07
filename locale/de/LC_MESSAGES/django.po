@@ -38,7 +38,7 @@ msgid "Allowed product formats: PDF, ZIP, MP3, WAV and EPUB."
 msgstr "Erlaubte Produktformate: PDF, ZIP, MP3, WAV und EPUB."
 
 msgid "Already have an account? Sign in"
-msgstr "Du hast bereits ein Konto? Anmelden"
+msgstr "Sie haben bereits ein Konto? Anmelden"
 
 msgid "Approve, reject, or request changes."
 msgstr "Genehmigen, ablehnen oder Änderungen anfordern."
@@ -47,7 +47,7 @@ msgid "Approved"
 msgstr "Genehmigt"
 
 msgid "Are you sure you want to sign out of your VORNEQ account?"
-msgstr "Möchtest du dich wirklich von deinem VORNEQ-Konto abmelden?"
+msgstr "Möchten Sie sich wirklich von Ihrem VORNEQ-Konto abmelden?"
 
 msgid "Article"
 msgstr "Artikel"
@@ -122,7 +122,7 @@ msgid "Check Your Email"
 msgstr "E-Mail prüfen"
 
 msgid "Choose a strong password for your VORNEQ account."
-msgstr "Wähle ein starkes Passwort für dein VORNEQ-Konto."
+msgstr "Wählen Sie ein starkes Passwort für Ihr VORNEQ-Konto."
 
 msgid "Clear filters"
 msgstr "Filter zurücksetzen"
@@ -149,10 +149,10 @@ msgid "Confirm Email Address"
 msgstr "E-Mail-Adresse bestätigen"
 
 msgid "Confirm that you want to connect this external account to your VORNEQ account."
-msgstr "Bestätige, dass du dieses externe Konto mit deinem VORNEQ-Konto verbinden möchtest."
+msgstr "Bestätigen Sie, dass Sie dieses externe Konto mit Ihrem VORNEQ-Konto verbinden möchten."
 
 msgid "Confirm to continue signing in with the selected provider."
-msgstr "Bestätige, um die Anmeldung mit dem ausgewählten Anbieter fortzusetzen."
+msgstr "Bestätigen Sie, um die Anmeldung mit dem ausgewählten Anbieter fortzusetzen."
 
 msgid "Connect Account"
 msgstr "Konto verbinden"
@@ -176,13 +176,13 @@ msgid "Create Your Account"
 msgstr "Konto erstellen"
 
 msgid "Create a password to sign in with your account credentials."
-msgstr "Erstelle ein Passwort, um dich mit deinen Kontodaten anzumelden."
+msgstr "Erstellen Sie ein Passwort, um sich mit Ihren Kontodaten anzumelden."
 
 msgid "Create new product"
 msgstr "Neues Produkt erstellen"
 
 msgid "Create your first product and submit it for review."
-msgstr "Erstelle dein erstes Produkt und reiche es zur Prüfung ein."
+msgstr "Erstellen Sie Ihr erstes Produkt und reichen Sie es zur Prüfung ein."
 
 msgid "Created at"
 msgstr "Erstellt am"
@@ -215,13 +215,13 @@ msgid "Discover"
 msgstr "Entdecken"
 
 msgid "Discover approved digital products from independent creators on VORNEQ."
-msgstr "Entdecke geprüfte digitale Produkte unabhängiger Anbieter auf VORNEQ."
+msgstr "Entdecken Sie geprüfte digitale Produkte unabhängiger Anbieter auf VORNEQ."
 
 msgid "Discover approved digital products, courses, templates, audio, software, and more from independent creators."
-msgstr "Entdecke geprüfte digitale Produkte, Kurse, Vorlagen, Audio, Software und mehr von unabhängigen Anbietern."
+msgstr "Entdecken Sie geprüfte digitale Produkte, Kurse, Vorlagen, Audio, Software und mehr von unabhängigen Anbietern."
 
 msgid "Discover books, articles, audio, documents, and digital products with VORNEQ."
-msgstr "Entdecke Bücher, Artikel, Audio, Dokumente und digitale Produkte mit VORNEQ."
+msgstr "Entdecken Sie Bücher, Artikel, Audio, Dokumente und digitale Produkte mit VORNEQ."
 
 msgid "Discover knowledge across formats."
 msgstr "Wissen in verschiedenen Formaten entdecken."
@@ -260,16 +260,16 @@ msgid "Empty"
 msgstr "Leer"
 
 msgid "Enter your current password and choose a new one."
-msgstr "Gib dein aktuelles Passwort ein und wähle ein neues."
+msgstr "Geben Sie Ihr aktuelles Passwort ein und wählen Sie ein neues."
 
 msgid "Enter your email address and we'll send you a link to reset your password."
-msgstr "Gib deine E-Mail-Adresse ein. Wir senden dir einen Link zum Zurücksetzen des Passworts."
+msgstr "Geben Sie Ihre E-Mail-Adresse ein. Wir senden Ihnen einen Link zum Zurücksetzen des Passworts."
 
 msgid "Explore books, articles, documents, and audio from the VORNEQ knowledge repository."
-msgstr "Entdecke Bücher, Artikel, Dokumente und Audio im Wissensarchiv von VORNEQ."
+msgstr "Entdecken Sie Bücher, Artikel, Dokumente und Audio im Wissensarchiv von VORNEQ."
 
 msgid "Explore books, articles, documents, and audio in the VORNEQ library."
-msgstr "Entdecke Bücher, Artikel, Dokumente und Audio in der VORNEQ-Bibliothek."
+msgstr "Entdecken Sie Bücher, Artikel, Dokumente und Audio in der VORNEQ-Bibliothek."
 
 msgid "Featured discoveries"
 msgstr "Empfohlene Entdeckungen"
@@ -296,7 +296,7 @@ msgid "Full description"
 msgstr "Vollständige Beschreibung"
 
 msgid "Have something to publish?"
-msgstr "Möchtest du etwas veröffentlichen?"
+msgstr "Möchten Sie etwas veröffentlichen?"
 
 msgid "Home"
 msgstr "Startseite"
@@ -308,7 +308,7 @@ msgid "JPG, PNG or WebP. Maximum size: 10 MB."
 msgstr "JPG, PNG oder WebP. Maximale Größe: 10 MB."
 
 msgid "Join VORNEQ to explore, curate, and share knowledge."
-msgstr "Werde Teil von VORNEQ, um Wissen zu entdecken, zu kuratieren und zu teilen."
+msgstr "Werden Sie Teil von VORNEQ, um Wissen zu entdecken, zu kuratieren und zu teilen."
 
 msgid "Knowledge Discovery Platform"
 msgstr "Plattform zur Wissensentdeckung"
@@ -341,10 +341,10 @@ msgid "Manage Email"
 msgstr "E-Mail verwalten"
 
 msgid "Manage the email addresses connected to your account."
-msgstr "Verwalte die mit deinem Konto verbundenen E-Mail-Adressen."
+msgstr "Verwalten Sie die mit Ihrem Konto verbundenen E-Mail-Adressen."
 
 msgid "Manage your products and submit new work for review."
-msgstr "Verwalte deine Produkte und reiche neue Inhalte zur Prüfung ein."
+msgstr "Verwalten Sie Ihre Produkte und reichen Sie neue Inhalte zur Prüfung ein."
 
 msgid "Marketplace"
 msgstr "Marktplatz"
@@ -422,10 +422,10 @@ msgid "Pending review"
 msgstr "Prüfung ausstehend"
 
 msgid "Please confirm that %(email)s is your email address."
-msgstr "Bitte bestätige, dass %(email)s deine E-Mail-Adresse ist."
+msgstr "Bitte bestätigen Sie, dass %(email)s Ihre E-Mail-Adresse ist."
 
 msgid "Please explain why the product was rejected or what changes are required."
-msgstr "Bitte erkläre, warum das Produkt abgelehnt wurde oder welche Änderungen erforderlich sind."
+msgstr "Bitte erklären Sie, warum das Produkt abgelehnt wurde oder welche Änderungen erforderlich sind."
 
 msgid "Previous"
 msgstr "Zurück"
@@ -509,7 +509,7 @@ msgid "Results for “%(query)s”"
 msgstr "Ergebnisse für „%(query)s“"
 
 msgid "Review and manage external services connected to your account."
-msgstr "Prüfe und verwalte externe Dienste, die mit deinem Konto verbunden sind."
+msgstr "Prüfen und verwalten Sie externe Dienste, die mit Ihrem Konto verbunden sind."
 
 msgid "Review in Django Admin"
 msgstr "In Django Admin prüfen"
@@ -521,7 +521,7 @@ msgid "Review status"
 msgstr "Prüfstatus"
 
 msgid "Review the required details to finish creating your account."
-msgstr "Prüfe die erforderlichen Angaben, um dein Konto fertig einzurichten."
+msgstr "Prüfen Sie die erforderlichen Angaben, um Ihr Konto fertig einzurichten."
 
 msgid "Reviewed at"
 msgstr "Geprüft am"
@@ -545,7 +545,7 @@ msgid "Search books, articles, documents, and audio…"
 msgstr "Bücher, Artikel, Dokumente und Audio durchsuchen…"
 
 msgid "Search books, articles, documents, audio, and digital products from one place."
-msgstr "Durchsuche Bücher, Artikel, Dokumente, Audio und digitale Produkte an einem Ort."
+msgstr "Durchsuchen Sie Bücher, Artikel, Dokumente, Audio und digitale Produkte an einem Ort."
 
 msgid "Search library"
 msgstr "Bibliothek durchsuchen"
@@ -641,13 +641,13 @@ msgid "The audio file is not available for this item."
 msgstr "Für diesen Eintrag ist keine Audiodatei verfügbar."
 
 msgid "The external sign-in flow could not be completed. You can try again or use the standard sign-in form."
-msgstr "Die externe Anmeldung konnte nicht abgeschlossen werden. Versuche es erneut oder nutze die normale Anmeldung."
+msgstr "Die externe Anmeldung konnte nicht abgeschlossen werden. Versuchen Sie es erneut oder nutzen Sie die normale Anmeldung."
 
 msgid "The full text for this library item is not available yet."
 msgstr "Der vollständige Text dieses Bibliothekseintrags ist noch nicht verfügbar."
 
 msgid "The password reset link is invalid or has expired. Please request a new one."
-msgstr "Der Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen. Bitte fordere einen neuen an."
+msgstr "Der Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen an."
 
 msgid "The product is publicly visible only when it is both approved and published."
 msgstr "Das Produkt ist nur öffentlich sichtbar, wenn es genehmigt und veröffentlicht ist."
@@ -668,7 +668,7 @@ msgid "There are no published library items yet."
 msgstr "Es gibt noch keine veröffentlichten Bibliothekseinträge."
 
 msgid "This account is currently inactive. Please contact support if you believe this is an error."
-msgstr "Dieses Konto ist derzeit inaktiv. Bitte kontaktiere den Support, wenn du einen Fehler vermutest."
+msgstr "Dieses Konto ist derzeit inaktiv. Bitte kontaktieren Sie den Support, wenn Sie einen Fehler vermuten."
 
 msgid "This email confirmation link is invalid or has expired."
 msgstr "Dieser E-Mail-Bestätigungslink ist ungültig oder abgelaufen."
@@ -683,13 +683,13 @@ msgid "Try Again"
 msgstr "Erneut versuchen"
 
 msgid "Try a different search term or category."
-msgstr "Versuche einen anderen Suchbegriff oder eine andere Kategorie."
+msgstr "Versuchen Sie einen anderen Suchbegriff oder eine andere Kategorie."
 
 msgid "Try adjusting your keywords or choosing a different content type."
-msgstr "Passe deine Suchbegriffe an oder wähle einen anderen Inhaltstyp."
+msgstr "Passen Sie Ihre Suchbegriffe an oder wählen Sie einen anderen Inhaltstyp."
 
 msgid "Try another keyword or clear the current search."
-msgstr "Versuche ein anderes Stichwort oder lösche die aktuelle Suche."
+msgstr "Versuchen Sie ein anderes Stichwort oder löschen Sie die aktuelle Suche."
 
 msgid "Unverified"
 msgstr "Nicht bestätigt"
@@ -725,28 +725,28 @@ msgid "View details"
 msgstr "Details ansehen"
 
 msgid "We're sorry, but new registrations are currently closed. Please check back later."
-msgstr "Neue Registrierungen sind derzeit geschlossen. Bitte versuche es später erneut."
+msgstr "Neue Registrierungen sind derzeit geschlossen. Bitte versuchen Sie es später erneut."
 
 msgid "We've sent a verification link to your email address. Please check your inbox and follow the link to complete your registration."
-msgstr "Wir haben einen Bestätigungslink an deine E-Mail-Adresse gesendet. Prüfe deinen Posteingang und folge dem Link, um die Registrierung abzuschließen."
+msgstr "Wir haben einen Bestätigungslink an Ihre E-Mail-Adresse gesendet. Prüfen Sie Ihren Posteingang und folgen Sie dem Link, um die Registrierung abzuschließen."
 
 msgid "We've sent you a link to reset your password. Please check your email and follow the instructions."
-msgstr "Wir haben dir einen Link zum Zurücksetzen des Passworts gesendet. Prüfe deine E-Mail und folge den Anweisungen."
+msgstr "Wir haben Ihnen einen Link zum Zurücksetzen des Passworts gesendet. Prüfen Sie Ihre E-Mail und folgen Sie den Anweisungen."
 
 msgid "Welcome back. Sign in to continue your discovery journey."
-msgstr "Willkommen zurück. Melde dich an, um deine Entdeckungsreise fortzusetzen."
+msgstr "Willkommen zurück. Melden Sie sich an, um Ihre Entdeckungsreise fortzusetzen."
 
 msgid "Write moderation notes..."
 msgstr "Prüfnotizen schreiben..."
 
 msgid "You have not submitted any products yet"
-msgstr "Du hast noch keine Produkte eingereicht"
+msgstr "Sie haben noch keine Produkte eingereicht"
 
 msgid "Your browser does not support the audio element."
-msgstr "Dein Browser unterstützt das Audioelement nicht."
+msgstr "Ihr Browser unterstützt das Audioelement nicht."
 
 msgid "Your changes were saved. The product has been returned to the review queue."
-msgstr "Deine Änderungen wurden gespeichert. Das Produkt wurde wieder in die Prüfwarteschlange gestellt."
+msgstr "Ihre Änderungen wurden gespeichert. Das Produkt wurde wieder in die Prüfwarteschlange gestellt."
 
 # Homepage + Profile additions (formal German)
 
@@ -1148,10 +1148,10 @@ msgstr "System"
 # Preserved pre-existing catalog entries
 
 msgid "Your password has been changed. You can now sign in with your new password."
-msgstr "Dein Passwort wurde geändert. Du kannst dich jetzt mit dem neuen Passwort anmelden."
+msgstr "Ihr Passwort wurde geändert. Sie können sich jetzt mit dem neuen Passwort anmelden."
 
 msgid "Your product was submitted for review."
-msgstr "Dein Produkt wurde zur Prüfung eingereicht."
+msgstr "Ihr Produkt wurde zur Prüfung eingereicht."
 
 msgid "philosophy, logic, method"
 msgstr "Philosophie, Logik, Methode"
