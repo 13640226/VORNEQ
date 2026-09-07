@@ -2,6 +2,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import Q
 
+from .artifact_sync import DocumentArtifactSync
 from .identity_resolver import IdentityResolver
 from .models import Document, DocumentAccess
 
@@ -53,6 +54,7 @@ class DocumentService:
         )
         document.full_clean()
         document.save()
+        DocumentArtifactSync.create(document=document, user=user)
         return document
 
     @classmethod
@@ -95,6 +97,8 @@ class DocumentService:
         if update_fields:
             document.full_clean()
             document.save(update_fields=[*update_fields, "updated_at"])
+            if {"title", "tags"}.intersection(update_fields):
+                DocumentArtifactSync.update(document=document)
         return document
 
     @classmethod
@@ -155,4 +159,5 @@ class DocumentService:
         )
         document.is_active = False
         document.save(update_fields=["is_active", "updated_at"])
+        DocumentArtifactSync.deactivate(document=document)
         return document
