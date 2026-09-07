@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
+from apps.audit.models import AuditEvent
 from apps.evidence.models import Claim, Evidence, EvidenceRelation, ReviewRecord
 from apps.verification.models import VerificationEvidence, VerificationMethod, VerificationRequest
 from apps.verification.services import (
@@ -82,7 +83,26 @@ class VerificationServiceTests(TestCase):
 
     def test_start_and_submit_complete_request_atomically(self):
         request = self.make_request()
+        self.assertTrue(
+            AuditEvent.objects.filter(
+                event_name="verification.request.created",
+                metadata__new_state=VerificationRequest.Status.REQUESTED,
+                metadata__request_id=request.pk,
+                reason_code="REQUEST_CREATED",
+            ).exists()
+        )
+
         started = start_verification(verification_request=request, actor=self.staff)
+        self.assertTrue(
+            AuditEvent.objects.filter(
+                event_name="verification.request.changed",
+                metadata__previous_state=VerificationRequest.Status.REQUESTED,
+                metadata__new_state=VerificationRequest.Status.IN_PROGRESS,
+                metadata__request_id=request.pk,
+                reason_code="REQUEST_STARTED",
+            ).exists()
+        )
+
         result = submit_verification_result(
             verification_request=started,
             verifier=self.staff,
@@ -101,6 +121,24 @@ class VerificationServiceTests(TestCase):
         self.assertEqual(started.status, VerificationRequest.Status.COMPLETED)
         self.assertEqual(result.evidence_links.count(), 1)
         self.assertEqual(result.evidence_links.get().evidence_relation, self.relation)
+        self.assertTrue(
+            AuditEvent.objects.filter(
+                event_name="verification.result.recorded",
+                metadata__result_id=result.pk,
+                metadata__request_id=request.pk,
+                metadata__outcome="pass",
+                reason_code="RESULT_RECORDED",
+            ).exists()
+        )
+        self.assertTrue(
+            AuditEvent.objects.filter(
+                event_name="verification.request.changed",
+                metadata__previous_state=VerificationRequest.Status.IN_PROGRESS,
+                metadata__new_state=VerificationRequest.Status.COMPLETED,
+                metadata__request_id=request.pk,
+                reason_code="REQUEST_COMPLETED",
+            ).exists()
+        )
 
     def test_submit_before_start_is_rejected(self):
         request = self.make_request()
@@ -132,4 +170,21 @@ class VerificationServiceTests(TestCase):
         self.assertEqual(
             list(records.values_list("new_state", flat=True)),
             ["requested", "in_progress", "completed"],
+        )
+        self.assertTrue(
+            AuditEvent.objects.filter(
+                event_name="verification.result.recorded",
+                metadata__request_id=request.pk,
+                metadata__outcome="inconclusive",
+                reason_code="RESULT_RECORDED",
+            ).exists()
+        )
+        self.assertTrue(
+            AuditEvent.objects.filter(
+                event_name="verification.request.changed",
+                metadata__previous_state=VerificationRequest.Status.IN_PROGRESS,
+                metadata__new_state=VerificationRequest.Status.COMPLETED,
+                metadata__request_id=request.pk,
+                reason_code="REQUEST_COMPLETED",
+            ).exists()
         )
