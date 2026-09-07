@@ -53,3 +53,7 @@ Installation is deploy-time composition of reviewed code. VORNEQ does not downlo
 ## Growth path
 
 The current contract intentionally covers the stable minimum: app discovery, localized route mounting, navigation, and descriptive capabilities. Future extensions can add versioned providers for global search, commands, notifications, workspace panels, or frontend assets without changing domain semantics.
+
+## Related ADRs
+
+- [ADR 011: App Launcher, Capability Bus, and Workspace Shell](../adr/011-app-launcher-capability-bus-workspace-shell.md)
