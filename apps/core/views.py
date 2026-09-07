@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
@@ -11,8 +12,9 @@ from apps.core.services.public_reputation import get_public_reputation
 @require_GET
 @login_required
 def reputation_detail(request, user_id):
-    user = get_object_or_404(get_user_model(), pk=user_id)
-    return JsonResponse(ReputationService.snapshot(user))
+    if request.user.pk != user_id:
+        raise PermissionDenied("You are not allowed to view this reputation.")
+    return JsonResponse(ReputationService.snapshot(request.user))
 
 
 @require_GET

@@ -15,7 +15,7 @@ This baseline therefore uses a repository-owned OpenAPI 3.1 document (`docs/open
 | `/api/verification/library/{id}/` | GET | Public | Stable V1 | Public-safe verification summary for published library items. |
 | `/api/reputation/user/{id}/` | GET | Public | Stable V1 | Public contextual reputation projection; not a composite trust score. |
 | `/api/reputation/user/{id}/{domain}/{method_code}/` | GET | Public | Stable V1 | Context-specific public reputation projection. |
-| `/api/reputation/{id}/` | GET | Authenticated | Internal V1 | Authenticated reputation snapshot; not advertised as a public integration contract. |
+| `/api/reputation/{id}/` | GET | Authenticated (self-access only) | Internal V1 | Authenticated user's own internal reputation snapshot; cross-user access is forbidden. Not advertised as a public integration contract. |
 | `/api/media/search/text/` | POST | Public route, development-backed | Experimental | Discovery-only. Production returns 503 until a production embedding provider exists. |
 | `/api/media/search/image/` | POST | Public route, development-backed | Experimental | Discovery-only. Production returns 503 until a production embedding provider exists. |
 

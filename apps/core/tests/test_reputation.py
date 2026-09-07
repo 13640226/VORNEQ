@@ -18,6 +18,11 @@ class ReputationTests(TestCase):
             email="forecaster@example.com",
             password="test-pass-123",
         )
+        self.user_b = get_user_model().objects.create_user(
+            username="other-forecaster",
+            email="other-forecaster@example.com",
+            password="test-pass-456",
+        )
         self.claim = Claim.objects.create(
             claim_text="Pilot revenue will exceed the target by year end",
             scope="pilot",
@@ -117,6 +122,15 @@ class ReputationTests(TestCase):
             ReputationHistory.objects.filter(user=self.user).count(),
             history_count,
         )
+
+    def test_cross_user_reputation_detail_denied(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(
+            reverse("core:reputation-detail", kwargs={"user_id": self.user_b.pk})
+        )
+
+        self.assertEqual(response.status_code, 403)
 
     def test_reputation_endpoint_without_cache_row_does_not_write(self):
         self.assertFalse(Reputation.objects.filter(user=self.user).exists())
