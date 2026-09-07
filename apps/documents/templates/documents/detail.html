@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{{ document.title }} — VORNEQ{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'documents/documents.css' %}">{% endblock %}
+
+{% block content %}
+<section class="documents" aria-labelledby="document-title">
+    <header class="documents__header">
+        <div>
+            <p class="documents__eyebrow">{% trans "Document" %}</p>
+            <h1 id="document-title">{{ document.title }}</h1>
+            {% if document.tags %}<p>{{ document.tags|join:", " }}</p>{% endif %}
+        </div>
+        <div class="document-actions">
+            <a class="documents-button" href="{% url 'documents:update' document_id=document.pk %}">{% trans "Edit" %}</a>
+            <a href="{% url 'documents:list' %}">{% trans "Back to Documents" %}</a>
+        </div>
+    </header>
+
+    <article class="document-body">{{ document.content|linebreaks }}</article>
+
+    {% if is_owner %}
+    <section class="document-access" aria-labelledby="access-title">
+        <h2 id="access-title">{% trans "Collaboration" %}</h2>
+
+        <div class="document-access__forms">
+            <form method="post" action="{% url 'documents:share' document_id=document.pk %}" class="document-form">
+                {% csrf_token %}
+                <h3>{% trans "Share access" %}</h3>
+                {{ share_form.non_field_errors }}
+                {{ share_form.as_p }}
+                <button class="documents-button" type="submit">{% trans "Share" %}</button>
+            </form>
+
+            <form method="post" action="{% url 'documents:revoke' document_id=document.pk %}" class="document-form">
+                {% csrf_token %}
+                <h3>{% trans "Revoke access" %}</h3>
+                {{ revoke_form.non_field_errors }}
+                {{ revoke_form.as_p }}
+                <button class="documents-button documents-button--secondary" type="submit">{% trans "Revoke" %}</button>
+            </form>
+        </div>
+
+        <div class="documents-list">
+            {% for access in access_entries %}
+            <article class="document-card">
+                <strong>{{ access.identity.display_name }}</strong>
+                <span>{{ access.role }}</span>
+            </article>
+            {% empty %}
+            <p>{% trans "No collaborators yet." %}</p>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</section>
+{% endblock %}
