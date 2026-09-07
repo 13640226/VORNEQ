@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Apps — VORNEQ" %}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'platform_shell/launcher.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="app-launcher" aria-labelledby="app-launcher-title">
+    <header class="app-launcher__header">
+        <p class="app-launcher__eyebrow">{% trans "Platform" %}</p>
+        <h1 id="app-launcher-title">{% trans "Apps" %}</h1>
+        <p class="app-launcher__subtitle">
+            {% trans "Discover and launch installed VORNEQ apps." %}
+        </p>
+    </header>
+
+    <div class="app-launcher__search">
+        <label class="app-launcher__search-label" for="app-search">
+            {% trans "Search installed apps" %}
+        </label>
+        <input
+            id="app-search"
+            class="app-launcher__search-input"
+            type="search"
+            placeholder="{% trans 'Search by name or slug…' %}"
+            autocomplete="off"
+            data-app-search
+        >
+        <p class="app-launcher__search-status" aria-live="polite" data-app-search-status></p>
+    </div>
+
+    <div class="app-launcher__grid" data-app-grid>
+        {% for app in apps %}
+        <article
+            class="app-card"
+            data-app-card
+            data-label="{{ app.label|lower }}"
+            data-slug="{{ app.slug|lower }}"
+            aria-labelledby="app-card-{{ app.slug }}"
+        >
+            <div class="app-card__monogram" aria-hidden="true">
+                {{ app.label|slice:":1"|upper }}
+            </div>
+            <div class="app-card__body">
+                <h2 class="app-card__label" id="app-card-{{ app.slug }}">{{ app.label }}</h2>
+                <p class="app-card__slug">{{ app.slug }}</p>
+                <p class="app-card__capabilities">
+                    {% blocktrans count counter=app.capability_count %}{{ counter }} capability{% plural %}{{ counter }} capabilities{% endblocktrans %}
+                </p>
+            </div>
+            <div class="app-card__actions">
+                {% if app.launch_url %}
+                <a class="app-card__launch" href="{{ app.launch_url }}">
+                    {% trans "Launch" %}
+                </a>
+                {% else %}
+                <span class="app-card__unavailable">{% trans "Launch unavailable" %}</span>
+                {% endif %}
+            </div>
+        </article>
+        {% empty %}
+        <p class="app-launcher__empty">{% trans "No apps are installed." %}</p>
+        {% endfor %}
+    </div>
+
+    <p class="app-launcher__empty app-launcher__empty--filtered" hidden data-app-empty-filter>
+        {% trans "No installed apps match your search." %}
+    </p>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'platform_shell/launcher.js' %}" defer></script>
+{% endblock %}

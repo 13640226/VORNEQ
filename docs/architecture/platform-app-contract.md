@@ -63,6 +63,20 @@ Capability declarations are validated when the manifest enters the canonical reg
 
 Capabilities remain discovery/declaration tokens only. They do not grant permissions, execute providers, or authorize cross-app access. Executable provider contracts require a future versioned contract and ADR.
 
+### App Launcher UI
+
+The localized App Launcher is mounted at `apps/` and provides an authenticated discovery surface for installed apps.
+
+- App cards are derived from the canonical `PlatformRegistry` and preserve its deterministic `order`, then `slug`, ordering.
+- Cards show the current manifest `label`, `slug`, and capability count as neutral discovery metadata.
+- Launch targets are resolved from each manifest's named `url_name`; an unresolvable route is shown as unavailable rather than guessed.
+- Search is client-side progressive enhancement over `label` and `slug`; without JavaScript, every registered app remains visible.
+- The launcher extends the shared `base.html` shell and uses VORNEQ design-token custom properties instead of introducing a separate visual system.
+
+The launcher is a navigation surface only. Visibility, capability declarations, and launchability do not grant permissions or bypass authorization owned by an app's domain layer.
+
+Future launcher enhancements may introduce app icon assets, capability badges, favorites, or recent-app affordances through separately bounded contract changes. Semantic app versions are not displayed because app version metadata is not part of the current manifest contract.
+
 ## Design rules
 
 Manifest modules must be lightweight and side-effect free except for registration. They must not query the database, perform network calls, infer identity, mutate domain state, or conditionally register routes from request-specific state.
