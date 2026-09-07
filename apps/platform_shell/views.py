@@ -3,6 +3,8 @@ from django.http import Http404
 from django.shortcuts import render
 from django.urls import NoReverseMatch, reverse
 
+from apps.documents.services import DocumentService
+
 from .registry import registry
 
 
@@ -18,6 +20,23 @@ def _launcher_app(manifest):
         "capability_count": len(manifest.capabilities),
         "launch_url": launch_url,
     }
+
+
+@login_required
+def personal_home(request):
+    """Compose a lightweight authenticated home from domain-owned summaries."""
+    return render(
+        request,
+        "platform_shell/personal_home.html",
+        {
+            "recent_documents": DocumentService.personal_home_recent_documents(
+                user=request.user,
+            ),
+            "recently_viewed_documents": DocumentService.personal_home_recently_viewed(
+                user=request.user,
+            ),
+        },
+    )
 
 
 @login_required
