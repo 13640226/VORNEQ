@@ -1,25 +1,28 @@
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
+from django.db.models import Q
 
+from .identity_resolver import IdentityResolver
 from .models import Document, DocumentAccess
 
 
 class DocumentService:
-    """Domain service for Documents CRUD and authorization."""
+    """Domain service for Documents CRUD and identity-based authorization."""
 
-    READ_ROLES = {DocumentAccess.Role.OWNER, DocumentAccess.Role.EDITOR, DocumentAccess.Role.VIEWER}
-    WRITE_ROLES = {DocumentAccess.Role.OWNER, DocumentAccess.Role.EDITOR}
-
-    @staticmethod
-    def _validate_user(user):
-        if user is None or not getattr(user, "is_authenticated", False):
-            raise PermissionDenied("Authentication is required.")
+    OWNER_ROLE = "owner"
+    READ_ROLES = {OWNER_ROLE, DocumentAccess.Role.EDITOR, DocumentAccess.Role.VIEWER}
+    WRITE_ROLES = {OWNER_ROLE, DocumentAccess.Role.EDITOR}
 
     @classmethod
     def _role_for(cls, *, user, document):
-        cls._validate_user(user)
+        identity = IdentityResolver.resolve(user)
+        if identity.pk == document.owner_identity_id:
+            return cls.OWNER_ROLE
         try:
-            return DocumentAccess.objects.only("role").get(document=document, user=user).role
+            return DocumentAccess.objects.only("role").get(
+                document=document,
+                identity=identity,
+            ).role
         except DocumentAccess.DoesNotExist:
             return None
 
@@ -40,24 +43,16 @@ class DocumentService:
     @classmethod
     @transaction.atomic
     def create_document(cls, *, user, title, content="", tags=None):
-        cls._validate_user(user)
+        identity = IdentityResolver.resolve(user)
         document = Document(
             title=title,
             content=content,
             tags=[] if tags is None else tags,
             created_by=user,
+            owner_identity=identity,
         )
         document.full_clean()
         document.save()
-
-        access = DocumentAccess(
-            document=document,
-            user=user,
-            role=DocumentAccess.Role.OWNER,
-            granted_by=user,
-        )
-        access.full_clean()
-        access.save()
         return document
 
     @classmethod
@@ -68,11 +63,16 @@ class DocumentService:
 
     @classmethod
     def list_documents(cls, *, user):
-        cls._validate_user(user)
-        return Document.objects.filter(
-            is_active=True,
-            access_entries__user=user,
-            access_entries__role__in=cls.READ_ROLES,
+        identity = IdentityResolver.resolve(user)
+        return Document.objects.filter(is_active=True).filter(
+            Q(owner_identity=identity)
+            | Q(
+                access_entries__identity=identity,
+                access_entries__role__in={
+                    DocumentAccess.Role.EDITOR,
+                    DocumentAccess.Role.VIEWER,
+                },
+            )
         ).distinct()
 
     @classmethod
@@ -104,21 +104,23 @@ class DocumentService:
         cls._require_role(
             user=user,
             document=document,
-            allowed_roles={DocumentAccess.Role.OWNER},
+            allowed_roles={cls.OWNER_ROLE},
         )
-        cls._validate_user(collaborator)
+        collaborator_identity = IdentityResolver.resolve(collaborator)
 
-        if collaborator.pk == document.created_by_id:
-            raise ValidationError("The document owner role cannot be replaced.")
+        if collaborator_identity.pk == document.owner_identity_id:
+            raise ValidationError("The document owner cannot be added as a collaborator.")
         if role not in {DocumentAccess.Role.EDITOR, DocumentAccess.Role.VIEWER}:
             raise ValidationError("Shared access role must be editor or viewer.")
 
-        access, _ = DocumentAccess.objects.get_or_create(
+        access, created = DocumentAccess.objects.get_or_create(
             document=document,
-            user=collaborator,
+            identity=collaborator_identity,
             defaults={"role": role, "granted_by": user},
         )
-        if access.role != role or access.granted_by_id != user.pk:
+        if created:
+            access.full_clean()
+        elif access.role != role or access.granted_by_id != user.pk:
             access.role = role
             access.granted_by = user
             access.full_clean()
@@ -132,11 +134,15 @@ class DocumentService:
         cls._require_role(
             user=user,
             document=document,
-            allowed_roles={DocumentAccess.Role.OWNER},
+            allowed_roles={cls.OWNER_ROLE},
         )
-        if collaborator.pk == document.created_by_id:
+        collaborator_identity = IdentityResolver.resolve(collaborator)
+        if collaborator_identity.pk == document.owner_identity_id:
             raise ValidationError("Owner access cannot be revoked.")
-        DocumentAccess.objects.filter(document=document, user=collaborator).delete()
+        DocumentAccess.objects.filter(
+            document=document,
+            identity=collaborator_identity,
+        ).delete()
 
     @classmethod
     @transaction.atomic
@@ -145,7 +151,7 @@ class DocumentService:
         cls._require_role(
             user=user,
             document=document,
-            allowed_roles={DocumentAccess.Role.OWNER},
+            allowed_roles={cls.OWNER_ROLE},
         )
         document.is_active = False
         document.save(update_fields=["is_active", "updated_at"])
