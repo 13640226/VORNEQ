@@ -21,3 +21,7 @@ class DocumentShareForm(forms.Form):
             (DocumentAccess.Role.VIEWER, "Viewer"),
         )
     )
+
+
+class DocumentCollaboratorForm(forms.Form):
+    collaborator = forms.CharField(max_length=150, label="Username")
