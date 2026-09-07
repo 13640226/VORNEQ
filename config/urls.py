@@ -32,6 +32,7 @@ urlpatterns += i18n_patterns(
     path("profile/", profile, name="profile"),
     path("", include("apps.profiles.urls")),
     path("accounts/", include("allauth.urls")),
+    path("apps/", include("apps.platform_shell.urls")),
     path(
         "library/",
         RedirectView.as_view(
