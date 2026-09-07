@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from unittest import mock
+
 from django.contrib.auth import get_user_model
+from django.db import connection
 from django.test import TestCase
 from django.utils import timezone
 
@@ -137,6 +140,14 @@ class NarrowWindowPoCTests(TestCase):
     def test_category_filter_match(self):
         baseline, _, _ = self.assert_scenarios_match(filters={"category": "research"})
         self.assertGreaterEqual(baseline["total"], 1)
+
+    def test_invalid_page_uses_same_bounded_fallback(self):
+        self.assert_scenarios_match(page="not-a-page", page_size=2)
+        self.assert_scenarios_match(page=0, page_size=2)
+
+    def test_backend_without_window_support_uses_same_fallback(self):
+        with mock.patch.object(connection.features, "supports_over_clause", False):
+            self.assert_scenarios_match(page=1, page_size=2)
 
     def test_expected_query_counts_when_all_adapters_have_candidates(self):
         with self.assertNumQueries(5):
