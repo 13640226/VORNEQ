@@ -388,7 +388,7 @@ class UnifiedSearch:
         *,
         language: str,
     ) -> dict:
-        """Primary path: exact count and bounded candidates in one query/adapter."""
+        """Compatibility path: exact count and bounded candidates in one query/adapter."""
         normalized_query = self.normalize_query(query)
         requested_types = self._requested_types(filters)
         candidate_limit = page * page_size
@@ -452,14 +452,27 @@ class UnifiedSearch:
         except (TypeError, ValueError):
             requested_page = 0
 
-        # Window functions cannot resolve Django's historical get_page() behavior
-        # for invalid/non-positive pages before the exact total is known. Keep the
-        # bounded path for those edge cases and for databases without OVER support.
+        # Preserve Django's historical get_page() semantics for invalid/non-positive
+        # input and keep the bounded path when window functions are unavailable.
         if requested_page <= 0 or not connection.features.supports_over_clause:
             return self._search_bounded(
                 query,
                 filters,
                 page,
+                page_size,
+                language=language,
+            )
+
+        # Capability routing is explicit. Unexpected database errors are not
+        # swallowed or converted into a fallback, so production faults stay visible.
+        from apps.search.narrow_window import search_narrow_cte, supports_narrow_cte
+
+        if supports_narrow_cte():
+            return search_narrow_cte(
+                self,
+                query,
+                filters,
+                requested_page,
                 page_size,
                 language=language,
             )
