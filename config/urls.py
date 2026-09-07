@@ -9,6 +9,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
 
+from apps.platform_shell.registry import registry as platform_registry
 from config.health import health_check
 from config.views import home, profile
 
@@ -43,8 +44,8 @@ urlpatterns += i18n_patterns(
     # Keep legacy detail/reader routes alive until Marketplace has explicit
     # equivalents, so purchased content and historical links do not break.
     path("library/", include("library.urls")),
-    path("marketplace/", include("marketplace.urls")),
     path("graph/", include("apps.graph.urls")),
+    *platform_registry.localized_urlpatterns(),
     prefix_default_language=True,
 )
 
