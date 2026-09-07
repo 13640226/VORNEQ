@@ -111,6 +111,7 @@ class ReputationTests(TestCase):
         payload = response.json()
         self.assertEqual(payload["user_id"], self.user.pk)
         self.assertEqual(payload["scores"]["source_quality"], 1.0)
+        self.assertNotIn("overall", payload["scores"])
         self.assertIn("methodology", payload)
         self.assertEqual(
             ReputationHistory.objects.filter(user=self.user).count(),
@@ -131,6 +132,7 @@ class ReputationTests(TestCase):
         payload = response.json()
         self.assertFalse(payload["persisted"])
         self.assertIsNone(payload["last_updated"])
+        self.assertNotIn("overall", payload["scores"])
         self.assertEqual(Reputation.objects.count(), reputation_count)
         self.assertEqual(ReputationHistory.objects.count(), history_count)
 
@@ -145,5 +147,6 @@ class ReputationTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Overall")
         self.assertEqual(Reputation.objects.count(), reputation_count)
         self.assertEqual(ReputationHistory.objects.count(), history_count)
