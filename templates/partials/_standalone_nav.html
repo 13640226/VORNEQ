@@ -10,20 +10,15 @@
 
     <nav class="standalone-nav__menu" aria-label="{% trans 'Primary' %}">
       <ul class="standalone-nav__list">
+        {% for item in platform_navigation %}
         <li class="standalone-nav__item">
-          <a href="{% url 'home' %}"
-             class="standalone-nav__link {% if request.resolver_match.url_name == 'home' %}is-active{% endif %}"
-             {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>
-            {% trans "Home" %}
+          <a href="{{ item.url }}"
+             class="standalone-nav__link {% if item.active %}is-active{% endif %}"
+             {% if item.active %}aria-current="page"{% endif %}>
+            {{ item.manifest.label }}
           </a>
         </li>
-        <li class="standalone-nav__item">
-          <a href="{% url 'marketplace:index' %}"
-             class="standalone-nav__link {% if request.resolver_match.namespace == 'marketplace' %}is-active{% endif %}"
-             {% if request.resolver_match.namespace == 'marketplace' %}aria-current="page"{% endif %}>
-            {% trans "Marketplace" %}
-          </a>
-        </li>
+        {% endfor %}
       </ul>
     </nav>
 
