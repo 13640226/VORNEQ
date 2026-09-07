@@ -1,0 +1,38 @@
+{% load i18n %}
+
+<nav class="homepage-signal-nav" aria-label="{% trans 'Homepage sections' %}" data-homepage-signal-nav>
+  <ul class="homepage-signal-nav__list">
+    <li class="homepage-signal-nav__item">
+      <a class="homepage-signal-nav__link is-active" href="#home-intro" data-signal-target="home-intro" aria-current="location">
+        <span class="homepage-signal-nav__dot" aria-hidden="true"></span>
+        <span class="homepage-signal-nav__label">{% trans "Intro" %}</span>
+      </a>
+    </li>
+    <li class="homepage-signal-nav__item">
+      <a class="homepage-signal-nav__link" href="#trust" data-signal-target="trust">
+        <span class="homepage-signal-nav__dot" aria-hidden="true"></span>
+        <span class="homepage-signal-nav__label">{% trans "Trust" %}</span>
+      </a>
+    </li>
+    <li class="homepage-signal-nav__item">
+      <a class="homepage-signal-nav__link" href="#apps" data-signal-target="apps">
+        <span class="homepage-signal-nav__dot" aria-hidden="true"></span>
+        <span class="homepage-signal-nav__label">{% trans "Apps" %}</span>
+      </a>
+    </li>
+    <li class="homepage-signal-nav__item">
+      <a class="homepage-signal-nav__link" href="#platform" data-signal-target="platform">
+        <span class="homepage-signal-nav__dot" aria-hidden="true"></span>
+        <span class="homepage-signal-nav__label">{% trans "Platform" %}</span>
+      </a>
+    </li>
+    {% if featured or results or is_filtered %}
+    <li class="homepage-signal-nav__item">
+      <a class="homepage-signal-nav__link" href="#discoveries" data-signal-target="discoveries">
+        <span class="homepage-signal-nav__dot" aria-hidden="true"></span>
+        <span class="homepage-signal-nav__label">{% trans "Discoveries" %}</span>
+      </a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
