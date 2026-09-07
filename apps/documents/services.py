@@ -3,8 +3,9 @@ from django.db import transaction
 from django.db.models import Q
 
 from .artifact_sync import DocumentArtifactSync
+from .audit_service import DocumentAuditService
 from .identity_resolver import IdentityResolver
-from .models import Document, DocumentAccess
+from .models import Document, DocumentAccess, DocumentAuditLog
 
 
 class DocumentService:
@@ -41,6 +42,13 @@ class DocumentService:
         except Document.DoesNotExist as exc:
             raise PermissionDenied("Document is unavailable or inaccessible.") from exc
 
+    @staticmethod
+    def _get_document(document_id):
+        try:
+            return Document.objects.get(pk=document_id)
+        except Document.DoesNotExist as exc:
+            raise PermissionDenied("Document is unavailable or inaccessible.") from exc
+
     @classmethod
     @transaction.atomic
     def create_document(cls, *, user, title, content="", tags=None):
@@ -55,12 +63,23 @@ class DocumentService:
         document.full_clean()
         document.save()
         DocumentArtifactSync.create(document=document, user=user)
+        DocumentAuditService.record(
+            document=document,
+            actor_identity=identity,
+            event_type=DocumentAuditLog.EventType.CREATED,
+        )
         return document
 
     @classmethod
+    @transaction.atomic
     def get_document(cls, *, user, document_id):
         document = cls._get_active_document(document_id)
         cls._require_role(user=user, document=document, allowed_roles=cls.READ_ROLES)
+        DocumentAuditService.record(
+            document=document,
+            actor_identity=IdentityResolver.resolve(user),
+            event_type=DocumentAuditLog.EventType.VIEWED,
+        )
         return document
 
     @classmethod
@@ -99,6 +118,12 @@ class DocumentService:
             document.save(update_fields=[*update_fields, "updated_at"])
             if {"title", "tags"}.intersection(update_fields):
                 DocumentArtifactSync.update(document=document)
+            DocumentAuditService.record(
+                document=document,
+                actor_identity=IdentityResolver.resolve(user),
+                event_type=DocumentAuditLog.EventType.UPDATED,
+                metadata={"changed_fields": sorted(update_fields)},
+            )
         return document
 
     @classmethod
@@ -110,6 +135,7 @@ class DocumentService:
             document=document,
             allowed_roles={cls.OWNER_ROLE},
         )
+        actor_identity = IdentityResolver.resolve(user)
         collaborator_identity = IdentityResolver.resolve(collaborator)
 
         if collaborator_identity.pk == document.owner_identity_id:
@@ -129,6 +155,16 @@ class DocumentService:
             access.granted_by = user
             access.full_clean()
             access.save(update_fields=["role", "granted_by", "updated_at"])
+
+        DocumentAuditService.record(
+            document=document,
+            actor_identity=actor_identity,
+            event_type=DocumentAuditLog.EventType.SHARED,
+            metadata={
+                "target_identity": str(collaborator_identity.pk),
+                "role": role,
+            },
+        )
         return access
 
     @classmethod
@@ -140,13 +176,29 @@ class DocumentService:
             document=document,
             allowed_roles={cls.OWNER_ROLE},
         )
+        actor_identity = IdentityResolver.resolve(user)
         collaborator_identity = IdentityResolver.resolve(collaborator)
         if collaborator_identity.pk == document.owner_identity_id:
             raise ValidationError("Owner access cannot be revoked.")
-        DocumentAccess.objects.filter(
+
+        access = DocumentAccess.objects.filter(
             document=document,
             identity=collaborator_identity,
-        ).delete()
+        ).first()
+        if access is None:
+            return
+
+        previous_role = access.role
+        access.delete()
+        DocumentAuditService.record(
+            document=document,
+            actor_identity=actor_identity,
+            event_type=DocumentAuditLog.EventType.REVOKED,
+            metadata={
+                "target_identity": str(collaborator_identity.pk),
+                "previous_role": previous_role,
+            },
+        )
 
     @classmethod
     @transaction.atomic
@@ -157,7 +209,19 @@ class DocumentService:
             document=document,
             allowed_roles={cls.OWNER_ROLE},
         )
+        actor_identity = IdentityResolver.resolve(user)
         document.is_active = False
         document.save(update_fields=["is_active", "updated_at"])
         DocumentArtifactSync.deactivate(document=document)
+        DocumentAuditService.record(
+            document=document,
+            actor_identity=actor_identity,
+            event_type=DocumentAuditLog.EventType.DEACTIVATED,
+        )
         return document
+
+    @classmethod
+    def get_audit_history(cls, *, user, document_id):
+        document = cls._get_document(document_id)
+        cls._require_role(user=user, document=document, allowed_roles=cls.READ_ROLES)
+        return DocumentAuditService.history_for_document(document=document)
