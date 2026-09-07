@@ -11,6 +11,9 @@ User = get_user_model()
 class LauncherTests(TestCase):
     def setUp(self):
         self._original_apps = dict(registry._apps)
+        self.addCleanup(self._restore_registry)
+        registry._apps.clear()
+
         self.manifest = AppManifest(
             slug="launcher-test-app",
             label="Launcher Test App",
@@ -19,10 +22,11 @@ class LauncherTests(TestCase):
             capabilities=("test_cap",),
         )
         registry.register(self.manifest)
-        self.user = User.objects.create_user(username="launcher-test", password="pass")
-        self.client.login(username="launcher-test", password="pass")
 
-    def tearDown(self):
+        self.user = User.objects.create_user(username="launcher-test")
+        self.client.force_login(self.user)
+
+    def _restore_registry(self):
         registry._apps.clear()
         registry._apps.update(self._original_apps)
 
