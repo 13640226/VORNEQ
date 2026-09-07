@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% if mode == "create" %}{% trans "New Document" %}{% else %}{% trans "Edit Document" %}{% endif %} — VORNEQ{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'documents/documents.css' %}">{% endblock %}
+
+{% block content %}
+<section class="documents documents--narrow">
+    <header class="documents__header">
+        <div>
+            <p class="documents__eyebrow">{% trans "Workspace" %}</p>
+            <h1>{% if mode == "create" %}{% trans "New Document" %}{% else %}{% trans "Edit Document" %}{% endif %}</h1>
+        </div>
+    </header>
+    <form method="post" class="document-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {{ form.as_p }}
+        <div class="document-actions">
+            <button class="documents-button" type="submit">{% trans "Save" %}</button>
+            <a href="{% if document %}{% url 'documents:detail' document_id=document.pk %}{% else %}{% url 'documents:list' %}{% endif %}">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+</section>
+{% endblock %}
