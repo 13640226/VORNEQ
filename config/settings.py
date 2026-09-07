@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "apps.profiles.apps.ProfilesConfig",
     "apps.content.apps.ContentConfig",
     "apps.media.apps.MediaConfig",
+    "apps.notes.apps.NotesConfig",
 ]
 
 
