@@ -510,6 +510,7 @@ class Artifact(models.Model):
     class Kind(models.TextChoices):
         PRODUCT = "product", "Product"
         LIBRARY_ITEM = "library_item", "Library item"
+        DOCUMENT = "document", "Document"
         OTHER = "other", "Other"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -537,6 +538,7 @@ class ArtifactBinding(models.Model):
         ("library", "libraryitem"),
         ("content", "article"),
         ("media", "mediaasset"),
+        ("documents", "document"),
     }
 
     artifact = models.OneToOneField(
