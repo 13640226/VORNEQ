@@ -198,7 +198,6 @@ class ReputationService:
                 "prediction_accuracy": prediction_accuracy,
                 "social_behavior": 0.0,
             }
-            scores["overall"] = sum(scores.values()) / 7.0
             last_updated = None
             persisted = False
         else:
@@ -210,7 +209,6 @@ class ReputationService:
                 "domain_expertise": reputation.domain_expertise_score,
                 "prediction_accuracy": reputation.prediction_accuracy_score,
                 "social_behavior": reputation.social_behavior_score,
-                "overall": reputation.overall_score,
             }
             last_updated = reputation.last_updated.isoformat()
             persisted = True
