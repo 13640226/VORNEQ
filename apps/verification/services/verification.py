@@ -49,10 +49,13 @@ def _audit_actor(user):
 
 
 def _emit_audit_event(**kwargs):
-    try:
-        record_audit_event(**kwargs)
-    except Exception:
-        logger.exception("Audit event emission failed for verification operation.")
+    def emit():
+        try:
+            record_audit_event(**kwargs)
+        except Exception:
+            logger.exception("Audit event emission failed for verification operation.")
+
+    transaction.on_commit(emit)
 
 
 def _require_permission(user, permission):
@@ -68,8 +71,9 @@ def _record_transition(
     previous_state,
     new_state,
     notes="",
+    *,
+    audit_reason_code,
     audit_event_name="verification.request.changed",
-    audit_reason_code="REQUEST_CHANGED",
 ):
     ReviewRecord.objects.create(
         content_type=ContentType.objects.get_for_model(request, for_concrete_model=False),
