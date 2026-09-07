@@ -1144,3 +1144,24 @@ msgstr "Lila"
 
 msgid "System"
 msgstr "System"
+
+# Preserved pre-existing catalog entries
+
+msgid "Your password has been changed. You can now sign in with your new password."
+msgstr "Dein Passwort wurde geändert. Du kannst dich jetzt mit dem neuen Passwort anmelden."
+
+msgid "Your product was submitted for review."
+msgstr "Dein Produkt wurde zur Prüfung eingereicht."
+
+msgid "philosophy, logic, method"
+msgstr "Philosophie, Logik, Methode"
+
+msgid "%(total)s library result"
+msgid_plural "%(total)s library results"
+msgstr[0] "%(total)s Bibliotheksergebnis"
+msgstr[1] "%(total)s Bibliotheksergebnisse"
+
+msgid "%(total)s product"
+msgid_plural "%(total)s products"
+msgstr[0] "%(total)s Produkt"
+msgstr[1] "%(total)s Produkte"
