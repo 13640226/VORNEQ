@@ -40,6 +40,29 @@ The shell will autodiscover the manifest at Django startup, mount the localized 
 - `capabilities`: descriptive integration identifiers. Capabilities do not grant authority.
 - `contract_version`: version of the platform manifest contract. Unsupported versions fail closed.
 
+### Capability discovery (v1)
+
+Apps declare capabilities as a tuple of strings in their `AppManifest`:
+
+```python
+AppManifest(
+    slug="marketplace",
+    label=_("Marketplace"),
+    url_name="marketplace:index",
+    capabilities=("commerce.catalog", "commerce.entitlement"),
+)
+```
+
+`apps.platform_shell.capability_discovery.CapabilityDiscovery` provides read-only discovery over the canonical `PlatformRegistry`:
+
+- `get_all_capabilities()` returns a mapping from capability identifier to the apps that declare it.
+- `get_app_capabilities(app_slug)` returns the tuple declared by one app.
+- `get_apps_with_capability(capability)` returns every app that declares the requested capability.
+
+Capability declarations are validated when the manifest enters the canonical registry. In v1, declarations must be non-empty strings, must not contain surrounding whitespace, and must not contain duplicates within the same manifest. Multiple apps may declare the same capability, legacy identifiers such as `commerce.catalog` remain valid, and there is no arbitrary per-app capability limit.
+
+Capabilities remain discovery/declaration tokens only. They do not grant permissions, execute providers, or authorize cross-app access. Executable provider contracts require a future versioned contract and ADR.
+
 ## Design rules
 
 Manifest modules must be lightweight and side-effect free except for registration. They must not query the database, perform network calls, infer identity, mutate domain state, or conditionally register routes from request-specific state.
