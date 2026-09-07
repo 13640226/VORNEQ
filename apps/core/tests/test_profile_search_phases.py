@@ -34,6 +34,8 @@ class ProfileSearchPhasesCommandTests(TestCase):
         self.assertEqual(row["normalized_query"], "ai")
         self.assertEqual(row["repeats"], 2)
         self.assertFalse(row["interleaved"])
+        self.assertFalse(row["compare"])
+        self.assertIsNone(row["equivalent"])
         self.assertEqual(row["total_results"], 1)
         self.assertGreaterEqual(row["avg_db_queries"], 1.0)
         self.assertEqual(
@@ -58,10 +60,46 @@ class ProfileSearchPhasesCommandTests(TestCase):
         self.assertTrue(all(row["interleaved"] for row in rows))
         self.assertTrue(all(row["repeats"] == 2 for row in rows))
 
+    def test_compare_reports_equivalent_baseline_and_production(self):
+        rows = self._run_json(
+            "--query",
+            "ai",
+            "--query",
+            "knowledge",
+            "--repeat",
+            "2",
+            "--interleaved",
+            "--compare",
+        )
+
+        self.assertEqual(len(rows), 4)
+        grouped = {(row["query"], row["mode"]): row for row in rows}
+        self.assertEqual(
+            set(grouped),
+            {
+                ("ai", "baseline"),
+                ("ai", "production"),
+                ("knowledge", "baseline"),
+                ("knowledge", "production"),
+            },
+        )
+        for query in ("ai", "knowledge"):
+            baseline = grouped[(query, "baseline")]
+            production = grouped[(query, "production")]
+            self.assertTrue(baseline["compare"])
+            self.assertTrue(production["compare"])
+            self.assertTrue(baseline["interleaved"])
+            self.assertTrue(production["interleaved"])
+            self.assertTrue(baseline["equivalent"])
+            self.assertTrue(production["equivalent"])
+            self.assertEqual(baseline["total_results"], production["total_results"])
+            self.assertGreaterEqual(baseline["avg_db_queries"], 1.0)
+            self.assertGreaterEqual(production["avg_db_queries"], 1.0)
+
     def test_command_is_read_only(self):
         before = Article.objects.count()
 
-        self._run_json("--query", "knowledge", "--repeat", "1")
+        self._run_json("--query", "knowledge", "--repeat", "1", "--compare")
 
         self.assertEqual(Article.objects.count(), before)
         article = Article.objects.get()
