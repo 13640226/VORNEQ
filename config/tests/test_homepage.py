@@ -30,7 +30,7 @@ class HomepageSignalNavigationTests(TestCase):
         self.assertContains(response, 'href="/static/css/homepage-signal-nav')
         self.assertContains(response, 'src="/static/js/homepage-signal-nav')
         self.assertContains(response, 'class="standalone-nav"')
-        self.assertContains(response, 'aria-label="Primary"')
+        self.assertContains(response, 'class="standalone-nav__menu"')
 
     def test_discoveries_signal_is_only_rendered_when_results_surface_exists(self):
         response = self.client.get(reverse("home"))
