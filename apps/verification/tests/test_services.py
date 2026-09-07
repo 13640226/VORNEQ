@@ -1,4 +1,7 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 from django.test import TestCase
 
 from apps.audit.models import AuditEvent
@@ -82,7 +85,8 @@ class VerificationServiceTests(TestCase):
         self.assertNotEqual(first.pk, second.pk)
 
     def test_start_and_submit_complete_request_atomically(self):
-        request = self.make_request()
+        with self.captureOnCommitCallbacks(execute=True):
+            request = self.make_request()
         self.assertTrue(
             AuditEvent.objects.filter(
                 event_name="verification.request.created",
@@ -92,7 +96,8 @@ class VerificationServiceTests(TestCase):
             ).exists()
         )
 
-        started = start_verification(verification_request=request, actor=self.staff)
+        with self.captureOnCommitCallbacks(execute=True):
+            started = start_verification(verification_request=request, actor=self.staff)
         self.assertTrue(
             AuditEvent.objects.filter(
                 event_name="verification.request.changed",
@@ -103,19 +108,20 @@ class VerificationServiceTests(TestCase):
             ).exists()
         )
 
-        result = submit_verification_result(
-            verification_request=started,
-            verifier=self.staff,
-            outcome="pass",
-            reported_confidence=90,
-            summary="Supported by canonical evidence.",
-            evidence_links=[
-                {
-                    "evidence_relation": self.relation,
-                    "visibility": VerificationEvidence.Visibility.PUBLIC,
-                }
-            ],
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            result = submit_verification_result(
+                verification_request=started,
+                verifier=self.staff,
+                outcome="pass",
+                reported_confidence=90,
+                summary="Supported by canonical evidence.",
+                evidence_links=[
+                    {
+                        "evidence_relation": self.relation,
+                        "visibility": VerificationEvidence.Visibility.PUBLIC,
+                    }
+                ],
+            )
 
         started.refresh_from_db()
         self.assertEqual(started.status, VerificationRequest.Status.COMPLETED)
@@ -157,14 +163,15 @@ class VerificationServiceTests(TestCase):
             start_verification(verification_request=request, actor=self.staff)
 
     def test_transitions_are_recorded_in_append_only_review_history(self):
-        request = self.make_request()
-        started = start_verification(verification_request=request, actor=self.staff)
-        submit_verification_result(
-            verification_request=started,
-            verifier=self.staff,
-            outcome="inconclusive",
-            reported_confidence=40,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            request = self.make_request()
+            started = start_verification(verification_request=request, actor=self.staff)
+            submit_verification_result(
+                verification_request=started,
+                verifier=self.staff,
+                outcome="inconclusive",
+                reported_confidence=40,
+            )
 
         records = ReviewRecord.objects.for_object(request).order_by("timestamp", "id")
         self.assertEqual(
@@ -188,3 +195,27 @@ class VerificationServiceTests(TestCase):
                 reason_code="REQUEST_COMPLETED",
             ).exists()
         )
+
+    def test_audit_failure_after_commit_does_not_rollback_business_transition(self):
+        with self.captureOnCommitCallbacks(execute=True):
+            request = self.make_request()
+
+        with patch(
+            "apps.verification.services.verification.record_audit_event",
+            side_effect=IntegrityError("simulated audit persistence failure"),
+        ) as mocked_record:
+            with self.captureOnCommitCallbacks(execute=True):
+                started = start_verification(
+                    verification_request=request,
+                    actor=self.staff,
+                )
+
+        started.refresh_from_db()
+        self.assertEqual(started.status, VerificationRequest.Status.IN_PROGRESS)
+        self.assertTrue(
+            ReviewRecord.objects.for_object(request).filter(
+                previous_state=VerificationRequest.Status.REQUESTED,
+                new_state=VerificationRequest.Status.IN_PROGRESS,
+            ).exists()
+        )
+        mocked_record.assert_called_once()
