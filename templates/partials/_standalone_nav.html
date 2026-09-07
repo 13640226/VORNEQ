@@ -2,11 +2,12 @@
 
 <header class="standalone-nav" role="banner" aria-label="{% trans 'Site header' %}">
   <div class="standalone-nav__inner">
-    <div class="standalone-nav__brand">
-      <a href="{% url 'home' %}" class="standalone-nav__wordmark" aria-label="{% trans 'VORNEQ — Knowledge Discovery Platform' %}">
-        VORNEQ
-      </a>
-    </div>
+    <a href="{% url 'home' %}"
+       class="standalone-nav__brand"
+       aria-label="{% trans 'VORNEQ — Trust Infrastructure' %}">
+      <span class="standalone-nav__symbol" aria-hidden="true"></span>
+      <span class="standalone-nav__wordmark">VORNEQ</span>
+    </a>
 
     <nav class="standalone-nav__menu" aria-label="{% trans 'Primary' %}">
       <ul class="standalone-nav__list">
