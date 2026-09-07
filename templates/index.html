@@ -13,11 +13,14 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
+<link rel="stylesheet" href="{% static 'css/homepage-signal-nav.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="global-home">
-  <section class="global-home__hero" aria-labelledby="global-home-title">
+  {% include "partials/_homepage_signal_nav.html" %}
+
+  <section id="home-intro" class="global-home__hero" aria-labelledby="global-home-title" data-homepage-signal-section>
     <div class="global-home__shell global-home__hero-grid">
       <div>
         <p class="global-home__eyebrow">{% trans "Knowledge without borders" %}</p>
@@ -63,7 +66,7 @@
     </div>
   </section>
 
-  <section class="global-home__section global-home__section--surface" aria-labelledby="scale-title">
+  <section id="trust" class="global-home__section global-home__section--surface" aria-labelledby="scale-title" data-homepage-signal-section>
     <div class="global-home__shell">
       <div class="global-home__heading">
         <p class="global-home__kicker">{% trans "Built for real scale" %}</p>
@@ -79,7 +82,7 @@
     </div>
   </section>
 
-  <section class="global-home__section" aria-labelledby="apps-title">
+  <section id="apps" class="global-home__section" aria-labelledby="apps-title" data-homepage-signal-section>
     <div class="global-home__shell">
       <div class="global-home__heading">
         <p class="global-home__kicker">{% trans "Explore VORNEQ" %}</p>
@@ -109,7 +112,7 @@
     </div>
   </section>
 
-  <section class="global-home__section global-home__section--surface" aria-labelledby="platform-title">
+  <section id="platform" class="global-home__section global-home__section--surface" aria-labelledby="platform-title" data-homepage-signal-section>
     <div class="global-home__shell">
       <div class="global-home__heading">
         <p class="global-home__kicker">{% trans "Build on VORNEQ" %}</p>
@@ -137,7 +140,7 @@
   </section>
 
   {% if featured or results or is_filtered %}
-  <section class="global-home__results" aria-labelledby="discoveries-title">
+  <section id="discoveries" class="global-home__results" aria-labelledby="discoveries-title" data-homepage-signal-section>
     <div class="global-home__shell">
       <div class="global-home__heading">
         <p class="global-home__kicker">{% if is_filtered %}{% trans "Search results" %}{% else %}{% trans "Across VORNEQ" %}{% endif %}</p>
@@ -153,4 +156,8 @@
   </section>
   {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/homepage-signal-nav.js' %}" defer></script>
 {% endblock %}
