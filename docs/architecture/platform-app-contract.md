@@ -40,6 +40,8 @@ The shell will autodiscover the manifest at Django startup, mount the localized 
 - `capabilities`: descriptive integration identifiers. Capabilities do not grant authority.
 - `contract_version`: version of the platform manifest contract. Unsupported versions fail closed.
 
+`PlatformRegistry.get(slug)` provides a read-only lookup for one registered manifest and returns `None` for an unknown slug. `PlatformRegistry` remains the canonical source of truth for installable app metadata.
+
 ### Capability discovery (v1)
 
 Apps declare capabilities as a tuple of strings in their `AppManifest`:
@@ -77,6 +79,20 @@ The launcher is a navigation surface only. Visibility, capability declarations, 
 
 Future launcher enhancements may introduce app icon assets, capability badges, favorites, or recent-app affordances through separately bounded contract changes. Semantic app versions are not displayed because app version metadata is not part of the current manifest contract.
 
+### Workspace Shell (v1)
+
+The authenticated Workspace Shell is a presentation/composition layer mounted beneath the localized `apps/` shell routes. Its named routes resolve to the localized equivalents of `apps/workspace/` and `apps/workspace/<slug>/`.
+
+- The Workspace index lists installed apps from the canonical `PlatformRegistry`, preserving deterministic `order`, then `slug`, ordering.
+- `Open in Workspace` opens a dedicated app context page. It does not change the App Launcher's existing `Launch` semantics.
+- The app context page displays manifest metadata and exposes an explicit `Open App` action only when the manifest's named `url_name` can be resolved.
+- Unknown app slugs return `404`. An unresolvable `url_name` is presented neutrally and no launch URL is guessed.
+- Workspace templates extend `base.html` and use the existing VORNEQ design-token custom properties.
+
+Workspace v1 does not embed apps, execute capabilities, manage shared state, provide cross-app data access, or grant authorization. Apps continue to own their routes, state, data access, authentication requirements, Entitlement interpretation, and domain permissions. Workspace metadata such as capabilities, route prefixes, or namespaces is descriptive context only.
+
+Future workspace work may introduce bounded panel/region composition through a separately versioned contract. iframe/microfrontend execution, shared state systems, or executable workspace providers are outside the v1 contract and require their own threat model and ADR-level decision.
+
 ## Design rules
 
 Manifest modules must be lightweight and side-effect free except for registration. They must not query the database, perform network calls, infer identity, mutate domain state, or conditionally register routes from request-specific state.
@@ -89,7 +105,7 @@ Installation is deploy-time composition of reviewed code. VORNEQ does not downlo
 
 ## Growth path
 
-The current contract intentionally covers the stable minimum: app discovery, localized route mounting, navigation, and descriptive capabilities. Future extensions can add versioned providers for global search, commands, notifications, workspace panels, or frontend assets without changing domain semantics.
+The current contract intentionally covers the stable minimum: app discovery, localized route mounting, navigation, descriptive capabilities, launcher discovery, and workspace context composition. Future extensions can add versioned providers for global search, commands, notifications, workspace panels, or frontend assets without changing domain semantics.
 
 ## Related ADRs
 

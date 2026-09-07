@@ -7,4 +7,6 @@ app_name = "platform_shell"
 
 urlpatterns = [
     path("", views.app_launcher, name="app_launcher"),
+    path("workspace/", views.workspace_index, name="workspace_index"),
+    path("workspace/<slug:slug>/", views.workspace_app, name="workspace_app"),
 ]
