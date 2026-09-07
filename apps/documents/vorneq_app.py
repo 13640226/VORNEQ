@@ -9,8 +9,11 @@ registry.register(
         label=_("Documents"),
         url_name="documents:list",
         order=30,
-        show_in_primary_nav=False,
+        show_in_primary_nav=True,
         requires_authentication=True,
+        active_namespaces=("documents",),
+        urlconf="apps.documents.urls",
+        route_prefix="documents/",
         capabilities=("documents.crud",),
     )
 )
