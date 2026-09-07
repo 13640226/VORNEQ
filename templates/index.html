@@ -1,170 +1,156 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}{% trans "Discover" %} — VORNEQ{% endblock %}
+{% block title %}VORNEQ — {% trans "The Global Knowledge Platform" %}{% endblock %}
 
 {% block meta %}
-<meta name="description" content="{% trans 'Discover books, articles, audio, documents, and digital products with VORNEQ.' %}">
-<meta property="og:title" content="VORNEQ — {% trans 'Knowledge Discovery Platform' %}">
-<meta property="og:description" content="{% trans 'Search, explore, and connect knowledge across formats.' %}">
+<meta name="description" content="{% trans 'Discover knowledge, explore VORNEQ apps, and build on an open platform for connected knowledge.' %}">
+<meta property="og:title" content="VORNEQ — {% trans 'The Global Knowledge Platform' %}">
+<meta property="og:description" content="{% trans 'Knowledge without borders: discover, organize, and build on one connected platform.' %}">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 {% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/home.css' %}">
-<link rel="stylesheet" href="{% static 'css/home-hero.css' %}">
+<link rel="stylesheet" href="{% static 'css/homepage.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="discovery-home">
-  <section class="discovery-hero" aria-labelledby="discovery-title">
-    <div class="discovery-shell discovery-hero__grid">
-      <div class="discovery-hero__content">
-        <p class="discovery-hero__eyebrow">{% trans "Knowledge without borders" %}</p>
-        <h1 id="discovery-title" class="discovery-hero__title">
-          {% trans "Discover" %} <span>{% trans "knowledge" %}</span><br>{% trans "across formats." %}
+<div class="global-home">
+  <section class="global-home__hero" aria-labelledby="global-home-title">
+    <div class="global-home__shell global-home__hero-grid">
+      <div>
+        <p class="global-home__eyebrow">{% trans "Knowledge without borders" %}</p>
+        <h1 id="global-home-title" class="global-home__title">
+          {% trans "The Global" %}<br><span>{% trans "Knowledge" %}</span><br>{% trans "Platform" %}
         </h1>
-        <p class="discovery-hero__subtitle">
+        <p class="global-home__lede">
           {% trans "Books, articles, documents, audio, and digital products — all in one place." %}
         </p>
 
-        <form method="get" class="discovery-search" role="search">
+        <form method="get" class="global-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
           {% if current_type != "all" %}<input type="hidden" name="type" value="{{ current_type }}">{% endif %}
-          <div class="discovery-search__wrapper">
-            <svg class="discovery-search__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <input type="search" name="q" class="discovery-search__input" placeholder="{% trans 'Search books, articles, audio, documents, and more…' %}" value="{{ search_query }}" aria-label="{% trans 'Search VORNEQ' %}" maxlength="200">
-            <button type="submit" class="discovery-search__button">{% trans "Search" %} <span aria-hidden="true">→</span></button>
-          </div>
+          <input class="global-search__input" type="search" name="q" value="{{ search_query }}" maxlength="200" placeholder="{% trans 'Search books, articles, audio, documents, and more…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
+          <button class="global-search__button" type="submit">{% trans "Search" %} <span aria-hidden="true">→</span></button>
         </form>
 
-        <div class="discovery-topics" aria-label="{% trans 'Popular topics' %}">
-          <button type="button" data-topic="Climate change">{% trans "Climate change" %}</button>
-          <button type="button" data-topic="Artificial intelligence">{% trans "Artificial intelligence" %}</button>
-          <button type="button" data-topic="Mental health">{% trans "Mental health" %}</button>
-          <button type="button" data-topic="Sustainable cities">{% trans "Sustainable cities" %}</button>
-          <button type="button" data-topic="Productivity">{% trans "Productivity" %}</button>
+        <div class="global-home__topics" aria-label="{% trans 'Suggested topics' %}">
+          <a class="global-home__topic" href="?q=Climate+change">{% trans "Climate change" %}</a>
+          <a class="global-home__topic" href="?q=Artificial+intelligence">{% trans "Artificial intelligence" %}</a>
+          <a class="global-home__topic" href="?q=Mental+health">{% trans "Mental health" %}</a>
+          <a class="global-home__topic" href="?q=Sustainable+cities">{% trans "Sustainable cities" %}</a>
+          <a class="global-home__topic" href="?q=Productivity">{% trans "Productivity" %}</a>
         </div>
       </div>
 
-      <div class="discovery-hero__visual" aria-hidden="true">
-        <div class="discovery-orbit discovery-orbit--one"></div>
-        <div class="discovery-orbit discovery-orbit--two"></div>
-        <div class="discovery-earth">
-          <div class="discovery-earth__glow"></div>
-          <div class="discovery-earth__lights"></div>
-        </div>
-        <div class="discovery-hero__manifesto">
-          <span>{% trans "People" %}</span>
-          <span>{% trans "Ideas" %}</span>
-          <span>{% trans "Knowledge" %}</span>
-          <span>{% trans "Opportunity" %}</span>
-        </div>
+      <div class="global-home__visual" aria-hidden="true">
+        <svg class="global-home__globe" viewBox="0 0 440 440" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="220" cy="220" r="150" stroke="currentColor" stroke-opacity=".28"/>
+          <ellipse cx="220" cy="220" rx="150" ry="58" stroke="currentColor" stroke-opacity=".24" transform="rotate(28 220 220)"/>
+          <ellipse cx="220" cy="220" rx="150" ry="58" stroke="currentColor" stroke-opacity=".2" transform="rotate(-62 220 220)"/>
+          <ellipse cx="220" cy="220" rx="148" ry="35" stroke="currentColor" stroke-opacity=".18" transform="rotate(90 220 220)"/>
+          <path d="M220 70C163 110 131 161 128 218c-3 61 31 119 92 152M220 70c57 40 89 91 92 148 3 61-31 119-92 152" stroke="currentColor" stroke-opacity=".16"/>
+          <line x1="220" y1="70" x2="126" y2="166" stroke="currentColor" stroke-opacity=".5" stroke-dasharray="5 7"/>
+          <line x1="126" y1="166" x2="88" y2="292" stroke="currentColor" stroke-opacity=".38" stroke-dasharray="5 7"/>
+          <line x1="220" y1="70" x2="314" y2="166" stroke="currentColor" stroke-opacity=".5" stroke-dasharray="5 7"/>
+          <line x1="314" y1="166" x2="352" y2="292" stroke="currentColor" stroke-opacity=".38" stroke-dasharray="5 7"/>
+          <line x1="88" y1="292" x2="220" y2="370" stroke="currentColor" stroke-opacity=".42" stroke-dasharray="5 7"/>
+          <line x1="352" y1="292" x2="220" y2="370" stroke="currentColor" stroke-opacity=".42" stroke-dasharray="5 7"/>
+          <g fill="currentColor"><circle cx="220" cy="70" r="7"/><circle cx="126" cy="166" r="6"/><circle cx="314" cy="166" r="6"/><circle cx="88" cy="292" r="5"/><circle cx="352" cy="292" r="5"/><circle cx="220" cy="370" r="7"/></g>
+        </svg>
+        <div class="global-home__visual-label">{% trans "A unified knowledge ecosystem" %} · {% trans "One world. One platform." %}</div>
       </div>
     </div>
   </section>
 
-  <section class="discovery-paths" aria-label="{% trans 'Explore by format' %}">
-    <div class="discovery-shell">
-      <div class="discovery-paths__grid">
-        <a href="?type=book" class="discovery-path-card"><span class="discovery-path-card__icon">▤</span><span><strong>{% trans "Books" %}</strong><small>{% trans "Explore books and long-form knowledge" %}</small></span><b aria-hidden="true">→</b></a>
-        <a href="?type=article" class="discovery-path-card"><span class="discovery-path-card__icon">□</span><span><strong>{% trans "Articles" %}</strong><small>{% trans "Read curated articles" %}</small></span><b aria-hidden="true">→</b></a>
-        <a href="?type=audio" class="discovery-path-card"><span class="discovery-path-card__icon">⌁</span><span><strong>{% trans "Audio" %}</strong><small>{% trans "Listen and learn on the go" %}</small></span><b aria-hidden="true">→</b></a>
-        <a href="?type=document" class="discovery-path-card"><span class="discovery-path-card__icon">▱</span><span><strong>{% trans "Documents" %}</strong><small>{% trans "Access research and reports" %}</small></span><b aria-hidden="true">→</b></a>
-        <a href="?type=product" class="discovery-path-card"><span class="discovery-path-card__icon">⊞</span><span><strong>{% trans "Digital Products" %}</strong><small>{% trans "Discover tools and resources" %}</small></span><b aria-hidden="true">→</b></a>
+  <section class="global-home__section global-home__section--surface" aria-labelledby="scale-title">
+    <div class="global-home__shell">
+      <div class="global-home__heading">
+        <p class="global-home__kicker">{% trans "Built for real scale" %}</p>
+        <h2 id="scale-title">{% trans "Credibility comes from what exists, not invented numbers." %}</h2>
+        <p>{% trans "Public scale metrics and verified ecosystem partners will appear here when production data and relationships are available." %}</p>
       </div>
-
-      <div class="discovery-principles">
-        <div><span>◇</span><p><strong>{% trans "Inspectable trust" %}</strong><small>{% trans "Evidence and context, not absolute truth claims" %}</small></p></div>
-        <div><span>◌</span><p><strong>{% trans "Diverse perspectives" %}</strong><small>{% trans "Knowledge from across a global community" %}</small></p></div>
-        <div><span>↗</span><p><strong>{% trans "All in one place" %}</strong><small>{% trans "Search. Learn. Grow." %}</small></p></div>
+      <div class="global-home__trust">
+        <div class="global-home__metric"><strong>—</strong><span>{% trans "Knowledge resources" %}</span></div>
+        <div class="global-home__metric"><strong>—</strong><span>{% trans "Global users" %}</span></div>
+        <div class="global-home__metric"><strong>—</strong><span>{% trans "Countries" %}</span></div>
+        <div class="global-home__metric"><strong>—</strong><span>{% trans "Verified partners" %}</span></div>
       </div>
     </div>
   </section>
 
-  {% if featured %}
-  <section class="discovery-featured" aria-labelledby="featured-title">
-    <div class="discovery-shell">
-      <div class="discovery-section-heading">
-        <div>
-          <p class="discovery-section-heading__kicker">{% trans "Handpicked content from across VORNEQ" %}</p>
-          <h2 id="featured-title">{% trans "Featured this week" %}</h2>
-        </div>
-        <a href="#results-title" class="discovery-section-heading__action">{% trans "View all" %} →</a>
+  <section class="global-home__section" aria-labelledby="apps-title">
+    <div class="global-home__shell">
+      <div class="global-home__heading">
+        <p class="global-home__kicker">{% trans "Explore VORNEQ" %}</p>
+        <h2 id="apps-title">{% trans "More than search. One connected application ecosystem." %}</h2>
+        <p>{% trans "Installed VORNEQ apps are discovered from the canonical Platform Registry rather than hard-coded into the homepage." %}</p>
       </div>
-
-      <div class="discovery-featured__viewport" data-featured-viewport>
-        <div class="discovery-featured__grid">
-          {% for item in featured %}
-          <article class="discovery-card discovery-card--featured">
-            {% if item.image_url %}
-            <a href="{{ item.url }}" class="discovery-card__media" tabindex="-1" aria-hidden="true"><img src="{{ item.image_url }}" alt="" class="discovery-card__image" loading="lazy"></a>
-            {% else %}
-            <a href="{{ item.url }}" class="discovery-card__media discovery-card__media--placeholder" tabindex="-1" aria-hidden="true"><span>VORNEQ</span></a>
-            {% endif %}
-            <div class="discovery-card__body">
-              <p class="discovery-card__type">{% include "partials/_content_type_label.html" with type=item.type %}</p>
-              <h3 class="discovery-card__title"><a href="{{ item.url }}">{{ item.title }}</a></h3>
-              {% if item.description %}<p class="discovery-card__description">{{ item.description }}</p>{% endif %}
-              <div class="discovery-card__meta"><span>{% if item.source %}{{ item.source }}{% else %}VORNEQ{% endif %}</span><time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:"DATE_FORMAT" }}</time></div>
-            </div>
-          </article>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-  </section>
-  {% endif %}
-
-  <section class="discovery-results{% if not results %} is-empty{% endif %}" aria-labelledby="results-title">
-    <div class="discovery-shell">
-      <div class="discovery-results__header">
-        <div>
-          {% if is_filtered %}
-          <p class="discovery-section-heading__kicker">{% trans "Discovery results" %}</p>
-          <h2 id="results-title">{% if search_query %}{% blocktrans with query=search_query %}Results for “{{ query }}”{% endblocktrans %}{% else %}{% trans "Filtered discoveries" %}{% endif %}</h2>
-          <p class="discovery-results__count" aria-live="polite">{% blocktrans count counter=total_results %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}</p>
-          {% else %}
-          <p class="discovery-section-heading__kicker">{% trans "Across VORNEQ" %}</p>
-          <h2 id="results-title">{% trans "Latest discoveries" %}</h2>
-          {% endif %}
-        </div>
-      </div>
-
-      {% if results %}
-      <div class="discovery-feed">
-        {% for item in results %}
-        <article class="discovery-feed-item{% if item.image_url %} has-image{% endif %}">
-          {% if item.image_url %}<a href="{{ item.url }}" class="discovery-feed-item__media" tabindex="-1" aria-hidden="true"><img src="{{ item.image_url }}" alt="" class="discovery-feed-item__image" loading="lazy"></a>{% endif %}
-          <div class="discovery-feed-item__content">
-            <div class="discovery-feed-item__topline"><span class="discovery-feed-item__type">{% include "partials/_content_type_label.html" with type=item.type %}</span><time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:"DATE_FORMAT" }}</time></div>
-            <h3 class="discovery-feed-item__title"><a href="{{ item.url }}">{{ item.title }}</a></h3>
-            {% if item.description %}<p class="discovery-feed-item__description">{{ item.description }}</p>{% endif %}
-            <div class="discovery-feed-item__footer">{% if item.source %}<span>{{ item.source }}</span>{% endif %}{% if item.type == "product" %}{% if item.price == 0 %}<span class="discovery-card__free">{% trans "Free" %}</span>{% else %}<span class="discovery-card__price">{{ item.price }}</span>{% endif %}{% endif %}</div>
-          </div>
+      <div class="global-home__apps">
+        <article class="global-home__card">
+          <h3>{% trans "Discover" %}</h3>
+          <p>{% trans "Search and explore knowledge across supported formats using VORNEQ's current unified retrieval layer." %}</p>
+          <a class="global-home__card-link" href="{% url 'home' %}">{% trans "Start exploring" %} →</a>
+        </article>
+        {% for app in platform_apps %}
+        <article class="global-home__card">
+          <h3>{{ app.label }}</h3>
+          <p>{% blocktrans with slug=app.slug %}Installed platform app · {{ slug }}{% endblocktrans %}</p>
+          <a class="global-home__card-link" href="{% url 'platform_shell:workspace_app' app.slug %}">{% trans "Open in Workspace" %} →</a>
+        </article>
+        {% empty %}
+        <article class="global-home__card">
+          <h3>{% trans "Apps" %}</h3>
+          <p>{% trans "No installable platform apps are currently registered." %}</p>
+          <a class="global-home__card-link" href="{% url 'platform_shell:app_launcher' %}">{% trans "Open Launcher" %} →</a>
         </article>
         {% endfor %}
       </div>
-
-      {% if page_obj.has_other_pages %}
-      <nav class="discovery-pagination" aria-label="{% trans 'Pagination' %}">
-        <div class="discovery-pagination__status">{% blocktrans with current=page_obj.number total=page_obj.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}</div>
-        <div class="discovery-pagination__actions">
-          {% if page_obj.has_previous %}<a class="discovery-pagination__link" href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if current_type != 'all' %}type={{ current_type }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}
-          {% if page_obj.has_next %}<a class="discovery-pagination__link" href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if current_type != 'all' %}type={{ current_type }}&amp;{% endif %}page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>{% endif %}
-        </div>
-      </nav>
-      {% endif %}
-      {% else %}
-      <div class="discovery-empty"><p class="discovery-empty__eyebrow">{% trans "Nothing matched" %}</p><h2>{% trans "No results found" %}</h2><p>{% trans "Try adjusting your keywords or choosing a different content type." %}</p><a href="?type=all" class="discovery-empty__reset">{% trans "Reset discovery" %}</a></div>
-      {% endif %}
     </div>
   </section>
-</div>
-{% endblock %}
 
-{% block extra_js %}
-<script src="{% static 'js/home.js' %}" defer></script>
+  <section class="global-home__section global-home__section--surface" aria-labelledby="platform-title">
+    <div class="global-home__shell">
+      <div class="global-home__heading">
+        <p class="global-home__kicker">{% trans "Build on VORNEQ" %}</p>
+        <h2 id="platform-title">{% trans "A platform with explicit boundaries." %}</h2>
+        <p>{% trans "The homepage reflects the current reviewed platform contract and does not present future capabilities as implemented APIs." %}</p>
+      </div>
+      <div class="global-home__contract-grid">
+        <article class="global-home__contract">
+          <span class="global-home__status global-home__status--stable">{% trans "Stable for current development" %}</span>
+          <h3>{% trans "Apps, Registry, Launcher & Workspace" %}</h3>
+          <p>{% trans "Deploy-time app manifests, canonical registry metadata, localized route contribution, Launcher discovery, Workspace context, Identity and Artifact foundations." %}</p>
+        </article>
+        <article class="global-home__contract">
+          <span class="global-home__status global-home__status--experimental">{% trans "Experimental" %}</span>
+          <h3>{% trans "Capability discovery" %}</h3>
+          <p>{% trans "Capability strings are descriptive discovery metadata only. They do not execute code, grant permissions, or authorize cross-app access." %}</p>
+        </article>
+        <article class="global-home__contract">
+          <span class="global-home__status global-home__status--coming">{% trans "Future contract" %}</span>
+          <h3>{% trans "Executable providers & integrations" %}</h3>
+          <p>{% trans "Executable capabilities, search providers, notifications, external integrations, and other provider contracts require separate versioned design and review." %}</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  {% if featured or results or is_filtered %}
+  <section class="global-home__results" aria-labelledby="discoveries-title">
+    <div class="global-home__shell">
+      <div class="global-home__heading">
+        <p class="global-home__kicker">{% if is_filtered %}{% trans "Search results" %}{% else %}{% trans "Across VORNEQ" %}{% endif %}</p>
+        <h2 id="discoveries-title">{% if search_query %}{% blocktrans with query=search_query %}Results for “{{ query }}”{% endblocktrans %}{% else %}{% trans "Latest discoveries" %}{% endif %}</h2>
+        {% if is_filtered %}<p>{% blocktrans count counter=total_results %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}</p>{% endif %}
+      </div>
+      <div class="global-home__results-grid">
+        {% for item in featured %}<article class="global-home__result"><span class="global-home__result-type">{% include "partials/_content_type_label.html" with type=item.type %}</span><h3><a href="{{ item.url }}">{{ item.title }}</a></h3>{% if item.description %}<p>{{ item.description }}</p>{% endif %}</article>{% endfor %}
+        {% for item in results %}<article class="global-home__result"><span class="global-home__result-type">{% include "partials/_content_type_label.html" with type=item.type %}</span><h3><a href="{{ item.url }}">{{ item.title }}</a></h3>{% if item.description %}<p>{{ item.description }}</p>{% endif %}</article>{% empty %}{% if is_filtered and not featured %}<article class="global-home__result"><span class="global-home__result-type">{% trans "No matches" %}</span><h3>{% trans "No results found" %}</h3><p>{% trans "Try adjusting your keywords or content type." %}</p></article>{% endif %}{% endfor %}
+      </div>
+      {% if page_obj.has_other_pages %}<nav class="global-home__pagination" aria-label="{% trans 'Pagination' %}"><span>{% blocktrans with current=page_obj.number total=page_obj.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}</span><span>{% if page_obj.has_previous %}<a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if current_type != 'all' %}type={{ current_type }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}{% if page_obj.has_previous and page_obj.has_next %} · {% endif %}{% if page_obj.has_next %}<a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if current_type != 'all' %}type={{ current_type }}&amp;{% endif %}page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>{% endif %}</span></nav>{% endif %}
+    </div>
+  </section>
+  {% endif %}
+</div>
 {% endblock %}

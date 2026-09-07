@@ -10,9 +10,5 @@ class GermanHomeTranslationTests(TestCase):
             "Wissen ohne Grenzen",
             "Bücher, Artikel, Dokumente, Audio und digitale Produkte",
             "Künstliche Intelligenz",
-            "Digitale Produkte",
-            "Nachvollziehbares Vertrauen",
-            "Vielfältige Perspektiven",
-            "Alles an einem Ort",
         ):
             self.assertContains(response, translated_text)
