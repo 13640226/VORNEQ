@@ -24,6 +24,26 @@ class AppManifest:
     contract_version: int = PLATFORM_CONTRACT_VERSION
 
 
+def validate_capabilities(capabilities: tuple[str, ...]) -> None:
+    """Validate descriptive capability declarations for one app manifest."""
+    seen: set[str] = set()
+    for capability in capabilities:
+        if not isinstance(capability, str):
+            raise ValueError(
+                "VORNEQ capabilities must be strings, "
+                f"got {type(capability).__name__}"
+            )
+        if not capability:
+            raise ValueError("VORNEQ capabilities must not be empty")
+        if capability != capability.strip():
+            raise ValueError(
+                "VORNEQ capabilities must not contain surrounding whitespace"
+            )
+        if capability in seen:
+            raise ValueError(f"Duplicate VORNEQ capability: {capability}")
+        seen.add(capability)
+
+
 class PlatformRegistry:
     def __init__(self):
         self._apps: dict[str, AppManifest] = {}
@@ -37,6 +57,7 @@ class PlatformRegistry:
             raise ValueError(f"Duplicate VORNEQ app slug: {manifest.slug}")
         if manifest.route_prefix.startswith("/"):
             raise ValueError("VORNEQ app route_prefix must be relative, without a leading slash")
+        validate_capabilities(manifest.capabilities)
         self._apps[manifest.slug] = manifest
 
     def all(self) -> tuple[AppManifest, ...]:
