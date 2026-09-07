@@ -1,11 +1,18 @@
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import Q
+from django.utils import timezone
 
 from .artifact_sync import DocumentArtifactSync
 from .audit_service import DocumentAuditService
 from .identity_resolver import IdentityResolver
-from .models import Document, DocumentAccess, DocumentAuditLog
+from .models import (
+    Document,
+    DocumentAccess,
+    DocumentAuditLog,
+    DocumentLifecycleState,
+    DocumentPreviousLifecycleState,
+)
 
 
 class DocumentService:
@@ -248,12 +255,102 @@ class DocumentService:
         )
         actor_identity = IdentityResolver.resolve(user)
         document.is_active = False
-        document.save(update_fields=["is_active", "updated_at"])
+        document.lifecycle_state = DocumentLifecycleState.DEACTIVATED
+        document.full_clean()
+        document.save(update_fields=["is_active", "lifecycle_state", "updated_at"])
         DocumentArtifactSync.deactivate(document=document)
         DocumentAuditService.record(
             document=document,
             actor_identity=actor_identity,
             event_type=DocumentAuditLog.EventType.DEACTIVATED,
+        )
+        return document
+
+    @classmethod
+    @transaction.atomic
+    def request_deletion(cls, *, user, document_id):
+        document = cls._get_document(document_id)
+        cls._require_role(
+            user=user,
+            document=document,
+            allowed_roles={cls.OWNER_ROLE},
+        )
+        if document.lifecycle_state not in {
+            DocumentLifecycleState.ACTIVE,
+            DocumentLifecycleState.DEACTIVATED,
+        }:
+            raise ValidationError("Document cannot enter pending deletion from its current state.")
+
+        actor_identity = IdentityResolver.resolve(user)
+        previous_state = document.lifecycle_state
+        document.previous_lifecycle_state = previous_state
+        document.lifecycle_state = DocumentLifecycleState.PENDING_DELETION
+        document.deletion_requested_at = timezone.now()
+        document.deletion_requested_by = actor_identity
+        document.is_active = False
+        document.full_clean()
+        document.save(
+            update_fields=[
+                "previous_lifecycle_state",
+                "lifecycle_state",
+                "deletion_requested_at",
+                "deletion_requested_by",
+                "is_active",
+                "updated_at",
+            ]
+        )
+        if previous_state == DocumentLifecycleState.ACTIVE:
+            DocumentArtifactSync.deactivate(document=document)
+        DocumentAuditService.record(
+            document=document,
+            actor_identity=actor_identity,
+            event_type=DocumentAuditLog.EventType.DELETION_REQUESTED,
+            metadata={"previous_lifecycle_state": previous_state},
+        )
+        return document
+
+    @classmethod
+    @transaction.atomic
+    def cancel_deletion(cls, *, user, document_id):
+        document = cls._get_document(document_id)
+        cls._require_role(
+            user=user,
+            document=document,
+            allowed_roles={cls.OWNER_ROLE},
+        )
+        if document.lifecycle_state != DocumentLifecycleState.PENDING_DELETION:
+            raise ValidationError("Only a pending deletion request can be cancelled.")
+        if document.previous_lifecycle_state not in {
+            DocumentPreviousLifecycleState.ACTIVE,
+            DocumentPreviousLifecycleState.DEACTIVATED,
+        }:
+            raise ValidationError("Pending deletion is missing its previous lifecycle state.")
+
+        actor_identity = IdentityResolver.resolve(user)
+        restored_state = document.previous_lifecycle_state
+        document.lifecycle_state = restored_state
+        document.previous_lifecycle_state = None
+        document.deletion_requested_at = None
+        document.deletion_requested_by = None
+        document.is_active = restored_state == DocumentPreviousLifecycleState.ACTIVE
+        document.full_clean()
+        document.save(
+            update_fields=[
+                "lifecycle_state",
+                "previous_lifecycle_state",
+                "deletion_requested_at",
+                "deletion_requested_by",
+                "is_active",
+                "updated_at",
+            ]
+        )
+        if document.is_active:
+            DocumentArtifactSync.reactivate(document=document)
+        DocumentAuditService.record(
+            document=document,
+            actor_identity=actor_identity,
+            event_type=DocumentAuditLog.EventType.DELETION_CANCELLED,
+            metadata={"restored_lifecycle_state": restored_state},
         )
         return document
 

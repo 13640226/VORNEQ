@@ -71,3 +71,14 @@ class DocumentArtifactSync:
         artifact.full_clean()
         artifact.save(update_fields=["is_active", "updated_at"])
         return artifact
+
+    @classmethod
+    def reactivate(cls, *, document):
+        binding = cls._binding_for(document)
+        artifact = binding.artifact
+        if artifact.kind != Artifact.Kind.DOCUMENT:
+            raise ValidationError("Document binding must reference a document Artifact.")
+        artifact.is_active = True
+        artifact.full_clean()
+        artifact.save(update_fields=["is_active", "updated_at"])
+        return artifact
