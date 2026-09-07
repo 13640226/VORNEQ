@@ -9,5 +9,6 @@ registry.register(
         label=_("Discover"),
         url_name="home",
         order=10,
+        capabilities=("read_artifact_v1",),
     )
 )
