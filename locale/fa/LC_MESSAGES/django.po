@@ -732,3 +732,153 @@ msgid "%(total)s product"
 msgid_plural "%(total)s products"
 msgstr[0] "%(total)s محصول"
 msgstr[1] "%(total)s محصول"
+
+msgid "The Global Knowledge Platform"
+msgstr "پلتفرم جهانی دانش"
+
+msgid "Discover knowledge, explore VORNEQ apps, and build on an open platform for connected knowledge."
+msgstr "دانش را کشف کنید، برنامه‌های VORNEQ را کاوش کنید و روی یک پلتفرم باز برای دانش متصل بسازید."
+
+msgid "Knowledge without borders: discover, organize, and build on one connected platform."
+msgstr "دانش بدون مرز: کشف کنید، سازمان‌دهی کنید و روی یک پلتفرم متصل بسازید."
+
+msgid "Knowledge without borders"
+msgstr "دانش بدون مرز"
+
+msgid "The Global"
+msgstr "جهانی"
+
+msgid "Knowledge"
+msgstr "دانش"
+
+msgid "Platform"
+msgstr "پلتفرم"
+
+msgid "Books, articles, documents, audio, and digital products — all in one place."
+msgstr "کتاب‌ها، مقاله‌ها، اسناد، محتوای صوتی و محصولات دیجیتال — همه در یک جا."
+
+msgid "Search books, articles, audio, documents, and more…"
+msgstr "جستجوی کتاب‌ها، مقاله‌ها، محتوای صوتی، اسناد و بیشتر…"
+
+msgid "Search across VORNEQ"
+msgstr "جستجو در سراسر VORNEQ"
+
+msgid "Suggested topics"
+msgstr "موضوعات پیشنهادی"
+
+msgid "Climate change"
+msgstr "تغییر اقلیم"
+
+msgid "Artificial intelligence"
+msgstr "هوش مصنوعی"
+
+msgid "Mental health"
+msgstr "سلامت روان"
+
+msgid "Sustainable cities"
+msgstr "شهرهای پایدار"
+
+msgid "Productivity"
+msgstr "بهره‌وری"
+
+msgid "A unified knowledge ecosystem"
+msgstr "یک اکوسیستم دانش یکپارچه"
+
+msgid "One world. One platform."
+msgstr "یک جهان. یک پلتفرم."
+
+msgid "Built for real scale"
+msgstr "ساخته‌شده برای مقیاس واقعی"
+
+msgid "Credibility comes from what exists, not invented numbers."
+msgstr "اعتبار از واقعیت‌های موجود می‌آید، نه از اعداد ساختگی."
+
+msgid "Public scale metrics and verified ecosystem partners will appear here when production data and relationships are available."
+msgstr "معیارهای عمومی مقیاس و شرکای تأییدشده‌ی اکوسیستم زمانی در اینجا نمایش داده می‌شوند که داده‌ها و روابط واقعی محیط تولید در دسترس باشند."
+
+msgid "Knowledge resources"
+msgstr "منابع دانش"
+
+msgid "Global users"
+msgstr "کاربران جهانی"
+
+msgid "Countries"
+msgstr "کشورها"
+
+msgid "Verified partners"
+msgstr "شرکای تأییدشده"
+
+msgid "Explore VORNEQ"
+msgstr "کاوش در VORNEQ"
+
+msgid "More than search. One connected application ecosystem."
+msgstr "فراتر از جستجو. یک اکوسیستم متصل از برنامه‌ها."
+
+msgid "Installed VORNEQ apps are discovered from the canonical Platform Registry rather than hard-coded into the homepage."
+msgstr "برنامه‌های نصب‌شده‌ی VORNEQ از طریق Platform Registry مرجع کشف می‌شوند، نه اینکه به‌صورت سخت‌کدشده در صفحه‌ی اصلی قرار بگیرند."
+
+msgid "Search and explore knowledge across supported formats using VORNEQ's current unified retrieval layer."
+msgstr "با استفاده از لایه‌ی بازیابی یکپارچه‌ی فعلی VORNEQ، دانش را در قالب‌های پشتیبانی‌شده جستجو و کاوش کنید."
+
+msgid "Start exploring"
+msgstr "شروع کاوش"
+
+msgid "Installed platform app · %(slug)s"
+msgstr "برنامه‌ی نصب‌شده‌ی پلتفرم · %(slug)s"
+
+msgid "Open in Workspace"
+msgstr "باز کردن در Workspace"
+
+msgid "Apps"
+msgstr "برنامه‌ها"
+
+msgid "No installable platform apps are currently registered."
+msgstr "در حال حاضر هیچ برنامه‌ی قابل‌نصب پلتفرمی ثبت نشده است."
+
+msgid "Open Launcher"
+msgstr "باز کردن Launcher"
+
+msgid "Build on VORNEQ"
+msgstr "روی VORNEQ بسازید"
+
+msgid "A platform with explicit boundaries."
+msgstr "پلتفرمی با مرزهای مشخص."
+
+msgid "The homepage reflects the current reviewed platform contract and does not present future capabilities as implemented APIs."
+msgstr "صفحه‌ی اصلی قرارداد بررسی‌شده‌ی فعلی پلتفرم را منعکس می‌کند و قابلیت‌های آینده را به‌عنوان APIهای پیاده‌سازی‌شده ارائه نمی‌دهد."
+
+msgid "Stable for current development"
+msgstr "پایدار برای توسعه‌ی فعلی"
+
+msgid "Apps, Registry, Launcher & Workspace"
+msgstr "Apps، Registry، Launcher و Workspace"
+
+msgid "Deploy-time app manifests, canonical registry metadata, localized route contribution, Launcher discovery, Workspace context, Identity and Artifact foundations."
+msgstr "مانیفست‌های برنامه در زمان deploy، metadata مرجع Registry، مشارکت در مسیرهای محلی‌سازی‌شده، کشف از طریق Launcher، زمینه‌ی Workspace و زیرساخت‌های Identity و Artifact."
+
+msgid "Experimental"
+msgstr "آزمایشی"
+
+msgid "Capability discovery"
+msgstr "کشف Capability"
+
+msgid "Capability strings are descriptive discovery metadata only. They do not execute code, grant permissions, or authorize cross-app access."
+msgstr "رشته‌های Capability صرفاً metadata توصیفی برای کشف هستند. آن‌ها کد اجرا نمی‌کنند، مجوزی اعطا نمی‌کنند و دسترسی بین برنامه‌ها را مجاز نمی‌دارند."
+
+msgid "Future contract"
+msgstr "قرارداد آینده"
+
+msgid "Executable providers & integrations"
+msgstr "ارائه‌دهندگان اجرایی و یکپارچه‌سازی‌ها"
+
+msgid "Executable capabilities, search providers, notifications, external integrations, and other provider contracts require separate versioned design and review."
+msgstr "Capabilityهای اجرایی، ارائه‌دهندگان جستجو، اعلان‌ها، یکپارچه‌سازی‌های خارجی و سایر قراردادهای ارائه‌دهنده به طراحی و بررسی نسخه‌بندی‌شده‌ی جداگانه نیاز دارند."
+
+msgid "Search results"
+msgstr "نتایج جستجو"
+
+msgid "No matches"
+msgstr "بدون نتیجه"
+
+msgid "Try adjusting your keywords or content type."
+msgstr "سعی کنید کلیدواژه‌ها یا نوع محتوا را تغییر دهید."

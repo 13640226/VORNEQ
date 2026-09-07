@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils.translation import override
 
 from apps.platform_shell.registry import AppManifest, registry
 
@@ -44,17 +45,18 @@ class WorkspaceTests(TestCase):
         self.assertRedirects(response, f"{login_url}?next={workspace_url}")
 
     def test_workspace_index_renders_apps_and_workspace_action(self):
-        response = self.client.get(reverse("platform_shell:workspace_index"))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Workspace Test App")
-        self.assertContains(response, "Open in Workspace")
-        self.assertContains(
-            response,
-            reverse(
-                "platform_shell:workspace_app",
-                kwargs={"slug": "workspace-test-app"},
-            ),
-        )
+        with override("en"):
+            response = self.client.get(reverse("platform_shell:workspace_index"))
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "Workspace Test App")
+            self.assertContains(response, "Open in Workspace")
+            self.assertContains(
+                response,
+                reverse(
+                    "platform_shell:workspace_app",
+                    kwargs={"slug": "workspace-test-app"},
+                ),
+            )
 
     def test_workspace_app_requires_valid_slug(self):
         response = self.client.get(
