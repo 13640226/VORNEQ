@@ -2,6 +2,35 @@
 
 The platform shell lets reviewed Django applications join VORNEQ without editing global navigation or localized route declarations.
 
+## Contract maturity
+
+This document distinguishes behavior that is **stable for current app development** from surfaces that are **experimental or future work**. "Stable" here means the current reviewed contract that new in-repository apps may rely on; it is not a promise of indefinite backward compatibility or a substitute for ADR review when semantics change.
+
+### Stable for current app development
+
+- deploy-time `AppManifest` registration and autodiscovery;
+- canonical `PlatformRegistry` metadata and deterministic ordering;
+- `PlatformRegistry.get(slug)` read-only lookup;
+- localized route contribution through `urlconf` and `route_prefix`;
+- registry-derived primary navigation;
+- descriptive capability declaration and read-only capability discovery v1;
+- authenticated App Launcher discovery/navigation behavior;
+- Workspace Shell v1 index and per-app context behavior;
+- named-route resolution with neutral handling of unresolvable launch targets.
+
+### Experimental or not yet implemented
+
+- executable capability providers or handlers;
+- global commands, search providers, notification providers, or workspace panels as executable contracts;
+- shared cross-app state or hidden cross-app data access;
+- runtime installation or execution of remote app code;
+- iframe/microfrontend app execution;
+- semantic app version metadata, icon asset contracts, favorites, or recent-app state;
+- a generic cross-domain Entitlement permission model;
+- a generic app audit-event taxonomy.
+
+Future surfaces must not be inferred from names in this document. They require separately reviewed contracts and, where architectural semantics change, ADR-level decisions.
+
 ## Minimal installable app
 
 Add the Django application to `INSTALLED_APPS`, then create `vorneq_app.py` inside that application:
@@ -107,6 +136,12 @@ Installation is deploy-time composition of reviewed code. VORNEQ does not downlo
 
 The current contract intentionally covers the stable minimum: app discovery, localized route mounting, navigation, descriptive capabilities, launcher discovery, and workspace context composition. Future extensions can add versioned providers for global search, commands, notifications, workspace panels, or frontend assets without changing domain semantics.
 
+## Developer reference
+
+- [App Developer Guide](../developer-guide.md)
+- [Notes PoC App](notes-poc-app.md)
+
 ## Related ADRs
 
+- [ADR 010: Installable Platform App Contract](../adr/010-installable-platform-app-contract.md)
 - [ADR 011: App Launcher, Capability Bus, and Workspace Shell](../adr/011-app-launcher-capability-bus-workspace-shell.md)
