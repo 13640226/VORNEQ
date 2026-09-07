@@ -6,6 +6,9 @@ from django.urls import NoReverseMatch, include, path, reverse
 from django.utils.module_loading import module_has_submodule
 
 
+PLATFORM_CONTRACT_VERSION = 1
+
+
 @dataclass(frozen=True)
 class AppManifest:
     slug: str
@@ -18,6 +21,7 @@ class AppManifest:
     urlconf: str | None = None
     route_prefix: str = ""
     capabilities: tuple[str, ...] = ()
+    contract_version: int = PLATFORM_CONTRACT_VERSION
 
 
 class PlatformRegistry:
@@ -25,6 +29,10 @@ class PlatformRegistry:
         self._apps: dict[str, AppManifest] = {}
 
     def register(self, manifest: AppManifest) -> None:
+        if manifest.contract_version != PLATFORM_CONTRACT_VERSION:
+            raise ValueError(
+                f"Unsupported VORNEQ app contract version: {manifest.contract_version}"
+            )
         if manifest.slug in self._apps:
             raise ValueError(f"Duplicate VORNEQ app slug: {manifest.slug}")
         if manifest.route_prefix.startswith("/"):
