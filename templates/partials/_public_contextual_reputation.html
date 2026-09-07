@@ -7,6 +7,7 @@
     {% for rep in reputations %}
       <article class="public-reputation__item">
         <h3>{{ rep.domain }} · {{ rep.verification_method.name }}</h3>
+        <p>{% trans "Role" %}: {{ rep.actor_role_label }}</p>
         <p>{% trans "Score" %}: {{ rep.score|floatformat:2 }}</p>
         <p>{% trans "Samples" %}: {{ rep.sample_count }} · {% trans "Sample depth" %}: {{ rep.sample_strength }}</p>
         {% if rep.last_event_at %}<p>{% trans "Last event" %}: {{ rep.last_event_at }}</p>{% endif %}
