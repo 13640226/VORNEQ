@@ -179,18 +179,38 @@ AI = cross-cutting capability
 AI ≠ Domain Owner
 AI ≠ Authorization
 AI ≠ Verification
-AI output ≠ Evidence
+AI output ≠ Evidence by default
 AI inference ≠ Identity
 AI ranking ≠ Truth
 ```
 
-An AI-produced statement may become material that a domain workflow stores or examines, but its origin must remain inspectable and it must not acquire Evidence or Verification semantics merely because a model produced it.
+An AI-produced statement may become material that a domain workflow stores or examines, but its origin must remain inspectable and it must not acquire Evidence or Verification semantics merely because a model produced it. A reviewed workflow may represent or attach Evidence about an AI-produced output when provenance, context, and the applicable Evidence contract are explicit; the raw output does not become Evidence automatically.
 
 Likewise, recommendation and personalization should not become shared platform primitives before deterministic product behavior, measurement, real consumers, and demonstrated need justify that promotion.
 
 ---
 
-## 9. What to Measure
+## 9. Expose the Signals, Preserve the Context, Do Not Collapse Judgment into a Single Score
+
+VORNEQ should expose inspectable signals and preserve the context required to interpret them rather than collapsing judgment into a universal trust value.
+
+This principle is consistent with the existing Evidence, Verification, provenance, and Contextual Reputation model:
+
+- **Expose the Signals.** Make relevant Evidence, provenance, verification state, and contextual relationships inspectable where authorization permits.
+- **Preserve the Context.** A signal should remain interpretable within the domain, relationship, time, and purpose that give it meaning; shared infrastructure must not erase those boundaries.
+- **Do Not Collapse Judgment into a Single Score.** No global score or status should silently stand in for truth, trust, authorization, publication, or domain-specific judgment.
+
+Verification is an explicit, inspectable status or process; it is not by itself a declaration of universal truth. Contextual Reputation remains contextual rather than a global trust score, and Search remains retrieval rather than Verification.
+
+The epistemic guardrail is therefore:
+
+> **Expose the Signals. Preserve the Context. Do Not Collapse Judgment into a Single Score.**
+
+VORNEQ should provide the material and relationships required for examination while keeping judgment inspectable, contextual, and bounded.
+
+---
+
+## 10. What to Measure
 
 A flywheel becomes useful as a strategy only when its movement can be observed. Future measurement should prefer signals of knowledge utility over vanity growth metrics.
 
@@ -208,7 +228,7 @@ These are strategic measurement directions, not current SLOs or contractual requ
 
 ---
 
-## 10. Product Priorities Through the Flywheel
+## 11. Product Priorities Through the Flywheel
 
 The flywheel provides a filter for roadmap decisions:
 
@@ -226,7 +246,7 @@ If not, it should not be justified merely as "platform completeness."
 
 ---
 
-## 11. Relationship to Architecture
+## 12. Relationship to Architecture
 
 This document is intentionally downstream of the architecture contract.
 
@@ -239,7 +259,7 @@ This strategy must adapt to reviewed architectural contracts, not override them.
 
 ---
 
-## 12. Summary
+## 13. Summary
 
 VORNEQ's durable advantage should not be a closed ecosystem. It should be a compounding knowledge system in which:
 
@@ -248,6 +268,11 @@ VORNEQ's durable advantage should not be a closed ecosystem. It should be a comp
 Its architectural strategy for sustaining that loop is:
 
 > **Deep Contracts. Broad Interoperability. Open Extensibility. Explicit Domain Ownership.**
+
+Its complementary engineering and epistemic principles are:
+
+> **Own the Differentiation. Reuse the Commodity.**  
+> **Expose the Signals. Preserve the Context. Do Not Collapse Judgment into a Single Score.**
 
 VORNEQ should own the concepts that create its differentiation, reuse commodity infrastructure where appropriate, and treat AI as a bounded cross-cutting capability rather than a new source of truth or ownership.
 
