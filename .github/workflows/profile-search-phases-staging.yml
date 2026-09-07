@@ -12,6 +12,11 @@ on:
         required: false
         default: false
         type: boolean
+      compare:
+        description: Compare window-count baseline vs production with alternating order
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -19,7 +24,7 @@ permissions:
 jobs:
   profile:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Check out repository
@@ -52,16 +57,20 @@ jobs:
         run: |
           python manage.py showmigrations --plan
 
-      - name: Profile production search path
+      - name: Profile search path
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
           DJANGO_SETTINGS_MODULE: config.settings_render
           INTERLEAVED: ${{ inputs.interleaved }}
+          COMPARE: ${{ inputs.compare }}
         run: |
           set -euo pipefail
-          interleaved_flag=""
+          flags=()
           if [ "$INTERLEAVED" = "true" ]; then
-            interleaved_flag="--interleaved"
+            flags+=("--interleaved")
+          fi
+          if [ "$COMPARE" = "true" ]; then
+            flags+=("--compare")
           fi
           python manage.py profile_search_phases \
             --query "" \
@@ -69,12 +78,13 @@ jobs:
             --query "knowledge" \
             --query "science" \
             --repeat "${{ inputs.repeat }}" \
-            $interleaved_flag \
+            "${flags[@]}" \
             --json | tee search_phase_profile.jsonl
 
       - name: Validate profiler JSONL
         env:
           INTERLEAVED: ${{ inputs.interleaved }}
+          COMPARE: ${{ inputs.compare }}
         run: |
           python - <<'PY'
           import json
@@ -83,25 +93,45 @@ jobs:
 
           path = Path("search_phase_profile.jsonl")
           rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
-          if len(rows) != 4:
-              raise SystemExit(f"Expected 4 profiler rows, found {len(rows)}")
-          required = {"mode", "total", "avg_db_queries", "total_results", "interleaved"}
           expected_interleaved = os.environ.get("INTERLEAVED", "false").lower() == "true"
+          expected_compare = os.environ.get("COMPARE", "false").lower() == "true"
+          expected_rows = 8 if expected_compare else 4
+          if len(rows) != expected_rows:
+              raise SystemExit(f"Expected {expected_rows} profiler rows, found {len(rows)}")
+
+          required = {
+              "mode",
+              "total",
+              "avg_db_queries",
+              "total_results",
+              "interleaved",
+              "compare",
+          }
+          modes = {row["mode"] for row in rows}
+          expected_modes = {"baseline", "production"} if expected_compare else {"production"}
+          if modes != expected_modes:
+              raise SystemExit(f"Unexpected profiler modes: {sorted(modes)}")
+
           for row in rows:
               missing = required - row.keys()
               if missing:
                   raise SystemExit(f"Profiler row missing fields: {sorted(missing)}")
-              if row["mode"] != "production":
-                  raise SystemExit(f"Unexpected profiler mode: {row['mode']}")
               if row["interleaved"] != expected_interleaved:
                   raise SystemExit(
                       f"Interleaved mode mismatch: expected {expected_interleaved}, "
                       f"got {row['interleaved']}"
                   )
+              if row["compare"] != expected_compare:
+                  raise SystemExit(
+                      f"Compare mode mismatch: expected {expected_compare}, got {row['compare']}"
+                  )
+              if expected_compare and row.get("equivalent") is not True:
+                  raise SystemExit("Comparison row did not report equivalence")
               for percentile in ("p50_ms", "p95_ms", "p99_ms"):
                   if percentile not in row["total"]:
                       raise SystemExit(f"Profiler row missing total.{percentile}")
-          print("Validated 4 production search profiler rows.")
+
+          print(f"Validated {expected_rows} search profiler rows.")
           PY
 
       - name: Upload profiler results
