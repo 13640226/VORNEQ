@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from django.core.paginator import Paginator
 from django.db import connection
 from django.db.models import CharField, Count, F, QuerySet, Window
 from django.db.models.functions import Cast
@@ -207,6 +206,33 @@ class NarrowWindowPoC:
                 continue
             yield adapter, adapter.get_queryset(normalized_query, filters)
 
+    @staticmethod
+    def _requested_page(page) -> int:
+        try:
+            return int(page)
+        except (TypeError, ValueError):
+            return 0
+
+    def _fallback_if_needed(
+        self,
+        *,
+        query: str,
+        filters: dict,
+        page,
+        page_size: int,
+        language: str,
+    ) -> dict | None:
+        requested_page = self._requested_page(page)
+        if requested_page <= 0 or not connection.features.supports_over_clause:
+            return self.search._search_bounded(
+                query,
+                filters,
+                page,
+                page_size,
+                language=language,
+            )
+        return None
+
     def _build_payload(
         self,
         *,
@@ -231,14 +257,11 @@ class NarrowWindowPoC:
         *,
         language: str | None = None,
     ) -> dict:
-        filters = filters or {}
-        language = language or get_language() or "en"
-        page_size = self.search._normalize_page_size(page_size)
-        return self.search._search_with_window_count(
-            query,
-            filters,
-            int(page),
-            page_size,
+        return self.search.search(
+            query=query,
+            filters=filters,
+            page=page,
+            page_size=page_size,
             language=language,
         )
 
@@ -254,16 +277,17 @@ class NarrowWindowPoC:
         filters = filters or {}
         language = language or get_language() or "en"
         page_size = self.search._normalize_page_size(page_size)
-        requested_page = int(page)
-        if requested_page <= 0 or not connection.features.supports_over_clause:
-            return self.search._search_bounded(
-                query,
-                filters,
-                page,
-                page_size,
-                language=language,
-            )
+        fallback = self._fallback_if_needed(
+            query=query,
+            filters=filters,
+            page=page,
+            page_size=page_size,
+            language=language,
+        )
+        if fallback is not None:
+            return fallback
 
+        requested_page = self._requested_page(page)
         candidate_limit = requested_page * page_size
         total = 0
         candidates: list[SearchResult] = []
@@ -302,16 +326,17 @@ class NarrowWindowPoC:
         filters = filters or {}
         language = language or get_language() or "en"
         page_size = self.search._normalize_page_size(page_size)
-        requested_page = int(page)
-        if requested_page <= 0 or not connection.features.supports_over_clause:
-            return self.search._search_bounded(
-                query,
-                filters,
-                page,
-                page_size,
-                language=language,
-            )
+        fallback = self._fallback_if_needed(
+            query=query,
+            filters=filters,
+            page=page,
+            page_size=page_size,
+            language=language,
+        )
+        if fallback is not None:
+            return fallback
 
+        requested_page = self._requested_page(page)
         candidate_limit = requested_page * page_size
         total = 0
         candidates: list[SearchResult] = []
@@ -344,15 +369,11 @@ class NarrowWindowPoC:
         language: str | None = None,
     ) -> dict:
         if scenario == SCENARIO_BASELINE:
-            return self.baseline(
-                query, filters, page, page_size, language=language
-            )
+            return self.baseline(query, filters, page, page_size, language=language)
         if scenario == SCENARIO_NARROW_ENRICHMENT:
             return self.narrow_enrichment(
                 query, filters, page, page_size, language=language
             )
         if scenario == SCENARIO_NARROW_CTE:
-            return self.narrow_cte(
-                query, filters, page, page_size, language=language
-            )
+            return self.narrow_cte(query, filters, page, page_size, language=language)
         raise ValueError(f"Unknown narrow-window PoC scenario: {scenario}")
