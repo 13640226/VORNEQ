@@ -62,7 +62,7 @@ Each stage should strengthen the next without weakening VORNEQ's architectural b
 
 ### 3.1 Create inspectable knowledge objects
 
-Artifacts and domain-owned records provide stable references for knowledge without turning `Artifact` into a universal domain model. Identity and provenance make origin and relationships inspectable.
+Artifacts and domain-owned records provide stable references for knowledge without turning `Artifact` into a universal domain model. A domain record may expose an Artifact representation when shared identity, provenance, discovery, or referencing is useful; not every domain object must become an Artifact. Identity and provenance make origin and relationships inspectable.
 
 ### 3.2 Organize and compose knowledge
 
@@ -118,7 +118,79 @@ The flywheel must preserve existing architectural invariants:
 
 ---
 
-## 6. What to Measure
+## 6. Architectural Strategy — Deep Contracts, Broad Interoperability
+
+The flywheel should grow through four complementary principles:
+
+### 6.1 Deep Contracts
+
+VORNEQ should keep the set of shared contracts deliberately small, precise, and contract-governed. Identity, Artifact, Evidence, Verification, Contextual Reputation, and reviewed shared invariants are valuable because their boundaries are explicit — not because every App is forced into the same domain model.
+
+A stable Core is not an ever-growing Core. New concepts should remain domain-owned until repeated, proven cross-platform need justifies a reviewed shared contract.
+
+### 6.2 Broad Interoperability
+
+Independent Apps and workflows should be able to participate in the knowledge network through reviewed shared representations and relationships without surrendering their own domain models.
+
+Interoperability therefore means **composition across explicit boundaries**, not shared mutable domain state. Documents does not need to become Notes; Search does not become the owner of indexed data; Workspace does not become the owner of App authorization.
+
+### 6.3 Open Extensibility
+
+VORNEQ should be able to integrate with external systems and standard infrastructure without requiring every layer to be invented in-house. External adapters, capabilities, and integrations should use explicit contracts and anti-corruption boundaries where needed.
+
+Open extensibility does not imply unrestricted execution or implicit trust. Capability execution, external integrations, and cross-App behavior remain subject to reviewed contracts, explicit invocation context, and domain authorization.
+
+### 6.4 Explicit Domain Ownership
+
+Every domain must retain clear ownership of its canonical data, business rules, and authorization policy. A shared service does not gain domain ownership merely because multiple Apps use it.
+
+This principle applies across Search, Workspace, Personal Home, future integrations, and any future AI-assisted capability.
+
+The combined strategy is:
+
+> **Deep Contracts. Broad Interoperability. Open Extensibility. Explicit Domain Ownership.**
+
+This is the architectural mechanism by which additional Apps can strengthen the flywheel without forcing the platform toward a God Model or a closed ecosystem.
+
+---
+
+## 7. Own the Differentiation, Reuse the Commodity
+
+VORNEQ should concentrate engineering ownership on the concepts that create its durable differentiation: identity relationships, Artifact boundaries, provenance, Evidence, Verification, context, domain boundaries, inspectability, and the contracts that preserve them.
+
+Commodity implementation technology should remain replaceable where practical. A database, web framework, cache, queue, object store, observability stack, or AI model may be an important implementation choice without becoming part of VORNEQ's permanent strategic identity.
+
+Therefore:
+
+> **Own the differentiation; reuse the commodity.**
+
+This principle complements the Scaling Principles: complexity and infrastructure specialization should follow demonstrated requirements rather than architecture fashion or a desire for platform completeness.
+
+---
+
+## 8. AI as a Cross-cutting Capability
+
+AI may eventually assist Search, Documents, Evidence workflows, Workspace, Personal Home, or other Apps. That does not make AI a new domain owner or an automatic Platform primitive.
+
+The strategic guardrails are explicit:
+
+```text
+AI = cross-cutting capability
+AI ≠ Domain Owner
+AI ≠ Authorization
+AI ≠ Verification
+AI output ≠ Evidence
+AI inference ≠ Identity
+AI ranking ≠ Truth
+```
+
+An AI-produced statement may become material that a domain workflow stores or examines, but its origin must remain inspectable and it must not acquire Evidence or Verification semantics merely because a model produced it.
+
+Likewise, recommendation and personalization should not become shared platform primitives before deterministic product behavior, measurement, real consumers, and demonstrated need justify that promotion.
+
+---
+
+## 9. What to Measure
 
 A flywheel becomes useful as a strategy only when its movement can be observed. Future measurement should prefer signals of knowledge utility over vanity growth metrics.
 
@@ -136,7 +208,7 @@ These are strategic measurement directions, not current SLOs or contractual requ
 
 ---
 
-## 7. Product Priorities Through the Flywheel
+## 10. Product Priorities Through the Flywheel
 
 The flywheel provides a filter for roadmap decisions:
 
@@ -154,7 +226,7 @@ If not, it should not be justified merely as "platform completeness."
 
 ---
 
-## 8. Relationship to Architecture
+## 11. Relationship to Architecture
 
 This document is intentionally downstream of the architecture contract.
 
@@ -167,11 +239,17 @@ This strategy must adapt to reviewed architectural contracts, not override them.
 
 ---
 
-## 9. Summary
+## 12. Summary
 
 VORNEQ's durable advantage should not be a closed ecosystem. It should be a compounding knowledge system in which:
 
 **inspectable knowledge → organization → provenance/context/evidence → rediscovery → reuse → denser useful relationships → more valuable knowledge**.
+
+Its architectural strategy for sustaining that loop is:
+
+> **Deep Contracts. Broad Interoperability. Open Extensibility. Explicit Domain Ownership.**
+
+VORNEQ should own the concepts that create its differentiation, reuse commodity infrastructure where appropriate, and treat AI as a bounded cross-cutting capability rather than a new source of truth or ownership.
 
 The stronger this loop becomes, the more valuable VORNEQ can become without relying on artificial switching costs.
 
