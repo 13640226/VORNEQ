@@ -308,7 +308,7 @@ msgid "Latest Audio"
 msgstr "تازه‌ترین صوت‌ها"
 
 msgid "Latest discoveries"
-msgstr "تازه‌ترین کشف‌ها"
+msgstr "آخرین کشف‌ها"
 
 msgid "Library"
 msgstr "کتابخانه"
@@ -827,7 +827,7 @@ msgid "Installed platform app · %(slug)s"
 msgstr "برنامه‌ی نصب‌شده‌ی پلتفرم · %(slug)s"
 
 msgid "Open in Workspace"
-msgstr "باز کردن در Workspace"
+msgstr "باز کردن در فضای کار"
 
 msgid "Apps"
 msgstr "برنامه‌ها"
@@ -836,7 +836,7 @@ msgid "No installable platform apps are currently registered."
 msgstr "در حال حاضر هیچ برنامه‌ی قابل‌نصب پلتفرمی ثبت نشده است."
 
 msgid "Open Launcher"
-msgstr "باز کردن Launcher"
+msgstr "باز کردن راه‌انداز"
 
 msgid "Build on VORNEQ"
 msgstr "روی VORNEQ بسازید"
@@ -845,16 +845,16 @@ msgid "A platform with explicit boundaries."
 msgstr "پلتفرمی با مرزهای مشخص."
 
 msgid "The homepage reflects the current reviewed platform contract and does not present future capabilities as implemented APIs."
-msgstr "صفحه‌ی اصلی قرارداد بررسی‌شده‌ی فعلی پلتفرم را منعکس می‌کند و قابلیت‌های آینده را به‌عنوان APIهای پیاده‌سازی‌شده ارائه نمی‌دهد."
+msgstr "صفحهٔ اصلی، قرارداد فعلی و بررسی‌شدهٔ پلتفرم را بازتاب می‌دهد و قابلیت‌های آینده را به‌عنوان رابط‌های برنامه‌نویسیِ پیاده‌سازی‌شده معرفی نمی‌کند."
 
 msgid "Stable for current development"
 msgstr "پایدار برای توسعه‌ی فعلی"
 
 msgid "Apps, Registry, Launcher & Workspace"
-msgstr "Apps، Registry، Launcher و Workspace"
+msgstr "برنامه‌ها، فهرست مرجع، راه‌انداز و فضای کار"
 
 msgid "Deploy-time app manifests, canonical registry metadata, localized route contribution, Launcher discovery, Workspace context, Identity and Artifact foundations."
-msgstr "مانیفست‌های برنامه در زمان deploy، metadata مرجع Registry، مشارکت در مسیرهای محلی‌سازی‌شده، کشف از طریق Launcher، زمینه‌ی Workspace و زیرساخت‌های Identity و Artifact."
+msgstr "مانیفست‌های برنامه هنگام استقرار، فراداده‌های فهرست مرجع، مسیرهای محلی‌سازی‌شده، شناسایی از طریق راه‌انداز، زمینهٔ فضای کار و زیرساخت‌های هویت و مصنوعات دیجیتال."
 
 msgid "Experimental"
 msgstr "آزمایشی"
@@ -863,7 +863,7 @@ msgid "Capability discovery"
 msgstr "کشف Capability"
 
 msgid "Capability strings are descriptive discovery metadata only. They do not execute code, grant permissions, or authorize cross-app access."
-msgstr "رشته‌های Capability صرفاً metadata توصیفی برای کشف هستند. آن‌ها کد اجرا نمی‌کنند، مجوزی اعطا نمی‌کنند و دسترسی بین برنامه‌ها را مجاز نمی‌دارند."
+msgstr "رشته‌های قابلیت فقط فراداده‌های توصیفی برای کشف هستند. آن‌ها کدی اجرا نمی‌کنند، مجوزی اعطا نمی‌کنند و دسترسی میان برنامه‌ها را مجاز نمی‌سازند."
 
 msgid "Future contract"
 msgstr "قرارداد آینده"
@@ -872,7 +872,7 @@ msgid "Executable providers & integrations"
 msgstr "ارائه‌دهندگان اجرایی و یکپارچه‌سازی‌ها"
 
 msgid "Executable capabilities, search providers, notifications, external integrations, and other provider contracts require separate versioned design and review."
-msgstr "Capabilityهای اجرایی، ارائه‌دهندگان جستجو، اعلان‌ها، یکپارچه‌سازی‌های خارجی و سایر قراردادهای ارائه‌دهنده به طراحی و بررسی نسخه‌بندی‌شده‌ی جداگانه نیاز دارند."
+msgstr "قابلیت‌های اجرایی، ارائه‌دهندگان جستجو، اعلان‌ها، یکپارچه‌سازی‌های خارجی و دیگر قراردادهای ارائه‌دهنده، به طراحی و بررسی جداگانه و نسخه‌بندی‌شده نیاز دارند."
 
 msgid "Search results"
 msgstr "نتایج جستجو"
