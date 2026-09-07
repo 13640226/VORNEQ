@@ -33,10 +33,30 @@ class ProfileSearchPhasesCommandTests(TestCase):
         self.assertEqual(row["query"], "ai")
         self.assertEqual(row["normalized_query"], "ai")
         self.assertEqual(row["repeats"], 2)
+        self.assertFalse(row["interleaved"])
         self.assertEqual(row["total_results"], 1)
         self.assertGreaterEqual(row["avg_db_queries"], 1.0)
-        self.assertEqual(set(row["total"]), {"p50_ms", "p95_ms", "avg_ms"})
+        self.assertEqual(
+            set(row["total"]),
+            {"p50_ms", "p95_ms", "p99_ms", "avg_ms"},
+        )
         self.assertGreaterEqual(row["total"]["p50_ms"], 0)
+        self.assertGreaterEqual(row["total"]["p99_ms"], 0)
+
+    def test_interleaved_json_output_is_reported(self):
+        rows = self._run_json(
+            "--query",
+            "ai",
+            "--query",
+            "knowledge",
+            "--repeat",
+            "2",
+            "--interleaved",
+        )
+
+        self.assertEqual([row["query"] for row in rows], ["ai", "knowledge"])
+        self.assertTrue(all(row["interleaved"] for row in rows))
+        self.assertTrue(all(row["repeats"] == 2 for row in rows))
 
     def test_command_is_read_only(self):
         before = Article.objects.count()
