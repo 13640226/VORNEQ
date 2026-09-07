@@ -60,6 +60,10 @@ class PlatformRegistry:
         validate_capabilities(manifest.capabilities)
         self._apps[manifest.slug] = manifest
 
+    def get(self, slug: str) -> AppManifest | None:
+        """Return one registered manifest by slug without mutating registry state."""
+        return self._apps.get(slug)
+
     def all(self) -> tuple[AppManifest, ...]:
         return tuple(sorted(self._apps.values(), key=lambda item: (item.order, item.slug)))
 
