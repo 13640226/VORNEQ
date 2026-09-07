@@ -87,7 +87,7 @@ class DocumentAuditTests(TestCase):
         shared = self.document.audit_log.first()
         self.assertEqual(shared.event_type, DocumentAuditLog.EventType.SHARED)
         self.assertEqual(shared.actor_identity, self.owner_identity)
-        self.assertEqual(shared.metadata["target_identity"], self.viewer_identity.pk)
+        self.assertEqual(shared.metadata["target_identity"], str(self.viewer_identity.pk))
         self.assertEqual(shared.metadata["role"], DocumentAccess.Role.VIEWER)
 
         DocumentService.revoke_access(
@@ -97,7 +97,7 @@ class DocumentAuditTests(TestCase):
         )
         revoked = self.document.audit_log.first()
         self.assertEqual(revoked.event_type, DocumentAuditLog.EventType.REVOKED)
-        self.assertEqual(revoked.metadata["target_identity"], self.viewer_identity.pk)
+        self.assertEqual(revoked.metadata["target_identity"], str(self.viewer_identity.pk))
         self.assertEqual(revoked.metadata["previous_role"], DocumentAccess.Role.VIEWER)
 
     def test_no_revoke_event_is_written_when_access_does_not_exist(self):
