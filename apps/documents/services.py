@@ -1,6 +1,5 @@
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
-from django.db.models import Q
 
 from .models import Document, DocumentAccess
 
