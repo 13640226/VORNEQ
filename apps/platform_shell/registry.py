@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from importlib import import_module
 
 from django.apps import apps
-from django.urls import NoReverseMatch, reverse
+from django.urls import NoReverseMatch, include, path, reverse
 from django.utils.module_loading import module_has_submodule
 
 
@@ -15,6 +15,9 @@ class AppManifest:
     show_in_primary_nav: bool = True
     requires_authentication: bool = False
     active_namespaces: tuple[str, ...] = ()
+    urlconf: str | None = None
+    route_prefix: str = ""
+    capabilities: tuple[str, ...] = ()
 
 
 class PlatformRegistry:
@@ -24,6 +27,8 @@ class PlatformRegistry:
     def register(self, manifest: AppManifest) -> None:
         if manifest.slug in self._apps:
             raise ValueError(f"Duplicate VORNEQ app slug: {manifest.slug}")
+        if manifest.route_prefix.startswith("/"):
+            raise ValueError("VORNEQ app route_prefix must be relative, without a leading slash")
         self._apps[manifest.slug] = manifest
 
     def all(self) -> tuple[AppManifest, ...]:
@@ -51,6 +56,14 @@ class PlatformRegistry:
             items.append({"manifest": manifest, "url": url, "active": active})
 
         return items
+
+    def localized_urlpatterns(self):
+        """Return URL patterns contributed by installable VORNEQ apps."""
+        patterns = []
+        for manifest in self.all():
+            if manifest.urlconf:
+                patterns.append(path(manifest.route_prefix, include(manifest.urlconf)))
+        return patterns
 
 
 registry = PlatformRegistry()
