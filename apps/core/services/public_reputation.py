@@ -27,6 +27,8 @@ def _serialize_reputation(rep):
             "code": rep.verification_method.code,
             "name": rep.verification_method.name,
         },
+        "actor_role": rep.actor_role,
+        "actor_role_label": rep.get_actor_role_display(),
         "score": rep.score,
         "sample_count": rep.sample_count,
         "last_event_at": rep.last_event_at.isoformat() if rep.last_event_at else None,

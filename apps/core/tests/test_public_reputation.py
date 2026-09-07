@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
+from django.template.loader import render_to_string
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -10,6 +11,7 @@ from apps.core.models import (
     QualitySignal,
     ScoringPolicy,
 )
+from apps.core.services.public_reputation import get_public_reputation
 from apps.evidence.models import Claim
 from apps.verification.models import VerificationMethod, VerificationRequest, VerificationResult
 from marketplace.models import Product
@@ -87,6 +89,8 @@ class PublicReputationTests(TestCase):
         item = body["reputations"][0]
         self.assertEqual(item["domain"], "security")
         self.assertEqual(item["verification_method"]["code"], "public-manual")
+        self.assertEqual(item["actor_role"], ContextualReputation.ActorRole.VERIFIER)
+        self.assertEqual(item["actor_role_label"], "Verifier")
         self.assertEqual(item["policy_version"], "score-v1")
         self.assertEqual(item["sample_strength"], "medium")
         raw = response.content.decode()
@@ -108,7 +112,9 @@ class PublicReputationTests(TestCase):
             )
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["reputation"]["score"], 2.0)
+        reputation = response.json()["reputation"]
+        self.assertEqual(reputation["score"], 2.0)
+        self.assertEqual(reputation["actor_role"], ContextualReputation.ActorRole.VERIFIER)
 
     def test_missing_context_returns_404(self):
         response = self.client.get(
@@ -126,3 +132,11 @@ class PublicReputationTests(TestCase):
         item = response.json()["reputations"][0]
         self.assertEqual(item["sample_strength"], "medium")
         self.assertIn("not a confidence score or truth claim", item["interpretation_note"])
+
+    def test_public_widget_displays_actor_role_label(self):
+        html = render_to_string(
+            "partials/_public_contextual_reputation.html",
+            {"reputations": get_public_reputation(self.verifier)},
+        )
+        self.assertIn("Role", html)
+        self.assertIn("Verifier", html)
