@@ -32,8 +32,32 @@ class HomepageSignalNavigationTests(TestCase):
 
         self.assertContains(response, 'id="home-intro"')
         self.assertContains(response, 'id="trust"')
+        self.assertContains(response, 'id="identity"')
         self.assertContains(response, 'id="apps"')
         self.assertContains(response, 'id="platform"')
+
+    def test_homepage_renders_platform_philosophy_without_overclaiming(self):
+        response = self.get_english_home()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "The Discoverable Knowledge Platform")
+        self.assertContains(
+            response,
+            "VORNEQ does not decide what is true, trustworthy, or valuable.",
+        )
+        self.assertContains(
+            response,
+            "Context, not Score · Evidence, not Truth · Portable Identity",
+        )
+        self.assertContains(
+            response,
+            "Verification produces inspectable findings and evidence about an assertion",
+        )
+        self.assertContains(
+            response,
+            "Identity is designed to be portable across experiences rather than app-local.",
+        )
+        self.assertNotContains(response, "Your identity moves across experiences")
 
     def test_homepage_signal_navigation_has_accessible_initial_state(self):
         response = self.get_english_home()
