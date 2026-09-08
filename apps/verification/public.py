@@ -47,6 +47,17 @@ def get_public_verification_summary(artifact):
     last_result = results.order_by("-created_at", "-id").first()
 
     average = aggregates["average_reported_confidence"]
+    latest_verification = None
+    if last_result is not None:
+        latest_verification = {
+            "outcome": last_result.outcome,
+            "reported_confidence": last_result.reported_confidence,
+            "method": {
+                "code": last_result.request.method.code,
+                "name": last_result.request.method.name,
+            },
+            "recorded_at": last_result.created_at,
+        }
 
     return {
         "total_verifications": aggregates["total"],
@@ -55,6 +66,7 @@ def get_public_verification_summary(artifact):
         "public_evidence_count": public_evidence_count,
         "verification_methods": verification_methods,
         "last_verified_at": last_result.created_at if last_result else None,
+        "latest_verification": latest_verification,
     }
 
 
