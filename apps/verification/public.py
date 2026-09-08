@@ -56,3 +56,56 @@ def get_public_verification_summary(artifact):
         "verification_methods": verification_methods,
         "last_verified_at": last_result.created_at if last_result else None,
     }
+
+
+def get_public_evidence_projection(artifact, artifact_type):
+    """
+    Return disclosure-safe public Evidence links for one already-resolved artifact.
+
+    The projection is intentionally narrow: Claim text, Evidence content,
+    Evidence metadata, relation_basis, and verifier identity are not exposed.
+    Only completed Verification requests and explicitly public links are included.
+    """
+    content_type = ContentType.objects.get_for_model(
+        artifact,
+        for_concrete_model=False,
+    )
+    evidence_links = (
+        VerificationEvidence.objects.filter(
+            result__request__artifact_content_type=content_type,
+            result__request__artifact_object_id=str(artifact.pk),
+            result__request__status=VerificationRequest.Status.COMPLETED,
+            visibility=VerificationEvidence.Visibility.PUBLIC,
+        )
+        .select_related("evidence_relation")
+        .order_by("evidence_relation__claim_id", "created_at", "id")
+    )
+
+    claims = {}
+    total_public_evidence_count = 0
+
+    for link in evidence_links:
+        relation = link.evidence_relation
+        claim_id = str(relation.claim_id)
+        claim_projection = claims.setdefault(
+            claim_id,
+            {
+                "claim_id": claim_id,
+                "evidences": [],
+            },
+        )
+        claim_projection["evidences"].append(
+            {
+                "evidence_id": str(relation.evidence_id),
+                "relation": relation.relation,
+                "linked_at": link.created_at,
+            }
+        )
+        total_public_evidence_count += 1
+
+    return {
+        "artifact_id": str(artifact.pk),
+        "artifact_type": artifact_type,
+        "claims": list(claims.values()),
+        "total_public_evidence_count": total_public_evidence_count,
+    }

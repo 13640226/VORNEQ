@@ -71,6 +71,30 @@
       </section>
     {% endif %}
 
+    {% public_evidence_projection product "product" as evidence_data %}
+    <section class="marketplace-detail__section" aria-labelledby="product-evidence-title">
+      <h2 id="product-evidence-title" class="marketplace-detail__section-title">{% trans "Public Evidence" %}</h2>
+      {% if evidence_data.claims %}
+        {% for claim in evidence_data.claims %}
+          <div class="marketplace-detail__evidence-claim">
+            <h3>{% trans "Claim ID" %}: {{ claim.claim_id }}</h3>
+            <ul>
+              {% for evidence in claim.evidences %}
+                <li>
+                  <span class="marketplace-detail__evidence-relation">{{ evidence.relation|title }}</span>
+                  <span class="marketplace-detail__evidence-id">{{ evidence.evidence_id }}</span>
+                  <time datetime="{{ evidence.linked_at|date:'c' }}">{{ evidence.linked_at|date:"DATETIME_FORMAT" }}</time>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+        <p>{% trans "Total public evidence" %}: {{ evidence_data.total_public_evidence_count }}</p>
+      {% else %}
+        <p>{% trans "No public evidence available" %}</p>
+      {% endif %}
+    </section>
+
     {% public_contextual_reputation_widget product.seller %}
 
     {% if product.tags %}

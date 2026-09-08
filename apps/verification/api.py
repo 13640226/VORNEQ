@@ -1,4 +1,3 @@
-from django.contrib.contenttypes.models import ContentType
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
@@ -6,8 +5,7 @@ from django.views.decorators.http import require_GET
 from library.models import LibraryItem
 from marketplace.models import Product
 
-from .models import VerificationEvidence, VerificationRequest
-from .public import get_public_verification_summary
+from .public import get_public_evidence_projection, get_public_verification_summary
 
 
 _PUBLIC_ARTIFACT_TYPES = {
@@ -103,48 +101,9 @@ def public_evidence_projection(request):
             status=404,
         )
 
-    content_type = ContentType.objects.get_for_model(
-        artifact,
-        for_concrete_model=False,
-    )
-    evidence_links = (
-        VerificationEvidence.objects.filter(
-            result__request__artifact_content_type=content_type,
-            result__request__artifact_object_id=str(artifact.pk),
-            result__request__status=VerificationRequest.Status.COMPLETED,
-            visibility=VerificationEvidence.Visibility.PUBLIC,
-        )
-        .select_related("evidence_relation")
-        .order_by("evidence_relation__claim_id", "created_at", "id")
-    )
-
-    claims = {}
-    total_public_evidence_count = 0
-
-    for link in evidence_links:
-        relation = link.evidence_relation
-        claim_id = str(relation.claim_id)
-        claim_projection = claims.setdefault(
-            claim_id,
-            {
-                "claim_id": claim_id,
-                "evidences": [],
-            },
-        )
-        claim_projection["evidences"].append(
-            {
-                "evidence_id": str(relation.evidence_id),
-                "relation": relation.relation,
-                "linked_at": link.created_at,
-            }
-        )
-        total_public_evidence_count += 1
-
     return JsonResponse(
-        {
-            "artifact_id": str(artifact.pk),
-            "artifact_type": artifact_type,
-            "claims": list(claims.values()),
-            "total_public_evidence_count": total_public_evidence_count,
-        }
+        get_public_evidence_projection(
+            artifact,
+            artifact_type,
+        )
     )
