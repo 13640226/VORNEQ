@@ -106,11 +106,6 @@ def _standalone_search_filters(request):
     return filters
 
 
-def _home_visible_results(items):
-    """Home cards require a destination; API retrieval can include URL-less records."""
-    return [item for item in items if item.get("url")]
-
-
 def home(request):
     """Render the VORNEQ Discovery Home with unified retrieval and pagination."""
     language = get_language() or "en"
@@ -147,12 +142,10 @@ def home(request):
             feed_items = cached_payload["feed_items"]
 
     if feed_items is None:
-        feed_items = _home_visible_results(
-            UnifiedSearch().collect(
-                query,
-                filters=filters,
-                language=language,
-            )
+        feed_items = UnifiedSearch().collect(
+            query,
+            filters=filters,
+            language=language,
         )
 
         if is_unfiltered:
