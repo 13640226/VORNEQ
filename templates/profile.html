@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n %}
+{% load static i18n identity_tags %}
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block title %}{% trans "Profile" %} — VORNEQ{% endblock %}
@@ -39,6 +39,7 @@
 
       <nav class="profile-nav" aria-label="{% trans 'Profile sections' %}">
         <a class="profile-nav__item profile-nav__item--active" href="#overview" aria-current="page">{% trans "Overview" %}</a>
+        <a class="profile-nav__item" href="#verification-activity">{% trans "Verification activity" %}</a>
         <a class="profile-nav__item" href="#library">{% trans "My library" %}</a>
         <a class="profile-nav__item" href="#products">{% trans "My products" %}</a>
         <a class="profile-nav__item" href="#reputation">{% trans "Reputation" %}</a>
@@ -86,11 +87,15 @@
               <div><p class="profile-eyebrow">{% trans "Account" %}</p><h3>{% trans "Account Information" %}</h3></div>
               <a href="{% url 'profile_edit' %}">{% trans "Edit" %}</a>
             </header>
+            {% canonical_identity profile_user as profile_identity %}
             <dl class="profile-account-list">
               <div><dt>{% trans "Display name" %}</dt><dd>{{ profile_user.get_full_name|default:profile_user.username }}</dd></div>
               <div><dt>{% trans "Username" %}</dt><dd>@{{ profile_user.username }}</dd></div>
               <div><dt>{% trans "Email" %}</dt><dd>{{ profile_user.email|default:"—" }}</dd></div>
               <div><dt>{% trans "Member since" %}</dt><dd>{{ profile_user.date_joined|date:"SHORT_DATE_FORMAT" }}</dd></div>
+              {% if profile_identity %}
+                <div><dt>{% trans "Canonical identity" %}</dt><dd>{{ profile_identity.id }} · {% trans "Kind" %}: {{ profile_identity.kind|title }}</dd></div>
+              {% endif %}
             </dl>
           </article>
 
@@ -105,9 +110,22 @@
           </article>
         </div>
 
-        <article class="profile-panel profile-activity">
-          <header class="profile-panel__header"><div><p class="profile-eyebrow">{% trans "Activity" %}</p><h3>{% trans "Recent Activity" %}</h3></div></header>
-          <div class="profile-empty profile-empty--compact"><p>{% trans "No recent activity yet." %}</p></div>
+        <article id="verification-activity" class="profile-panel profile-activity">
+          <header class="profile-panel__header"><div><p class="profile-eyebrow">{% trans "Activity" %}</p><h3>{% trans "Verification Activity" %}</h3></div></header>
+          {% if verification_activity %}
+            <div class="profile-list">
+              {% for activity in verification_activity %}
+                <article class="profile-list__item">
+                  <div>
+                    <h3>{% if activity.artifact_url %}<a href="{{ activity.artifact_url }}">{{ activity.artifact_title }}</a>{% elif activity.artifact_title %}{{ activity.artifact_title }}{% else %}{% trans "Unavailable artifact" %}{% endif %}</h3>
+                    <p>{{ activity.method.name }} · {{ activity.outcome|title }} · {% trans "Reported confidence" %}: {{ activity.confidence }}% · {{ activity.recorded_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+                  </div>
+                </article>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="profile-empty profile-empty--compact"><p>{% trans "No verification activity yet." %}</p></div>
+          {% endif %}
         </article>
       </section>
 
