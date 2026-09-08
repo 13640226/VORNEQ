@@ -140,3 +140,129 @@ class PublicReputationTests(TestCase):
         )
         self.assertIn("Role", html)
         self.assertIn("Verifier", html)
+
+    def test_multiple_contexts_remain_separate(self):
+        user = User.objects.create_user(username="multi-context-verifier", password="x")
+        marketplace_method = VerificationMethod.objects.create(
+            code="marketplace-method",
+            name="Marketplace method",
+        )
+        library_method = VerificationMethod.objects.create(
+            code="library-method",
+            name="Library method",
+        )
+        ContextualReputation.objects.create(
+            user=user,
+            domain="marketplace",
+            verification_method=marketplace_method,
+            actor_role=ContextualReputation.ActorRole.VERIFIER,
+            score=7.5,
+            sample_count=5,
+        )
+        ContextualReputation.objects.create(
+            user=user,
+            domain="library",
+            verification_method=library_method,
+            actor_role=ContextualReputation.ActorRole.VERIFIER,
+            score=9.0,
+            sample_count=10,
+        )
+
+        result = get_public_reputation(user)
+
+        self.assertEqual(len(result), 2)
+        by_domain = {item["domain"]: item for item in result}
+        self.assertEqual(
+            by_domain["marketplace"]["verification_method"]["code"],
+            "marketplace-method",
+        )
+        self.assertEqual(by_domain["marketplace"]["score"], 7.5)
+        self.assertEqual(
+            by_domain["library"]["verification_method"]["code"],
+            "library-method",
+        )
+        self.assertEqual(by_domain["library"]["score"], 9.0)
+
+    def test_public_reputation_ordering_is_deterministic(self):
+        user = User.objects.create_user(username="ordered-context-verifier", password="x")
+        alpha_method = VerificationMethod.objects.create(code="alpha-method", name="Alpha method")
+        beta_method = VerificationMethod.objects.create(code="beta-method", name="Beta method")
+        zeta_method = VerificationMethod.objects.create(code="zeta-method", name="Zeta method")
+
+        ContextualReputation.objects.create(
+            user=user,
+            domain="security",
+            verification_method=zeta_method,
+            actor_role=ContextualReputation.ActorRole.VERIFIER,
+            score=3.0,
+        )
+        ContextualReputation.objects.create(
+            user=user,
+            domain="library",
+            verification_method=beta_method,
+            actor_role=ContextualReputation.ActorRole.VERIFIER,
+            score=2.0,
+        )
+        ContextualReputation.objects.create(
+            user=user,
+            domain="library",
+            verification_method=alpha_method,
+            actor_role=ContextualReputation.ActorRole.VERIFIER,
+            score=1.0,
+        )
+
+        result = get_public_reputation(user)
+        public_order = [
+            (
+                item["domain"],
+                item["verification_method"]["code"],
+                item["actor_role"],
+            )
+            for item in result
+        ]
+
+        self.assertEqual(
+            public_order,
+            [
+                ("library", "alpha-method", ContextualReputation.ActorRole.VERIFIER),
+                ("library", "beta-method", ContextualReputation.ActorRole.VERIFIER),
+                ("security", "zeta-method", ContextualReputation.ActorRole.VERIFIER),
+            ],
+        )
+
+    def test_public_widget_displays_contexts_as_separate_items(self):
+        user = User.objects.create_user(username="widget-context-verifier", password="x")
+        marketplace_method = VerificationMethod.objects.create(
+            code="widget-marketplace",
+            name="Widget marketplace",
+        )
+        library_method = VerificationMethod.objects.create(
+            code="widget-library",
+            name="Widget library",
+        )
+        ContextualReputation.objects.create(
+            user=user,
+            domain="marketplace",
+            verification_method=marketplace_method,
+            actor_role=ContextualReputation.ActorRole.VERIFIER,
+            score=4.0,
+            sample_count=4,
+        )
+        ContextualReputation.objects.create(
+            user=user,
+            domain="library",
+            verification_method=library_method,
+            actor_role=ContextualReputation.ActorRole.VERIFIER,
+            score=6.0,
+            sample_count=6,
+        )
+
+        html = render_to_string(
+            "partials/_public_contextual_reputation.html",
+            {"reputations": get_public_reputation(user)},
+        )
+
+        self.assertEqual(html.count('class="public-reputation__item"'), 2)
+        self.assertIn("library · Widget library", html)
+        self.assertIn("marketplace · Widget marketplace", html)
+        self.assertIn("not global trust scores or truth claims", html)
