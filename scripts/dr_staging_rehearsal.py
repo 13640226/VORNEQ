@@ -124,8 +124,8 @@ def schema_fingerprint(database_url: str) -> str:
         r"""
         SELECT md5(COALESCE(string_agg(
             table_schema || '.' || table_name || '.' || column_name || ':' ||
-            data_type || ':' || is_nullable || ':' || ordinal_position,
-            E'\n' ORDER BY table_schema, table_name, ordinal_position
+            data_type || ':' || is_nullable,
+            E'\n' ORDER BY table_schema, table_name, column_name
         ), ''))
         FROM information_schema.columns
         WHERE table_schema = 'public';
