@@ -36,7 +36,7 @@ class HomeSearchExpansionTests(TestCase):
         self.assertEqual(response.status_code, 200)
         filters = collect.call_args.kwargs["filters"]
         self.assertEqual(filters["types"], {"product"})
-        self.assertEqual(filters["item_type"], "book")
+        self.assertNotIn("item_type", filters)
         self.assertEqual(filters["media_type"], "image")
         self.assertEqual(filters["category"], "ebook")
         self.assertEqual(filters["price_min"], Decimal("1.50"))
@@ -64,6 +64,50 @@ class HomeSearchExpansionTests(TestCase):
         self.assertNotIn("media_type", filters)
         self.assertNotIn("price_min", filters)
         self.assertNotIn("price_max", filters)
+
+    @patch.object(UnifiedSearch, "collect", return_value=[])
+    def test_home_type_book_keeps_implied_item_type(self, collect):
+        self.client.get(
+            reverse("home"),
+            {"type": "book", "item_type": "document"},
+        )
+
+        filters = collect.call_args.kwargs["filters"]
+        self.assertEqual(filters["types"], {"libraryitem"})
+        self.assertEqual(filters["item_type"], "book")
+
+    @patch.object(UnifiedSearch, "collect", return_value=[])
+    def test_home_type_all_allows_item_type(self, collect):
+        self.client.get(
+            reverse("home"),
+            {"type": "all", "item_type": "document"},
+        )
+
+        filters = collect.call_args.kwargs["filters"]
+        self.assertNotIn("types", filters)
+        self.assertEqual(filters["item_type"], "document")
+
+    @patch.object(UnifiedSearch, "collect", return_value=[])
+    def test_home_type_article_keeps_implied_item_type(self, collect):
+        self.client.get(
+            reverse("home"),
+            {"type": "article", "item_type": "book"},
+        )
+
+        filters = collect.call_args.kwargs["filters"]
+        self.assertEqual(filters["types"], {"article", "libraryitem"})
+        self.assertEqual(filters["item_type"], "article")
+
+    @patch.object(UnifiedSearch, "collect", return_value=[])
+    def test_home_type_audio_ignores_item_type(self, collect):
+        self.client.get(
+            reverse("home"),
+            {"type": "audio", "item_type": "document"},
+        )
+
+        filters = collect.call_args.kwargs["filters"]
+        self.assertEqual(filters["types"], {"audio"})
+        self.assertNotIn("item_type", filters)
 
 
 class StandaloneSearchPageTests(TestCase):
