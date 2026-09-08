@@ -55,6 +55,20 @@
     {% endif %}
 
     {% public_verification_summary product as verification_summary %}
+    <section class="marketplace-detail__section" aria-labelledby="product-latest-verification-title">
+      <h2 id="product-latest-verification-title" class="marketplace-detail__section-title">{% trans "Latest verification" %}</h2>
+      {% if verification_summary.latest_verification %}
+        <p class="marketplace-detail__verification-badge">
+          <strong>{% trans "Latest verification" %}: {{ verification_summary.latest_verification.outcome|title }}</strong>
+          <span> · {% trans "Reported confidence" %}: {{ verification_summary.latest_verification.reported_confidence }}%</span>
+          <span> · {{ verification_summary.latest_verification.method.name }}</span>
+          <span> · <time datetime="{{ verification_summary.latest_verification.recorded_at|date:'c' }}">{{ verification_summary.latest_verification.recorded_at|date:"DATETIME_FORMAT" }}</time></span>
+        </p>
+      {% else %}
+        <p>{% trans "No completed verification yet" %}</p>
+      {% endif %}
+    </section>
+
     {% if verification_summary.total_verifications %}
       <section class="marketplace-detail__section" aria-labelledby="product-verification-title">
         <h2 id="product-verification-title" class="marketplace-detail__section-title">{% trans "Verification summary" %}</h2>
