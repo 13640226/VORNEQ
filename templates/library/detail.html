@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n verification_public %}
+{% load static i18n verification_public identity_tags %}
 
 {% block title %}{{ title }} — VORNEQ {% trans "Library" %}{% endblock %}
 
@@ -23,6 +23,15 @@
     {% if item.author %}
       <p class="library-detail__author">{{ item.author }}</p>
     {% endif %}
+
+    {% library_canonical_identities item as author_identities %}
+    {% for author_identity in author_identities %}
+      <p class="library-detail__identity-badge">
+        <strong>{% trans "Canonical identity" %}:</strong>
+        <span>{{ author_identity.id }}</span>
+        <span> · {% trans "Kind" %}: {{ author_identity.kind|title }}</span>
+      </p>
+    {% endfor %}
 
     {% if short_description %}
       <p class="library-detail__description">{{ short_description }}</p>
