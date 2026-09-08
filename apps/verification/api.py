@@ -6,6 +6,7 @@ from library.models import LibraryItem
 from marketplace.models import Product
 
 from .public import get_public_evidence_projection, get_public_verification_summary
+from .services.activity import get_verification_activity
 
 
 _PUBLIC_ARTIFACT_TYPES = {
@@ -107,3 +108,17 @@ def public_evidence_projection(request):
             artifact_type,
         )
     )
+
+
+@require_GET
+def verification_activity(request):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {
+                "error": "authentication_required",
+                "message": "Authentication is required to view verification activity",
+            },
+            status=401,
+        )
+
+    return JsonResponse({"activity": get_verification_activity(request.user)})

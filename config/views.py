@@ -8,6 +8,7 @@ from django.utils.translation import get_language
 
 from apps.core.models import ContextualReputation, Entitlement
 from apps.search.services import UnifiedSearch
+from apps.verification.services.activity import get_verification_activity
 from marketplace.models import Product
 
 
@@ -127,5 +128,6 @@ def profile(request):
         "entitlement_count": entitlements.count(),
         "contextual_reputations": reputations,
         "reputation_context_count": reputations.count(),
+        "verification_activity": get_verification_activity(request.user),
     }
     return render(request, "profile.html", context)

@@ -21,4 +21,9 @@ urlpatterns = [
         api.public_evidence_projection,
         name="public_evidence",
     ),
+    path(
+        "activity/",
+        api.verification_activity,
+        name="activity",
+    ),
 ]
