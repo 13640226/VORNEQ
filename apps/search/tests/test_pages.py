@@ -109,6 +109,66 @@ class HomeSearchExpansionTests(TestCase):
         self.assertEqual(filters["types"], {"audio"})
         self.assertNotIn("item_type", filters)
 
+    @patch.object(
+        UnifiedSearch,
+        "collect",
+        return_value=[
+            {
+                "type": "article",
+                "title": "Article without route",
+                "description": "Article summary",
+                "url": None,
+            }
+        ],
+    )
+    def test_home_displays_article_without_url(self, collect):
+        response = self.client.get(reverse("home"), {"q": "article"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Article without route")
+        self.assertContains(response, "<h3>Article without route</h3>", html=True)
+
+    @patch.object(
+        UnifiedSearch,
+        "collect",
+        return_value=[
+            {
+                "type": "mediaasset",
+                "title": "Media without route",
+                "description": "Media metadata",
+                "url": None,
+            }
+        ],
+    )
+    def test_home_displays_media_without_url(self, collect):
+        response = self.client.get(reverse("home"), {"q": "media"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Media without route")
+        self.assertContains(response, "<h3>Media without route</h3>", html=True)
+
+    @patch.object(
+        UnifiedSearch,
+        "collect",
+        return_value=[
+            {
+                "type": "product",
+                "title": "Linked product",
+                "description": "Product summary",
+                "url": "/products/example/",
+            }
+        ],
+    )
+    def test_home_keeps_link_for_result_with_url(self, collect):
+        response = self.client.get(reverse("home"), {"q": "product"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            '<h3><a href="/products/example/">Linked product</a></h3>',
+            html=True,
+        )
+
 
 class StandaloneSearchPageTests(TestCase):
     @patch.object(UnifiedSearch, "search", return_value=EMPTY_SEARCH_PAYLOAD)
