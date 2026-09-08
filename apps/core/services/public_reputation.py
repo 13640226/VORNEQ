@@ -65,4 +65,6 @@ def get_public_reputation(user, *, domain=None, method_code=None):
     if method_code:
         qs = qs.filter(verification_method__code=method_code)
 
+    qs = qs.order_by("domain", "verification_method__code", "actor_role", "id")
+
     return [_serialize_reputation(rep) for rep in qs]
