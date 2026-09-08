@@ -46,6 +46,7 @@ class LatestVerificationBadgeTests(TestCase):
         outcome=VerificationResult.Outcome.PASS,
         confidence=80,
         summary="",
+        verifier=None,
     ):
         self._claim_counter += 1
         claim = Claim.objects.create(
@@ -62,7 +63,7 @@ class LatestVerificationBadgeTests(TestCase):
         )
         result = VerificationResult.objects.create(
             request=verification_request,
-            verifier=self.user,
+            verifier=verifier or self.user,
             outcome=outcome,
             reported_confidence=confidence,
             summary=summary,
@@ -121,10 +122,15 @@ class LatestVerificationBadgeTests(TestCase):
         )
 
     def test_public_summary_and_badge_do_not_expose_sensitive_fields(self):
+        badge_verifier = User.objects.create_user(
+            username="badge-verifier",
+            password="test-pass-123",
+        )
         claim, _, result = self._create_result(
             outcome=VerificationResult.Outcome.PASS,
             confidence=91,
             summary="SECRET RESULT SUMMARY",
+            verifier=badge_verifier,
         )
 
         api_response = self.client.get(
@@ -139,7 +145,7 @@ class LatestVerificationBadgeTests(TestCase):
         api_body = api_response.content.decode()
         detail_body = detail_response.content.decode()
         for body in (api_body, detail_body):
-            self.assertNotIn(self.user.username, body)
+            self.assertNotIn(badge_verifier.username, body)
             self.assertNotIn(claim.claim_text, body)
             self.assertNotIn(result.summary, body)
             self.assertNotIn("SECRET METADATA", body)
