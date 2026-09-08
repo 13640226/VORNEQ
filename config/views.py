@@ -7,6 +7,7 @@ from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.shortcuts import render
 from django.utils.translation import get_language
+from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import ContextualReputation, Entitlement
 from apps.search.services import UnifiedSearch
@@ -26,6 +27,13 @@ VALID_CONTENT_TYPES = {
 SEARCH_TYPES = {"article", "product", "libraryitem", "mediaasset", "audio"}
 SEARCH_ITEM_TYPES = {"book", "article", "document", "other"}
 SEARCH_MEDIA_TYPES = {"image", "video"}
+HOME_QUICK_FILTERS = (
+    {"value": "product", "label": _("Products")},
+    {"value": "book", "label": _("Books")},
+    {"value": "article", "label": _("Articles")},
+    {"value": "document", "label": _("Documents")},
+    {"value": "audio", "label": _("Audio")},
+)
 
 
 def _decimal_filter(value):
@@ -132,13 +140,10 @@ def home(request):
     is_first_page = requested_page == 1
 
     feed_items = None
-    featured = []
-
     if is_unfiltered and is_first_page:
-        cache_key = f"vorneq:home:v2:{language}"
+        cache_key = f"vorneq:home:v3:{language}"
         cached_payload = cache.get(cache_key)
         if cached_payload is not None:
-            featured = cached_payload["featured"]
             feed_items = cached_payload["feed_items"]
 
     if feed_items is None:
@@ -147,25 +152,24 @@ def home(request):
             filters=filters,
             language=language,
         )
-
-        if is_unfiltered:
-            default_featured = feed_items[:4]
-            feed_items = feed_items[4:]
-            if is_first_page:
-                featured = default_featured
-                cache.set(
-                    f"vorneq:home:v2:{language}",
-                    {"featured": featured, "feed_items": feed_items},
-                    timeout=300,
-                )
+        if is_unfiltered and is_first_page:
+            cache.set(
+                f"vorneq:home:v3:{language}",
+                {"feed_items": feed_items},
+                timeout=300,
+            )
 
     paginator = Paginator(feed_items, 12)
     page_obj = paginator.get_page(requested_page)
+    page_items = list(page_obj.object_list)
+    featured = page_items[:1] if is_first_page else []
+    results = page_items[1:] if featured else page_items
 
     context = {
         "featured": featured,
         "page_obj": page_obj,
-        "results": page_obj.object_list,
+        "results": results,
+        "quick_filters": HOME_QUICK_FILTERS,
         "current_type": content_type,
         "search_query": query,
         "current_item_type": request.GET.get("item_type", "").strip().lower(),
