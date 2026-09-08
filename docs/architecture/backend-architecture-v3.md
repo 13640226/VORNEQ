@@ -3,20 +3,22 @@
 **Version:** 3.0  
 **Status:** Descriptive snapshot  
 **Date:** 2026-09-08  
-**Snapshot Reference:** `933e10a6c1d147ddde1bcc1b96c2ed429a0fe261`  
+**Snapshot Reference:** `437624543d806ea96046337c263b0d3941ee8359`  
 **Purpose:** Provide a code-based map of selected VORNEQ backend concerns, their data flows, dependencies, and current implementation boundaries at the referenced snapshot.
 
 ---
 
 ## 1. Scope
 
-This document focuses on three backend concerns that are easy to conflate but are implemented with distinct boundaries:
+This document focuses on backend concerns that are easy to conflate but are implemented with distinct boundaries:
 
 - **Trust / Assessment:** Evidence, Verification, Quality Signals, and Contextual Reputation.
+- **Audit / Accountability:** Structured, append-only accountability records with bounded Verification integration.
 - **Public Retrieval / Discovery:** Unified retrieval across public domain content.
+- **Identity Registry:** Canonical identity and artifact attribution with gradual subsystem adoption.
 - **Entitlement:** Access eligibility during the legacy-to-canonical identity/artifact migration.
 
-This is not an exhaustive map of every VORNEQ backend subsystem. Platform Shell, Documents, Notes, Profiles, Graph, Audit, and other areas are documented separately.
+This is not an exhaustive map of every VORNEQ backend subsystem. Platform Shell, Documents, Notes, Profiles, Graph, and other areas may have additional implementation details outside this map.
 
 Two invariants are especially important:
 
@@ -77,6 +79,8 @@ At this snapshot, `VerificationRequest.artifact` is a `GenericForeignKey`, but i
 `VerificationEvidence` links a result to an `EvidenceRelation`; it does not attach arbitrary evidence unrelated to the request claim.
 
 The public verification API exposed at this snapshot contains summary endpoints for products and library items rather than a general-purpose verification command API.
+
+Verification lifecycle transitions produce both a transactionally coupled `ReviewRecord` and a post-commit `AuditEvent`. Audit persistence failures are isolated and logged after commit; they do not roll back the Verification business transaction. The detailed accountability boundary is documented in Section 4.
 
 ### 3.3 Verification activity and contextual reputation
 
@@ -174,9 +178,91 @@ Current integration caveats:
 
 ---
 
-## 4. Public Retrieval / Discovery
+## 4. Audit and Accountability Boundary
 
-### 4.1 Unified Search adapters
+VORNEQ has an implemented Audit subsystem under `apps.audit`. Its current production integration is intentionally bounded and should not be interpreted as a generic platform-wide event bus or authoritative state store.
+
+### 4.1 AuditEvent model and append-only contract
+
+`AuditEvent` records structured accountability events with an independent UUID `event_id`, schema version, event name, structured actor and target references, outcome, reason code, optional correlation identifier, bounded metadata, retention class, and timestamp.
+
+The model enforces an append-only contract through the Django ORM:
+
+- updates to an existing `AuditEvent` through `save()` are rejected;
+- instance deletion is rejected;
+- bulk `QuerySet.update()` and `QuerySet.delete()` are rejected.
+
+These protections are implemented at the model/queryset layer. No database trigger or equivalent database-level immutability mechanism is evidenced in the inspected implementation, so AuditEvent should not be described as database-enforced immutable storage.
+
+### 4.2 Bounded event schemas
+
+`record_audit_event()` accepts only explicitly registered event schemas. At this snapshot the supported event names are:
+
+- `verification.request.created`
+- `verification.request.changed`
+- `verification.result.recorded`
+
+Each schema constrains the allowed outcome, reason codes, metadata keys, and metadata value types. Actor and target references must use the exact structured `{type, identifier}` shape, and actor type is limited to `user` or `system`.
+
+The service therefore acts as a bounded event recorder rather than an open-ended metadata sink. Extra or missing metadata fields and unknown event names are rejected.
+
+### 4.3 Verification integration and failure isolation
+
+Verification records two different forms of history:
+
+```text
+Verification operation
+        │
+        ├── ReviewRecord
+        │     created synchronously
+        │     inside business transaction
+        │
+        └── AuditEvent
+              scheduled with transaction.on_commit()
+                        │
+                        ▼
+                 emitted after commit
+                        │
+              failure logged and isolated
+```
+
+`ReviewRecord` creation is transactionally coupled to the Verification lifecycle transition. Audit emission is not. Verification schedules Audit through `transaction.on_commit()`, and Audit persistence failures are caught and logged after the business transaction has committed.
+
+A failed Audit write therefore does not roll back a successful Verification transition. This behavior is explicitly tested.
+
+### 4.4 Authoritative state boundary
+
+`AuditEvent` is an accountability and observability record, not the authoritative state store for Verification.
+
+The authoritative current state remains `VerificationRequest` and `VerificationResult`. `ReviewRecord` provides transactionally coupled transition history. AuditEvent provides an append-only post-commit accountability record whose delivery is best-effort in the current Verification integration.
+
+Because Audit delivery can fail after the business transaction succeeds, downstream correctness, authorization, or lifecycle decisions must not assume that the presence of an AuditEvent is required evidence that a Verification transition occurred.
+
+### 4.5 Current adoption status
+
+| Subsystem / Area | Audit adoption status |
+|---|---|
+| AuditEvent model | Implemented |
+| Structured schema validation | Implemented |
+| ORM/model append-only enforcement | Implemented |
+| Database-enforced immutability | Not evidenced |
+| Verification request lifecycle | Integrated |
+| Verification result recording | Integrated |
+| Post-commit failure isolation | Implemented and tested |
+| Guaranteed Audit delivery | Not provided |
+| Identity-native actor | Not adopted; current actor is Django User or system |
+| Evidence-specific Audit events | Not present |
+| Entitlement Audit events | Not present |
+| Reputation / QualitySignal dependency | Not present |
+| Generic platform event registry | Not implemented |
+
+Audit should therefore be described as an implemented, bounded accountability subsystem with Verification integration and explicit post-commit failure isolation—not as a universal event ledger or source of truth.
+
+---
+
+## 5. Public Retrieval / Discovery
+
+### 5.1 Unified Search adapters
 
 `apps.search.services.UnifiedSearch` uses five adapters:
 
@@ -192,13 +278,13 @@ The service is retrieval-only. In `apps/search/services.py` there is no direct d
 
 Each adapter owns domain-specific filtering and serialization into a common `SearchResult` representation.
 
-### 4.2 Ordering and bounded candidate retrieval
+### 5.2 Ordering and bounded candidate retrieval
 
 For paginated search paths, adapters can order and limit candidates in the database using a global timestamp expression plus a textual primary-key tie-breaker. Candidate sets are then merged in Python and sorted by `(published_at, key)` in descending order.
 
 This is an in-process federated retrieval design rather than a separate external search index.
 
-### 4.3 Search execution strategies
+### 5.3 Search execution strategies
 
 `UnifiedSearch.search()` selects among three execution paths:
 
@@ -208,7 +294,7 @@ This is an in-process federated retrieval design rather than a separate external
 
 `apps/search/narrow_window.py` enables the narrow CTE path only when Django reports window-function support and the database vendor is PostgreSQL or SQLite. It builds a narrow inner query containing primary key, total count, global timestamp, and tie-break key, then joins back to the base table for enrichment after limiting.
 
-### 4.4 API caller versus Home caller
+### 5.4 API caller versus Home caller
 
 The public search API calls `UnifiedSearch.search()`, so it uses the execution-strategy routing above.
 
@@ -216,7 +302,7 @@ The current Home view is different: `config.views.home` calls `UnifiedSearch().c
 
 Within `home()`, no Trust-derived enrichment or Trust-based ranking is applied to discovery results. The same `config/views.py` file also contains a separate authenticated profile view that reads Entitlement and Contextual Reputation; those profile reads are not part of Home discovery.
 
-### 4.5 Unified Search boundary — current status
+### 5.5 Unified Search boundary — current status
 
 `UnifiedSearch` remains a public retrieval/composition boundary rather than an authorization or Trust boundary. Domain adapters determine retrieval eligibility through domain-owned publication/state filters such as `is_published`, approved product status, and active media state. The public Search API constrains caller-supplied filters, normalizes result representation, and delegates retrieval to the same adapter layer. No Evidence, Verification, Contextual Reputation, Quality Signal, or Entitlement dependency is present in the inspected Search service or API path.
 
@@ -229,7 +315,7 @@ Two implementation caveats remain:
 
 ---
 
-## 5. Identity Registry and Adoption Boundary
+## 6. Identity Registry and Adoption Boundary
 
 VORNEQ has an implemented canonical Identity registry that is separate from Django authentication. The registry provides stable subject identifiers for trust and cross-domain attribution, while adoption by existing subsystems remains gradual. The transitional boundary is therefore subsystem adoption of Identity, not the existence or status of the Identity registry itself.
 
@@ -247,7 +333,7 @@ Artifact
 Identity ── explicit ArtifactIdentityRole ── Artifact
 ```
 
-### 5.1 Identity registry — current status
+### 6.1 Identity registry — current status
 
 `Identity` uses an independent UUID primary key and supports human, organization, agent, and system/service identity kinds. `UserIdentity` provides the explicit bridge between Django authentication and a canonical human Identity.
 
@@ -266,7 +352,7 @@ Identity adoption remains transitional in existing subsystems:
 
 Django `User` therefore remains the dominant runtime authentication principal at this snapshot. Identity is an explicit canonical subject and attribution registry, not yet a system-wide replacement for `request.user` or a universal Capability Bus actor.
 
-### 5.2 Guarantees and caveats
+### 6.2 Guarantees and caveats
 
 Database constraints enforce important structural guarantees. `UserIdentity.user` and `UserIdentity.identity` are one-to-one relationships, and `ArtifactIdentityRole` is unique for the same artifact, identity, and role tuple.
 
@@ -276,7 +362,7 @@ Identity resolution is deliberately non-creative. Missing `UserIdentity` state r
 
 Likewise, legacy domain strings and metadata are not general identity-resolution inputs. Explicit bridges may establish canonical relationships, but the registry does not perform fuzzy or implicit identity inference.
 
-### 5.3 Current adoption state
+### 6.3 Current adoption state
 
 | Subsystem / Area | Identity adoption status |
 |---|---|
@@ -297,7 +383,7 @@ The Identity registry should therefore be described as an implemented canonical 
 
 ---
 
-## 6. Entitlement Boundary
+## 7. Entitlement Boundary
 
 Entitlement is implemented in Core with a staged legacy/canonical migration shape:
 
@@ -312,7 +398,7 @@ Entitlement
            Identity + Artifact
 ```
 
-### 6.1 Grant semantics
+### 7.1 Grant semantics
 
 `grant_entitlement()` continues to grant by the legacy `user + product` key. It enriches the same row with `identity + artifact` only when both canonical registry bindings already exist, or when an explicitly supplied canonical pair can be verified against those bindings.
 
@@ -320,7 +406,7 @@ A partial explicit canonical pair is rejected. Explicit canonical references tha
 
 The service does not create registry Identity or Artifact records.
 
-### 6.2 Authorization semantics
+### 7.2 Authorization semantics
 
 `has_valid_entitlement()` does more than test `is_active` and expiry. It:
 
@@ -335,13 +421,13 @@ No Evidence or Verification check is part of this entitlement validation path.
 
 This makes Entitlement a distinct authorization concern; Trust context does not silently grant access.
 
-### 6.3 Architectural role of Entitlement
+### 7.3 Architectural role of Entitlement
 
 Entitlement remains a **transitional access primitive**, not a universal platform permission model. Its public service shape is still centered on the legacy `user + product` key, with canonical `Identity + Artifact` references populated and validated where bindings exist. Canonical inconsistency fails closed rather than silently falling back to legacy authorization.
 
 This boundary must remain distinct from the executable Capability Bus. `has_valid_entitlement()` is appropriate inside a capability provider only when the owning domain explicitly defines entitlement as part of that domain's authorization policy. It must not become the default or universal authorization mechanism for executable capabilities.
 
-### 6.4 Capability Bus v2 — current status
+### 7.4 Capability Bus v2 — current status
 
 **Capability Bus v2 remains Proposed.** The core synchronous invocation framework is implemented and contract-tested, including bounded failure contracts, with one narrow read-only PoC provider registered at application startup. Product adoption remains pending. Some ADR 012 guardrails remain architectural constraints rather than mechanically enforced framework invariants.
 
@@ -360,7 +446,7 @@ ADR 012 constraints that are not fully enforced by the framework itself include:
 
 ADR 012 therefore remains **Proposed**; implementation of the core framework does not by itself promote the architectural decision to a stable product-adoption status.
 
-### 6.5 Platform Shell runtime paths — Capability Bus consumer status
+### 7.5 Platform Shell runtime paths — Capability Bus consumer status
 
 Inspection of the current Platform Shell runtime paths preserves a composition boundary rather than introducing capability execution:
 
@@ -387,7 +473,7 @@ Workspace
 
 **No production Capability Bus consumer is evidenced in the inspected Platform Shell runtime paths.** This is consistent with the current responsibility split: Platform Shell provides composition and navigation context without taking ownership of domain policy.
 
-### 6.6 Consumer-driven capability adoption
+### 7.6 Consumer-driven capability adoption
 
 Executable capabilities should be introduced in response to a concrete cross-domain contract need, not merely to increase adoption of the Capability Bus. No provider or consumer should be added solely to demonstrate use of the framework.
 
@@ -397,7 +483,7 @@ Until such a consumer need exists, the Bus remains implemented infrastructure wi
 
 ---
 
-## 7. Dependency Summary
+## 8. Dependency Summary
 
 | Concern | Verified direct dependencies / inputs at this snapshot |
 |---|---|
@@ -405,6 +491,7 @@ Until such a consumer need exists, the Bus remains implemented infrastructure wi
 | Evidence state projection | `Claim` + active `EvidenceRelation` rows |
 | Verification request | `Claim`, `VerificationMethod`, `User`, restricted GFK to `Product` / `LibraryItem` |
 | Verification evidence | `VerificationResult` + `EvidenceRelation` |
+| Verification Audit | `VerificationRequest` / `VerificationResult`, `ReviewRecord`, post-commit `AuditEvent`; Django User/system actor references |
 | Verification activity reputation | `VerificationResult`, `VerificationRequest`, `UserIdentity`, `ContextualReputation`, `ContextualReputationEvent` |
 | Quality signal eligibility | `QualitySignal`, `VerificationResult`, request/method consistency, optional `EvidenceRelation` or provenance reference |
 | Scoring service | `QualitySignal`, `ScoringPolicy`, `ContextualReputation`, `ContextualReputationEvent` |
@@ -415,13 +502,15 @@ The table describes verified dependencies in the inspected paths. It should not 
 
 ---
 
-## 8. Component Status at the Snapshot
+## 9. Component Status at the Snapshot
 
 | Component | Status | Notes |
 |---|---|---|
 | Evidence core relationship and projection | Implemented | Claim/Evidence relation model plus derived claim-level EvidenceState |
 | Verification models | Implemented | Request/result/evidence-link model set; artifact target restricted to Product/LibraryItem |
 | Verification public API | Implemented, bounded surface | Product and LibraryItem summary endpoints |
+| Verification Audit integration | Implemented, bounded | ReviewRecord inside transaction; AuditEvent emitted post-commit with isolated failure |
+| AuditEvent model | Implemented | Structured, ORM/model append-only accountability record; no DB-enforced immutability evidenced |
 | Verification activity recording | Implemented | Activity/sample tracking without automatic score change |
 | Quality Signal eligibility v1 | Implemented | Versioned eligibility decision persisted on the signal |
 | Contextual scoring | Implemented | Explicit versioned policy application with idempotency/rebuild guardrails |
@@ -433,11 +522,12 @@ The table describes verified dependencies in the inspected paths. It should not 
 
 ---
 
-## 9. Architectural Invariants Captured by the Code
+## 10. Architectural Invariants Captured by the Code
 
 | Principle | Observed boundary |
 |---|---|
 | **Verification ≠ Truth** | Submission activity is recorded without automatically changing reputation score. |
+| **Audit ≠ authoritative state** | Verification state lives in Verification models; Audit delivery is post-commit and may fail without rolling back business state. |
 | **Quality Signal ≠ Score** | Eligibility is evaluated and persisted before any scoring policy is applied. |
 | **Contextual scoring, not universal trust** | Score application is domain/method/policy-specific and versioned. |
 | **Search ≠ Verification** | Unified retrieval does not import or rank by Trust subsystems in the inspected service. |
@@ -447,12 +537,12 @@ The table describes verified dependencies in the inspected paths. It should not 
 
 ---
 
-## 10. Snapshot Notes
+## 11. Snapshot Notes
 
 This document describes repository state at:
 
 ```text
-933e10a6c1d147ddde1bcc1b96c2ed429a0fe261
+437624543d806ea96046337c263b0d3941ee8359
 ```
 
 Later code changes may invalidate individual implementation details. Update this document only after re-validating claims against the relevant repository state.
