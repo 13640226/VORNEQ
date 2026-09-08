@@ -133,6 +133,27 @@ def schema_fingerprint(database_url: str) -> str:
     )
 
 
+def schema_rows(database_url: str) -> set[str]:
+    result = sql(
+        database_url,
+        r"""
+        SELECT
+            table_schema || '.' || table_name || '.' || column_name || ':' ||
+            data_type || ':' || is_nullable || ':' || ordinal_position::text
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+        ORDER BY table_schema, table_name, ordinal_position;
+        """,
+    )
+    return {row for row in result.splitlines() if row}
+
+
+def schema_set_difference(source_url: str, target_url: str) -> tuple[set[str], set[str]]:
+    source_rows = schema_rows(source_url)
+    target_rows = schema_rows(target_url)
+    return source_rows - target_rows, target_rows - source_rows
+
+
 def table_count(database_url: str) -> str:
     return sql(
         database_url,
@@ -227,6 +248,28 @@ def write_summary(lines: list[str]) -> None:
         handle.write("\n".join(lines) + "\n")
 
 
+def schema_diff_diagnostic_lines(source_url: str, target_url: str) -> list[str]:
+    only_source, only_target = schema_set_difference(source_url, target_url)
+    lines = ["Schema diff diagnostic:"]
+
+    lines.append(f"  Rows only in source: {len(only_source)}")
+    for index, row in enumerate(sorted(only_source)[:20], 1):
+        lines.append(f"    {index}. {row}")
+    if len(only_source) > 20:
+        lines.append(f"    ... and {len(only_source) - 20} more")
+
+    lines.append(f"  Rows only in target: {len(only_target)}")
+    for index, row in enumerate(sorted(only_target)[:20], 1):
+        lines.append(f"    {index}. {row}")
+    if len(only_target) > 20:
+        lines.append(f"    ... and {len(only_target) - 20} more")
+
+    if not only_source and not only_target:
+        lines.append("  Schema row sets match exactly.")
+
+    return lines
+
+
 def main() -> int:
     if os.environ.get("CONFIRM_RESTORE") != "yes":
         raise RuntimeError('Refusing to run without CONFIRM_RESTORE="yes"')
@@ -270,6 +313,15 @@ def main() -> int:
                 f"  content types: source={source_fp.content_types}, target={target_fp.content_types}",
                 file=sys.stderr,
             )
+            if source_fp.schema != target_fp.schema:
+                diagnostic_lines = schema_diff_diagnostic_lines(source, target)
+                for line in diagnostic_lines:
+                    print(line, file=sys.stderr)
+                write_summary([
+                    "## DR Schema Diff Diagnostic",
+                    "",
+                    *[f"- `{line.strip()}`" for line in diagnostic_lines],
+                ])
             raise RuntimeError("Restore verification failed: source/target fingerprints differ")
         t3, t3_iso = time.monotonic(), utc_now()
 
