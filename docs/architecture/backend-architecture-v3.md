@@ -3,7 +3,7 @@
 **Version:** 3.0  
 **Status:** Descriptive snapshot  
 **Date:** 2026-09-08  
-**Snapshot Reference:** `437624543d806ea96046337c263b0d3941ee8359`  
+**Snapshot Reference:** `95f4181e6326b18d2f16d3622b9fc041d82aa4e5`  
 **Purpose:** Provide a code-based map of selected VORNEQ backend concerns, their data flows, dependencies, and current implementation boundaries at the referenced snapshot.
 
 ---
@@ -81,6 +81,16 @@ At this snapshot, `VerificationRequest.artifact` is a `GenericForeignKey`, but i
 The public verification API exposed at this snapshot contains summary endpoints for products and library items rather than a general-purpose verification command API.
 
 Verification lifecycle transitions produce both a transactionally coupled `ReviewRecord` and a post-commit `AuditEvent`. Audit persistence failures are isolated and logged after commit; they do not roll back the Verification business transaction. The detailed accountability boundary is documented in Section 4.
+
+#### Evidence/Verification caveats
+
+Two implementation caveats are worth noting in the current snapshot:
+
+1. **Potential concurrency gap in duplicate active VerificationRequest prevention**  
+   The service checks for duplicate active requests using `select_for_update().filter(...).exists()`, but there is no database-level uniqueness constraint covering `(artifact, claim, method)` for active statuses. Because an initial creation may occur when no matching row yet exists to lock, concurrent first-create attempts may race. Duplicate prevention should therefore be understood as a service-level safeguard rather than a database-enforced invariant.
+
+2. **Evidence immutability is model/application-level, not database-enforced**  
+   Canonical Evidence fields such as `content`, `content_type`, `digest`, and `observed_at` are protected against mutation through the model's `save()` path. No database constraint, trigger, or equivalent database-level mechanism was observed enforcing that immutability. ORM operations that bypass model `save()` hooks, such as `QuerySet.update()`, as well as lower-level database writes, can therefore bypass this protection. The current guarantee is application/model-level rather than database-enforced.
 
 ### 3.3 Verification activity and contextual reputation
 
@@ -542,7 +552,7 @@ The table describes verified dependencies in the inspected paths. It should not 
 This document describes repository state at:
 
 ```text
-437624543d806ea96046337c263b0d3941ee8359
+95f4181e6326b18d2f16d3622b9fc041d82aa4e5
 ```
 
 Later code changes may invalidate individual implementation details. Update this document only after re-validating claims against the relevant repository state.
