@@ -3,7 +3,7 @@
 **Version:** 3.0  
 **Status:** Descriptive snapshot  
 **Date:** 2026-09-08  
-**Snapshot Reference:** `2d8006f5d59f1abd654b9be3547b98dbf2514e0d`  
+**Snapshot Reference:** `ee53dc77c0878a89b92a4c4f5ba401252f5e78d2`  
 **Purpose:** Provide a code-based map of selected VORNEQ backend concerns, their data flows, dependencies, and current implementation boundaries at the referenced snapshot.
 
 ---
@@ -148,6 +148,29 @@ Scoring is explicit and versioned. The delta is derived from the signal directio
 The scoring service is idempotent for the same reputation projection, quality signal, and scoring policy. It also refuses to mix incompatible policy versions in an existing projection and can return `projection_rebuild_required` instead of silently combining them.
 
 Legacy `Reputation` and `ContextualReputation` coexist in Core at this snapshot. The code therefore contains a transitional data-model boundary, while contextual scoring itself is implemented.
+
+### 3.6 Reputation layer — current status
+
+The Trust reputation path is implemented as an explicit, staged set of services and projections rather than as an automatic end-to-end pipeline.
+
+`ContextualReputation` is a method-, role-, and domain-scoped projection backed by append-only `ContextualReputationEvent` records. Legacy `Reputation` also remains present and operational for selected legacy reputation dimensions, so the current model boundary is transitional rather than fully consolidated.
+
+Verification activity can be recorded explicitly through `record_verification_activity()`. The service accepts a completed `VerificationResult`, creates an idempotent `VERIFICATION_SUBMITTED` reputation event, increments the verifier projection's `sample_count`, and updates `last_event_at`. Verification submission alone does not change reputation score.
+
+Quality assessment is a separate path. `QualitySignal` references a `VerificationResult` directly, and `create_quality_signal()` persists a versioned eligibility decision after checking completion state, signal type, source and domain information, verification-method consistency, provenance, independence, self-assessment exclusion, and claim consistency where an `EvidenceRelation` is supplied.
+
+Eligible signals may be scored explicitly through `apply_scoring_policy()`. Scoring is domain- and method-scoped, versioned, idempotent for the same projection/signal/policy combination, and refuses incompatible policy-version mixing by returning `projection_rebuild_required`. Score deltas are derived from the signal direction and `ScoringPolicy`, not directly from `VerificationResult.outcome`.
+
+The inspected Verification submission workflow does not automatically invoke reputation activity recording, QualitySignal creation, or scoring. These remain explicit service operations rather than an automatically orchestrated pipeline.
+
+`ContextualReputation` is not dormant: production read/display consumers exist, including the authenticated profile path and public-safe reputation/trust-context presentation. Unified Search remains intentionally independent of Contextual Reputation and does not use reputation for retrieval eligibility or ranking.
+
+Current integration caveats:
+
+- Verification completion is not automatically wired to `record_verification_activity()`.
+- QualitySignal creation and policy application are explicit operations rather than an automatic consequence of Verification completion.
+- Legacy `Reputation` and `ContextualReputation` coexist during the ongoing subject/model migration.
+- Search remains deliberately outside the Trust scoring boundary.
 
 ---
 
@@ -361,7 +384,7 @@ The table describes verified dependencies in the inspected paths. It should not 
 This document describes repository state at:
 
 ```text
-2d8006f5d59f1abd654b9be3547b98dbf2514e0d
+ee53dc77c0878a89b92a4c4f5ba401252f5e78d2
 ```
 
 Later code changes may invalidate individual implementation details. Update this document only after re-validating claims against the relevant repository state.
