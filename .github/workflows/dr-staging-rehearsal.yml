@@ -1,0 +1,49 @@
+name: DR Staging Rehearsal
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_restore:
+        description: 'Type "yes" to confirm restoring staging backup into the isolated DR target'
+        required: true
+        default: 'no'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dr-staging-rehearsal
+  cancel-in-progress: false
+
+jobs:
+  rehearse:
+    if: ${{ inputs.confirm_restore == 'yes' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL 18 client
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo install -d /usr/share/postgresql-common/pgdg
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo gpg --dearmor -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg
+          . /etc/os-release
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg] https://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-18
+          pg_dump --version
+          pg_restore --version
+
+      - name: Run staging DR rehearsal
+        env:
+          STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DR_RESTORE_DATABASE_URL: ${{ secrets.DR_RESTORE_DATABASE_URL }}
+          CONFIRM_RESTORE: ${{ inputs.confirm_restore }}
+        run: python scripts/dr_staging_rehearsal.py
