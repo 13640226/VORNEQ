@@ -252,11 +252,15 @@ class HomeSearchExpansionTests(TestCase):
         )
         self.assertContains(
             response,
-            "Verification is evidence about an assertion",
+            "Verification produces inspectable findings and evidence about an assertion",
         )
         self.assertContains(
             response,
             "Reputation is contextual",
+        )
+        self.assertContains(
+            response,
+            "Identity is designed to be portable across experiences rather than app-local.",
         )
 
         self.assertNotContains(
