@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n entitlements verification_public reputation_public %}
+{% load static i18n entitlements verification_public reputation_public identity_tags %}
 
 {% block title %}{{ product.title }} — VORNEQ {% trans "Marketplace" %}{% endblock %}
 
@@ -32,6 +32,14 @@
 
         <h1 class="marketplace-detail__title">{{ product.title }}</h1>
         <p class="marketplace-detail__seller">{% trans "By" %} {{ product.seller.get_username }}</p>
+        {% canonical_identity product.seller as seller_identity %}
+        {% if seller_identity %}
+          <p class="marketplace-detail__identity-badge">
+            <strong>{% trans "Canonical identity" %}:</strong>
+            <span>{{ seller_identity.id }}</span>
+            <span> · {% trans "Kind" %}: {{ seller_identity.kind|title }}</span>
+          </p>
+        {% endif %}
 
         {% if product.short_description %}
           <p class="marketplace-detail__description">{{ product.short_description }}</p>
