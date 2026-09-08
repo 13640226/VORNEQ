@@ -5,6 +5,7 @@ from django.test import SimpleTestCase
 from apps.platform_shell.capabilities import (
     BaseCapability,
     CapabilityContext,
+    CapabilityExecutionError,
     CapabilityInvoker,
     ExecutableCapabilityRegistry,
 )
@@ -45,6 +46,24 @@ class BrokenCapability(EchoCapability):
 
     def execute(self, context, input_data):
         raise RuntimeError("provider detail must not escape")
+
+
+class InvalidOutputCapability(EchoCapability):
+    name = "invalid_output_v1"
+
+    def execute(self, context, input_data):
+        return EchoOutput(value=123)
+
+
+class ControlledFailureCapability(EchoCapability):
+    name = "controlled_failure_v1"
+
+    def execute(self, context, input_data):
+        raise CapabilityExecutionError(
+            "provider_unavailable",
+            "Provider temporarily unavailable.",
+            details={"retry_after": 5},
+        )
 
 
 class ExecutableCapabilityTests(SimpleTestCase):
@@ -127,10 +146,38 @@ class ExecutableCapabilityTests(SimpleTestCase):
         self.assertEqual(result.error.code, "execution_failed")
         self.assertNotIn("provider detail", result.error.message)
 
+    def test_invalid_output_field_type_is_bounded(self):
+        registry = self.make_registry("invalid_output_v1")
+        registry.register(InvalidOutputCapability)
+
+        result = CapabilityInvoker(registry).invoke(
+            "invalid_output_v1",
+            context=CapabilityContext(actor=object(), request_id="req-5"),
+            input_data=EchoInput(value="hello"),
+        )
+
+        self.assertFalse(result.success)
+        self.assertEqual(result.error.code, "invalid_output")
+
+    def test_controlled_capability_error_is_preserved(self):
+        registry = self.make_registry("controlled_failure_v1")
+        registry.register(ControlledFailureCapability)
+
+        result = CapabilityInvoker(registry).invoke(
+            "controlled_failure_v1",
+            context=CapabilityContext(actor=object(), request_id="req-6"),
+            input_data=EchoInput(value="hello"),
+        )
+
+        self.assertFalse(result.success)
+        self.assertEqual(result.error.code, "provider_unavailable")
+        self.assertEqual(result.error.message, "Provider temporarily unavailable.")
+        self.assertEqual(result.error.details, {"retry_after": 5})
+
     def test_unknown_capability_returns_failure_envelope(self):
         result = CapabilityInvoker(self.make_registry()).invoke(
             "missing_v1",
-            context=CapabilityContext(actor=object(), request_id="req-5"),
+            context=CapabilityContext(actor=object(), request_id="req-7"),
             input_data={},
         )
 
