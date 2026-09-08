@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}VORNEQ — {% trans "The Global Knowledge Platform" %}{% endblock %}
+{% block title %}VORNEQ — {% trans "The Discoverable Knowledge Platform" %}{% endblock %}
 
 {% block meta %}
-<meta name="description" content="{% trans 'Discover knowledge, explore VORNEQ apps, and build on an open platform for connected knowledge.' %}">
-<meta property="og:title" content="VORNEQ — {% trans 'The Global Knowledge Platform' %}">
-<meta property="og:description" content="{% trans 'Knowledge without borders: discover, organize, and build on one connected platform.' %}">
+<meta name="description" content="{% trans 'Discover knowledge across VORNEQ through inspectable attribution, evidence, context, and capabilities.' %}">
+<meta property="og:title" content="VORNEQ — {% trans 'The Discoverable Knowledge Platform' %}">
+<meta property="og:description" content="{% trans 'Discovery, attribution, evidence, context, and capability on one connected platform.' %}">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 {% endblock %}
@@ -27,6 +27,8 @@
           <p class="global-home__eyebrow">{% trans "Knowledge without borders" %}</p>
           <h1 id="global-home-title" class="global-home__title">{% trans "Discover across" %} <span>{% trans "VORNEQ" %}</span></h1>
           <p class="global-home__lede">{% trans "Search knowledge, products, media, documents, and audio from one connected discovery surface." %}</p>
+          <p class="global-home__lede">{% trans "VORNEQ does not decide what is true, trustworthy, or valuable. It makes discovery, attribution, evidence, context, and capability inspectable." %}</p>
+          <p class="global-home__kicker">{% trans "Context, not Score · Evidence, not Truth · Portable Identity" %}</p>
         </div>
         <div class="global-home__visual" aria-hidden="true">
           <svg class="global-home__globe" viewBox="0 0 440 440" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -153,12 +155,18 @@
         <section id="trust" class="right-rail__block global-home__rail-block" aria-labelledby="trust-title" data-homepage-signal-section>
           <p class="global-home__kicker">{% trans "Trust context" %}</p>
           <h2 id="trust-title">{% trans "Inspect claims in context." %}</h2>
-          <p>{% trans "Verification is evidence about an assertion; it is not truth itself." %}</p>
+          <p>{% trans "Verification produces inspectable findings and evidence about an assertion; it does not establish final truth." %}</p>
           <p>{% trans "Reputation is contextual to method, role, and domain — never a universal score." %}</p>
           <div class="global-home__trust-note" role="note">
             <strong>{% trans "No global trust score" %}</strong>
             <span>{% trans "Homepage discovery remains independent from Trust-layer ranking." %}</span>
           </div>
+        </section>
+
+        <section id="identity" class="right-rail__block global-home__rail-block" aria-labelledby="identity-title">
+          <p class="global-home__kicker">{% trans "Portable identity" %}</p>
+          <h2 id="identity-title">{% trans "Identity across experiences, not app-local." %}</h2>
+          <p>{% trans "Identity is designed to be portable across experiences rather than app-local." %}</p>
         </section>
 
         <section id="apps" class="right-rail__block global-home__rail-block" aria-labelledby="apps-title" data-homepage-signal-section>
