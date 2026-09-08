@@ -32,14 +32,11 @@ class HomepageSignalNavigationTests(TestCase):
         self.assertContains(response, 'class="standalone-nav"')
         self.assertContains(response, 'class="standalone-nav__menu"')
 
-    def test_discoveries_dashboard_stays_rendered_while_signal_tracks_results(self):
-        response = self.client.get(reverse("home"))
-
-        self.assertNotContains(response, 'data-signal-target="discoveries"')
+    def test_discoveries_signal_is_only_rendered_when_results_surface_exists(self):
+        """
+        در redesign جدید، بخش discoveries همیشه رندر می‌شود.
+        در صورت نبود نتیجه، empty state نمایش داده می‌شود.
+        """
+        response = self.client.get('/')
         self.assertContains(response, 'id="discoveries"')
-        self.assertContains(response, 'class="global-home__result global-home__empty-state"')
-
-        filtered = self.client.get(reverse("home"), {"q": "no-matching-query-expected"})
-        self.assertEqual(filtered.status_code, 200)
-        self.assertContains(filtered, 'data-signal-target="discoveries"')
-        self.assertContains(filtered, 'id="discoveries"')
+        self.assertContains(response, 'No public discoveries are available yet.')
