@@ -32,11 +32,12 @@ class HomepageSignalNavigationTests(TestCase):
         self.assertContains(response, 'class="standalone-nav"')
         self.assertContains(response, 'class="standalone-nav__menu"')
 
-    def test_discoveries_signal_is_only_rendered_when_results_surface_exists(self):
+    def test_discoveries_dashboard_stays_rendered_while_signal_tracks_results(self):
         response = self.client.get(reverse("home"))
 
         self.assertNotContains(response, 'data-signal-target="discoveries"')
-        self.assertNotContains(response, 'id="discoveries"')
+        self.assertContains(response, 'id="discoveries"')
+        self.assertContains(response, 'class="global-home__result global-home__empty-state"')
 
         filtered = self.client.get(reverse("home"), {"q": "no-matching-query-expected"})
         self.assertEqual(filtered.status_code, 200)
