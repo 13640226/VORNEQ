@@ -11,7 +11,7 @@ from django.views.generic import RedirectView
 
 from apps.platform_shell.registry import registry as platform_registry
 from config.health import health_check
-from config.views import home, profile
+from config.views import home, profile, search_page
 
 
 # Non-localized operational and API endpoints.
@@ -29,6 +29,7 @@ urlpatterns = [
 urlpatterns += i18n_patterns(
     path("admin/", admin.site.urls),
     path("", home, name="home"),
+    path("search/", search_page, name="search_page"),
     path("profile/", profile, name="profile"),
     path("", include("apps.profiles.urls")),
     path("accounts/", include("allauth.urls")),

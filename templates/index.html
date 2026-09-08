@@ -32,10 +32,34 @@
         </p>
 
         <form method="get" class="global-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
-          {% if current_type != "all" %}<input type="hidden" name="type" value="{{ current_type }}">{% endif %}
           <input class="global-search__input" type="search" name="q" value="{{ search_query }}" maxlength="200" placeholder="{% trans 'Search books, articles, audio, documents, and more…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
+          <select name="type" aria-label="{% trans 'Content type' %}">
+            <option value="all"{% if current_type == 'all' %} selected{% endif %}>{% trans "All" %}</option>
+            <option value="book"{% if current_type == 'book' %} selected{% endif %}>{% trans "Books" %}</option>
+            <option value="article"{% if current_type == 'article' %} selected{% endif %}>{% trans "Articles" %}</option>
+            <option value="document"{% if current_type == 'document' %} selected{% endif %}>{% trans "Documents" %}</option>
+            <option value="other"{% if current_type == 'other' %} selected{% endif %}>{% trans "Other library items" %}</option>
+            <option value="audio"{% if current_type == 'audio' %} selected{% endif %}>{% trans "Audio" %}</option>
+            <option value="product"{% if current_type == 'product' %} selected{% endif %}>{% trans "Products" %}</option>
+          </select>
+          <select name="item_type" aria-label="{% trans 'Library item type' %}">
+            <option value="">{% trans "Any library type" %}</option>
+            <option value="book"{% if current_item_type == 'book' %} selected{% endif %}>{% trans "Book" %}</option>
+            <option value="article"{% if current_item_type == 'article' %} selected{% endif %}>{% trans "Article" %}</option>
+            <option value="document"{% if current_item_type == 'document' %} selected{% endif %}>{% trans "Document" %}</option>
+            <option value="other"{% if current_item_type == 'other' %} selected{% endif %}>{% trans "Other" %}</option>
+          </select>
+          <select name="media_type" aria-label="{% trans 'Media type' %}">
+            <option value="">{% trans "Any media type" %}</option>
+            <option value="image"{% if current_media_type == 'image' %} selected{% endif %}>{% trans "Image" %}</option>
+            <option value="video"{% if current_media_type == 'video' %} selected{% endif %}>{% trans "Video" %}</option>
+          </select>
+          <input type="text" name="category" value="{{ current_category }}" maxlength="120" placeholder="{% trans 'Category' %}" aria-label="{% trans 'Category' %}">
+          <input type="number" name="price_min" value="{{ current_price_min }}" min="0" step="0.01" placeholder="{% trans 'Min price' %}" aria-label="{% trans 'Minimum price' %}">
+          <input type="number" name="price_max" value="{{ current_price_max }}" min="0" step="0.01" placeholder="{% trans 'Max price' %}" aria-label="{% trans 'Maximum price' %}">
           <button class="global-search__button" type="submit">{% trans "Search" %} <span aria-hidden="true">→</span></button>
         </form>
+        <p><a href="{% url 'search_page' %}">{% trans "Open advanced search" %} →</a></p>
 
         <div class="global-home__topics" aria-label="{% trans 'Suggested topics' %}">
           <a class="global-home__topic" href="?q=Climate+change">{% trans "Climate change" %}</a>
@@ -151,7 +175,7 @@
         {% for item in featured %}<article class="global-home__result"><span class="global-home__result-type">{% include "partials/_content_type_label.html" with type=item.type %}</span><h3><a href="{{ item.url }}">{{ item.title }}</a></h3>{% if item.description %}<p>{{ item.description }}</p>{% endif %}</article>{% endfor %}
         {% for item in results %}<article class="global-home__result"><span class="global-home__result-type">{% include "partials/_content_type_label.html" with type=item.type %}</span><h3><a href="{{ item.url }}">{{ item.title }}</a></h3>{% if item.description %}<p>{{ item.description }}</p>{% endif %}</article>{% empty %}{% if is_filtered and not featured %}<article class="global-home__result"><span class="global-home__result-type">{% trans "No matches" %}</span><h3>{% trans "No results found" %}</h3><p>{% trans "Try adjusting your keywords or content type." %}</p></article>{% endif %}{% endfor %}
       </div>
-      {% if page_obj.has_other_pages %}<nav class="global-home__pagination" aria-label="{% trans 'Pagination' %}"><span>{% blocktrans with current=page_obj.number total=page_obj.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}</span><span>{% if page_obj.has_previous %}<a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if current_type != 'all' %}type={{ current_type }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}{% if page_obj.has_previous and page_obj.has_next %} · {% endif %}{% if page_obj.has_next %}<a href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if current_type != 'all' %}type={{ current_type }}&amp;{% endif %}page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>{% endif %}</span></nav>{% endif %}
+      {% if page_obj.has_other_pages %}<nav class="global-home__pagination" aria-label="{% trans 'Pagination' %}"><span>{% blocktrans with current=page_obj.number total=page_obj.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}</span><span>{% if page_obj.has_previous %}<a href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;media_type={{ current_media_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}{% if page_obj.has_previous and page_obj.has_next %} · {% endif %}{% if page_obj.has_next %}<a href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;media_type={{ current_media_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>{% endif %}</span></nav>{% endif %}
     </div>
   </section>
   {% endif %}

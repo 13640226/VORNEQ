@@ -1,5 +1,7 @@
 """Main views for VORNEQ."""
 
+from decimal import Decimal, InvalidOperation
+
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.paginator import Paginator
@@ -21,20 +23,87 @@ VALID_CONTENT_TYPES = {
     "audio",
     "product",
 }
+SEARCH_TYPES = {"article", "product", "libraryitem", "mediaasset", "audio"}
+SEARCH_ITEM_TYPES = {"book", "article", "document", "other"}
+SEARCH_MEDIA_TYPES = {"image", "video"}
 
 
-def _home_search_filters(content_type):
+def _decimal_filter(value):
+    if value in (None, ""):
+        return None
+    try:
+        parsed = Decimal(value)
+    except (InvalidOperation, TypeError, ValueError):
+        return None
+    return parsed if parsed >= 0 else None
+
+
+def _positive_int(value, default, *, maximum=None):
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return default
+    parsed = max(1, parsed)
+    if maximum is not None:
+        parsed = min(parsed, maximum)
+    return parsed
+
+
+def _home_search_filters(content_type, request):
     if content_type == "all":
-        return {}
-    if content_type in {"book", "document", "other"}:
-        return {"types": {"libraryitem"}, "item_type": content_type}
-    if content_type == "article":
-        return {"types": {"article", "libraryitem"}, "item_type": "article"}
-    if content_type == "audio":
-        return {"types": {"audio"}}
-    if content_type == "product":
-        return {"types": {"product"}}
-    return {}
+        filters = {}
+    elif content_type in {"book", "document", "other"}:
+        filters = {"types": {"libraryitem"}, "item_type": content_type}
+    elif content_type == "article":
+        filters = {"types": {"article", "libraryitem"}, "item_type": "article"}
+    elif content_type == "audio":
+        filters = {"types": {"audio"}}
+    elif content_type == "product":
+        filters = {"types": {"product"}}
+    else:
+        filters = {}
+
+    item_type = request.GET.get("item_type", "").strip().lower()
+    media_type = request.GET.get("media_type", "").strip().lower()
+    category = request.GET.get("category", "").strip()[:120]
+    price_min = _decimal_filter(request.GET.get("price_min"))
+    price_max = _decimal_filter(request.GET.get("price_max"))
+
+    if item_type in SEARCH_ITEM_TYPES:
+        filters["item_type"] = item_type
+    if media_type in SEARCH_MEDIA_TYPES:
+        filters["media_type"] = media_type
+    if category:
+        filters["category"] = category
+    if price_min is not None:
+        filters["price_min"] = price_min
+    if price_max is not None:
+        filters["price_max"] = price_max
+    return filters
+
+
+def _standalone_search_filters(request):
+    filters = {}
+    requested_type = request.GET.get("type", "").strip().lower()
+    item_type = request.GET.get("item_type", "").strip().lower()
+    media_type = request.GET.get("media_type", "").strip().lower()
+    category = request.GET.get("category", "").strip()[:120]
+    price_min = _decimal_filter(request.GET.get("price_min"))
+    price_max = _decimal_filter(request.GET.get("price_max"))
+
+    if requested_type in SEARCH_TYPES:
+        filters["types"] = {requested_type}
+    if item_type in SEARCH_ITEM_TYPES:
+        filters["item_type"] = item_type
+    if media_type in SEARCH_MEDIA_TYPES:
+        filters["media_type"] = media_type
+    if category:
+        filters["category"] = category
+    if price_min is not None:
+        filters["price_min"] = price_min
+    if price_max is not None:
+        filters["price_max"] = price_max
+    return filters
 
 
 def _home_visible_results(items):
@@ -56,7 +125,15 @@ def home(request):
     except (TypeError, ValueError):
         requested_page = 1
 
-    is_unfiltered = not query and content_type == "all"
+    filters = _home_search_filters(content_type, request)
+    has_advanced_filters = bool(
+        request.GET.get("item_type")
+        or request.GET.get("media_type")
+        or request.GET.get("category")
+        or request.GET.get("price_min")
+        or request.GET.get("price_max")
+    )
+    is_unfiltered = not query and content_type == "all" and not has_advanced_filters
     is_first_page = requested_page == 1
 
     feed_items = None
@@ -73,7 +150,7 @@ def home(request):
         feed_items = _home_visible_results(
             UnifiedSearch().collect(
                 query,
-                filters=_home_search_filters(content_type),
+                filters=filters,
                 language=language,
             )
         )
@@ -98,11 +175,48 @@ def home(request):
         "results": page_obj.object_list,
         "current_type": content_type,
         "search_query": query,
-        "is_filtered": bool(query or content_type != "all"),
+        "current_item_type": request.GET.get("item_type", "").strip().lower(),
+        "current_media_type": request.GET.get("media_type", "").strip().lower(),
+        "current_category": request.GET.get("category", "").strip()[:120],
+        "current_price_min": request.GET.get("price_min", "").strip(),
+        "current_price_max": request.GET.get("price_max", "").strip(),
+        "is_filtered": bool(query or content_type != "all" or has_advanced_filters),
         "total_results": paginator.count,
     }
 
     return render(request, "index.html", context)
+
+
+def search_page(request):
+    """Render standalone advanced search without Trust-layer enrichment."""
+    service = UnifiedSearch()
+    query = service.normalize_query(request.GET.get("q", ""))
+    filters = _standalone_search_filters(request)
+    page = _positive_int(request.GET.get("page"), 1)
+    page_size = _positive_int(
+        request.GET.get("page_size"),
+        UnifiedSearch.DEFAULT_PAGE_SIZE,
+        maximum=UnifiedSearch.MAX_PAGE_SIZE,
+    )
+    payload = service.search(
+        query,
+        filters=filters,
+        page=page,
+        page_size=page_size,
+        language=get_language() or "en",
+    )
+    context = {
+        **payload,
+        "search_query": query,
+        "current_type": request.GET.get("type", "").strip().lower(),
+        "current_item_type": request.GET.get("item_type", "").strip().lower(),
+        "current_media_type": request.GET.get("media_type", "").strip().lower(),
+        "current_category": request.GET.get("category", "").strip()[:120],
+        "current_price_min": request.GET.get("price_min", "").strip(),
+        "current_price_max": request.GET.get("price_max", "").strip(),
+        "page_size": page_size,
+    }
+    return render(request, "search.html", context)
 
 
 @login_required
