@@ -3,7 +3,7 @@
 **Version:** 3.0  
 **Status:** Descriptive snapshot  
 **Date:** 2026-09-08  
-**Snapshot Reference:** `ee53dc77c0878a89b92a4c4f5ba401252f5e78d2`  
+**Snapshot Reference:** `933e10a6c1d147ddde1bcc1b96c2ed429a0fe261`  
 **Purpose:** Provide a code-based map of selected VORNEQ backend concerns, their data flows, dependencies, and current implementation boundaries at the referenced snapshot.
 
 ---
@@ -229,7 +229,75 @@ Two implementation caveats remain:
 
 ---
 
-## 5. Entitlement Boundary
+## 5. Identity Registry and Adoption Boundary
+
+VORNEQ has an implemented canonical Identity registry that is separate from Django authentication. The registry provides stable subject identifiers for trust and cross-domain attribution, while adoption by existing subsystems remains gradual. The transitional boundary is therefore subsystem adoption of Identity, not the existence or status of the Identity registry itself.
+
+```text
+Django User
+    │ explicit UserIdentity binding
+    ▼
+Identity
+
+Domain object
+    │ explicit ArtifactBinding
+    ▼
+Artifact
+
+Identity ── explicit ArtifactIdentityRole ── Artifact
+```
+
+### 5.1 Identity registry — current status
+
+`Identity` uses an independent UUID primary key and supports human, organization, agent, and system/service identity kinds. `UserIdentity` provides the explicit bridge between Django authentication and a canonical human Identity.
+
+`register_user_identity()` is an explicit, atomic, idempotent registration operation. When no binding exists, it creates a human Identity and binds the supplied saved Django user to it. In contrast, `resolve_identity_for_user()` is resolution-only: it returns the existing bound Identity or `None` and never creates registry state implicitly.
+
+Registry adoption does not infer identity or attribution from ordinary domain data. Artifact registration does not infer roles such as seller from the vertical model. Library author text is not normalized or matched to an Identity. Where canonical attribution is needed, an explicit `ArtifactIdentityRole` must be established; the library author bridge, for example, requires an existing active Identity and never derives one from `LibraryItem.author`.
+
+Identity adoption remains transitional in existing subsystems:
+
+- Entitlement continues to use the legacy `user + product` request key. The canonical `identity + artifact` pair is populated only when both registry bindings exist or when an explicitly supplied pair can be verified against them.
+- Contextual Reputation still requires its legacy `user` subject. A pre-existing `UserIdentity` binding may also populate the canonical `identity` field, but the reputation service does not create Identity records.
+- Verification continues to use Django User references for request and verifier attribution in the inspected path. Canonical Identity is not a required Verification subject.
+- The inspected Evidence path does not require canonical Identity as its record subject.
+- Platform Shell continues to operate through Django request/user semantics in the inspected runtime paths.
+- The current `read_artifact_v1` Capability Bus PoC does not consume `CapabilityContext.actor` in its authorization decision.
+
+Django `User` therefore remains the dominant runtime authentication principal at this snapshot. Identity is an explicit canonical subject and attribution registry, not yet a system-wide replacement for `request.user` or a universal Capability Bus actor.
+
+### 5.2 Guarantees and caveats
+
+Database constraints enforce important structural guarantees. `UserIdentity.user` and `UserIdentity.identity` are one-to-one relationships, and `ArtifactIdentityRole` is unique for the same artifact, identity, and role tuple.
+
+Other invariants remain model- or service-level rather than database-enforced. `UserIdentity` requires a human Identity through model validation, and `ArtifactIdentityRole` validates that `valid_until` follows `valid_from`. Callers that bypass canonical services and model validation should therefore not be assumed to receive those same guarantees automatically.
+
+Identity resolution is deliberately non-creative. Missing `UserIdentity` state resolves to `None`; Entitlement and Contextual Reputation decide how to handle that transitional state rather than silently manufacturing canonical subjects.
+
+Likewise, legacy domain strings and metadata are not general identity-resolution inputs. Explicit bridges may establish canonical relationships, but the registry does not perform fuzzy or implicit identity inference.
+
+### 5.3 Current adoption state
+
+| Subsystem / Area | Identity adoption status |
+|---|---|
+| Identity registry | Implemented canonical abstraction |
+| `UserIdentity` binding | Implemented; one-to-one structure DB-enforced |
+| Registration service | Implemented, explicit, atomic, idempotent |
+| Resolution service | Implemented, explicit, non-creative |
+| Artifact identity roles | Implemented; explicit attribution |
+| Entitlement | Transitional legacy/canonical adoption |
+| Contextual Reputation | Transitional dual-subject adoption; `user` remains required |
+| Verification | Not Identity-native in the inspected request/result path |
+| Evidence | Canonical Identity not required in the inspected path |
+| Platform Shell | Identity is not the default runtime principal |
+| Capability Bus PoC | Identity/actor is not consumed by current PoC authorization |
+| Unified Search | Deliberately independent of Identity for retrieval eligibility and ranking |
+
+The Identity registry should therefore be described as an implemented canonical abstraction with gradual, explicit subsystem adoption—not as a purely transitional model.
+
+---
+
+## 6. Entitlement Boundary
 
 Entitlement is implemented in Core with a staged legacy/canonical migration shape:
 
@@ -244,7 +312,7 @@ Entitlement
            Identity + Artifact
 ```
 
-### 5.1 Grant semantics
+### 6.1 Grant semantics
 
 `grant_entitlement()` continues to grant by the legacy `user + product` key. It enriches the same row with `identity + artifact` only when both canonical registry bindings already exist, or when an explicitly supplied canonical pair can be verified against those bindings.
 
@@ -252,7 +320,7 @@ A partial explicit canonical pair is rejected. Explicit canonical references tha
 
 The service does not create registry Identity or Artifact records.
 
-### 5.2 Authorization semantics
+### 6.2 Authorization semantics
 
 `has_valid_entitlement()` does more than test `is_active` and expiry. It:
 
@@ -267,13 +335,13 @@ No Evidence or Verification check is part of this entitlement validation path.
 
 This makes Entitlement a distinct authorization concern; Trust context does not silently grant access.
 
-### 5.3 Architectural role of Entitlement
+### 6.3 Architectural role of Entitlement
 
 Entitlement remains a **transitional access primitive**, not a universal platform permission model. Its public service shape is still centered on the legacy `user + product` key, with canonical `Identity + Artifact` references populated and validated where bindings exist. Canonical inconsistency fails closed rather than silently falling back to legacy authorization.
 
 This boundary must remain distinct from the executable Capability Bus. `has_valid_entitlement()` is appropriate inside a capability provider only when the owning domain explicitly defines entitlement as part of that domain's authorization policy. It must not become the default or universal authorization mechanism for executable capabilities.
 
-### 5.4 Capability Bus v2 — current status
+### 6.4 Capability Bus v2 — current status
 
 **Capability Bus v2 remains Proposed.** The core synchronous invocation framework is implemented and contract-tested, including bounded failure contracts, with one narrow read-only PoC provider registered at application startup. Product adoption remains pending. Some ADR 012 guardrails remain architectural constraints rather than mechanically enforced framework invariants.
 
@@ -292,7 +360,7 @@ ADR 012 constraints that are not fully enforced by the framework itself include:
 
 ADR 012 therefore remains **Proposed**; implementation of the core framework does not by itself promote the architectural decision to a stable product-adoption status.
 
-### 5.5 Platform Shell runtime paths — Capability Bus consumer status
+### 6.5 Platform Shell runtime paths — Capability Bus consumer status
 
 Inspection of the current Platform Shell runtime paths preserves a composition boundary rather than introducing capability execution:
 
@@ -319,7 +387,7 @@ Workspace
 
 **No production Capability Bus consumer is evidenced in the inspected Platform Shell runtime paths.** This is consistent with the current responsibility split: Platform Shell provides composition and navigation context without taking ownership of domain policy.
 
-### 5.6 Consumer-driven capability adoption
+### 6.6 Consumer-driven capability adoption
 
 Executable capabilities should be introduced in response to a concrete cross-domain contract need, not merely to increase adoption of the Capability Bus. No provider or consumer should be added solely to demonstrate use of the framework.
 
@@ -329,7 +397,7 @@ Until such a consumer need exists, the Bus remains implemented infrastructure wi
 
 ---
 
-## 6. Dependency Summary
+## 7. Dependency Summary
 
 | Concern | Verified direct dependencies / inputs at this snapshot |
 |---|---|
@@ -347,7 +415,7 @@ The table describes verified dependencies in the inspected paths. It should not 
 
 ---
 
-## 7. Component Status at the Snapshot
+## 8. Component Status at the Snapshot
 
 | Component | Status | Notes |
 |---|---|---|
@@ -365,7 +433,7 @@ The table describes verified dependencies in the inspected paths. It should not 
 
 ---
 
-## 8. Architectural Invariants Captured by the Code
+## 9. Architectural Invariants Captured by the Code
 
 | Principle | Observed boundary |
 |---|---|
@@ -379,12 +447,12 @@ The table describes verified dependencies in the inspected paths. It should not 
 
 ---
 
-## 9. Snapshot Notes
+## 10. Snapshot Notes
 
 This document describes repository state at:
 
 ```text
-ee53dc77c0878a89b92a4c4f5ba401252f5e78d2
+933e10a6c1d147ddde1bcc1b96c2ed429a0fe261
 ```
 
 Later code changes may invalidate individual implementation details. Update this document only after re-validating claims against the relevant repository state.
