@@ -253,6 +253,23 @@ def main() -> int:
         t2, t2_iso = time.monotonic(), utc_now()
         target_fp = fingerprints(target)
         if target_fp != source_fp:
+            print("Fingerprint mismatch detected:", file=sys.stderr)
+            print(
+                f"  schema: source={source_fp.schema}, target={target_fp.schema}",
+                file=sys.stderr,
+            )
+            print(
+                f"  public table count: source={source_fp.tables}, target={target_fp.tables}",
+                file=sys.stderr,
+            )
+            print(
+                f"  migrations: source={source_fp.migrations}, target={target_fp.migrations}",
+                file=sys.stderr,
+            )
+            print(
+                f"  content types: source={source_fp.content_types}, target={target_fp.content_types}",
+                file=sys.stderr,
+            )
             raise RuntimeError("Restore verification failed: source/target fingerprints differ")
         t3, t3_iso = time.monotonic(), utc_now()
 
