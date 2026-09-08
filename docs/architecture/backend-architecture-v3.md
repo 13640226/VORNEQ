@@ -233,6 +233,66 @@ No Evidence or Verification check is part of this entitlement validation path.
 
 This makes Entitlement a distinct authorization concern; Trust context does not silently grant access.
 
+### 5.3 Architectural role of Entitlement
+
+Entitlement remains a **transitional access primitive**, not a universal platform permission model. Its public service shape is still centered on the legacy `user + product` key, with canonical `Identity + Artifact` references populated and validated where bindings exist. Canonical inconsistency fails closed rather than silently falling back to legacy authorization.
+
+This boundary must remain distinct from the executable Capability Bus. `has_valid_entitlement()` is appropriate inside a capability provider only when the owning domain explicitly defines entitlement as part of that domain's authorization policy. It must not become the default or universal authorization mechanism for executable capabilities.
+
+### 5.4 Capability Bus v2 — current status
+
+**Capability Bus v2 remains Proposed.** The core synchronous invocation framework is implemented and contract-tested, including bounded failure contracts, with one narrow read-only PoC provider registered at application startup. Product adoption remains pending. Some ADR 012 guardrails remain architectural constraints rather than mechanically enforced framework invariants.
+
+Implemented behavior includes:
+
+- `ExecutableCapabilityRegistry` enforces declaration-before-binding: a provider can be registered only for a capability identifier already declared through `AppManifest.capabilities`.
+- `CapabilityInvoker` validates typed input and output, invokes the provider-owned `authorize()` hook before `execute()`, and converts controlled and unexpected failures into bounded `CapabilityResult` failure envelopes.
+- The narrow `read_artifact_v1` PoC provider reads active Artifacts, is registered from `CoreConfig.ready()`, and is exercised through isolated tests. Its current authorization check is intentionally narrow and does not consume `CapabilityContext.actor`.
+- Contract tests cover declaration enforcement, typed input/output, authorization denial, unknown capabilities, invalid output, controlled error conversion, and exception isolation.
+
+ADR 012 constraints that are not fully enforced by the framework itself include:
+
+- **Read-only execution:** the framework does not mechanically prevent a provider from performing writes.
+- **Deploy-time-only registration:** the current provider uses application-startup registration, but the registry API does not itself prevent later runtime registration.
+- **Versioned identifiers:** names such as `read_artifact_v1` follow the versioned naming convention, but the registry does not syntactically enforce that identifier format.
+
+ADR 012 therefore remains **Proposed**; implementation of the core framework does not by itself promote the architectural decision to a stable product-adoption status.
+
+### 5.5 Platform Shell runtime paths — Capability Bus consumer status
+
+Inspection of the current Platform Shell runtime paths preserves a composition boundary rather than introducing capability execution:
+
+```text
+Personal Home
+  Platform composition
+        │
+        └── DocumentService domain-owned summaries
+            authorization/query policy remains in Documents
+
+Launcher
+  PlatformRegistry metadata
+        │
+        └── navigation/discovery only
+
+Workspace
+  PlatformRegistry + URL resolution
+        │
+        └── composition context only
+            no app execution or domain-data access
+```
+
+`personal_home` directly composes `DocumentService.personal_home_recent_documents()` and `personal_home_recently_viewed()`. That dependency is currently legitimate because query and authorization policy remain domain-owned. `app_launcher` operates on registry metadata for navigation. `workspace_index` and `workspace_app` provide application entry points and URL resolution without embedding or executing the application.
+
+**No production Capability Bus consumer is evidenced in the inspected Platform Shell runtime paths.** This is consistent with the current responsibility split: Platform Shell provides composition and navigation context without taking ownership of domain policy.
+
+### 5.6 Consumer-driven capability adoption
+
+Executable capabilities should be introduced in response to a concrete cross-domain contract need, not merely to increase adoption of the Capability Bus. No provider or consumer should be added solely to demonstrate use of the framework.
+
+Direct domain-service composition remains valid where the dependency is explicit, policy remains domain-owned, and no stable cross-domain execution contract is required. A future Workspace need for a bounded domain summary is an illustrative example of the kind of pressure that could justify a capability contract; it is not a roadmap commitment.
+
+Until such a consumer need exists, the Bus remains implemented infrastructure with a registered PoC provider and tested contracts, without being artificially inserted into product data flows.
+
 ---
 
 ## 6. Dependency Summary
