@@ -46,4 +46,6 @@ jobs:
           STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
           DR_RESTORE_DATABASE_URL: ${{ secrets.DR_RESTORE_DATABASE_URL }}
           CONFIRM_RESTORE: ${{ inputs.confirm_restore }}
-        run: python scripts/dr_staging_rehearsal.py
+        run: |
+          export PATH="/usr/lib/postgresql/18/bin:$PATH"
+          python scripts/dr_staging_rehearsal.py
