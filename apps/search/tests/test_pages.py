@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from django.test import TestCase
 from django.urls import reverse
+from django.utils.translation import override
 
 from apps.search.services import UnifiedSearch
 
@@ -188,28 +189,84 @@ class HomeSearchExpansionTests(TestCase):
         ],
     )
     def test_home_uses_first_page_item_as_presentation_featured(self, collect):
-        response = self.client.get(reverse("home"), {"q": "dashboard"})
+        with override("en"):
+            response = self.client.get(
+                reverse("home"),
+                {"q": "dashboard"},
+            )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["featured"][0]["title"], "Featured product")
-        self.assertEqual(response.context["results"][0]["title"], "Second discovery")
-        self.assertEqual(response.context["total_results"], 2)
-        self.assertContains(response, "Featured discovery")
 
-    @patch.object(UnifiedSearch, "collect", return_value=[])
-    def test_home_exposes_contract_safe_quick_filters_and_informative_trust(self, collect):
-        response = self.client.get(reverse("home"), {"q": "dashboard"})
-
-        self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            [item["value"] for item in response.context["quick_filters"]],
-            ["product", "book", "article", "document", "audio"],
+            response.context["featured"][0]["title"],
+            "Featured product",
         )
-        self.assertContains(response, "No global trust score")
-        self.assertContains(response, "Verification is evidence about an assertion")
-        self.assertContains(response, "Reputation is contextual")
-        self.assertNotContains(response, "trust_score")
-        self.assertNotContains(response, "contextual_reputation")
+        self.assertEqual(
+            response.context["results"][0]["title"],
+            "Second discovery",
+        )
+        self.assertEqual(
+            response.context["total_results"],
+            2,
+        )
+
+        self.assertContains(
+            response,
+            "Featured discovery",
+        )
+
+    @patch.object(
+        UnifiedSearch,
+        "collect",
+        return_value=[],
+    )
+    def test_home_exposes_contract_safe_quick_filters_and_informative_trust(
+        self,
+        collect,
+    ):
+        with override("en"):
+            response = self.client.get(
+                reverse("home"),
+                {"q": "dashboard"},
+            )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            [
+                item["value"]
+                for item in response.context["quick_filters"]
+            ],
+            [
+                "product",
+                "book",
+                "article",
+                "document",
+                "audio",
+            ],
+        )
+
+        self.assertContains(
+            response,
+            "No global trust score",
+        )
+        self.assertContains(
+            response,
+            "Verification is evidence about an assertion",
+        )
+        self.assertContains(
+            response,
+            "Reputation is contextual",
+        )
+
+        self.assertNotContains(
+            response,
+            "trust_score",
+        )
+        self.assertNotContains(
+            response,
+            "contextual_reputation",
+        )
 
 
 class StandaloneSearchPageTests(TestCase):
