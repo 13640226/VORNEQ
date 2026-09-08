@@ -21,7 +21,7 @@ services:
       - key: DATABASE_URL
         sync: false
       - key: USE_OBJECT_STORAGE
-        value: "False"
+        value: "True"
       - key: OBJECT_STORAGE_BUCKET
         sync: false
       - key: OBJECT_STORAGE_ENDPOINT_URL
