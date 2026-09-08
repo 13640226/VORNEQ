@@ -69,7 +69,7 @@ def _home_search_filters(content_type, request):
     price_min = _decimal_filter(request.GET.get("price_min"))
     price_max = _decimal_filter(request.GET.get("price_max"))
 
-    if item_type in SEARCH_ITEM_TYPES:
+    if content_type == "all" and item_type in SEARCH_ITEM_TYPES:
         filters["item_type"] = item_type
     if media_type in SEARCH_MEDIA_TYPES:
         filters["media_type"] = media_type
