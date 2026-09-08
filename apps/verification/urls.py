@@ -16,4 +16,9 @@ urlpatterns = [
         api.library_verification_summary,
         name="library_summary",
     ),
+    path(
+        "evidence/",
+        api.public_evidence_projection,
+        name="public_evidence",
+    ),
 ]
