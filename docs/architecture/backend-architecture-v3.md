@@ -193,6 +193,17 @@ The current Home view is different: `config.views.home` calls `UnifiedSearch().c
 
 Within `home()`, no Trust-derived enrichment or Trust-based ranking is applied to discovery results. The same `config/views.py` file also contains a separate authenticated profile view that reads Entitlement and Contextual Reputation; those profile reads are not part of Home discovery.
 
+### 4.5 Unified Search boundary — current status
+
+`UnifiedSearch` remains a public retrieval/composition boundary rather than an authorization or Trust boundary. Domain adapters determine retrieval eligibility through domain-owned publication/state filters such as `is_published`, approved product status, and active media state. The public Search API constrains caller-supplied filters, normalizes result representation, and delegates retrieval to the same adapter layer. No Evidence, Verification, Contextual Reputation, Quality Signal, or Entitlement dependency is present in the inspected Search service or API path.
+
+Production search execution remains read-only and preserves equivalent pagination and ordering contracts across bounded fallback, window-count, and supported narrow-CTE paths. Unexpected database failures are not silently converted into fallback behavior.
+
+Two implementation caveats remain:
+
+- public eligibility is currently expressed through domain-specific model-state filters rather than a shared publication abstraction;
+- Search-focused production tests currently live under `apps/core/tests/`, which is a historical ownership/layout coupling rather than a runtime architectural dependency.
+
 ---
 
 ## 5. Entitlement Boundary
