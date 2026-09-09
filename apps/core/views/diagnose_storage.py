@@ -33,7 +33,9 @@ def diagnose_storage(request):
     parsed_endpoint = urlsplit(endpoint_url or "")
     result.update(
         {
-            "bucket_matches_expected": bool(default_storage.bucket_name),
+            "bucket_matches_expected": (
+                default_storage.bucket_name == os.environ.get("OBJECT_STORAGE_BUCKET")
+            ),
             "endpoint_is_r2": parsed_endpoint.hostname is not None
             and parsed_endpoint.hostname.endswith(".r2.cloudflarestorage.com"),
             "endpoint_has_path": parsed_endpoint.path not in ("", "/"),
