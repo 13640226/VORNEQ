@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 
-from apps.core.models import Artifact
+from apps.core.models import Artifact, ArtifactBinding
 from apps.core.services.context import get_context_view, resolve_artifact_from_input
 
 
@@ -38,7 +38,7 @@ def context_view(request, artifact_id):
             artifact_id,
             language=get_language() or "en",
         )
-    except (Artifact.DoesNotExist, LookupError):
+    except (Artifact.DoesNotExist, ArtifactBinding.DoesNotExist, LookupError):
         raise Http404("Inspectable artifact not found.")
 
     return render(request, "context.html", context)
