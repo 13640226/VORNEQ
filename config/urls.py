@@ -31,7 +31,7 @@ if (
     os.environ.get("ENABLE_STORAGE_DIAGNOSTIC") == "True"
     and os.environ.get("DIAGNOSTIC_TOKEN")
 ):
-    from apps.core.views.diagnose_storage import diagnose_storage
+    from apps.core.storage_diagnostic_view import diagnose_storage
 
     urlpatterns.append(
         path("diagnose-storage/", diagnose_storage, name="diagnose_storage")
