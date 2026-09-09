@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.core.models import Artifact, ArtifactIdentityRole
+from apps.core.models import Artifact, ArtifactBinding, ArtifactIdentityRole
 from apps.evidence.models import ProvenanceStep
 from apps.verification.public import (
     get_public_evidence_projection,
@@ -35,20 +35,19 @@ def _artifact_for_content(content_object):
     if content_object is None or content_object.pk is None:
         return None
 
-    content_type = content_object._meta.app_config.label, content_object._meta.model_name
-    if content_type not in SUPPORTED_TARGETS:
+    target = (
+        content_object._meta.app_config.label,
+        content_object._meta.model_name,
+    )
+    if target not in SUPPORTED_TARGETS:
         return None
 
-    binding = (
-        content_object._meta.get_field("id")
-        and Artifact.objects.filter(
-            binding__content_type__app_label=content_type[0],
-            binding__content_type__model=content_type[1],
-            binding__object_id=str(content_object.pk),
-            is_active=True,
-        ).first()
-    )
-    return binding
+    return Artifact.objects.filter(
+        binding__content_type__app_label=target[0],
+        binding__content_type__model=target[1],
+        binding__object_id=str(content_object.pk),
+        is_active=True,
+    ).first()
 
 
 def _resolve_uuid(value):
@@ -62,7 +61,7 @@ def _resolve_uuid(value):
         return None
     try:
         content_object = artifact.binding.content_object
-    except Artifact.binding.RelatedObjectDoesNotExist:
+    except ArtifactBinding.DoesNotExist:
         return None
     return artifact if _is_public_content(content_object) else None
 
@@ -206,8 +205,8 @@ def _public_provenance_projection(evidence_projection):
     if not evidence_ids:
         return []
 
-    # V1 deliberately omits source_ref, transformation and note because public
-    # Evidence visibility does not yet define disclosure policy for those fields.
+    # Public Evidence visibility does not yet define disclosure policy for
+    # source_ref, transformation, or note, so V1 deliberately omits them.
     steps = ProvenanceStep.objects.filter(evidence_id__in=evidence_ids).order_by(
         "timestamp", "id"
     )
@@ -224,9 +223,10 @@ def _public_provenance_projection(evidence_projection):
 
 def get_context_view(artifact_id, *, language="en"):
     """Compose one public Inspect Context V1 projection."""
-    artifact = Artifact.objects.select_related(
-        "binding__content_type"
-    ).get(pk=artifact_id, is_active=True)
+    artifact = Artifact.objects.select_related("binding__content_type").get(
+        pk=artifact_id,
+        is_active=True,
+    )
     binding = artifact.binding
     target = (binding.content_type.app_label, binding.content_type.model)
     if target not in SUPPORTED_TARGETS:
