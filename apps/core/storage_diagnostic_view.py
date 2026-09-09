@@ -1,3 +1,4 @@
+import hashlib
 import os
 import secrets
 from urllib.parse import urlsplit
@@ -23,6 +24,9 @@ def diagnose_storage(request):
     result = {
         "storage_backend": default_storage.__class__.__name__,
     }
+
+    access_key_id = os.environ.get("OBJECT_STORAGE_ACCESS_KEY_ID", "")
+    result["access_key_hash"] = hashlib.sha256(access_key_id.encode()).hexdigest()[:16]
 
     if not hasattr(default_storage, "bucket_name"):
         result["storage_is_s3"] = False
