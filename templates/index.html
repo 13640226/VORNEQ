@@ -173,7 +173,6 @@
           <p class="global-home__kicker">{% trans "Apps shortcuts" %}</p>
           <h2 id="apps-title">{% trans "Move from discovery to work." %}</h2>
           <nav class="global-home__app-links" aria-label="{% trans 'VORNEQ apps' %}">
-            <a href="{% url 'home' %}"><span>{% trans "Discover" %}</span><span aria-hidden="true">→</span></a>
             {% for app in platform_apps %}
             <a href="{% url 'platform_shell:workspace_app' app.slug %}"><span>{{ app.label }}</span><span aria-hidden="true">→</span></a>
             {% empty %}
