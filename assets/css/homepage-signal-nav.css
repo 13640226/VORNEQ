@@ -1,16 +1,15 @@
 /* Public Homepage Signal Navigation v1. Uses shared VORNEQ tokens only. */
 .homepage-signal-nav {
-  position: fixed;
-  inset-inline-start: 50%;
-  bottom: var(--space-5);
-  z-index: var(--z-overlay);
+  position: relative;
+  z-index: 1;
+  width: max-content;
   max-width: min(calc(100vw - 2rem), 760px);
-  transform: translateX(-50%);
+  margin: var(--space-3) auto 0;
   padding: var(--space-2);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--color-bg-elevated) 88%, transparent);
-  box-shadow: var(--shadow-high), 0 0 32px color-mix(in srgb, var(--color-accent) 8%, transparent);
+  box-shadow: var(--shadow-low);
 }
 
 @supports (backdrop-filter: blur(12px)) {
@@ -111,8 +110,9 @@
 
 @media (max-width: 620px) {
   .homepage-signal-nav {
-    bottom: var(--space-3);
-    max-width: calc(100vw - 1rem);
+    width: calc(100% - 1rem);
+    max-width: none;
+    margin-top: var(--space-2);
   }
 
   .homepage-signal-nav__link {
