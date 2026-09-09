@@ -92,6 +92,7 @@
         {% block content %}{% endblock %}
     </main>
 
+    {% if request.resolver_match.url_name != 'home' %}
     <footer class="site-footer" role="contentinfo">
         <div class="container site-footer__inner">
             <span class="site-footer__brand">VORNEQ</span>
@@ -100,6 +101,7 @@
             </span>
         </div>
     </footer>
+    {% endif %}
 
     <script src="{% static 'js/theme-preference.js' %}" defer></script>
     <script src="{% static 'js/global-back.js' %}" defer></script>
