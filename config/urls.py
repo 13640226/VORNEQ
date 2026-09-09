@@ -2,8 +2,6 @@
 URL configuration for VORNEQ.
 """
 
-import os
-
 from django.conf import settings
 from django.conf.urls.i18n import i18n_patterns
 from django.conf.urls.static import static
@@ -26,16 +24,6 @@ urlpatterns = [
     path("api/media/", include("apps.media.urls")),
     path("api/search/", include("apps.search.urls")),
 ]
-
-if (
-    os.environ.get("ENABLE_STORAGE_DIAGNOSTIC") == "True"
-    and os.environ.get("DIAGNOSTIC_TOKEN")
-):
-    from apps.core.storage_diagnostic_view import diagnose_storage
-
-    urlpatterns.append(
-        path("diagnose-storage/", diagnose_storage, name="diagnose_storage")
-    )
 
 
 urlpatterns += i18n_patterns(
