@@ -56,19 +56,36 @@ def diagnose_storage(request):
             client.meta.region_name == getattr(default_storage, "region_name", None)
         )
 
-        try:
-            client.head_object(
+        operations = {}
+
+        def record_operation(name, operation):
+            try:
+                operation()
+                operations[name] = {"status": "success", "http": 200, "code": None}
+            except Exception as exc:
+                response = getattr(exc, "response", {}) or {}
+                operations[name] = {
+                    "status": "error",
+                    "http": response.get("ResponseMetadata", {}).get("HTTPStatusCode"),
+                    "code": response.get("Error", {}).get("Code"),
+                }
+
+        record_operation(
+            "list_objects_v2",
+            lambda: client.list_objects_v2(Bucket=default_storage.bucket_name, MaxKeys=1),
+        )
+        record_operation(
+            "head_bucket",
+            lambda: client.head_bucket(Bucket=default_storage.bucket_name),
+        )
+        record_operation(
+            "head_object",
+            lambda: client.head_object(
                 Bucket=default_storage.bucket_name,
                 Key="vorneq-diagnostic-does-not-exist",
-            )
-            result["head_object_http_status"] = 200
-            result["head_object_error_code"] = None
-        except Exception as exc:
-            response = getattr(exc, "response", {}) or {}
-            result["head_object_http_status"] = response.get(
-                "ResponseMetadata", {}
-            ).get("HTTPStatusCode")
-            result["head_object_error_code"] = response.get("Error", {}).get("Code")
+            ),
+        )
+        result["operations"] = operations
     except Exception as exc:
         result["client_config_error_type"] = exc.__class__.__name__
 
