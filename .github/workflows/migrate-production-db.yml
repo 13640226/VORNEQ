@@ -1,0 +1,52 @@
+name: Migrate Production Database
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_restore:
+        description: 'Type "yes" to confirm restoring the production source backup into the production target'
+        required: true
+        default: 'no'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migrate-production-db
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    if: ${{ inputs.confirm_restore == 'yes' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL 18 client
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo install -d /usr/share/postgresql-common/pgdg
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo gpg --batch --yes --dearmor -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg
+          . /etc/os-release
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg] https://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-18
+          /usr/lib/postgresql/18/bin/pg_dump --version
+          /usr/lib/postgresql/18/bin/pg_restore --version
+
+      - name: Run production database migration rehearsal
+        env:
+          STAGING_DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
+          DR_RESTORE_DATABASE_URL: ${{ secrets.PRODUCTION_TARGET_DATABASE_URL }}
+          CONFIRM_RESTORE: ${{ inputs.confirm_restore }}
+        run: |
+          set -euo pipefail
+          export PATH="/usr/lib/postgresql/18/bin:$PATH"
+          python scripts/dr_staging_rehearsal.py
