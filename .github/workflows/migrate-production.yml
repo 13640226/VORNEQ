@@ -1,0 +1,91 @@
+name: PRODUCTION — Apply Migrations
+run-name: 'PRODUCTION migration · ${{ github.ref_name }} · ${{ github.actor }}'
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_migration:
+        description: 'Type "yes" to confirm applying Django migrations to Production'
+        required: true
+        default: 'no'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migrate-production-database
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
+      DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
+      DJANGO_SETTINGS_MODULE: config.settings_render
+      VORNEQ_ALLOW_INSPECT_MIGRATION_PREFLIGHT: 'yes'
+      VORNEQ_INSPECT_MIGRATION_PREFLIGHT_LABEL: 'Production Migration Preflight'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Require main branch
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo 'Refusing Production migration outside refs/heads/main.' >&2
+            exit 1
+          fi
+
+      - name: Verify production database secret
+        run: |
+          if [ -z "$PRODUCTION_DATABASE_URL" ]; then
+            echo 'PRODUCTION_SOURCE_DATABASE_URL is not configured in GitHub Actions secrets.' >&2
+            exit 1
+          fi
+
+      - name: Require explicit migration confirmation
+        if: ${{ inputs.confirm_migration != 'yes' }}
+        run: |
+          echo 'Production migration was not applied because confirm_migration was not exactly "yes".' >&2
+          exit 1
+
+      - name: Confirm target environment
+        run: |
+          echo 'TARGET ENVIRONMENT: PRODUCTION'
+          echo 'MODE: APPLY DJANGO MIGRATIONS'
+          echo "COMMIT: $GITHUB_SHA"
+
+      - name: Show migration status before apply
+        run: python manage.py showmigrations --plan
+
+      - name: Migration graph preflight
+        run: python manage.py migration_preflight
+
+      - name: Migration data preflight
+        run: python manage.py inspect_migration_preflight
+
+      - name: Migration plan
+        run: python manage.py migrate --plan
+
+      - name: Apply migrations
+        run: python manage.py migrate --noinput
+
+      - name: Verify no pending migrations remain
+        run: python manage.py migrate --check
+
+      - name: Show migration status after apply
+        run: python manage.py showmigrations --plan
