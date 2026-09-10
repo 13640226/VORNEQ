@@ -690,3 +690,29 @@ class ArtifactIdentityRole(models.Model):
 
     def __str__(self):
         return f"{self.identity_id}:{self.role}:{self.artifact_id}"
+
+
+class IdentityHandle(models.Model):
+    """Canonical unique handle allocated to one Identity (ADR-013)."""
+
+    identity = models.ForeignKey(
+        "core.Identity",
+        on_delete=models.PROTECT,
+        related_name="handles",
+    )
+    handle = models.SlugField(max_length=32, unique=True)
+    reserved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["identity"],
+                name="uniq_handle_per_identity_v1",
+            ),
+        ]
+
+    @property
+    def display_address(self) -> str:
+        from apps.core.constants.handles import HANDLE_DISPLAY_DOMAIN
+
+        return f"{self.handle}@{HANDLE_DISPLAY_DOMAIN}"
