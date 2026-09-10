@@ -1,10 +1,11 @@
-name: Inspect Production Migration Preflight
+name: PRODUCTION — Read-only Migration Preflight
+run-name: 'PRODUCTION read-only migration preflight · ${{ github.ref_name }} · ${{ github.actor }}'
 
 on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: 'Type "yes" to run the read-only migration preflight against Production'
+        description: 'Type "yes" to run the READ-ONLY migration preflight against Production'
         required: true
         default: 'no'
         type: string
@@ -25,6 +26,7 @@ jobs:
       DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
       DJANGO_SETTINGS_MODULE: config.settings_render
       VORNEQ_ALLOW_INSPECT_MIGRATION_PREFLIGHT: 'yes'
+      VORNEQ_INSPECT_MIGRATION_PREFLIGHT_LABEL: 'Production Migration Preflight'
 
     steps:
       - name: Checkout
@@ -44,7 +46,7 @@ jobs:
       - name: Require explicit confirmation
         if: ${{ inputs.confirm != 'yes' }}
         run: |
-          echo 'Preflight was not run. Re-run with confirm exactly "yes".' >&2
+          echo 'Production preflight was not run. Re-run with confirm exactly "yes".' >&2
           exit 1
 
       - name: Verify production database secret
@@ -53,6 +55,11 @@ jobs:
             echo "PRODUCTION_SOURCE_DATABASE_URL is not configured in GitHub Actions secrets." >&2
             exit 1
           fi
+
+      - name: Confirm target environment
+        run: |
+          echo 'TARGET ENVIRONMENT: PRODUCTION'
+          echo 'MODE: READ-ONLY PREFLIGHT — NO MIGRATE / NO RESTORE'
 
       - name: Migration graph preflight
         run: python manage.py migration_preflight
