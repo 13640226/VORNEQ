@@ -17,7 +17,7 @@ msgid "Account Inactive"
 msgstr "حساب غیرفعال"
 
 msgid "Across VORNEQ"
-msgstr "در سراسر VORNEQ"
+msgstr "در سراسر ورنق"
 
 msgid "Active connections"
 msgstr "اتصال‌های فعال"
@@ -308,7 +308,7 @@ msgid "Latest Audio"
 msgstr "تازه‌ترین صوت‌ها"
 
 msgid "Latest discoveries"
-msgstr "آخرین کشف‌ها"
+msgstr "تازه‌ترین کشف‌ها"
 
 msgid "Library"
 msgstr "کتابخانه"
@@ -506,7 +506,7 @@ msgid "Search"
 msgstr "جستجو"
 
 msgid "Search VORNEQ"
-msgstr "جستجو در VORNEQ"
+msgstr "جستجو در ورنق"
 
 msgid "Search and filter products"
 msgstr "جستجو و فیلتر محصولات"
@@ -860,7 +860,7 @@ msgid "Experimental"
 msgstr "آزمایشی"
 
 msgid "Capability discovery"
-msgstr "کشف Capability"
+msgstr "کشف توانمندی"
 
 msgid "Capability strings are descriptive discovery metadata only. They do not execute code, grant permissions, or authorize cross-app access."
 msgstr "رشته‌های قابلیت فقط فراداده‌های توصیفی برای کشف هستند. آن‌ها کدی اجرا نمی‌کنند، مجوزی اعطا نمی‌کنند و دسترسی میان برنامه‌ها را مجاز نمی‌سازند."
@@ -869,7 +869,7 @@ msgid "Future contract"
 msgstr "قرارداد آینده"
 
 msgid "Executable providers & integrations"
-msgstr "ارائه‌دهندگان اجرایی و یکپارچه‌سازی‌ها"
+msgstr "فراهم‌کنندگان اجرایی و یکپارچه‌سازی‌ها"
 
 msgid "Executable capabilities, search providers, notifications, external integrations, and other provider contracts require separate versioned design and review."
 msgstr "قابلیت‌های اجرایی، ارائه‌دهندگان جستجو، اعلان‌ها، یکپارچه‌سازی‌های خارجی و دیگر قراردادهای ارائه‌دهنده، به طراحی و بررسی جداگانه و نسخه‌بندی‌شده نیاز دارند."
@@ -882,3 +882,105 @@ msgstr "بدون نتیجه"
 
 msgid "Try adjusting your keywords or content type."
 msgstr "سعی کنید کلیدواژه‌ها یا نوع محتوا را تغییر دهید."
+
+msgid "The Discoverable Knowledge Platform"
+msgstr "بستر دانشِ قابل‌کشف"
+
+msgid "Discover knowledge across VORNEQ through inspectable attribution, evidence, context, and capabilities."
+msgstr "کشف دانش در سراسر ورنق از راه انتساب، شواهد، زمینه و توانمندی‌های قابل‌بررسی."
+
+msgid "Discovery, attribution, evidence, context, and capability on one connected platform."
+msgstr "کشف، انتساب، شواهد، زمینه و توانمندی در یک بستر پیوسته."
+
+msgid "Discover across"
+msgstr "کشف در سراسر"
+
+msgid "VORNEQ"
+msgstr "ورنق"
+
+msgid "Search knowledge, products, media, documents, and audio from one connected discovery surface."
+msgstr "دانش، محصولات، رسانه، اسناد و صدا را از یک سطح کشفِ پیوسته جستجو کنید."
+
+msgid "VORNEQ does not decide what is true, trustworthy, or valuable. It makes discovery, attribution, evidence, context, and capability inspectable."
+msgstr "ورنق تصمیم نمی‌گیرد که چه چیزی درست، قابل‌اعتماد یا ارزشمند است. این بستر، کشف، انتساب، شواهد، زمینه و توانمندی را قابل‌بررسی می‌کند."
+
+msgid "Context, not Score · Evidence, not Truth · Portable Identity"
+msgstr "زمینه، نه امتیاز · شواهد، نه حقیقت · هویتِ قابل‌حمل"
+
+msgid "Search knowledge, products, media, documents, and audio…"
+msgstr "جستجوی دانش، محصولات، رسانه، اسناد و صدا…"
+
+msgid "Other library items"
+msgstr "سایر اقلام کتابخانه"
+
+msgid "Advanced filters"
+msgstr "فیلترهای پیشرفته"
+
+msgid "Quick content filters"
+msgstr "فیلترهای سریع محتوا"
+
+msgid "Open advanced search"
+msgstr "گشودن جستجوی پیشرفته"
+
+msgid "Featured discovery"
+msgstr "کشف برجسته"
+
+msgid "Discovery"
+msgstr "کشف"
+
+msgid "No public discoveries are available yet."
+msgstr "هنوز هیچ کشف عمومی در دسترس نیست."
+
+msgid "Use search or explore installed VORNEQ apps while the public discovery feed grows."
+msgstr "تا زمانی که جریان کشف‌های عمومی رشد می‌کند، از جستجو یا برنامه‌های نصب‌شده‌ی ورنق بهره بگیرید."
+
+msgid "VORNEQ context and shortcuts"
+msgstr "زمینه و میانبرهای ورنق"
+
+msgid "Inspect claims in context."
+msgstr "ادعاها را در زمینه‌ی خودشان بررسی کنید."
+
+msgid "Verification produces inspectable findings and evidence about an assertion; it does not establish final truth."
+msgstr "راستی‌آزمایی، یافته‌ها و شواهدِ قابل‌بررسی درباره‌ی یک ادعا فراهم می‌کند؛ حقیقت نهایی را اثبات نمی‌کند."
+
+msgid "Reputation is contextual to method, role, and domain — never a universal score."
+msgstr "اعتبار وابسته به روش، نقش و حوزه است — هرگز یک امتیاز جهانی نیست."
+
+msgid "No global trust score"
+msgstr "بدون امتیاز اعتماد جهانی"
+
+msgid "Homepage discovery remains independent from Trust-layer ranking."
+msgstr "کشف صفحه‌ی اصلی، مستقل از رتبه‌بندی لایه‌ی اعتماد می‌ماند."
+
+msgid "Portable identity"
+msgstr "هویتِ قابل‌حمل"
+
+msgid "Identity across experiences, not app-local."
+msgstr "هویت در سراسر تجربه‌ها، نه وابسته به یک برنامه."
+
+msgid "Identity is designed to be portable across experiences rather than app-local."
+msgstr "هویت چنان طراحی شده است که در سراسر تجربه‌ها قابل‌حمل باشد، نه محصور در یک برنامه."
+
+msgid "Apps shortcuts"
+msgstr "میانبرهای برنامه‌ها"
+
+msgid "Move from discovery to work."
+msgstr "از کشف به کار گام بگذارید."
+
+msgid "VORNEQ apps"
+msgstr "برنامه‌های ورنق"
+
+msgid "Platform status"
+msgstr "وضعیت بستر"
+
+msgid "Explicit boundaries, visible status."
+msgstr "مرزهای آشکار، وضعیت روشن."
+
+msgid "Homepage sections"
+msgstr "بخش‌های صفحه‌ی اصلی"
+
+msgid "Intro"
+msgstr "معرفی"
+
+msgid "Trust"
+msgstr "اعتماد"
