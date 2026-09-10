@@ -35,6 +35,16 @@ class InspectContextV1Tests(TestCase):
         self.assertEqual(resolved, self.artifact)
         self.assertEqual(type(self.artifact).objects.count(), artifact_count)
 
+    def test_resolves_artifact_slug(self):
+        resolved = resolve_artifact_from_input(self.product.slug)
+        self.assertEqual(resolved, self.artifact)
+
+    def test_resolves_artifact_url(self):
+        resolved = resolve_artifact_from_input(
+            f"https://staging.example.test/products/{self.product.slug}/"
+        )
+        self.assertEqual(resolved, self.artifact)
+
     def test_resolves_artifact_uuid(self):
         resolved = resolve_artifact_from_input(str(self.artifact.id))
         self.assertEqual(resolved, self.artifact)
