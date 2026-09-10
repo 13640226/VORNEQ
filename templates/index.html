@@ -53,7 +53,7 @@
           <div class="global-search__primary">
             <div class="global-search__input-wrap">
               <input class="global-search__input" type="search" name="q" value="{{ search_query }}" maxlength="200" placeholder="{% trans 'Search knowledge, products, media, documents, and audio…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
-              <button class="global-search__button" type="submit" aria-label="{% trans 'Search' %}"><span class="global-search__button-label">{% trans "Search" %}</span><span aria-hidden="true">→</span></button>
+              <button class="global-search__button" type="submit" aria-label="{% trans 'Search' %}"><span class="global-search__button-label">{% trans "Search" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></button>
             </div>
             <select class="global-search__select" name="type" aria-label="{% trans 'Content type' %}">
               <option value="all"{% if current_type == 'all' %} selected{% endif %}>{% trans "All" %}</option>
@@ -93,7 +93,7 @@
             <a class="global-home__quick-filter{% if current_type == filter.value %} is-active{% endif %}" href="?type={{ filter.value|urlencode }}">{{ filter.label }}</a>
             {% endfor %}
           </nav>
-          <a class="global-home__advanced-link" href="{% url 'search_page' %}">{% trans "Open advanced search" %} →</a>
+          <a class="global-home__advanced-link" href="{% url 'search_page' %}">{% trans "Open advanced search" %} <span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
         </div>
       </div>
     </div>
@@ -176,9 +176,9 @@
           <h2 id="apps-title">{% trans "Move from discovery to work." %}</h2>
           <nav class="global-home__app-links" aria-label="{% trans 'VORNEQ apps' %}">
             {% for app in platform_apps %}
-            <a href="{% url 'platform_shell:workspace_app' app.slug %}"><span>{{ app.label }}</span><span aria-hidden="true">→</span></a>
+            <a href="{% url 'platform_shell:workspace_app' app.slug %}"><span>{{ app.label }}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
             {% empty %}
-            <a href="{% url 'platform_shell:app_launcher' %}"><span>{% trans "Open Launcher" %}</span><span aria-hidden="true">→</span></a>
+            <a href="{% url 'platform_shell:app_launcher' %}"><span>{% trans "Open Launcher" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
             {% endfor %}
           </nav>
         </section>
