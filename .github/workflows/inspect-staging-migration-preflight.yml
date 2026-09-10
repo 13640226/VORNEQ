@@ -1,10 +1,11 @@
-name: Inspect Staging Migration Preflight
+name: STAGING — Read-only Migration Preflight
+run-name: 'STAGING read-only migration preflight · ${{ github.ref_name }} · ${{ github.actor }}'
 
 on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: 'Type "yes" to run the read-only migration preflight against staging'
+        description: 'Type "yes" to run the READ-ONLY migration preflight against Staging'
         required: true
         default: 'no'
         type: string
@@ -17,6 +18,7 @@ jobs:
       DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
       DJANGO_SETTINGS_MODULE: config.settings_render
       VORNEQ_ALLOW_INSPECT_MIGRATION_PREFLIGHT: 'yes'
+      VORNEQ_INSPECT_MIGRATION_PREFLIGHT_LABEL: 'Staging Migration Preflight'
 
     steps:
       - name: Checkout
@@ -36,7 +38,7 @@ jobs:
       - name: Require explicit confirmation
         if: github.event.inputs.confirm != 'yes'
         run: |
-          echo 'Preflight was not run. Re-run with confirm exactly "yes".' >&2
+          echo 'Staging preflight was not run. Re-run with confirm exactly "yes".' >&2
           exit 1
 
       - name: Verify staging database secret
@@ -45,6 +47,11 @@ jobs:
             echo "STAGING_DATABASE_URL is not configured in GitHub Actions secrets." >&2
             exit 1
           fi
+
+      - name: Confirm target environment
+        run: |
+          echo 'TARGET ENVIRONMENT: STAGING'
+          echo 'MODE: READ-ONLY PREFLIGHT — NO MIGRATE / NO RESTORE'
 
       - name: Migration graph preflight
         run: python manage.py migration_preflight
