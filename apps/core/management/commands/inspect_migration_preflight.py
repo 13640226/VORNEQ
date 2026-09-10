@@ -18,11 +18,12 @@ EXPECTED_MIGRATIONS = (
 DOCUMENT_TABLE = "documents_document"
 ACCESS_TABLE = "documents_documentaccess"
 USER_IDENTITY_TABLE = "core_useridentity"
+PREFLIGHT_LABEL_ENV = "VORNEQ_INSPECT_MIGRATION_PREFLIGHT_LABEL"
 
 
 class Command(BaseCommand):
     help = (
-        "Read-only staging preflight for pending Inspect-related migrations. "
+        "Read-only migration data preflight for pending Inspect-related migrations. "
         "Uses migration records, database introspection, and raw SELECT queries only."
     )
 
@@ -32,7 +33,8 @@ class Command(BaseCommand):
                 "Refusing to run without VORNEQ_ALLOW_INSPECT_MIGRATION_PREFLIGHT=yes."
             )
 
-        self.stdout.write("=== Inspect Staging Migration Preflight ===")
+        preflight_label = os.environ.get(PREFLIGHT_LABEL_ENV, "Staging Migration Preflight")
+        self.stdout.write(f"=== Inspect {preflight_label} ===")
 
         applied = MigrationRecorder(connection).applied_migrations()
         for app_label, migration_name in EXPECTED_MIGRATIONS:
