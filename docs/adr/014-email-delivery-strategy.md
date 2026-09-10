@@ -22,7 +22,7 @@ VORNEQ currently sends transactional email through Django's SMTP backend:
 - `EMAIL_HOST` is environment-configured.
 - `EMAIL_PORT` defaults to `587`.
 - `EMAIL_USE_TLS = True` by default.
-- `EMAIL_TIMEOUT` is not explicitly configured.
+- At decision time, `EMAIL_TIMEOUT` was not explicitly configured; it is now configured as `EMAIL_TIMEOUT = 10` on `main` via PR #246.
 
 A staging password-reset POST on Render Free failed while connecting through `socket.create_connection`, eventually leading to worker termination and HTTP 500.
 
@@ -33,9 +33,9 @@ Two independent defects are tracked by this ADR context:
 | Defect | Severity | Description |
 | --- | --- | --- |
 | P0 | Critical | Direct SMTP is blocked on Render Free. |
-| P1 | High | No explicit email network timeout is configured. |
+| P1 | High | No explicit email network timeout was configured at decision time; the timeout hardening item is now implemented via PR #246. |
 
-P0 is the deployment-compatibility root cause. P1 increases the duration and operational impact of network failures but does not solve the blocked-port constraint.
+P0 is the deployment-compatibility root cause. P1 increases the duration and operational impact of network failures but does not solve the blocked-port constraint. PR #246 addresses P1 only; it does not remediate P0.
 
 ## Decision Drivers
 
@@ -192,12 +192,23 @@ Provider-to-provider migration may also require domain verification and DNS chan
 
 ### Phase 1 - Configuration-level resilience
 
-Proposal only; separate execution PR:
+#### Partial Execution Status (as of 2026-09)
 
-1. Add `EMAIL_TIMEOUT = 10` for SMTP.
-2. Add `ANYMAIL = {"REQUESTS_TIMEOUT": 10}` for Anymail API backends when the dependency/config is introduced.
-3. Confirm local development remains compatible with the console backend.
-4. Do not change the production delivery path merely by documenting this ADR.
+Phase 1 comprises two settings-level hardening items:
+
+| Item | Setting | Status |
+| --- | --- | --- |
+| SMTP timeout | `EMAIL_TIMEOUT = 10` | ✅ Implemented on `main` via PR #246 |
+| Anymail API timeout | `ANYMAIL = {"REQUESTS_TIMEOUT": 10}` | ⏸️ Pending — requires the `django-anymail` dependency/config introduced during Phase 2 |
+
+The SMTP timeout item is defense-in-depth only. It does not remediate the underlying SMTP connectivity block on Render Free Web Services, where outbound ports `25`, `465`, and `587` are blocked. The Anymail API timeout cannot be deployed until Phase 2 introduces the `django-anymail` dependency and API backend configuration.
+
+Phase 1 execution therefore remains partial:
+
+1. `EMAIL_TIMEOUT = 10` for SMTP is implemented via PR #246.
+2. `ANYMAIL = {"REQUESTS_TIMEOUT": 10}` remains pending until the Anymail dependency/config is introduced.
+3. Local development remains expected to use the console backend.
+4. This status update does not change the production delivery path.
 
 ### Phase 2 - Provider execution
 
@@ -214,6 +225,14 @@ After the Auth baseline is ready for execution:
 ### Phase 3 - Extended observability
 
 Optional future work: provider webhooks, richer metrics, and alerts.
+
+## Status Summary
+
+| Item | Status |
+| --- | --- |
+| Phase 1 (`EMAIL_TIMEOUT`) | ✅ Implemented (PR #246) |
+| Phase 1 (`ANYMAIL.REQUESTS_TIMEOUT`) | ⏸️ Pending — Phase 2 dependency |
+| Phase 2 provider execution | ⏸️ Deferred |
 
 ## Open Questions
 
