@@ -1,0 +1,65 @@
+name: Inspect Production Migration Preflight
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "yes" to run the read-only migration preflight against Production'
+        required: true
+        default: 'no'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-migration-preflight
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
+      DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
+      DJANGO_SETTINGS_MODULE: config.settings_render
+      VORNEQ_ALLOW_INSPECT_MIGRATION_PREFLIGHT: 'yes'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Require explicit confirmation
+        if: ${{ inputs.confirm != 'yes' }}
+        run: |
+          echo 'Preflight was not run. Re-run with confirm exactly "yes".' >&2
+          exit 1
+
+      - name: Verify production database secret
+        run: |
+          if [ -z "$PRODUCTION_DATABASE_URL" ]; then
+            echo "PRODUCTION_SOURCE_DATABASE_URL is not configured in GitHub Actions secrets." >&2
+            exit 1
+          fi
+
+      - name: Migration graph preflight
+        run: python manage.py migration_preflight
+
+      - name: Run schema-safe migration data preflight
+        run: python manage.py inspect_migration_preflight
+
+      - name: Confirm read-only completion
+        run: |
+          echo 'Production migration preflight completed. No migrate command was executed.'
