@@ -74,6 +74,30 @@ Handle allocation must not be implemented in the `UserIdentity` model, a signup 
 
 The two services remain independently idempotent: repeated identity registration returns the existing binding, and repeated handle reservation returns the existing handle.
 
+### D3.1 Transaction Ownership (Decision)
+
+**Selected: Model A — non-atomic provisioning.**
+
+`register_user_identity(...)` and `reserve_handle_for_identity(...)` retain independent transaction ownership.
+
+A successful `Identity`/`UserIdentity` registration MUST NOT be rolled back solely because subsequent handle reservation fails.
+
+Handle allocation failure MUST be surfaced and made operationally observable, and the resulting Identity-without-Handle state MUST be treated as valid but incomplete and recoverable through the approved backfill/reconciliation path.
+
+PR B MUST NOT introduce an outer transaction spanning both services without a future ADR amendment.
+
+The rationale is **Identity canonical and durable; Handle recoverable provisioning**. This preserves the canonical identity binding as a stable state while treating handle reservation as a separately recoverable lifecycle step rather than coupling both services to an adapter-owned outer transaction.
+
+The failure semantics are therefore explicit:
+
+1. A successful Identity/UserIdentity registration remains committed if handle reservation fails.
+2. The incomplete state MUST NOT be reported or treated as silent full provisioning success.
+3. Handle reservation failure MUST be observable to the lifecycle caller and operational tooling.
+4. Recovery MUST use the approved idempotent backfill/reconciliation path.
+5. Changing to Model B requires a future ADR amendment before implementation.
+
+This decision resolves the transaction-ownership ambiguity for the proposed PR B lifecycle adapter. PR B is architecturally unblocked on this dimension, but its runtime implementation remains subject to the project's separate execution gates.
+
 ### D4. Deterministic, race-safe allocation
 
 Allocation follows this contract:
@@ -184,6 +208,7 @@ Implementation note for Phase 2: because `SlugField` does not itself enforce the
 - Database uniqueness, bounded retry, savepoints, and explicit integrity-error classification provide race-safe allocation.
 - Empty or nondeterministic handles are avoided through deterministic fallback.
 - The design leaves room for aliases, release semantics, and mailbox integration without implementing them prematurely.
+- Transaction ownership is now explicit: Identity/UserIdentity is canonical and durable, while Handle provisioning is recoverable.
 
 ### Costs
 
@@ -191,10 +216,12 @@ Implementation note for Phase 2: because `SlugField` does not itself enforce the
 - A new service will be required in `apps/core/services/handles.py`.
 - The reserved-word list requires maintenance.
 - Users whose seeds contain no usable ASCII characters receive a `user-<hex>` style fallback in V1.
+- Lifecycle callers must surface and observe handle-allocation failures while preserving the valid Identity/UserIdentity state.
 
 ### Known risks
 
 - Until controlled backfill is completed, some existing identities may have no handle; V1 accepts this during rollout.
+- A handle-allocation failure can create a valid but incomplete Identity-without-Handle state; recovery therefore depends on the approved backfill/reconciliation path.
 - Changing the display domain changes rendered addresses while stored unique handle values remain unchanged.
 - Fallback handles for non-Latin usernames may be less human-readable.
 
@@ -213,9 +240,23 @@ Implementation note for Phase 2: because `SlugField` does not itself enforce the
 3. Phase 3 — controlled backfill for existing users using idempotent `reserve_handle_for_identity`.
 4. Phase 4 — Profile projection displaying `handle@vorneq.com`.
 
-## Related ADRs
+## Status Summary
 
+| Item | Status |
+| --- | --- |
+| IdentityHandle architecture | Proposed (frozen) |
+| Transaction ownership | Model A — non-atomic provisioning (frozen decision) |
+| Identity/UserIdentity on handle failure | Valid and durable |
+| Identity-without-Handle | Valid but incomplete; recoverable |
+| PR B transaction-ownership ambiguity | Resolved |
+| PR B runtime implementation | Not implemented; subject to separate execution gates |
+
+## Related ADRs and Documents
+
+- ADR-004: Artifact Registry and Identity Layer (canonical Identity registry — architectural basis)
 - ADR-012: Executable Capabilities (Proposed)
+- Proposed PR B lifecycle adapter — downstream implementation governed by D3/D3.1; no outer transaction spanning both services without a future ADR amendment
+- Proposed PR C backfill/reconciliation path — recovery mechanism for valid Identity-without-Handle states
 
 ## Out of Scope
 
