@@ -17,7 +17,7 @@ msgid "Account Inactive"
 msgstr "حساب غیرفعال"
 
 msgid "Across VORNEQ"
-msgstr "در سراسر ورنق"
+msgstr "در سراسر VORNEQ"
 
 msgid "Active connections"
 msgstr "اتصال‌های فعال"
@@ -506,7 +506,7 @@ msgid "Search"
 msgstr "جستجو"
 
 msgid "Search VORNEQ"
-msgstr "جستجو در ورنق"
+msgstr "جستجو در VORNEQ"
 
 msgid "Search and filter products"
 msgstr "جستجو و فیلتر محصولات"
@@ -887,7 +887,7 @@ msgid "The Discoverable Knowledge Platform"
 msgstr "بستر دانشِ قابل‌کشف"
 
 msgid "Discover knowledge across VORNEQ through inspectable attribution, evidence, context, and capabilities."
-msgstr "کشف دانش در سراسر ورنق از راه انتساب، شواهد، زمینه و توانمندی‌های قابل‌بررسی."
+msgstr "کشف دانش در سراسر VORNEQ از راه انتساب، شواهد، زمینه و توانمندی‌های قابل‌بررسی."
 
 msgid "Discovery, attribution, evidence, context, and capability on one connected platform."
 msgstr "کشف، انتساب، شواهد، زمینه و توانمندی در یک بستر پیوسته."
@@ -896,13 +896,13 @@ msgid "Discover across"
 msgstr "کشف در سراسر"
 
 msgid "VORNEQ"
-msgstr "ورنق"
+msgstr "VORNEQ"
 
 msgid "Search knowledge, products, media, documents, and audio from one connected discovery surface."
 msgstr "دانش، محصولات، رسانه، اسناد و صدا را از یک سطح کشفِ پیوسته جستجو کنید."
 
 msgid "VORNEQ does not decide what is true, trustworthy, or valuable. It makes discovery, attribution, evidence, context, and capability inspectable."
-msgstr "ورنق تصمیم نمی‌گیرد که چه چیزی درست، قابل‌اعتماد یا ارزشمند است. این بستر، کشف، انتساب، شواهد، زمینه و توانمندی را قابل‌بررسی می‌کند."
+msgstr "VORNEQ تصمیم نمی‌گیرد که چه چیزی درست، قابل‌اعتماد یا ارزشمند است. این بستر، کشف، انتساب، شواهد، زمینه و توانمندی را قابل‌بررسی می‌کند."
 
 msgid "Context, not Score · Evidence, not Truth · Portable Identity"
 msgstr "زمینه، نه امتیاز · شواهد، نه حقیقت · هویتِ قابل‌حمل"
@@ -932,10 +932,10 @@ msgid "No public discoveries are available yet."
 msgstr "هنوز هیچ کشف عمومی در دسترس نیست."
 
 msgid "Use search or explore installed VORNEQ apps while the public discovery feed grows."
-msgstr "تا زمانی که جریان کشف‌های عمومی رشد می‌کند، از جستجو یا برنامه‌های نصب‌شده‌ی ورنق بهره بگیرید."
+msgstr "تا زمانی که جریان کشف‌های عمومی رشد می‌کند، از جستجو یا برنامه‌های نصب‌شده‌ی VORNEQ بهره بگیرید."
 
 msgid "VORNEQ context and shortcuts"
-msgstr "زمینه و میانبرهای ورنق"
+msgstr "زمینه و میانبرهای VORNEQ"
 
 msgid "Inspect claims in context."
 msgstr "ادعاها را در زمینه‌ی خودشان بررسی کنید."
@@ -968,7 +968,7 @@ msgid "Move from discovery to work."
 msgstr "از کشف به کار گام بگذارید."
 
 msgid "VORNEQ apps"
-msgstr "برنامه‌های ورنق"
+msgstr "برنامه‌های VORNEQ"
 
 msgid "Platform status"
 msgstr "وضعیت بستر"
