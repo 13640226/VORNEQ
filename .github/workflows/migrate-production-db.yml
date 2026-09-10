@@ -1,10 +1,10 @@
-name: Migrate Production Database
+name: Production DR Rehearsal
 
 on:
   workflow_dispatch:
     inputs:
       confirm_restore:
-        description: 'Type "yes" to confirm restoring the production source backup into the production target'
+        description: 'Type "yes" to confirm resetting the disposable production DR target and restoring the production source backup into it'
         required: true
         default: 'no'
         type: string
@@ -13,11 +13,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: migrate-production-db
+  group: production-dr-rehearsal
   cancel-in-progress: false
 
 jobs:
-  migrate:
+  rehearse:
     if: ${{ inputs.confirm_restore == 'yes' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -41,11 +41,13 @@ jobs:
           /usr/lib/postgresql/18/bin/pg_dump --version
           /usr/lib/postgresql/18/bin/pg_restore --version
 
-      - name: Run production database migration rehearsal
+      - name: Run production DR rehearsal
         env:
           STAGING_DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
           DR_RESTORE_DATABASE_URL: ${{ secrets.PRODUCTION_TARGET_DATABASE_URL }}
           CONFIRM_RESTORE: ${{ inputs.confirm_restore }}
+          VORNEQ_ALLOW_TARGET_SCHEMA_RESET: 'yes'
+          DR_REHEARSAL_LABEL: Production DR Rehearsal
         run: |
           set -euo pipefail
           export PATH="/usr/lib/postgresql/18/bin:$PATH"
