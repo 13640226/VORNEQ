@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ source.title }} — {% trans "Inspect Context" %} — VORNEQ{% endblock %}
+
+{% block meta %}
+<meta name="description" content="{% trans 'Public attribution, verification, evidence relationships, and provenance context for this VORNEQ artifact.' %}">
+<meta property="og:title" content="{{ source.title|escape }} — {% trans 'Inspect Context' %}">
+<meta property="og:type" content="article">
+{% endblock %}
+
+{% block content %}
+<main class="container" aria-labelledby="context-title">
+  <header>
+    <p>{% trans "Inspect Context" %}</p>
+    <h1 id="context-title">{{ source.title }}</h1>
+    <p>{% trans "This page presents recorded public context. It does not decide whether the artifact is true, trustworthy, or valuable." %}</p>
+  </header>
+
+  <section aria-labelledby="source-title">
+    <h2 id="source-title">{% trans "Source / Artifact" %}</h2>
+    <dl>
+      <dt>{% trans "Type" %}</dt><dd>{{ source.type }}</dd>
+      <dt>{% trans "Artifact ID" %}</dt><dd><code>{{ artifact.id }}</code></dd>
+      {% if source.published_at %}<dt>{% trans "Published" %}</dt><dd>{{ source.published_at }}</dd>{% endif %}
+    </dl>
+    {% if source.description %}<p>{{ source.description }}</p>{% endif %}
+    {% if source.url %}<p><a href="{{ source.url }}">{% trans "Open source artifact" %} →</a></p>{% endif %}
+  </section>
+
+  <section aria-labelledby="identity-title">
+    <h2 id="identity-title">{% trans "Identity / Attribution" %}</h2>
+    {% for attribution in attributions %}
+      <article>
+        <strong>{{ attribution.display_name }}</strong>
+        <span>— {{ attribution.role_label }}</span>
+        {% if attribution.is_primary %}<span>({% trans "primary" %})</span>{% endif %}
+        <p><small>{% trans "Identity" %}: <code>{{ attribution.identity_id }}</code> · {{ attribution.identity_kind }}</small></p>
+      </article>
+    {% empty %}
+      <p>{% trans "No active canonical attribution is recorded for this artifact." %}</p>
+    {% endfor %}
+  </section>
+
+  <section aria-labelledby="verification-title">
+    <h2 id="verification-title">{% trans "Verification Summary" %}</h2>
+    <p>{% blocktrans with count=verification.total_verifications %}{{ count }} completed verification results are publicly summarized for this artifact.{% endblocktrans %}</p>
+    {% if verification.latest_verification %}
+      <dl>
+        <dt>{% trans "Latest outcome" %}</dt><dd>{{ verification.latest_verification.outcome }}</dd>
+        <dt>{% trans "Method" %}</dt><dd>{{ verification.latest_verification.method.name }}</dd>
+        <dt>{% trans "Reported confidence" %}</dt><dd>{{ verification.latest_verification.reported_confidence }}%</dd>
+        <dt>{% trans "Recorded" %}</dt><dd>{{ verification.latest_verification.recorded_at }}</dd>
+      </dl>
+    {% else %}
+      <p>{% trans "No completed verification result is available." %}</p>
+    {% endif %}
+    {% if verification.verification_methods %}
+      <p>{% trans "Methods" %}: {{ verification.verification_methods|join:", " }}</p>
+    {% endif %}
+  </section>
+
+  <section aria-labelledby="evidence-title">
+    <h2 id="evidence-title">{% trans "Evidence (Public)" %}</h2>
+    <p>{% blocktrans with count=evidence.total_public_evidence_count %}{{ count }} public evidence relationships are available. Raw claim and evidence content remain undisclosed in V1.{% endblocktrans %}</p>
+    {% for claim in evidence.claims %}
+      <article>
+        <h3>{% trans "Claim context" %} <code>{{ claim.claim_id }}</code></h3>
+        <ul>
+          {% for item in claim.evidences %}
+            <li>
+              <code>{{ item.evidence_id }}</code> — {{ item.relation }}
+              {% if item.linked_at %}<small>({{ item.linked_at }})</small>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </article>
+    {% empty %}
+      <p>{% trans "No public evidence relationships are available." %}</p>
+    {% endfor %}
+  </section>
+
+  <section aria-labelledby="provenance-title">
+    <h2 id="provenance-title">{% trans "Provenance" %}</h2>
+    <p>{% trans "V1 shows only non-sensitive provenance fields for evidence already marked public." %}</p>
+    <ol>
+      {% for step in provenance %}
+        <li>
+          {{ step.timestamp }} — {{ step.source_type_label }}
+          <small>({% trans "Evidence" %} <code>{{ step.evidence_id }}</code>)</small>
+        </li>
+      {% empty %}
+        <li>{% trans "No public provenance steps are available." %}</li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <footer>
+    <p><a href="{% url 'inspect_entry' %}">← {% trans "Inspect another artifact" %}</a></p>
+  </footer>
+</main>
+{% endblock %}

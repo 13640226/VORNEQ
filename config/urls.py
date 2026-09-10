@@ -11,6 +11,7 @@ from django.views.generic import RedirectView
 
 from apps.platform_shell.registry import registry as platform_registry
 from config.health import health_check
+from config.inspect_views import context_view, inspect_entry
 from config.views import home, profile, search_page
 
 
@@ -30,6 +31,8 @@ urlpatterns += i18n_patterns(
     path("admin/", admin.site.urls),
     path("", home, name="home"),
     path("search/", search_page, name="search_page"),
+    path("inspect/", inspect_entry, name="inspect_entry"),
+    path("context/<uuid:artifact_id>/", context_view, name="context_view"),
     path("profile/", profile, name="profile"),
     path("", include("apps.profiles.urls")),
     path("accounts/", include("allauth.urls")),
