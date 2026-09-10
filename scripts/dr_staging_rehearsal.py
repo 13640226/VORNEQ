@@ -14,6 +14,8 @@ from urllib.parse import urlparse
 
 SOURCE_ENV = "STAGING_DATABASE_URL"
 TARGET_ENV = "DR_RESTORE_DATABASE_URL"
+RESET_TARGET_SCHEMA_ENV = "VORNEQ_ALLOW_TARGET_SCHEMA_RESET"
+REHEARSAL_LABEL_ENV = "DR_REHEARSAL_LABEL"
 
 
 def utc_now() -> str:
@@ -116,6 +118,23 @@ def guard_source_target(source: str, target: str) -> None:
 
     require_postgres_18(source_db, "Source")
     require_postgres_18(target_db, "Target")
+
+
+def reset_target_schema(source: str, target: str) -> None:
+    if os.environ.get(RESET_TARGET_SCHEMA_ENV) != "yes":
+        raise RuntimeError(
+            f'Refusing destructive target reset without {RESET_TARGET_SCHEMA_ENV}="yes"'
+        )
+
+    # Re-run the source/target identity guard immediately before destructive SQL.
+    guard_source_target(source, target)
+    sql(
+        target,
+        "DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;",
+    )
+
+    if table_count(target) != "0":
+        raise RuntimeError("Target public schema reset did not produce an empty schema")
 
 
 def schema_fingerprint(database_url: str) -> str:
@@ -227,17 +246,18 @@ def create_backup(source: str, backup_file: Path) -> None:
         raise RuntimeError("Backup file was not created correctly")
 
 
-def restore_backup(target: str, backup_file: Path) -> None:
-    run([
-        "pg_restore",
-        "--clean",
-        "--if-exists",
+def restore_backup(target: str, backup_file: Path, *, clean: bool = True) -> None:
+    args = ["pg_restore"]
+    if clean:
+        args.extend(["--clean", "--if-exists"])
+    args.extend([
         "--no-owner",
         "--no-privileges",
         "--dbname",
         target,
         str(backup_file),
     ])
+    run(args)
 
 
 def write_summary(lines: list[str]) -> None:
@@ -286,13 +306,16 @@ def main() -> int:
 
     guard_source_target(source, target)
     source_fp = fingerprints(source)
+    reset_target = os.environ.get(RESET_TARGET_SCHEMA_ENV) == "yes"
 
     with tempfile.TemporaryDirectory(prefix="vorneq-dr-") as tmp:
         backup_file = Path(tmp) / "staging.dump"
         t0, t0_iso = time.monotonic(), utc_now()
         create_backup(source, backup_file)
         t1, t1_iso = time.monotonic(), utc_now()
-        restore_backup(target, backup_file)
+        if reset_target:
+            reset_target_schema(source, target)
+        restore_backup(target, backup_file, clean=not reset_target)
         t2, t2_iso = time.monotonic(), utc_now()
         target_fp = fingerprints(target)
         if target_fp != source_fp:
@@ -330,13 +353,15 @@ def main() -> int:
     verify_seconds = t3 - t2
     rto_seconds = t3 - t0
     restore_point_age_seconds = t3 - t1
+    rehearsal_label = os.environ.get(REHEARSAL_LABEL_ENV, "DR Staging Rehearsal")
 
     summary_lines = [
-        "## DR Staging Rehearsal",
+        f"## {rehearsal_label}",
         "",
         "- Result: **PASS**",
         "- Source PostgreSQL: 18",
         "- Target PostgreSQL: 18",
+        f"- Target schema reset: {'yes' if reset_target else 'no'}",
         f"- Backup started: {t0_iso}",
         f"- Backup completed / restore point: {t1_iso}",
         f"- Restore completed: {t2_iso}",
