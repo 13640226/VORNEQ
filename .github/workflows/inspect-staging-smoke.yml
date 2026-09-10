@@ -1,0 +1,53 @@
+name: Inspect Staging Smoke Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "yes" to run the Inspect smoke test against staging'
+        required: true
+        default: 'no'
+        type: string
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+      DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+      DJANGO_SETTINGS_MODULE: config.settings_render
+      VORNEQ_ALLOW_INSPECT_STAGING_SMOKE: 'yes'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Require explicit confirmation
+        if: github.event.inputs.confirm != 'yes'
+        run: |
+          echo 'Smoke test was not run. Re-run with confirm exactly "yes".' >&2
+          exit 1
+
+      - name: Verify staging database secret
+        run: |
+          if [ -z "$STAGING_DATABASE_URL" ]; then
+            echo "STAGING_DATABASE_URL is not configured in GitHub Actions secrets." >&2
+            exit 1
+          fi
+
+      - name: Migration preflight
+        run: python manage.py migration_preflight
+
+      - name: Run Inspect staging smoke test
+        run: python manage.py inspect_staging_smoke
