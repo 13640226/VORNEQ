@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% load static i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
-{% block title %}VORNEQ — {% trans "The Discoverable Knowledge Platform" %}{% endblock %}
+{% block title %}{% if LANGUAGE_CODE == 'fa' %}ورنق{% else %}VORNEQ{% endif %} — {% trans "The Discoverable Knowledge Platform" %}{% endblock %}
 
 {% block meta %}
 <meta name="description" content="{% trans 'Discover knowledge across VORNEQ through inspectable attribution, evidence, context, and capabilities.' %}">
-<meta property="og:title" content="VORNEQ — {% trans 'The Discoverable Knowledge Platform' %}">
+<meta property="og:title" content="{% if LANGUAGE_CODE == 'fa' %}ورنق{% else %}VORNEQ{% endif %} — {% trans 'The Discoverable Knowledge Platform' %}">
 <meta property="og:description" content="{% trans 'Discovery, attribution, evidence, context, and capability on one connected platform.' %}">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
@@ -207,7 +208,7 @@
 
   <footer class="global-home__footer">
     <div class="global-home__shell global-home__footer-row">
-      <p>VORNEQ © 2026 — {% trans "Knowledge, discovered." %}</p>
+      <p>{% if LANGUAGE_CODE == 'fa' %}ورنق © ۲۰۲۶{% else %}VORNEQ © 2026{% endif %} — {% trans "Knowledge, discovered." %}</p>
       <nav aria-label="{% trans 'Homepage sections' %}">
         <a href="#home-intro">{% trans "Intro" %}</a>
         <a href="#trust">{% trans "Trust" %}</a>
