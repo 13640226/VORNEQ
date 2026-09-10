@@ -4,13 +4,32 @@ Django settings for Saman Kherad.
 Development / Production aware configuration.
 """
 
+import logging
 import os
 from pathlib import Path
 
 from csp.constants import NONE, SELF, UNSAFE_INLINE
+from django.core.exceptions import ImproperlyConfigured
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+VORNEQ_ALLOWED_ENVS = frozenset({"development", "staging", "production"})
+VORNEQ_ENV = os.environ.get("VORNEQ_ENV")
+
+if not VORNEQ_ENV:
+    raise ImproperlyConfigured(
+        "VORNEQ_ENV is unset. "
+        "Must be one of: development, staging, production. "
+        "See .env.example for configuration guidance."
+    )
+
+if VORNEQ_ENV not in VORNEQ_ALLOWED_ENVS:
+    raise ImproperlyConfigured(
+        f"VORNEQ_ENV={VORNEQ_ENV!r} is invalid. "
+        "Must be one of: development, staging, production. "
+        "See .env.example for configuration guidance."
+    )
 
 
 def env_bool(name, default=False):
@@ -30,6 +49,19 @@ SECRET_KEY = os.environ.get(
     "django-insecure-development-only-change-me",
 )
 DEBUG = env_bool("DJANGO_DEBUG", True)
+
+if VORNEQ_ENV == "production" and DEBUG:
+    raise ImproperlyConfigured(
+        "VORNEQ_ENV=production and DEBUG=True. "
+        "Production MUST NOT run with DEBUG enabled. "
+        "See .env.example for configuration guidance."
+    )
+
+if VORNEQ_ENV == "staging" and DEBUG:
+    logging.getLogger(__name__).warning(
+        "VORNEQ_ENV=staging with DEBUG=True. Allowed but not recommended."
+    )
+
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost")
 CSRF_TRUSTED_ORIGINS = env_list(
     "DJANGO_CSRF_TRUSTED_ORIGINS",
