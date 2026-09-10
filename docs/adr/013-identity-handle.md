@@ -74,6 +74,38 @@ Handle allocation must not be implemented in the `UserIdentity` model, a signup 
 
 The two services remain independently idempotent: repeated identity registration returns the existing binding, and repeated handle reservation returns the existing handle.
 
+### D3.1 Transaction Ownership
+
+The lifecycle orchestration that provisions Identity and Handle for
+a new user is conceptually a sequence of two idempotent services:
+
+    identity, created = register_user_identity(user)
+    reserve_handle_for_identity(identity, base_seed=...)
+
+ADR-013 leaves the **outer transaction boundary** undefined at the
+ADR level. Two models are possible:
+
+- **Model A — non-atomic provisioning:** each service commits
+  independently. A Handle failure may leave a valid
+  Identity/UserIdentity without a Handle. Recoverable via backfill
+  (see PR C).
+
+- **Model B — adapter-owned atomic provisioning:** the lifecycle
+  adapter wraps both calls in a single `transaction.atomic()` block.
+  The internal `@transaction.atomic` of `register_user_identity` and
+  the per-attempt savepoints of `reserve_handle_for_identity` compose
+  correctly with this outer boundary.
+
+**Status: deferred.** This ADR does not commit to Model A or Model B.
+The decision is pending an operational and product evaluation of
+failure semantics during new-user provisioning. The chosen model
+MUST be documented in an ADR amendment or a dedicated follow-up ADR
+before the PR B lifecycle adapter is implemented.
+
+For rollout of `IdentityHandle` prior to the lifecycle adapter,
+Model A (non-atomic) is the implicit behavior: any Identity without
+a Handle is recoverable through the backfill command (PR C).
+
 ### D4. Deterministic, race-safe allocation
 
 Allocation follows this contract:
@@ -215,6 +247,7 @@ Implementation note for Phase 2: because `SlugField` does not itself enforce the
 
 ## Related ADRs
 
+- ADR-004: Artifact Registry and Identity Layer (canonical Identity registry — architectural basis)
 - ADR-012: Executable Capabilities (Proposed)
 
 ## Out of Scope
