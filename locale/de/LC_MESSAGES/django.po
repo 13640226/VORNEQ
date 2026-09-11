@@ -1208,3 +1208,29 @@ msgstr "Suche starten"
 
 msgid "Learn more about VORNEQ"
 msgstr "Mehr über VORNEQ erfahren"
+
+# Homepage #163 user-centric feature cards
+
+msgid "Find relevant resources"
+msgstr "Relevante Ressourcen finden"
+
+msgid "Unified search across books, articles, documents, and audio content"
+msgstr "Einheitliche Suche in Büchern, Artikeln, Dokumenten und Audioinhalten"
+
+msgid "Save and organize your findings"
+msgstr "Funde speichern und organisieren"
+
+msgid "Note-taking, tagging, and quick access to information"
+msgstr "Notizen, Schlagwörter und schneller Zugriff auf Informationen"
+
+msgid "Go to notes"
+msgstr "Zu den Notizen"
+
+msgid "Discover complementary tools and capabilities"
+msgstr "Ergänzende Werkzeuge und Funktionen entdecken"
+
+msgid "Extensions, analytical tools, and specialized services"
+msgstr "Erweiterungen, Analysewerkzeuge und spezialisierte Dienste"
+
+msgid "View marketplace"
+msgstr "Marktplatz ansehen"

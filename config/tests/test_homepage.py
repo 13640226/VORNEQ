@@ -52,6 +52,38 @@ class HomepageSignalNavigationTests(TestCase):
         self.assertNotContains(response, "Future contract")
         self.assertNotContains(response, "Executable providers & integrations")
 
+    def test_homepage_renders_three_user_centric_feature_cards(self):
+        response = self.get_english_home()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="global-home__feature-card"', count=3)
+
+        self.assertContains(response, "Find relevant resources")
+        self.assertContains(
+            response,
+            "Unified search across books, articles, documents, and audio content",
+        )
+        self.assertContains(response, "Save and organize your findings")
+        self.assertContains(
+            response,
+            "Note-taking, tagging, and quick access to information",
+        )
+        self.assertContains(response, "Discover complementary tools and capabilities")
+        self.assertContains(
+            response,
+            "Extensions, analytical tools, and specialized services",
+        )
+
+        self.assertContains(response, f'href="{reverse("search_page")}"')
+        self.assertContains(response, f'href="{reverse("notes:list")}"')
+        self.assertContains(response, f'href="{reverse("marketplace:index")}"')
+
+        self.assertNotContains(response, "Open Launcher")
+        self.assertNotContains(response, "Workspace")
+        self.assertNotContains(response, "Capability")
+        self.assertNotContains(response, "Registry")
+        self.assertNotContains(response, "Manifest")
+
     def test_homepage_renders_platform_philosophy_without_overclaiming(self):
         response = self.get_english_home()
 

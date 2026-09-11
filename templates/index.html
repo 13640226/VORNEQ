@@ -190,13 +190,23 @@
         <section id="apps" class="right-rail__block global-home__rail-block" aria-labelledby="apps-title" data-homepage-signal-section>
           <p class="global-home__kicker">{% trans "Apps shortcuts" %}</p>
           <h2 id="apps-title">{% trans "Move from discovery to work." %}</h2>
-          <nav class="global-home__app-links" aria-label="{% trans 'VORNEQ apps' %}">
-            {% for app in platform_apps %}
-            <a href="{% url 'platform_shell:workspace_app' app.slug %}"><span>{{ app.label }}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
-            {% empty %}
-            <a href="{% url 'platform_shell:app_launcher' %}"><span>{% trans "Open Launcher" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
-            {% endfor %}
-          </nav>
+          <div class="global-home__feature-grid">
+            <article class="global-home__feature-card">
+              <h3>{% trans "Find relevant resources" %}</h3>
+              <p>{% trans "Unified search across books, articles, documents, and audio content" %}</p>
+              <a href="{% url 'search_page' %}"><span>{% trans "Start searching" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
+            </article>
+            <article class="global-home__feature-card">
+              <h3>{% trans "Save and organize your findings" %}</h3>
+              <p>{% trans "Note-taking, tagging, and quick access to information" %}</p>
+              <a href="{% url 'notes:list' %}"><span>{% trans "Go to notes" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
+            </article>
+            <article class="global-home__feature-card">
+              <h3>{% trans "Discover complementary tools and capabilities" %}</h3>
+              <p>{% trans "Extensions, analytical tools, and specialized services" %}</p>
+              <a href="{% url 'marketplace:index' %}"><span>{% trans "View marketplace" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
+            </article>
+          </div>
         </section>
       </aside>
     </div>
