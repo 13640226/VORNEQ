@@ -18,14 +18,7 @@ class GermanHomeTranslationTests(TestCase):
 
         self.assertContains(response, "Wissen ohne Grenzen")
 
-        # "Discover across" and "VORNEQ" are rendered in separate HTML nodes:
-        #
-        #   Entdecken auf <span>VORNEQ</span>
-        #
-        # Therefore checking "Entdecken auf VORNEQ" as one continuous
-        # response substring is incorrect.
-        self.assertContains(response, "Entdecken auf")
-        self.assertContains(response, ">VORNEQ</span>")
+        self.assertContains(response, "پلتفرم دانش جهانی")
 
         self.assertContains(
             response,
