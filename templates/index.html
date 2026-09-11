@@ -25,7 +25,8 @@
       <div class="global-home__brand-row">
         <div class="global-home__brand-copy">
           <p class="global-home__eyebrow">{% trans "Knowledge without borders" %}</p>
-          <h1 id="global-home-title" class="global-home__title">{% trans "Discover across" %} <span>{% trans "VORNEQ" %}</span></h1>
+          <h1 id="global-home-title" class="global-home__title">پلتفرم دانش جهانی</h1>
+          <p class="global-home__subtitle">کتاب‌ها، مقاله‌ها، اسناد، محتوای صوتی و منابع دیجیتال را از یک نقطه پیدا و سازمان‌دهی کنید.</p>
           <p class="global-home__lede">{% trans "Search knowledge, products, media, documents, and audio from one connected discovery surface." %}</p>
           <p class="global-home__lede">{% trans "VORNEQ does not decide what is true, trustworthy, or valuable. It makes discovery, attribution, evidence, context, and capability inspectable." %}</p>
           <p class="global-home__kicker">{% trans "Context, not Score · Evidence, not Truth · Portable Identity" %}</p>
@@ -49,43 +50,46 @@
       </div>
 
       <div class="global-home__search-surface">
-        <form method="get" class="global-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
-          <div class="global-search__primary">
-            <div class="global-search__input-wrap">
-              <input class="global-search__input" type="search" name="q" value="{{ search_query }}" maxlength="200" placeholder="{% trans 'Search knowledge, products, media, documents, and audio…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
-              <button class="global-search__button" type="submit" aria-label="{% trans 'Search' %}"><span class="global-search__button-label">{% trans "Search" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></button>
-            </div>
-            <select class="global-search__select" name="type" aria-label="{% trans 'Content type' %}">
-              <option value="all"{% if current_type == 'all' %} selected{% endif %}>{% trans "All" %}</option>
-              <option value="book"{% if current_type == 'book' %} selected{% endif %}>{% trans "Books" %}</option>
-              <option value="article"{% if current_type == 'article' %} selected{% endif %}>{% trans "Articles" %}</option>
-              <option value="document"{% if current_type == 'document' %} selected{% endif %}>{% trans "Documents" %}</option>
-              <option value="other"{% if current_type == 'other' %} selected{% endif %}>{% trans "Other library items" %}</option>
-              <option value="audio"{% if current_type == 'audio' %} selected{% endif %}>{% trans "Audio" %}</option>
-              <option value="product"{% if current_type == 'product' %} selected{% endif %}>{% trans "Products" %}</option>
-            </select>
-          </div>
-          <details class="global-search__advanced"{% if current_item_type or current_media_type or current_category or current_price_min or current_price_max %} open{% endif %}>
-            <summary>{% trans "Advanced filters" %}</summary>
-            <div class="global-search__advanced-grid">
-              <select name="item_type" aria-label="{% trans 'Library item type' %}">
-                <option value="">{% trans "Any library type" %}</option>
-                <option value="book"{% if current_item_type == 'book' %} selected{% endif %}>{% trans "Book" %}</option>
-                <option value="article"{% if current_item_type == 'article' %} selected{% endif %}>{% trans "Article" %}</option>
-                <option value="document"{% if current_item_type == 'document' %} selected{% endif %}>{% trans "Document" %}</option>
-                <option value="other"{% if current_item_type == 'other' %} selected{% endif %}>{% trans "Other" %}</option>
+        <div class="global-home__hero-actions">
+          <form method="get" class="global-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
+            <div class="global-search__primary">
+              <div class="global-search__input-wrap">
+                <input class="global-search__input" type="search" name="q" value="{{ search_query }}" maxlength="200" placeholder="{% trans 'Search knowledge, products, media, documents, and audio…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
+                <button class="global-search__button" type="submit" aria-label="شروع جستجو"><span class="global-search__button-label">شروع جستجو</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></button>
+              </div>
+              <select class="global-search__select" name="type" aria-label="{% trans 'Content type' %}">
+                <option value="all"{% if current_type == 'all' %} selected{% endif %}>{% trans "All" %}</option>
+                <option value="book"{% if current_type == 'book' %} selected{% endif %}>{% trans "Books" %}</option>
+                <option value="article"{% if current_type == 'article' %} selected{% endif %}>{% trans "Articles" %}</option>
+                <option value="document"{% if current_type == 'document' %} selected{% endif %}>{% trans "Documents" %}</option>
+                <option value="other"{% if current_type == 'other' %} selected{% endif %}>{% trans "Other library items" %}</option>
+                <option value="audio"{% if current_type == 'audio' %} selected{% endif %}>{% trans "Audio" %}</option>
+                <option value="product"{% if current_type == 'product' %} selected{% endif %}>{% trans "Products" %}</option>
               </select>
-              <select name="media_type" aria-label="{% trans 'Media type' %}">
-                <option value="">{% trans "Any media type" %}</option>
-                <option value="image"{% if current_media_type == 'image' %} selected{% endif %}>{% trans "Image" %}</option>
-                <option value="video"{% if current_media_type == 'video' %} selected{% endif %}>{% trans "Video" %}</option>
-              </select>
-              <input type="text" name="category" value="{{ current_category }}" maxlength="120" placeholder="{% trans 'Category' %}" aria-label="{% trans 'Category' %}">
-              <input type="number" name="price_min" value="{{ current_price_min }}" min="0" step="0.01" placeholder="{% trans 'Min price' %}" aria-label="{% trans 'Minimum price' %}">
-              <input type="number" name="price_max" value="{{ current_price_max }}" min="0" step="0.01" placeholder="{% trans 'Max price' %}" aria-label="{% trans 'Maximum price' %}">
             </div>
-          </details>
-        </form>
+            <details class="global-search__advanced"{% if current_item_type or current_media_type or current_category or current_price_min or current_price_max %} open{% endif %}>
+              <summary>{% trans "Advanced filters" %}</summary>
+              <div class="global-search__advanced-grid">
+                <select name="item_type" aria-label="{% trans 'Library item type' %}">
+                  <option value="">{% trans "Any library type" %}</option>
+                  <option value="book"{% if current_item_type == 'book' %} selected{% endif %}>{% trans "Book" %}</option>
+                  <option value="article"{% if current_item_type == 'article' %} selected{% endif %}>{% trans "Article" %}</option>
+                  <option value="document"{% if current_item_type == 'document' %} selected{% endif %}>{% trans "Document" %}</option>
+                  <option value="other"{% if current_item_type == 'other' %} selected{% endif %}>{% trans "Other" %}</option>
+                </select>
+                <select name="media_type" aria-label="{% trans 'Media type' %}">
+                  <option value="">{% trans "Any media type" %}</option>
+                  <option value="image"{% if current_media_type == 'image' %} selected{% endif %}>{% trans "Image" %}</option>
+                  <option value="video"{% if current_media_type == 'video' %} selected{% endif %}>{% trans "Video" %}</option>
+                </select>
+                <input type="text" name="category" value="{{ current_category }}" maxlength="120" placeholder="{% trans 'Category' %}" aria-label="{% trans 'Category' %}">
+                <input type="number" name="price_min" value="{{ current_price_min }}" min="0" step="0.01" placeholder="{% trans 'Min price' %}" aria-label="{% trans 'Minimum price' %}">
+                <input type="number" name="price_max" value="{{ current_price_max }}" min="0" step="0.01" placeholder="{% trans 'Max price' %}" aria-label="{% trans 'Maximum price' %}">
+              </div>
+            </details>
+          </form>
+          <a class="global-home__secondary-cta" href="#platform">درباره VORNEQ بیشتر بدانید</a>
+        </div>
         <div class="global-home__search-meta">
           <nav class="quick-filters global-home__quick-filters" aria-label="{% trans 'Quick content filters' %}">
             <a class="global-home__quick-filter{% if current_type == 'all' %} is-active{% endif %}" href="?type=all">{% trans "All" %}</a>
