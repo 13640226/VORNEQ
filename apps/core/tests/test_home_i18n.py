@@ -64,6 +64,30 @@ class HomeTranslationTests(TestCase):
         self.assertContains(response, "Sicherer Zugriff")
         self.assertContains(response, ">Werte</")
 
+    def test_german_home_renders_localized_feature_cards(self):
+        with override("de"):
+            response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Relevante Ressourcen finden")
+        self.assertContains(
+            response,
+            "Einheitliche Suche in Büchern, Artikeln, Dokumenten und Audioinhalten",
+        )
+        self.assertContains(response, "Suche starten")
+        self.assertContains(response, "Funde speichern und organisieren")
+        self.assertContains(
+            response,
+            "Notizen, Schlagwörter und schneller Zugriff auf Informationen",
+        )
+        self.assertContains(response, "Zu den Notizen")
+        self.assertContains(response, "Ergänzende Werkzeuge und Funktionen entdecken")
+        self.assertContains(
+            response,
+            "Erweiterungen, Analysewerkzeuge und spezialisierte Dienste",
+        )
+        self.assertContains(response, "Marktplatz ansehen")
+
 
 class PersianHomeTranslationTests(TestCase):
     def test_persian_home_renders_localized_value_cards(self):
@@ -76,3 +100,27 @@ class PersianHomeTranslationTests(TestCase):
         self.assertContains(response, "سازماندهی هوشمند")
         self.assertContains(response, "دسترسی امن")
         self.assertContains(response, ">ارزش‌ها</")
+
+    def test_persian_home_renders_issue_163_feature_copy_exactly(self):
+        with override("fa"):
+            response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "منابع مرتبط را پیدا کنید")
+        self.assertContains(
+            response,
+            "جستجوی یکپارچه در کتاب‌ها، مقاله‌ها، اسناد و محتوای صوتی",
+        )
+        self.assertContains(response, "شروع جستجو")
+        self.assertContains(response, "یافته‌های خود را ذخیره و سازمان‌دهی کنید")
+        self.assertContains(
+            response,
+            "یادداشت‌برداری، برچسب‌گذاری و دسترسی سریع به اطلاعات",
+        )
+        self.assertContains(response, "رفتن به یادداشت‌ها")
+        self.assertContains(response, "ابزارها و قابلیت‌های تکمیلی را کشف کنید")
+        self.assertContains(
+            response,
+            "افزونه‌ها، ابزارهای تحلیلی و خدمات تخصصی",
+        )
+        self.assertContains(response, "مشاهده بازارچه")
