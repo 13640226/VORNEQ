@@ -5,34 +5,26 @@
     <li class="homepage-signal-nav__item">
       <a class="homepage-signal-nav__link is-active" href="#home-intro" data-signal-target="home-intro" aria-current="location">
         <span class="homepage-signal-nav__dot" aria-hidden="true"></span>
-        <span class="homepage-signal-nav__label">{% trans "Intro" %}</span>
+        <span class="homepage-signal-nav__label">{% trans "Discover" %}</span>
       </a>
     </li>
     <li class="homepage-signal-nav__item">
-      <a class="homepage-signal-nav__link" href="{% url 'inspect_entry' %}">
+      <a class="homepage-signal-nav__link" href="#explore" data-signal-target="explore">
         <span class="homepage-signal-nav__dot" aria-hidden="true"></span>
-        <span class="homepage-signal-nav__label">{% trans "Inspect information" %}</span>
+        <span class="homepage-signal-nav__label">{% trans "Explore" %}</span>
       </a>
     </li>
     <li class="homepage-signal-nav__item">
       <a class="homepage-signal-nav__link" href="#values" data-signal-target="values">
         <span class="homepage-signal-nav__dot" aria-hidden="true"></span>
-        <span class="homepage-signal-nav__label">{% trans "Values" %}</span>
+        <span class="homepage-signal-nav__label">{% trans "Principles" %}</span>
       </a>
     </li>
     <li class="homepage-signal-nav__item">
       <a class="homepage-signal-nav__link" href="#apps" data-signal-target="apps">
         <span class="homepage-signal-nav__dot" aria-hidden="true"></span>
-        <span class="homepage-signal-nav__label">{% trans "Apps" %}</span>
+        <span class="homepage-signal-nav__label">{% trans "Capabilities" %}</span>
       </a>
     </li>
-    {% if featured or results or is_filtered %}
-    <li class="homepage-signal-nav__item">
-      <a class="homepage-signal-nav__link" href="#discoveries" data-signal-target="discoveries">
-        <span class="homepage-signal-nav__dot" aria-hidden="true"></span>
-        <span class="homepage-signal-nav__label">{% trans "Discoveries" %}</span>
-      </a>
-    </li>
-    {% endif %}
   </ul>
 </nav>
