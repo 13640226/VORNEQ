@@ -1234,3 +1234,317 @@ msgstr "Erweiterungen, Analysewerkzeuge und spezialisierte Dienste"
 
 msgid "View marketplace"
 msgstr "Marktplatz ansehen"
+
+# Homepage v3 restore + layer
+
+msgid "Find and organize knowledge, software, products, services, media, and digital resources from one place."
+msgstr "Finden und organisieren Sie Wissen, Software, Produkte, Dienstleistungen, Medien und digitale Ressourcen an einem Ort."
+
+msgid "KNOWLEDGE WITHOUT BORDERS"
+msgstr "WISSEN OHNE GRENZEN"
+
+msgid "Search knowledge, software, products, services, media, and more…"
+msgstr "Wissen, Software, Produkte, Dienstleistungen, Medien und mehr durchsuchen…"
+
+msgid "DISCOVERY SHORTCUTS"
+msgstr "ENTDECKUNGS-SCHNELLZUGRIFFE"
+
+msgid "Discovery shortcuts"
+msgstr "Schnellzugriffe für Entdeckungen"
+
+msgid "Books, articles and research"
+msgstr "Bücher, Artikel und Forschung"
+
+msgid "Documents & Media"
+msgstr "Dokumente & Medien"
+
+msgid "Documents, audio and media"
+msgstr "Dokumente, Audio und Medien"
+
+msgid "Software & Apps"
+msgstr "Software & Apps"
+
+msgid "Applications and digital tools"
+msgstr "Anwendungen und digitale Werkzeuge"
+
+msgid "Products & Commerce"
+msgstr "Produkte & Handel"
+
+msgid "Physical and digital products"
+msgstr "Physische und digitale Produkte"
+
+msgid "Advanced discovery"
+msgstr "Erweiterte Entdeckung"
+
+msgid "EXPLORE"
+msgstr "ERKUNDEN"
+
+msgid "Discover across formats"
+msgstr "Formatübergreifend entdecken"
+
+msgid "Discovery formats"
+msgstr "Entdeckungsformate"
+
+msgid "Videos"
+msgstr "Videos"
+
+msgid "Images"
+msgstr "Bilder"
+
+msgid "News"
+msgstr "Nachrichten"
+
+msgid "Datasets"
+msgstr "Datensätze"
+
+msgid "Presentations"
+msgstr "Präsentationen"
+
+msgid "Additional formats"
+msgstr "Weitere Formate"
+
+msgid "GIFs"
+msgstr "GIFs"
+
+msgid "Social Media"
+msgstr "Soziale Medien"
+
+msgid "Explore topics"
+msgstr "Themen erkunden"
+
+msgid "E-commerce"
+msgstr "E-Commerce"
+
+msgid "Business"
+msgstr "Wirtschaft"
+
+msgid "Science"
+msgstr "Wissenschaft"
+
+msgid "Technology"
+msgstr "Technologie"
+
+msgid "Education"
+msgstr "Bildung"
+
+msgid "Health"
+msgstr "Gesundheit"
+
+msgid "Finance"
+msgstr "Finanzen"
+
+msgid "Art & Design"
+msgstr "Kunst & Design"
+
+msgid "Entertainment"
+msgstr "Unterhaltung"
+
+msgid "Games"
+msgstr "Spiele"
+
+msgid "Digital Collectibles"
+msgstr "Digitale Sammlerstücke"
+
+msgid "Crypto & Blockchain"
+msgstr "Krypto & Blockchain"
+
+msgid "Stocks & Markets"
+msgstr "Aktien & Märkte"
+
+msgid "Real Estate"
+msgstr "Immobilien"
+
+msgid "Travel"
+msgstr "Reisen"
+
+msgid "Services"
+msgstr "Dienstleistungen"
+
+msgid "SOFTWARE & DIGITAL TOOLS"
+msgstr "SOFTWARE & DIGITALE WERKZEUGE"
+
+msgid "Software categories"
+msgstr "Softwarekategorien"
+
+msgid "Development"
+msgstr "Entwicklung"
+
+msgid "Design"
+msgstr "Design"
+
+msgid "Communication"
+msgstr "Kommunikation"
+
+msgid "Media"
+msgstr "Medien"
+
+msgid "Utilities"
+msgstr "Dienstprogramme"
+
+msgid "Format Preview"
+msgstr "Formatvorschau"
+
+msgid "Software preview"
+msgstr "Softwarevorschau"
+
+msgid "COMMERCE"
+msgstr "HANDEL"
+
+msgid "Commerce discovery"
+msgstr "Handel entdecken"
+
+msgid "Digital products"
+msgstr "Digitale Produkte"
+
+msgid "Physical products"
+msgstr "Physische Produkte"
+
+msgid "Software licenses"
+msgstr "Softwarelizenzen"
+
+msgid "Templates"
+msgstr "Vorlagen"
+
+msgid "Digital assets"
+msgstr "Digitale Assets"
+
+msgid "Educational resources"
+msgstr "Bildungsressourcen"
+
+msgid "Professional services"
+msgstr "Professionelle Dienstleistungen"
+
+msgid "Creative services"
+msgstr "Kreative Dienstleistungen"
+
+msgid "Technical services"
+msgstr "Technische Dienstleistungen"
+
+msgid "Business services"
+msgstr "Unternehmensdienstleistungen"
+
+msgid "Education & consulting"
+msgstr "Bildung & Beratung"
+
+msgid "Product preview"
+msgstr "Produktvorschau"
+
+msgid "Service preview"
+msgstr "Dienstleistungsvorschau"
+
+msgid "Video preview"
+msgstr "Videovorschau"
+
+msgid "Video · 12:34"
+msgstr "Video · 12:34"
+
+msgid "Image preview"
+msgstr "Bildvorschau"
+
+msgid "Image · Preview"
+msgstr "Bild · Vorschau"
+
+msgid "Audio preview"
+msgstr "Audiovorschau"
+
+msgid "Audio · 08:21"
+msgstr "Audio · 08:21"
+
+msgid "News preview"
+msgstr "Nachrichtenvorschau"
+
+msgid "News · Preview"
+msgstr "Nachrichten · Vorschau"
+
+msgid "Software · Preview"
+msgstr "Software · Vorschau"
+
+msgid "Product · Preview"
+msgstr "Produkt · Vorschau"
+
+msgid "Service · Preview"
+msgstr "Dienstleistung · Vorschau"
+
+msgid "Contextual Topics"
+msgstr "Kontextuelle Themen"
+
+msgid "Abstract digital objects in context."
+msgstr "Abstrakte digitale Objekte im Kontext."
+
+msgid "Connected systems and distributed records."
+msgstr "Vernetzte Systeme und verteilte Aufzeichnungen."
+
+msgid "Market context without live pricing or trading."
+msgstr "Marktkontext ohne Live-Preise oder Handel."
+
+msgid "Game knowledge and discovery context."
+msgstr "Spielwissen und Entdeckungskontext."
+
+msgid "OUR FOUNDATION"
+msgstr "UNSER FUNDAMENT"
+
+msgid "Platform Principles"
+msgstr "Plattformprinzipien"
+
+msgid "Context, not Score"
+msgstr "Kontext statt Bewertung"
+
+msgid "Information should be understood in context rather than reduced to a single, opaque score."
+msgstr "Informationen sollen im Kontext verstanden und nicht auf eine einzelne undurchsichtige Bewertung reduziert werden."
+
+msgid "Evidence, not Truth"
+msgstr "Evidenz statt Wahrheit"
+
+msgid "Expose sources, evidence, and perspectives so you can form your own conclusions."
+msgstr "Quellen, Belege und Perspektiven werden sichtbar gemacht, damit Sie eigene Schlussfolgerungen ziehen können."
+
+msgid "Portable Identity"
+msgstr "Portable Identität"
+
+msgid "Your identity is designed to travel across experiences, not be trapped in a single app."
+msgstr "Ihre Identität ist dafür ausgelegt, über verschiedene Erlebnisse hinweg mitzuwandern und nicht in einer einzelnen App gebunden zu sein."
+
+msgid "Discover complementary tools and services"
+msgstr "Ergänzende Werkzeuge und Dienste entdecken"
+
+msgid "What you can do"
+msgstr "Was Sie tun können"
+
+msgid "FIND"
+msgstr "FINDEN"
+
+msgid "Search across knowledge, software, products, services, documents, media, and more."
+msgstr "Durchsuchen Sie Wissen, Software, Produkte, Dienstleistungen, Dokumente, Medien und mehr."
+
+msgid "ORGANIZE"
+msgstr "ORGANISIEREN"
+
+msgid "Save, tag, and structure your findings so they remain usable."
+msgstr "Speichern, verschlagworten und strukturieren Sie Ihre Funde, damit sie nutzbar bleiben."
+
+msgid "EXTEND"
+msgstr "ERWEITERN"
+
+msgid "Discover complementary software, tools, and specialized services."
+msgstr "Entdecken Sie ergänzende Software, Werkzeuge und spezialisierte Dienstleistungen."
+
+msgid "Explore digital and physical products and professional services."
+msgstr "Erkunden Sie digitale und physische Produkte sowie professionelle Dienstleistungen."
+
+msgid "Explore products"
+msgstr "Produkte erkunden"
+
+msgid "Explore"
+msgstr "Erkunden"
+
+msgid "Principles"
+msgstr "Prinzipien"
+
+msgid "Capabilities"
+msgstr "Funktionen"
+
+msgid "Knowledge discovered."
+msgstr "Wissen entdeckt."
+
+msgid "English"
+msgstr "Englisch"

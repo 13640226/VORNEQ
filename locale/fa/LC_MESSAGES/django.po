@@ -1053,3 +1053,317 @@ msgstr "افزونه‌ها، ابزارهای تحلیلی و خدمات تخص
 
 msgid "View marketplace"
 msgstr "مشاهده بازارچه"
+
+# Homepage v3 restore + layer
+
+msgid "Find and organize knowledge, software, products, services, media, and digital resources from one place."
+msgstr "دانش، نرم‌افزار، محصولات، خدمات، رسانه و منابع دیجیتال را از یک نقطه پیدا و سازمان‌دهی کنید."
+
+msgid "KNOWLEDGE WITHOUT BORDERS"
+msgstr "دانش بدون مرز"
+
+msgid "Search knowledge, software, products, services, media, and more…"
+msgstr "جستجوی دانش، نرم‌افزار، محصولات، خدمات، رسانه و موارد بیشتر…"
+
+msgid "DISCOVERY SHORTCUTS"
+msgstr "میانبرهای کشف"
+
+msgid "Discovery shortcuts"
+msgstr "میانبرهای کشف"
+
+msgid "Books, articles and research"
+msgstr "کتاب‌ها، مقاله‌ها و پژوهش"
+
+msgid "Documents & Media"
+msgstr "اسناد و رسانه"
+
+msgid "Documents, audio and media"
+msgstr "اسناد، صوت و رسانه"
+
+msgid "Software & Apps"
+msgstr "نرم‌افزار و برنامه‌ها"
+
+msgid "Applications and digital tools"
+msgstr "برنامه‌ها و ابزارهای دیجیتال"
+
+msgid "Products & Commerce"
+msgstr "محصولات و تجارت"
+
+msgid "Physical and digital products"
+msgstr "محصولات فیزیکی و دیجیتال"
+
+msgid "Advanced discovery"
+msgstr "کشف پیشرفته"
+
+msgid "EXPLORE"
+msgstr "کاوش"
+
+msgid "Discover across formats"
+msgstr "کشف در قالب‌های گوناگون"
+
+msgid "Discovery formats"
+msgstr "قالب‌های کشف"
+
+msgid "Videos"
+msgstr "ویدئوها"
+
+msgid "Images"
+msgstr "تصاویر"
+
+msgid "News"
+msgstr "اخبار"
+
+msgid "Datasets"
+msgstr "مجموعه‌داده‌ها"
+
+msgid "Presentations"
+msgstr "ارائه‌ها"
+
+msgid "Additional formats"
+msgstr "قالب‌های بیشتر"
+
+msgid "GIFs"
+msgstr "GIFها"
+
+msgid "Social Media"
+msgstr "رسانه‌های اجتماعی"
+
+msgid "Explore topics"
+msgstr "کاوش موضوعات"
+
+msgid "E-commerce"
+msgstr "تجارت الکترونیکی"
+
+msgid "Business"
+msgstr "کسب‌وکار"
+
+msgid "Science"
+msgstr "علم"
+
+msgid "Technology"
+msgstr "فناوری"
+
+msgid "Education"
+msgstr "آموزش"
+
+msgid "Health"
+msgstr "سلامت"
+
+msgid "Finance"
+msgstr "مالی"
+
+msgid "Art & Design"
+msgstr "هنر و طراحی"
+
+msgid "Entertainment"
+msgstr "سرگرمی"
+
+msgid "Games"
+msgstr "بازی‌ها"
+
+msgid "Digital Collectibles"
+msgstr "کلکسیون‌های دیجیتال"
+
+msgid "Crypto & Blockchain"
+msgstr "رمزارز و بلاک‌چین"
+
+msgid "Stocks & Markets"
+msgstr "سهام و بازارها"
+
+msgid "Real Estate"
+msgstr "املاک"
+
+msgid "Travel"
+msgstr "سفر"
+
+msgid "Services"
+msgstr "خدمات"
+
+msgid "SOFTWARE & DIGITAL TOOLS"
+msgstr "نرم‌افزار و ابزارهای دیجیتال"
+
+msgid "Software categories"
+msgstr "دسته‌های نرم‌افزار"
+
+msgid "Development"
+msgstr "توسعه"
+
+msgid "Design"
+msgstr "طراحی"
+
+msgid "Communication"
+msgstr "ارتباطات"
+
+msgid "Media"
+msgstr "رسانه"
+
+msgid "Utilities"
+msgstr "ابزارهای کاربردی"
+
+msgid "Format Preview"
+msgstr "پیش‌نمایش قالب"
+
+msgid "Software preview"
+msgstr "پیش‌نمایش نرم‌افزار"
+
+msgid "COMMERCE"
+msgstr "تجارت"
+
+msgid "Commerce discovery"
+msgstr "کشف تجاری"
+
+msgid "Digital products"
+msgstr "محصولات دیجیتال"
+
+msgid "Physical products"
+msgstr "محصولات فیزیکی"
+
+msgid "Software licenses"
+msgstr "مجوزهای نرم‌افزار"
+
+msgid "Templates"
+msgstr "قالب‌ها"
+
+msgid "Digital assets"
+msgstr "دارایی‌های دیجیتال"
+
+msgid "Educational resources"
+msgstr "منابع آموزشی"
+
+msgid "Professional services"
+msgstr "خدمات حرفه‌ای"
+
+msgid "Creative services"
+msgstr "خدمات خلاقانه"
+
+msgid "Technical services"
+msgstr "خدمات فنی"
+
+msgid "Business services"
+msgstr "خدمات کسب‌وکار"
+
+msgid "Education & consulting"
+msgstr "آموزش و مشاوره"
+
+msgid "Product preview"
+msgstr "پیش‌نمایش محصول"
+
+msgid "Service preview"
+msgstr "پیش‌نمایش خدمت"
+
+msgid "Video preview"
+msgstr "پیش‌نمایش ویدئو"
+
+msgid "Video · 12:34"
+msgstr "ویدئو · ۱۲:۳۴"
+
+msgid "Image preview"
+msgstr "پیش‌نمایش تصویر"
+
+msgid "Image · Preview"
+msgstr "تصویر · پیش‌نمایش"
+
+msgid "Audio preview"
+msgstr "پیش‌نمایش صوت"
+
+msgid "Audio · 08:21"
+msgstr "صوت · ۰۸:۲۱"
+
+msgid "News preview"
+msgstr "پیش‌نمایش خبر"
+
+msgid "News · Preview"
+msgstr "خبر · پیش‌نمایش"
+
+msgid "Software · Preview"
+msgstr "نرم‌افزار · پیش‌نمایش"
+
+msgid "Product · Preview"
+msgstr "محصول · پیش‌نمایش"
+
+msgid "Service · Preview"
+msgstr "خدمت · پیش‌نمایش"
+
+msgid "Contextual Topics"
+msgstr "موضوعات زمینه‌ای"
+
+msgid "Abstract digital objects in context."
+msgstr "اشیای دیجیتال انتزاعی در زمینه‌ی خود."
+
+msgid "Connected systems and distributed records."
+msgstr "سامانه‌های متصل و سوابق توزیع‌شده."
+
+msgid "Market context without live pricing or trading."
+msgstr "زمینه‌ی بازار بدون قیمت‌گذاری زنده یا معامله."
+
+msgid "Game knowledge and discovery context."
+msgstr "دانش بازی و زمینه‌ی کشف."
+
+msgid "OUR FOUNDATION"
+msgstr "بنیاد ما"
+
+msgid "Platform Principles"
+msgstr "اصول پلتفرم"
+
+msgid "Context, not Score"
+msgstr "زمینه، نه امتیاز"
+
+msgid "Information should be understood in context rather than reduced to a single, opaque score."
+msgstr "اطلاعات باید در زمینه‌ی خود فهمیده شوند، نه اینکه به یک امتیاز واحد و مبهم فروکاسته شوند."
+
+msgid "Evidence, not Truth"
+msgstr "شواهد، نه حقیقت"
+
+msgid "Expose sources, evidence, and perspectives so you can form your own conclusions."
+msgstr "منابع، شواهد و دیدگاه‌ها را آشکار کنید تا بتوانید نتیجه‌گیری خود را شکل دهید."
+
+msgid "Portable Identity"
+msgstr "هویت قابل‌حمل"
+
+msgid "Your identity is designed to travel across experiences, not be trapped in a single app."
+msgstr "هویت شما برای حرکت میان تجربه‌ها طراحی شده است، نه برای محصور شدن در یک برنامه."
+
+msgid "Discover complementary tools and services"
+msgstr "ابزارها و خدمات تکمیلی را کشف کنید"
+
+msgid "What you can do"
+msgstr "چه کارهایی می‌توانید انجام دهید"
+
+msgid "FIND"
+msgstr "پیدا کردن"
+
+msgid "Search across knowledge, software, products, services, documents, media, and more."
+msgstr "در میان دانش، نرم‌افزار، محصولات، خدمات، اسناد، رسانه و موارد بیشتر جستجو کنید."
+
+msgid "ORGANIZE"
+msgstr "سازمان‌دهی"
+
+msgid "Save, tag, and structure your findings so they remain usable."
+msgstr "یافته‌های خود را ذخیره، برچسب‌گذاری و ساختاربندی کنید تا قابل‌استفاده بمانند."
+
+msgid "EXTEND"
+msgstr "گسترش"
+
+msgid "Discover complementary software, tools, and specialized services."
+msgstr "نرم‌افزار، ابزارها و خدمات تخصصیِ تکمیلی را کشف کنید."
+
+msgid "Explore digital and physical products and professional services."
+msgstr "محصولات دیجیتال و فیزیکی و خدمات حرفه‌ای را کاوش کنید."
+
+msgid "Explore products"
+msgstr "کاوش محصولات"
+
+msgid "Explore"
+msgstr "کاوش"
+
+msgid "Principles"
+msgstr "اصول"
+
+msgid "Capabilities"
+msgstr "توانمندی‌ها"
+
+msgid "Knowledge discovered."
+msgstr "دانش کشف‌شده."
+
+msgid "English"
+msgstr "انگلیسی"
