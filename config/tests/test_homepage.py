@@ -26,12 +26,19 @@ class HomepageSignalNavigationTests(TestCase):
         self.assertContains(response, 'aria-label="Homepage sections"')
 
         self.assertContains(response, 'href="#home-intro"')
-        self.assertContains(response, 'href="#trust"')
+        self.assertContains(response, 'href="#values"')
+        self.assertContains(response, 'data-signal-target="values"')
         self.assertContains(response, 'href="#apps"')
         self.assertContains(response, 'href="#platform"')
 
         self.assertContains(response, 'id="home-intro"')
-        self.assertContains(response, 'id="trust"')
+        self.assertContains(response, 'id="values"')
+        # #162 intentionally keeps the Trust section out of the DOM until a
+        # complete KPI data contract exists. Restore a positive Trust-section
+        # assertion only when all required KPI values are valid and renderable.
+        self.assertNotContains(response, 'id="trust"')
+        self.assertNotContains(response, 'href="#trust"')
+        self.assertNotContains(response, 'data-signal-target="trust"')
         self.assertContains(response, 'id="identity"')
         self.assertContains(response, 'id="apps"')
         self.assertContains(response, 'id="platform"')
@@ -49,7 +56,9 @@ class HomepageSignalNavigationTests(TestCase):
             response,
             "Context, not Score · Evidence, not Truth · Portable Identity",
         )
-        self.assertContains(
+        # Trust copy remains intentionally absent with the Trust section until
+        # a complete KPI data contract exists and all required KPI values are valid.
+        self.assertNotContains(
             response,
             "Verification produces inspectable findings and evidence about an assertion",
         )

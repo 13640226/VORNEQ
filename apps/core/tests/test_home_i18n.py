@@ -52,3 +52,27 @@ class HomeTranslationTests(TestCase):
         )
         self.assertContains(response, "شروع جستجو")
         self.assertContains(response, "درباره VORNEQ بیشتر بدانید")
+
+    def test_german_home_renders_localized_value_cards(self):
+        with override("de"):
+            response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "VORNEQ-Werte")
+        self.assertContains(response, "Einfaches Entdecken")
+        self.assertContains(response, "Intelligente Organisation")
+        self.assertContains(response, "Sicherer Zugriff")
+        self.assertContains(response, ">Werte</")
+
+
+class PersianHomeTranslationTests(TestCase):
+    def test_persian_home_renders_localized_value_cards(self):
+        with override("fa"):
+            response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "ارزش‌های VORNEQ")
+        self.assertContains(response, "کشف آسان")
+        self.assertContains(response, "سازماندهی هوشمند")
+        self.assertContains(response, "دسترسی امن")
+        self.assertContains(response, ">ارزش‌ها</")
