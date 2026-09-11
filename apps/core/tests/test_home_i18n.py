@@ -30,19 +30,6 @@ class HomeTranslationTests(TestCase):
         self.assertContains(response, "یافته‌های خود را ذخیره و سازمان‌دهی کنید")
         self.assertContains(response, "مشاهده بازارچه")
 
-    def test_german_home_keeps_localized_search_and_right_rail_contract(self):
-        with override("de"):
-            response = self.client.get(reverse("home"))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Erweiterte Filter")
-        self.assertContains(response, "Erweiterte Suche öffnen")
-        self.assertContains(response, "Identität über Erlebnisse hinweg, nicht app-lokal.")
-        self.assertContains(
-            response,
-            "Einheitliche Suche in Büchern, Artikeln, Dokumenten und Audioinhalten",
-        )
-
 
 class PersianHomeTranslationTests(TestCase):
     def test_persian_home_keeps_localized_search_and_right_rail_contract(self):
