@@ -657,7 +657,6 @@ msgstr "Das Produkt wurde genehmigt und kann nun von einem Administrator veröff
 
 msgid "The product was rejected."
 msgstr "Das Produkt wurde abgelehnt."
-
 msgid "The review queue is empty"
 msgstr "Die Prüfwarteschlange ist leer"
 
@@ -877,7 +876,6 @@ msgstr "Capability-Erkennung"
 
 msgid "Capability strings are descriptive discovery metadata only. They do not execute code, grant permissions, or authorize cross-app access."
 msgstr "Capability-Strings sind ausschließlich beschreibende Discovery-Metadaten. Sie führen keinen Code aus, vergeben keine Berechtigungen und autorisieren keinen appübergreifenden Zugriff."
-
 msgid "Future contract"
 msgstr "Künftiger Plattformvertrag"
 
@@ -1208,3 +1206,29 @@ msgstr "Suche starten"
 
 msgid "Learn more about VORNEQ"
 msgstr "Mehr über VORNEQ erfahren"
+
+# Homepage #163 user-centric feature cards
+
+msgid "Find relevant resources"
+msgstr "Relevante Ressourcen finden"
+
+msgid "Unified search across books, articles, documents, and audio"
+msgstr "Einheitliche Suche in Büchern, Artikeln, Dokumenten und Audioinhalten"
+
+msgid "Save and organize your findings"
+msgstr "Eigene Funde speichern und organisieren"
+
+msgid "Take notes, add tags, and quickly access information"
+msgstr "Notizen erstellen, Schlagwörter hinzufügen und schnell auf Informationen zugreifen"
+
+msgid "Go to notes"
+msgstr "Zu den Notizen"
+
+msgid "Discover complementary tools and services"
+msgstr "Ergänzende Werkzeuge und Dienste entdecken"
+
+msgid "Extensions, analytical tools, and specialized services"
+msgstr "Erweiterungen, Analysewerkzeuge und spezialisierte Dienste"
+
+msgid "View marketplace"
+msgstr "Marktplatz ansehen"

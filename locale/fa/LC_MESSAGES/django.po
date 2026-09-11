@@ -657,7 +657,6 @@ msgstr "کلیدواژه دیگری امتحان کنید یا جستجوی فع
 
 msgid "Unverified"
 msgstr "تأییدنشده"
-
 msgid "Updated"
 msgstr "به‌روزرسانی‌شده"
 
@@ -1027,3 +1026,29 @@ msgstr "شروع جستجو"
 
 msgid "Learn more about VORNEQ"
 msgstr "درباره VORNEQ بیشتر بدانید"
+
+# Homepage #163 user-centric feature cards
+
+msgid "Find relevant resources"
+msgstr "منابع مرتبط را پیدا کنید"
+
+msgid "Unified search across books, articles, documents, and audio"
+msgstr "جستجوی یکپارچه در کتاب‌ها، مقاله‌ها، اسناد و محتوای صوتی"
+
+msgid "Save and organize your findings"
+msgstr "یافته‌های خود را ذخیره و سازمان‌دهی کنید"
+
+msgid "Take notes, add tags, and quickly access information"
+msgstr "یادداشت‌برداری، برچسب‌گذاری و دسترسی سریع به اطلاعات"
+
+msgid "Go to notes"
+msgstr "رفتن به یادداشت‌ها"
+
+msgid "Discover complementary tools and services"
+msgstr "ابزارها و قابلیت‌های تکمیلی را کشف کنید"
+
+msgid "Extensions, analytical tools, and specialized services"
+msgstr "افزونه‌ها، ابزارهای تحلیلی و خدمات تخصصی"
+
+msgid "View marketplace"
+msgstr "مشاهده بازارچه"
