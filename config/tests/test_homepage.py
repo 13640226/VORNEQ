@@ -29,7 +29,8 @@ class HomepageSignalNavigationTests(TestCase):
         self.assertContains(response, 'href="#values"')
         self.assertContains(response, 'data-signal-target="values"')
         self.assertContains(response, 'href="#apps"')
-        self.assertContains(response, 'href="#platform"')
+        self.assertNotContains(response, 'href="#platform"')
+        self.assertNotContains(response, 'data-signal-target="platform"')
 
         self.assertContains(response, 'id="home-intro"')
         self.assertContains(response, 'id="values"')
@@ -41,7 +42,15 @@ class HomepageSignalNavigationTests(TestCase):
         self.assertNotContains(response, 'data-signal-target="trust"')
         self.assertContains(response, 'id="identity"')
         self.assertContains(response, 'id="apps"')
-        self.assertContains(response, 'id="platform"')
+        self.assertNotContains(response, 'id="platform"')
+
+        # #164 keeps implementation-specific platform status and future-contract
+        # copy out of the public homepage. The detailed contracts remain in docs.
+        self.assertNotContains(response, "Platform status")
+        self.assertNotContains(response, "Apps, Registry, Launcher & Workspace")
+        self.assertNotContains(response, "Capability discovery")
+        self.assertNotContains(response, "Future contract")
+        self.assertNotContains(response, "Executable providers & integrations")
 
     def test_homepage_renders_platform_philosophy_without_overclaiming(self):
         response = self.get_english_home()
