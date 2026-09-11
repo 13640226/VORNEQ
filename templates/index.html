@@ -212,6 +212,15 @@
     </div>
   </section>
 
+  <section class="global-home__shell" aria-label="{% trans 'Start searching' %}">
+    <div class="global-home__search-surface">
+      <div class="global-home__hero-actions">
+        <a class="global-home__final-primary-cta" href="{% url 'search_page' %}"><span>{% trans "Start searching" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
+        <a class="global-home__secondary-cta" href="#values">{% trans "Learn more about VORNEQ" %}</a>
+      </div>
+    </div>
+  </section>
+
   <footer class="global-home__footer">
     <div class="global-home__shell global-home__footer-row">
       <p>VORNEQ © 2026 — {% trans "Knowledge, discovered." %}</p>
