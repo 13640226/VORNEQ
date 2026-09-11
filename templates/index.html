@@ -103,6 +103,29 @@
     </div>
   </section>
 
+  <section class="global-home__values" id="values" aria-labelledby="values-title" data-homepage-signal-section>
+    <div class="global-home__shell">
+      <header class="global-home__values-heading">
+        <p class="global-home__kicker">ارزش‌های VORNEQ</p>
+        <h2 id="values-title">یک مسیر ساده‌تر برای کشف، سازماندهی و دسترسی</h2>
+      </header>
+      <div class="global-home__value-grid">
+        <article class="global-home__value-card">
+          <h3>کشف آسان</h3>
+          <p>دانش، محصولات، رسانه‌ها و اسناد را از یک نقطه پیدا کنید و مسیر کشف را روشن نگه دارید.</p>
+        </article>
+        <article class="global-home__value-card">
+          <h3>سازماندهی هوشمند</h3>
+          <p>یافته‌ها را با زمینه و ساختار روشن دنبال کنید تا اطلاعات مرتبط قابل‌فهم و قابل‌استفاده بمانند.</p>
+        </article>
+        <article class="global-home__value-card">
+          <h3>دسترسی امن</h3>
+          <p>با مرزهای شفاف و دسترسی متناسب، به تجربه‌ای امن و قابل‌کنترل در سراسر VORNEQ برسید.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
   <section id="discoveries" class="global-home__dashboard" aria-labelledby="discoveries-title">
     <div class="global-home__shell global-home__dashboard-grid">
       <main class="main-feed global-home__main-feed">
@@ -158,17 +181,6 @@
       </main>
 
       <aside class="right-rail global-home__right-rail" aria-label="{% trans 'VORNEQ context and shortcuts' %}">
-        <section id="trust" class="right-rail__block global-home__rail-block" aria-labelledby="trust-title" data-homepage-signal-section>
-          <p class="global-home__kicker">{% trans "Trust context" %}</p>
-          <h2 id="trust-title">{% trans "Inspect claims in context." %}</h2>
-          <p>{% trans "Verification produces inspectable findings and evidence about an assertion; it does not establish final truth." %}</p>
-          <p>{% trans "Reputation is contextual to method, role, and domain — never a universal score." %}</p>
-          <div class="global-home__trust-note" role="note">
-            <strong>{% trans "No global trust score" %}</strong>
-            <span>{% trans "Homepage discovery remains independent from Trust-layer ranking." %}</span>
-          </div>
-        </section>
-
         <section id="identity" class="right-rail__block global-home__rail-block" aria-labelledby="identity-title">
           <p class="global-home__kicker">{% trans "Portable identity" %}</p>
           <h2 id="identity-title">{% trans "Identity across experiences, not app-local." %}</h2>
@@ -214,7 +226,7 @@
       <p>VORNEQ © 2026 — {% trans "Knowledge, discovered." %}</p>
       <nav aria-label="{% trans 'Homepage sections' %}">
         <a href="#home-intro">{% trans "Intro" %}</a>
-        <a href="#trust">{% trans "Trust" %}</a>
+        <a href="#values">ارزش‌ها</a>
         <a href="#apps">{% trans "Apps" %}</a>
         <a href="#platform">{% trans "Platform" %}</a>
       </nav>
