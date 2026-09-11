@@ -30,7 +30,7 @@
           <p class="global-home__kicker">{% trans "Context, not Score · Evidence, not Truth · Portable Identity" %}</p>
         </div>
         <div class="global-home__visual" aria-hidden="true">
-          <svg class="global-home__globe" viewBox="0 0 440 440" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg class="global-home__globe" viewBox="0 0 440 440" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation">
             <circle cx="220" cy="220" r="150" stroke="currentColor" stroke-opacity=".28"/>
             <ellipse cx="220" cy="220" rx="150" ry="58" stroke="currentColor" stroke-opacity=".24" transform="rotate(28 220 220)"/>
             <ellipse cx="220" cy="220" rx="150" ry="58" stroke="currentColor" stroke-opacity=".2" transform="rotate(-62 220 220)"/>
@@ -44,11 +44,7 @@
             <g fill="currentColor"><circle cx="220" cy="70" r="7"/><circle cx="126" cy="166" r="6"/><circle cx="314" cy="166" r="6"/><circle cx="88" cy="292" r="5"/><circle cx="352" cy="292" r="5"/><circle cx="220" cy="370" r="7"/></g>
           </svg>
           <div class="global-home__atlas-labels">
-            <span>{% trans "Knowledge" %}</span>
-            <span>{% trans "Software" %}</span>
-            <span>{% trans "Products" %}</span>
-            <span>{% trans "Services" %}</span>
-            <span>{% trans "Media" %}</span>
+            <span>{% trans "Knowledge" %}</span><span>{% trans "Software" %}</span><span>{% trans "Products" %}</span><span>{% trans "Services" %}</span><span>{% trans "Media" %}</span>
           </div>
         </div>
       </div>
@@ -58,13 +54,10 @@
   <section class="global-home__search-section" aria-label="{% trans 'Search' %}">
     <div class="global-home__shell">
       <div class="global-home__search-surface">
-        <div class="global-home__hero-actions">
-          <form method="get" class="global-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
-            <div class="global-search__primary">
-              <div class="global-search__input-wrap">
-                <input class="global-search__input" type="search" name="q" value="{{ search_query }}" maxlength="200" placeholder="{% trans 'Search knowledge, software, products, services, media, and more…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
-                <button class="global-search__button" type="submit" aria-label="{% trans 'Start searching' %}"><span class="global-search__button-label">{% trans "Start searching" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></button>
-              </div>
+        <form method="get" class="global-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
+          <div class="global-search__primary">
+            <div class="global-search__input-wrap">
+              <input class="global-search__input" type="search" name="q" value="{{ search_query }}" maxlength="200" placeholder="{% trans 'Search knowledge, software, products, services, media, and more…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
               <select class="global-search__select" name="type" aria-label="{% trans 'Content type' %}">
                 <option value="all"{% if current_type == 'all' %} selected{% endif %}>{% trans "All" %}</option>
                 <option value="book"{% if current_type == 'book' %} selected{% endif %}>{% trans "Books" %}</option>
@@ -74,23 +67,24 @@
                 <option value="audio"{% if current_type == 'audio' %} selected{% endif %}>{% trans "Audio" %}</option>
                 <option value="product"{% if current_type == 'product' %} selected{% endif %}>{% trans "Products" %}</option>
               </select>
+              <button class="global-search__button" type="submit"><span>{% trans "Start searching" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></button>
             </div>
-          </form>
-          <a class="global-home__secondary-cta" href="#values">{% trans "Learn more about VORNEQ" %}</a>
-        </div>
+          </div>
+        </form>
+        <a class="global-home__secondary-cta" href="#values">{% trans "Learn more about VORNEQ" %}</a>
       </div>
     </div>
   </section>
 
-  <section class="global-home__shortcuts">
+  <section class="global-home__shortcuts" aria-labelledby="shortcuts-title">
     <div class="global-home__shell">
-      <p class="global-home__eyebrow">{% trans "DISCOVERY SHORTCUTS" %}</p>
+      <p id="shortcuts-title" class="global-home__eyebrow">{% trans "DISCOVERY SHORTCUTS" %}</p>
       <nav class="global-home__command-rail" aria-label="{% trans 'Discovery shortcuts' %}">
-        <a class="command-rail__item" href="{% url 'search_page' %}"><span class="command-rail__label">{% trans "Knowledge" %}</span><span class="command-rail__desc">{% trans "Books, articles and research" %}</span></a>
-        <a class="command-rail__item" href="{% url 'search_page' %}"><span class="command-rail__label">{% trans "Documents & Media" %}</span><span class="command-rail__desc">{% trans "Documents, audio and media" %}</span></a>
-        <a class="command-rail__item" href="{% url 'search_page' %}"><span class="command-rail__label">{% trans "Software & Apps" %}</span><span class="command-rail__desc">{% trans "Applications and digital tools" %}</span></a>
-        <a class="command-rail__item" href="{% url 'search_page' %}"><span class="command-rail__label">{% trans "Products & Commerce" %}</span><span class="command-rail__desc">{% trans "Physical and digital products" %}</span></a>
-        <a class="command-rail__item command-rail__item--advanced" href="{% url 'search_page' %}">{% trans "Advanced discovery" %} <span aria-hidden="true">→</span></a>
+        <a class="command-rail__item" href="{% url 'search_page' %}"><span class="command-rail__icon command-rail__icon--knowledge" aria-hidden="true"></span><span><strong>{% trans "Knowledge" %}</strong><small>{% trans "Books, articles and research" %}</small></span></a>
+        <a class="command-rail__item" href="{% url 'search_page' %}"><span class="command-rail__icon command-rail__icon--documents" aria-hidden="true"></span><span><strong>{% trans "Documents & Media" %}</strong><small>{% trans "Documents, audio and media" %}</small></span></a>
+        <a class="command-rail__item" href="{% url 'search_page' %}"><span class="command-rail__icon command-rail__icon--software" aria-hidden="true"></span><span><strong>{% trans "Software & Apps" %}</strong><small>{% trans "Applications and digital tools" %}</small></span></a>
+        <a class="command-rail__item" href="{% url 'search_page' %}"><span class="command-rail__icon command-rail__icon--collection" aria-hidden="true"></span><span><strong>{% trans "Products & Commerce" %}</strong><small>{% trans "Physical and digital products" %}</small></span></a>
+        <a class="command-rail__item command-rail__item--advanced" href="{% url 'search_page' %}">{% trans "Advanced discovery" %}<span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
       </nav>
     </div>
   </section>
@@ -102,9 +96,7 @@
       <div class="explore__block explore__block--formats">
         <h2 id="discoveries-title" class="explore__heading">{% trans "Discover across formats" %}</h2>
         <ul class="format-rail" role="list">
-          <li>{% trans "Videos" %}</li><li>{% trans "Images" %}</li><li>{% trans "Audio" %}</li><li>{% trans "Documents" %}</li>
-          <li>{% trans "News" %}</li><li>{% trans "Software" %}</li><li>{% trans "Datasets" %}</li><li>{% trans "Presentations" %}</li>
-          <li class="format-rail__item--secondary">{% trans "GIFs" %}</li><li class="format-rail__item--secondary">{% trans "Social Media" %}</li>
+          <li class="is-active">{% trans "Videos" %}</li><li>{% trans "Images" %}</li><li>{% trans "Audio" %}</li><li>{% trans "Documents" %}</li><li>{% trans "News" %}</li><li>{% trans "Software" %}</li><li>{% trans "Datasets" %}</li><li>{% trans "Presentations" %}</li><li class="format-rail__item--secondary">{% trans "GIFs" %}</li><li class="format-rail__item--secondary">{% trans "Social Media" %}</li>
         </ul>
       </div>
 
@@ -112,24 +104,18 @@
         <h2 class="explore__heading">{% trans "Explore topics" %}</h2>
         <p>{% trans "Discover knowledge, products, software, and services across digital domains." %}</p>
         <ul class="topic-matrix" role="list">
-          <li>{% trans "Software" %}</li><li>{% trans "E-commerce" %}</li><li>{% trans "Business" %}</li><li>{% trans "Science" %}</li><li>{% trans "Technology" %}</li>
-          <li>{% trans "Education" %}</li><li>{% trans "Health" %}</li><li>{% trans "Finance" %}</li><li>{% trans "Art & Design" %}</li><li>{% trans "Entertainment" %}</li>
-          <li>{% trans "Games" %}</li><li>{% trans "Digital Collectibles" %}</li><li>{% trans "Crypto & Blockchain" %}</li><li>{% trans "Stocks & Markets" %}</li>
-          <li>{% trans "Real Estate" %}</li><li>{% trans "Travel" %}</li><li>{% trans "Services" %}</li>
+          <li>{% trans "Software" %}</li><li>{% trans "E-commerce" %}</li><li>{% trans "Business" %}</li><li>{% trans "Science" %}</li><li>{% trans "Technology" %}</li><li>{% trans "Education" %}</li><li>{% trans "Health" %}</li><li>{% trans "Finance" %}</li><li>{% trans "Art & Design" %}</li><li>{% trans "Entertainment" %}</li><li>{% trans "Games" %}</li><li>{% trans "Digital Collectibles" %}</li><li>{% trans "Crypto & Blockchain" %}</li><li>{% trans "Stocks & Markets" %}</li><li>{% trans "Real Estate" %}</li><li>{% trans "Travel" %}</li><li>{% trans "Services" %}</li>
         </ul>
       </div>
 
       <div class="explore__block explore__block--software">
         <p class="global-home__eyebrow">{% trans "SOFTWARE & DIGITAL TOOLS" %}</p>
         <h2 class="explore__heading">{% trans "Find tools for what you want to accomplish" %}</h2>
-        <ul class="software-categories" role="list">
-          <li>{% trans "Productivity" %}</li><li>{% trans "Development" %}</li><li>{% trans "Design" %}</li><li>{% trans "Business" %}</li>
-          <li>{% trans "Education" %}</li><li>{% trans "Communication" %}</li><li>{% trans "Media" %}</li><li>{% trans "Utilities" %}</li>
-        </ul>
+        <ul class="software-categories" role="list"><li>{% trans "Productivity" %}</li><li>{% trans "Development" %}</li><li>{% trans "Design" %}</li><li>{% trans "Business" %}</li><li>{% trans "Education" %}</li><li>{% trans "Communication" %}</li><li>{% trans "Media" %}</li><li>{% trans "Utilities" %}</li></ul>
         <ul class="software-previews" role="list">
-          <li class="preview-card"><span>{% trans "Format Preview" %}</span><strong>{% trans "Software preview" %}</strong><small>{% trans "Productivity" %}</small></li>
-          <li class="preview-card"><span>{% trans "Format Preview" %}</span><strong>{% trans "Software preview" %}</strong><small>{% trans "Development" %}</small></li>
-          <li class="preview-card"><span>{% trans "Format Preview" %}</span><strong>{% trans "Software preview" %}</strong><small>{% trans "Design" %}</small></li>
+          <li class="preview-card"><span class="preview-card__art" aria-hidden="true"></span><span class="preview-card__badge">{% trans "Format Preview" %}</span><strong>{% trans "Software preview" %}</strong><small>{% trans "Productivity" %}</small></li>
+          <li class="preview-card"><span class="preview-card__art" aria-hidden="true"></span><span class="preview-card__badge">{% trans "Format Preview" %}</span><strong>{% trans "Software preview" %}</strong><small>{% trans "Design" %}</small></li>
+          <li class="preview-card"><span class="preview-card__art" aria-hidden="true"></span><span class="preview-card__badge">{% trans "Format Preview" %}</span><strong>{% trans "Software preview" %}</strong><small>{% trans "Development" %}</small></li>
         </ul>
       </div>
 
@@ -141,23 +127,23 @@
           <div class="commerce-lane"><h3>{% trans "Services" %}</h3><ul><li>{% trans "Professional services" %}</li><li>{% trans "Creative services" %}</li><li>{% trans "Technical services" %}</li><li>{% trans "Business services" %}</li><li>{% trans "Education & consulting" %}</li></ul></div>
         </div>
         <ul class="commerce-previews" role="list">
-          <li class="preview-card"><span>{% trans "Format Preview" %}</span><strong>{% trans "Product preview" %}</strong><small>{% trans "Digital products" %}</small></li>
-          <li class="preview-card"><span>{% trans "Format Preview" %}</span><strong>{% trans "Product preview" %}</strong><small>{% trans "Templates" %}</small></li>
-          <li class="preview-card"><span>{% trans "Format Preview" %}</span><strong>{% trans "Service preview" %}</strong><small>{% trans "Professional services" %}</small></li>
-          <li class="preview-card"><span>{% trans "Format Preview" %}</span><strong>{% trans "Service preview" %}</strong><small>{% trans "Technical services" %}</small></li>
+          <li class="preview-card"><span class="preview-card__art" aria-hidden="true"></span><span class="preview-card__badge">{% trans "Format Preview" %}</span><strong>{% trans "Product preview" %}</strong><small>{% trans "Digital products" %}</small></li>
+          <li class="preview-card"><span class="preview-card__art" aria-hidden="true"></span><span class="preview-card__badge">{% trans "Format Preview" %}</span><strong>{% trans "Product preview" %}</strong><small>{% trans "Templates" %}</small></li>
+          <li class="preview-card"><span class="preview-card__art" aria-hidden="true"></span><span class="preview-card__badge">{% trans "Format Preview" %}</span><strong>{% trans "Service preview" %}</strong><small>{% trans "Professional services" %}</small></li>
+          <li class="preview-card"><span class="preview-card__art" aria-hidden="true"></span><span class="preview-card__badge">{% trans "Format Preview" %}</span><strong>{% trans "Service preview" %}</strong><small>{% trans "Creative services" %}</small></li>
         </ul>
       </div>
 
       <div class="explore__block explore__block--featured">
         <h2 class="explore__heading">{% trans "Featured discoveries" %}</h2>
         <ul class="featured-previews" role="list">
-          <li class="preview-card"><span>{% trans "Format Preview" %}</span><strong>{% trans "Video preview" %}</strong><small>{% trans "Video · 12:34" %}</small></li>
-          <li class="preview-card"><span>{% trans "Format Preview" %}</span><strong>{% trans "Image preview" %}</strong><small>{% trans "Image · Preview" %}</small></li>
-          <li class="preview-card"><span>{% trans "Format Preview" %}</span><strong>{% trans "Audio preview" %}</strong><small>{% trans "Audio · 08:21" %}</small></li>
-          <li class="preview-card"><span>{% trans "Format Preview" %}</span><strong>{% trans "News preview" %}</strong><small>{% trans "News · Preview" %}</small></li>
-          <li class="preview-card"><span>{% trans "Format Preview" %}</span><strong>{% trans "Software preview" %}</strong><small>{% trans "Software · Preview" %}</small></li>
-          <li class="preview-card"><span>{% trans "Format Preview" %}</span><strong>{% trans "Product preview" %}</strong><small>{% trans "Product · Preview" %}</small></li>
-          <li class="preview-card"><span>{% trans "Format Preview" %}</span><strong>{% trans "Service preview" %}</strong><small>{% trans "Service · Preview" %}</small></li>
+          <li class="preview-card"><span class="preview-card__badge">{% trans "Format Preview" %}</span><strong>{% trans "Video preview" %}</strong><small>{% trans "Video · 12:34" %}</small></li>
+          <li class="preview-card"><span class="preview-card__badge">{% trans "Format Preview" %}</span><strong>{% trans "Image preview" %}</strong><small>{% trans "Image · Preview" %}</small></li>
+          <li class="preview-card"><span class="preview-card__badge">{% trans "Format Preview" %}</span><strong>{% trans "Audio preview" %}</strong><small>{% trans "Audio · 08:21" %}</small></li>
+          <li class="preview-card"><span class="preview-card__badge">{% trans "Format Preview" %}</span><strong>{% trans "News preview" %}</strong><small>{% trans "News · Preview" %}</small></li>
+          <li class="preview-card"><span class="preview-card__badge">{% trans "Format Preview" %}</span><strong>{% trans "Software preview" %}</strong><small>{% trans "Software · Preview" %}</small></li>
+          <li class="preview-card"><span class="preview-card__badge">{% trans "Format Preview" %}</span><strong>{% trans "Product preview" %}</strong><small>{% trans "Product · Preview" %}</small></li>
+          <li class="preview-card"><span class="preview-card__badge">{% trans "Format Preview" %}</span><strong>{% trans "Service preview" %}</strong><small>{% trans "Service · Preview" %}</small></li>
         </ul>
       </div>
     </div>
@@ -165,7 +151,7 @@
 
   <section class="global-home__contextual" aria-labelledby="contextual-title">
     <div class="global-home__shell">
-      <h2 id="contextual-title" class="global-home__eyebrow">{% trans "Contextual topics" %}</h2>
+      <h2 id="contextual-title" class="global-home__contextual-title">{% trans "Contextual topics" %}</h2>
       <ul class="contextual-strip" role="list"><li>{% trans "Digital Collectibles" %}</li><li>{% trans "Crypto & Blockchain" %}</li><li>{% trans "Stocks & Markets" %}</li><li>{% trans "Games" %}</li></ul>
     </div>
   </section>
@@ -173,33 +159,31 @@
   <section id="values" class="global-home__principles" aria-labelledby="values-title" data-homepage-signal-section>
     <div class="global-home__shell">
       <p class="global-home__eyebrow">{% trans "OUR FOUNDATION" %}</p>
-      <h2 id="values-title">{% trans "Platform Principles" %}</h2>
+      <h2 id="values-title" class="global-home__heading">{% trans "Platform Principles" %}</h2>
       <ol class="principles-list">
-        <li><span aria-hidden="true">01</span><h3>{% trans "Context, not Score" %}</h3><p>{% trans "Information should be understood in context rather than reduced to a single, opaque score." %}</p></li>
-        <li><span aria-hidden="true">02</span><h3>{% trans "Evidence, not Truth" %}</h3><p>{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}</p></li>
-        <li><span aria-hidden="true">03</span><h3>{% trans "Portable Identity" %}</h3><p>{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}</p></li>
+        <li><span class="principle__num" aria-hidden="true">01</span><h3>{% trans "Context, not Score" %}</h3><p>{% trans "Information should be understood in context rather than reduced to a single, opaque score." %}</p></li>
+        <li><span class="principle__num" aria-hidden="true">02</span><h3>{% trans "Evidence, not Truth" %}</h3><p>{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}</p></li>
+        <li><span class="principle__num" aria-hidden="true">03</span><h3>{% trans "Portable Identity" %}</h3><p>{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}</p></li>
       </ol>
     </div>
   </section>
 
   <section id="apps" class="global-home__actions" aria-labelledby="apps-title" data-homepage-signal-section>
     <div class="global-home__shell">
-      <p class="global-home__eyebrow">{% trans "TURN DISCOVERY INTO IMPACT" %}</p>
-      <h2 id="apps-title">{% trans "What you can do" %}</h2>
+      <h2 id="apps-title" class="global-home__heading">{% trans "What you can do" %}</h2>
       <ul class="action-grid" role="list">
-        <li><h3>{% trans "FIND" %}</h3><p>{% trans "Search across knowledge, software, products, services, documents, media, and more." %}</p><a href="{% url 'search_page' %}">{% trans "Start searching" %} <span aria-hidden="true">→</span></a></li>
-        <li><h3>{% trans "ORGANIZE" %}</h3><p>{% trans "Save, tag, and structure your findings so they remain usable." %}</p><a href="{% url 'notes:list' %}">{% trans "Go to notes" %} <span aria-hidden="true">→</span></a></li>
-        <li><h3>{% trans "EXTEND" %}</h3><p>{% trans "Discover complementary software, tools, and specialized services." %}</p><a href="{% url 'marketplace:index' %}">{% trans "View marketplace" %} <span aria-hidden="true">→</span></a></li>
-        <li><h3>{% trans "COMMERCE" %}</h3><p>{% trans "Explore digital and physical products and professional services." %}</p><a href="#discoveries">{% trans "Explore products" %} <span aria-hidden="true">→</span></a></li>
+        <li class="action-card"><h3>{% trans "FIND" %}</h3><p>{% trans "Search across knowledge, software, products, services, documents, media, and more." %}</p><a href="{% url 'search_page' %}">{% trans "Start searching" %} <span class="global-home__directional-arrow" aria-hidden="true">→</span></a></li>
+        <li class="action-card"><h3>{% trans "ORGANIZE" %}</h3><p>{% trans "Save, tag, and structure your findings so they remain usable." %}</p><a href="{% url 'notes:list' %}">{% trans "Go to notes" %} <span class="global-home__directional-arrow" aria-hidden="true">→</span></a></li>
+        <li class="action-card"><h3>{% trans "EXTEND" %}</h3><p>{% trans "Discover complementary software, tools, and specialized services." %}</p><a href="{% url 'marketplace:index' %}">{% trans "View marketplace" %} <span class="global-home__directional-arrow" aria-hidden="true">→</span></a></li>
+        <li class="action-card"><h3>{% trans "COMMERCE" %}</h3><p>{% trans "Explore digital and physical products and professional services." %}</p><a href="#discoveries">{% trans "Explore products" %} <span class="global-home__directional-arrow" aria-hidden="true">→</span></a></li>
       </ul>
     </div>
   </section>
 
   <footer class="global-home__footer">
     <div class="global-home__shell global-home__footer-row">
-      <div><strong>VORNEQ</strong><span>{% trans "© 2026 — Knowledge discovered." %}</span></div>
-      <nav aria-label="{% trans 'Homepage sections' %}"><a href="#home-intro">{% trans "Intro" %}</a><a href="#values">{% trans "Values" %}</a><a href="#apps">{% trans "Apps" %}</a><a href="{% url 'marketplace:index' %}">{% trans "Marketplace" %}</a></nav>
-      <span aria-hidden="true">{% trans "English" %}</span>
+      <div class="footer__brand"><strong>VORNEQ</strong><span>{% trans "© 2026 — Knowledge discovered." %}</span></div>
+      <nav class="footer__nav" aria-label="{% trans 'Homepage sections' %}"><a href="#home-intro">{% trans "Intro" %}</a><a href="#values">{% trans "Values" %}</a><a href="#apps">{% trans "Apps" %}</a><a href="{% url 'marketplace:index' %}">{% trans "Marketplace" %}</a><span>{% trans "English" %}</span></nav>
     </div>
   </footer>
 </div>
