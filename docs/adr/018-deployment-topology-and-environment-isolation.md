@@ -470,3 +470,89 @@ ADR-018 freeze/merge ≠ ADR-017 Phase 2 authorization
 ADR-018 freeze/merge ≠ Auth unblock
 ADR-018 freeze/merge ≠ PR A/B/C authorization
 ```
+
+## Amendment — A1 Partial Closure, Environment Definitions, and D3 Assessment (2026-09-11)
+
+This amendment is append-only. It records session-governance decisions and read-only repository findings against baseline `main@30c1a6d04673668ef9deab6f8139f1e2143f4f90`. It does not change this ADR's `Proposed` status, does not authorize implementation or deployment, and does not convert any evidence-gated control into an implemented control. [session governance]
+
+### A1 — Partial Closure Record
+
+A1 is **partially closed** at the governance/assessment layer. [session governance]
+
+For decisions D2–D17, the current classification is: [session governance]
+
+- D12, D14, D16: **Decided — session governance**. [session governance]
+- D7: **Policy-adopted**. [session governance]
+- D10: **Policy-decided**. [session governance]
+- D15: **Already-decided / inherited** from ADR-016. [ADR-018 existing] [session governance]
+- D2, D3, D4, D5, D6, D8, D11, D13, D17: **Evidence-gated — open**. [open — evidence-gated]
+- D9: **Runtime-deploy-gated — open**. [open — implementation]
+
+This yields six resolved/inherited decisions and ten open decisions: nine evidence-gated and one runtime-deploy-gated. [session governance]
+
+The current critical evidence path is D4/database association. The exact database attached to the observed application target remains unresolved, and the earlier B1 association assessment closed without resolving that mapping. [repo evidence] [open — evidence-gated]
+
+### Environment Definitions — Two-Sided
+
+For D3 and related environment-isolation reasoning, the following definitions are canonical for this governance record. [session governance]
+
+**Staging configuration** means the set of configuration and credential references applied to or consumable by a deployment target explicitly classified as staging, independent of infrastructure-provider naming or grouping. [session governance]
+
+**Production configuration** means the set of configuration and credential references applied to or consumable by a deployment target explicitly classified as production, independent of infrastructure-provider naming or grouping. [session governance]
+
+The authoritative environment identity is the explicit approved application/deployment classification. Provider grouping is auxiliary evidence and MAY identify drift, but is not the classification authority. [session governance]
+
+These definitions are static-by-default and are reviewable only through an explicit ADR amendment. They do not by themselves prove that any concrete provider resource belongs to either environment. [session governance] [open — evidence-gated]
+
+The observed mismatch between `VORNEQ_ENV=staging` and the Render provider grouping labelled `Production` remains preserved as a drift signal. The definition does not erase the mismatch and does not assert which provider grouping is operationally correct. [session governance] [open — evidence-gated]
+
+### D3 — Secret Isolation Assessment / Closure
+
+Status: **Closed as Assessment / Unresolved as Control.** [session governance]
+
+D3 remains evidence-gated in A1. The assessment is complete for the evidence gathered in the authorized scope, but compliance cannot be declared PASS or FAIL. [session governance] [open — evidence-gated]
+
+The three D3 rules have the following final assessment state: [ADR-018 existing] [session governance]
+
+- **R1 — Credential-set Separation:** Unresolved — evidence-gated; concrete service inventory is incomplete. [open — evidence-gated]
+- **R2 — Production Secret Absence:** Partially proven. Three of five named surfaces are clean in the targeted read-only repository assessment: source tree, `.env.example`, and development configuration. Staging configuration and CI logs remain open. [repo evidence] [open — evidence-gated]
+- **R3 — Environment-scoped Rotation:** Unresolved; rotation policy and provider evidence remain pending. [open — evidence-gated]
+
+The D3 control is therefore **unresolved**, not passed and not failed. [session governance]
+
+D3 is reopened for assessment if any of the following triggers occurs: [session governance]
+
+1. **RT-1 — Provider membership evidence:** a concrete service/resource is explicitly bound to an environment classification. [open — evidence-gated]
+2. **RT-2 — Credential-set evidence:** a staging target and a production target can be compared with sufficient boundary evidence. [open — evidence-gated]
+3. **RT-3 — Rotation evidence:** policy or provider metadata establishes environment-scoped rotation. [open — evidence-gated]
+4. **RT-4 — Remaining R2 evidence:** valid evidence becomes available for staging configuration or CI logs. [open — evidence-gated]
+5. **RT-5 — Governance declaration:** the Change Approver explicitly classifies a concrete service/resource inventory. [session governance]
+6. **RT-6 — ADR amendment:** ADR-018 is amended with an explicit concrete service inventory. [session governance]
+
+Governance principle: **Governance is not a substitute for evidence about actual resource membership.** Boundary and policy may be decided through governance, but missing evidence about concrete resource membership MUST NOT be replaced by an unsupported assertion. [session governance]
+
+### D3 Service-Inventory Finding
+
+The read-only repository/ADR inventory completed with an **Incomplete** verdict under the locked explicit-declaration criterion. [repo evidence] [session governance]
+
+- C1 — Explicitly staging-classified concrete services/resources: **0**. [repo evidence]
+- C2 — Explicitly production-classified concrete services/resources: **0**. [repo evidence]
+- C3 — Unclassified/ambiguous: multiple logical or intent-bearing targets exist, but concrete membership is not explicitly declared. [repo evidence]
+
+`render.yaml` exists in the repository and is a Render Blueprint artifact. It does not provide a complete two-sided service inventory or an explicit environment-classification binding for the concrete targets required by this assessment. [repo evidence]
+
+Accordingly, the corrected finding is not “no Blueprint evidence.” The correct finding is: **Blueprint evidence exists, but it does not provide a complete service inventory or classification binding.** [repo evidence]
+
+Cross-artifact intent — including environment-bearing names, staging-oriented settings, workflow names, or logical secret roles — is not treated as an explicit concrete resource classification. [session governance]
+
+### Provenance Discipline
+
+Claims in this amendment use the following provenance labels: [session governance]
+
+- `[ADR-018 existing]` — an existing ADR-018 policy or invariant used as source context.
+- `[session governance]` — a decision or interpretation made in the governance session and recorded here without implying runtime implementation.
+- `[repo evidence]` — a read-only repository finding; it establishes repository state only and does not prove provider/runtime state.
+- `[open — evidence-gated]` — a control or conclusion that still requires evidence.
+- `[open — implementation]` — a requirement whose implementation/runtime effectiveness remains open.
+
+Nothing in this amendment authorizes provider mutation, database access, deployment, runtime verification, secret disclosure, or implementation work. [session governance]
