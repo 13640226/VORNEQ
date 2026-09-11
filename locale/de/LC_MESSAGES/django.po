@@ -1166,6 +1166,35 @@ msgid_plural "%(total)s products"
 msgstr[0] "%(total)s Produkt"
 msgstr[1] "%(total)s Produkte"
 
+# Homepage #162 value cards
+
+msgid "Values"
+msgstr "Werte"
+
+msgid "VORNEQ values"
+msgstr "VORNEQ-Werte"
+
+msgid "A simpler path to discover, organize, and access"
+msgstr "Ein einfacherer Weg zum Entdecken, Organisieren und Zugreifen"
+
+msgid "Easy discovery"
+msgstr "Einfaches Entdecken"
+
+msgid "Find knowledge, products, media, and documents from one place and keep the discovery path clear."
+msgstr "Finden Sie Wissen, Produkte, Medien und Dokumente an einem Ort und halten Sie den Weg der Entdeckung übersichtlich."
+
+msgid "Smart organization"
+msgstr "Intelligente Organisation"
+
+msgid "Follow findings with clear context and structure so relevant information remains understandable and usable."
+msgstr "Verfolgen Sie Funde mit klarem Kontext und klarer Struktur, damit relevante Informationen verständlich und nutzbar bleiben."
+
+msgid "Secure access"
+msgstr "Sicherer Zugriff"
+
+msgid "Use clear boundaries and proportionate access for a secure, controllable experience across VORNEQ."
+msgstr "Nutzen Sie klare Grenzen und angemessene Zugriffsrechte für eine sichere, kontrollierbare Erfahrung in ganz VORNEQ."
+
 # Homepage #161 i18n copy
 
 msgid "Global Knowledge Platform"
