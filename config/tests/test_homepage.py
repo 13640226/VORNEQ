@@ -74,9 +74,15 @@ class HomepageSignalNavigationTests(TestCase):
             "Extensions, analytical tools, and specialized services",
         )
 
-        self.assertContains(response, f'href="{reverse("search_page")}"')
-        self.assertContains(response, f'href="{reverse("notes:list")}"')
-        self.assertContains(response, f'href="{reverse("marketplace:index")}"')
+        with override("en"):
+            expected_urls = (
+                reverse("search_page"),
+                reverse("notes:list"),
+                reverse("marketplace:index"),
+            )
+
+        for url in expected_urls:
+            self.assertContains(response, f'href="{url}"')
 
         self.assertNotContains(response, "Open Launcher")
         self.assertNotContains(response, "Workspace")
