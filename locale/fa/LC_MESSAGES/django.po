@@ -984,3 +984,17 @@ msgstr "معرفی"
 
 msgid "Trust"
 msgstr "اعتماد"
+
+# Homepage #161 i18n copy
+
+msgid "Global Knowledge Platform"
+msgstr "پلتفرم دانش جهانی"
+
+msgid "Find and organize books, articles, documents, audio content, and digital resources from one place."
+msgstr "کتاب‌ها، مقاله‌ها، اسناد، محتوای صوتی و منابع دیجیتال را از یک نقطه پیدا و سازمان‌دهی کنید."
+
+msgid "Start searching"
+msgstr "شروع جستجو"
+
+msgid "Learn more about VORNEQ"
+msgstr "درباره VORNEQ بیشتر بدانید"

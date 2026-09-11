@@ -1165,3 +1165,17 @@ msgid "%(total)s product"
 msgid_plural "%(total)s products"
 msgstr[0] "%(total)s Produkt"
 msgstr[1] "%(total)s Produkte"
+
+# Homepage #161 i18n copy
+
+msgid "Global Knowledge Platform"
+msgstr "Globale Wissensplattform"
+
+msgid "Find and organize books, articles, documents, audio content, and digital resources from one place."
+msgstr "Finden und organisieren Sie Bücher, Artikel, Dokumente, Audioinhalte und digitale Ressourcen an einem Ort."
+
+msgid "Start searching"
+msgstr "Suche starten"
+
+msgid "Learn more about VORNEQ"
+msgstr "Mehr über VORNEQ erfahren"
