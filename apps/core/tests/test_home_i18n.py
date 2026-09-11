@@ -4,60 +4,56 @@ from django.utils.translation import override
 
 
 class HomeTranslationTests(TestCase):
-    def test_german_home_renders_v3_discovery_copy(self):
+    def test_german_home_preserves_localized_live_home_surfaces(self):
         with override("de"):
             response = self.client.get(reverse("home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "WISSEN OHNE GRENZEN")
         self.assertContains(response, "Globale Wissensplattform")
-        self.assertContains(
-            response,
-            "Wissen, Software, Produkte, Dienstleistungen, Medien und digitale Ressourcen",
-        )
         self.assertContains(response, "Suche starten")
-        self.assertContains(response, "Entdecken")
-        self.assertContains(response, "Prinzipien")
+        self.assertContains(response, "Mehr über VORNEQ erfahren")
+        self.assertContains(response, "Empfohlene Entdeckungen")
+        self.assertContains(response, "Relevante Ressourcen finden")
+        self.assertContains(response, "Funde speichern und organisieren")
+        self.assertContains(response, "Marktplatz ansehen")
 
-    def test_persian_home_renders_v3_discovery_copy(self):
+    def test_persian_home_preserves_localized_live_home_surfaces(self):
         with override("fa"):
             response = self.client.get(reverse("home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "دانش بدون مرز")
         self.assertContains(response, "پلتفرم دانش جهانی")
-        self.assertContains(
-            response,
-            "دانش، نرم‌افزار، محصولات، خدمات، رسانه و منابع دیجیتال",
-        )
         self.assertContains(response, "شروع جستجو")
-        self.assertContains(response, "کاوش")
-        self.assertContains(response, "اصول")
+        self.assertContains(response, "درباره VORNEQ بیشتر بدانید")
+        self.assertContains(response, "کشف‌های برگزیده")
+        self.assertContains(response, "منابع مرتبط را پیدا کنید")
+        self.assertContains(response, "یافته‌های خود را ذخیره و سازمان‌دهی کنید")
+        self.assertContains(response, "مشاهده بازارچه")
 
-    def test_german_home_renders_localized_principles_and_actions(self):
+    def test_german_home_keeps_localized_search_and_right_rail_contract(self):
         with override("de"):
             response = self.client.get(reverse("home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Plattformprinzipien")
-        self.assertContains(response, "Kontext statt Bewertung")
-        self.assertContains(response, "Belege statt Wahrheit")
-        self.assertContains(response, "Portable Identität")
-        self.assertContains(response, "Was Sie tun können")
-        self.assertContains(response, "ORGANISIEREN")
-        self.assertContains(response, "Marktplatz ansehen")
+        self.assertContains(response, "Erweiterte Filter")
+        self.assertContains(response, "Erweiterte Suche öffnen")
+        self.assertContains(response, "Identität über Erlebnisse hinweg, nicht app-lokal.")
+        self.assertContains(
+            response,
+            "Einheitliche Suche in Büchern, Artikeln, Dokumenten und Audioinhalten",
+        )
 
 
 class PersianHomeTranslationTests(TestCase):
-    def test_persian_home_renders_localized_principles_and_actions(self):
+    def test_persian_home_keeps_localized_search_and_right_rail_contract(self):
         with override("fa"):
             response = self.client.get(reverse("home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "اصول پلتفرم")
-        self.assertContains(response, "زمینه، نه امتیاز")
-        self.assertContains(response, "شواهد، نه حقیقت")
-        self.assertContains(response, "هویت قابل‌انتقال")
-        self.assertContains(response, "چه کارهایی می‌توانید انجام دهید")
-        self.assertContains(response, "سازمان‌دهی")
-        self.assertContains(response, "مشاهده بازارچه")
+        self.assertContains(response, "فیلترهای پیشرفته")
+        self.assertContains(response, "گشودن جستجوی پیشرفته")
+        self.assertContains(response, "هویت در سراسر تجربه‌ها، نه وابسته به یک برنامه.")
+        self.assertContains(
+            response,
+            "جستجوی یکپارچه در کتاب‌ها، مقاله‌ها، اسناد و محتوای صوتی",
+        )
