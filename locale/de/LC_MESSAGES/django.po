@@ -506,7 +506,7 @@ msgid "Reset discovery"
 msgstr "Entdeckung zurücksetzen"
 
 msgid "Results for “%(query)s”"
-msgstr "Ergebnisse für „%(query)s“
+msgstr "Ergebnisse für „%(query)s“"
 
 msgid "Review and manage external services connected to your account."
 msgstr "Prüfen und verwalten Sie externe Dienste, die mit Ihrem Konto verbunden sind."
