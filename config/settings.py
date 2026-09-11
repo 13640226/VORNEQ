@@ -329,6 +329,7 @@ if not DEBUG:
 
 
 PROMETHEUS_EXPORT_MIGRATIONS = False
+VORNEQ_METRICS_TOKEN = os.environ.get("VORNEQ_METRICS_TOKEN")
 
 LOGGING = {
     "version": 1,

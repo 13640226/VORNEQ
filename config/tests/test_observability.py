@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 
@@ -48,15 +48,45 @@ class HealthCheckTests(TestCase):
 
 
 class MetricsTests(TestCase):
-    def test_metrics_endpoint_is_exposed(self):
-        response = self.client.get("/metrics")
+    def test_metrics_endpoint_is_fail_closed_when_token_is_unset(self):
+        with override_settings(VORNEQ_METRICS_TOKEN=None):
+            response = self.client.get("/metrics")
+
+        self.assertEqual(response.status_code, 404)
+
+    @override_settings(VORNEQ_METRICS_TOKEN="metrics-secret")
+    def test_metrics_endpoint_accepts_valid_bearer_token(self):
+        response = self.client.get(
+            "/metrics",
+            HTTP_AUTHORIZATION="Bearer metrics-secret",
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("text/plain", response.headers["Content-Type"])
         self.assertIn(b"django_http_requests", response.content)
 
-    def test_request_database_query_metric_is_exported(self):
-        self.client.get(reverse("health"))
-        response = self.client.get("/metrics")
+    @override_settings(VORNEQ_METRICS_TOKEN="metrics-secret")
+    def test_metrics_endpoint_rejects_invalid_bearer_token(self):
+        response = self.client.get(
+            "/metrics",
+            HTTP_AUTHORIZATION="Bearer wrong-secret",
+        )
 
+        self.assertEqual(response.status_code, 404)
+
+    @override_settings(VORNEQ_METRICS_TOKEN="metrics-secret")
+    def test_metrics_endpoint_rejects_query_string_token(self):
+        response = self.client.get("/metrics?token=metrics-secret")
+
+        self.assertEqual(response.status_code, 404)
+
+    @override_settings(VORNEQ_METRICS_TOKEN="metrics-secret")
+    def test_request_database_query_metric_is_exported_for_authorized_client(self):
+        self.client.get(reverse("health"))
+        response = self.client.get(
+            "/metrics",
+            HTTP_AUTHORIZATION="Bearer metrics-secret",
+        )
+
+        self.assertEqual(response.status_code, 200)
         self.assertIn(b"vorneq_db_queries_total", response.content)
