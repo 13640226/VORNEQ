@@ -1,0 +1,178 @@
+/* VORNEQ Django admin presentation layer.
+ * Presentation-only: no behavioral rules or JavaScript dependencies.
+ */
+
+:root {
+  --vorneq-space-1: 0.375rem;
+  --vorneq-space-2: 0.75rem;
+  --vorneq-space-3: 1rem;
+  --vorneq-space-4: 1.5rem;
+  --vorneq-radius: 0.75rem;
+  --vorneq-border: color-mix(in srgb, currentColor 14%, transparent);
+  --vorneq-surface: color-mix(in srgb, Canvas 96%, currentColor 4%);
+}
+
+html[dir="rtl"] body,
+html[dir="rtl"] input,
+html[dir="rtl"] textarea,
+html[dir="rtl"] select,
+html[dir="rtl"] button {
+  text-align: right;
+}
+
+html[dir="rtl"] #container,
+html[dir="rtl"] #content,
+html[dir="rtl"] #content-main,
+html[dir="rtl"] .module,
+html[dir="rtl"] .inline-group {
+  direction: rtl;
+}
+
+#header {
+  min-height: 3.5rem;
+  gap: var(--vorneq-space-3);
+  padding-block: var(--vorneq-space-2);
+}
+
+.vorneq-brand {
+  min-width: 0;
+}
+
+.vorneq-brand__link {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  text-decoration: none;
+  line-height: 1.25;
+}
+
+.vorneq-brand__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.vorneq-brand__subtitle {
+  font-size: 0.75rem;
+  opacity: 0.78;
+}
+
+.vorneq-global-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--vorneq-space-2);
+  margin-inline-start: auto;
+}
+
+.vorneq-global-nav a {
+  padding: 0.4rem 0.7rem;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+#content {
+  padding: var(--vorneq-space-4);
+}
+
+.vorneq-page-heading {
+  margin-block-end: var(--vorneq-space-3);
+}
+
+.breadcrumbs {
+  padding-block: var(--vorneq-space-2);
+  line-height: 1.6;
+}
+
+.module,
+.inline-group,
+#changelist .results,
+.submit-row {
+  border-radius: var(--vorneq-radius);
+}
+
+#changelist .results {
+  overflow-x: auto;
+}
+
+#changelist table {
+  min-width: 100%;
+}
+
+#changelist table th,
+#changelist table td {
+  padding-block: 0.7rem;
+  vertical-align: middle;
+}
+
+fieldset.module {
+  margin-block-end: var(--vorneq-space-4);
+}
+
+.form-row {
+  padding-block: var(--vorneq-space-2);
+}
+
+.form-row label {
+  line-height: 1.6;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="url"],
+input[type="number"],
+textarea,
+select {
+  max-width: 100%;
+}
+
+#nav-sidebar {
+  border-inline-end: 1px solid var(--vorneq-border);
+}
+
+#nav-sidebar .current-model,
+#nav-sidebar a:focus-visible,
+#nav-sidebar a:hover {
+  border-radius: 0.45rem;
+}
+
+.dashboard #content-main .module {
+  overflow: hidden;
+}
+
+.dashboard #content-main caption,
+.dashboard #content-main .module h2 {
+  padding-block: 0.65rem;
+}
+
+.object-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vorneq-space-1);
+}
+
+.object-tools li {
+  margin: 0;
+}
+
+@media (max-width: 767px) {
+  #header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .vorneq-global-nav {
+    width: 100%;
+    margin-inline-start: 0;
+  }
+
+  #content {
+    padding: var(--vorneq-space-3);
+  }
+
+  .submit-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--vorneq-space-2);
+  }
+}
