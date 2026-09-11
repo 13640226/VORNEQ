@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block branding %}
+  <div class="vorneq-brand" aria-label="{{ site_header }}">
+    <a class="vorneq-brand__link" href="{% url 'admin:index' %}">
+      <span class="vorneq-brand__title">{{ site_header }}</span>
+      <span class="vorneq-brand__subtitle">{{ site_title }}</span>
+    </a>
+  </div>
+{% endblock %}
+
+{% block nav-global %}
+  <nav class="vorneq-global-nav" aria-label="{% translate 'Site administration' %}">
+    <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+  </nav>
+{% endblock %}
