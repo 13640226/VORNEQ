@@ -220,7 +220,7 @@ class HomeSearchExpansionTests(TestCase):
         "collect",
         return_value=[],
     )
-    def test_home_exposes_contract_safe_quick_filters_and_informative_trust(
+    def test_home_exposes_contract_safe_quick_filters_without_unbacked_trust(
         self,
         collect,
     ):
@@ -246,15 +246,22 @@ class HomeSearchExpansionTests(TestCase):
             ],
         )
 
-        self.assertContains(
+        # #162 intentionally keeps the Trust section and its explanatory copy
+        # out of the DOM until a complete KPI data contract exists. Restore
+        # positive Trust assertions only when all required KPI values are valid.
+        self.assertNotContains(
+            response,
+            'id="trust"',
+        )
+        self.assertNotContains(
             response,
             "No global trust score",
         )
-        self.assertContains(
+        self.assertNotContains(
             response,
             "Verification produces inspectable findings and evidence about an assertion",
         )
-        self.assertContains(
+        self.assertNotContains(
             response,
             "Reputation is contextual",
         )
