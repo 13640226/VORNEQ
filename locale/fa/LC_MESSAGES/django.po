@@ -985,6 +985,35 @@ msgstr "معرفی"
 msgid "Trust"
 msgstr "اعتماد"
 
+# Homepage #162 value cards
+
+msgid "Values"
+msgstr "ارزش‌ها"
+
+msgid "VORNEQ values"
+msgstr "ارزش‌های VORNEQ"
+
+msgid "A simpler path to discover, organize, and access"
+msgstr "یک مسیر ساده‌تر برای کشف، سازماندهی و دسترسی"
+
+msgid "Easy discovery"
+msgstr "کشف آسان"
+
+msgid "Find knowledge, products, media, and documents from one place and keep the discovery path clear."
+msgstr "دانش، محصولات، رسانه‌ها و اسناد را از یک نقطه پیدا کنید و مسیر کشف را روشن نگه دارید."
+
+msgid "Smart organization"
+msgstr "سازماندهی هوشمند"
+
+msgid "Follow findings with clear context and structure so relevant information remains understandable and usable."
+msgstr "یافته‌ها را با زمینه و ساختار روشن دنبال کنید تا اطلاعات مرتبط قابل‌فهم و قابل‌استفاده بمانند."
+
+msgid "Secure access"
+msgstr "دسترسی امن"
+
+msgid "Use clear boundaries and proportionate access for a secure, controllable experience across VORNEQ."
+msgstr "با مرزهای شفاف و دسترسی متناسب، به تجربه‌ای امن و قابل‌کنترل در سراسر VORNEQ برسید."
+
 # Homepage #161 i18n copy
 
 msgid "Global Knowledge Platform"
