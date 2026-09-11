@@ -1148,7 +1148,7 @@ msgstr "System"
 # Preserved pre-existing catalog entries
 
 msgid "Your password has been changed. You can now sign in with your new password."
-msgstr "Ihr Passwort wurde geändert. Sie können sich jetzt mit dem neuen Passwort anmelden."
+msgstr "Ihr Passwort wurde geändert. Sie können sich jetzt mit Ihrem neuen Passwort anmelden."
 
 msgid "Your product was submitted for review."
 msgstr "Ihr Produkt wurde zur Prüfung eingereicht."
@@ -1165,3 +1165,17 @@ msgid "%(total)s product"
 msgid_plural "%(total)s products"
 msgstr[0] "%(total)s Produkt"
 msgstr[1] "%(total)s Produkte"
+
+# Homepage #161 i18n copy
+
+msgid "Global Knowledge Platform"
+msgstr "Globale Wissensplattform"
+
+msgid "Find and organize books, articles, documents, audio content, and digital resources from one place."
+msgstr "Finden und organisieren Sie Bücher, Artikel, Dokumente, Audioinhalte und digitale Ressourcen an einem Ort."
+
+msgid "Start searching"
+msgstr "Suche starten"
+
+msgid "Learn more about VORNEQ"
+msgstr "Mehr über VORNEQ erfahren"
