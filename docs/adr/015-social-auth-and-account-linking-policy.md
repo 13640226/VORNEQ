@@ -241,3 +241,246 @@ The no-email-auto-link security invariant itself is not an operational rollback 
 - ADR-014: Email Delivery Strategy — recovery-path dependency.
 
 These ADRs are contextual dependencies only where explicitly stated; ADR-015 establishes its own social-authentication and account-linking decisions.
+
+## C1 Amendment — Decisions Recorded (2026-09-11)
+
+This amendment records C1 governance decisions without changing the ADR status, implementing runtime behavior, or resolving evidence-gated implementation details. [session governance]
+
+### Section A — OQ1–OQ4 Decisions
+
+#### A.1 OQ4 — Unlink / Last-Authentication-Method Guard
+
+Status: **Decided (session governance).** [session governance]
+
+A user MUST NOT be allowed to unlink an authentication method if doing so would leave the user without any functional authentication method or verified recovery path. [session governance]
+
+A functional alternative means at least one active authentication method, or a verified recovery path such as a verified email address plus a working password-reset path, or another separately approved recovery method. [session governance]
+
+If at least two functional methods remain, unlinking MAY proceed subject to confirmation of the alternative path; if only one functional method remains, unlinking MUST be rejected. [session governance]
+
+The invariant is policy-level and MUST NOT be weakened by UI behavior. [session governance]
+
+The exact mechanism, timing/grace behavior, provider-initiated unlink behavior, support-mediated edge cases, exception authority, and implementation detection logic remain open. [open — implementation]
+
+#### A.2 OQ2 — Support Workflow for Users Who Cannot Link Accounts
+
+Status: **Decided (session governance).** [session governance]
+
+A support workflow MUST exist for users who cannot link accounts. [session governance]
+
+The workflow has four invariants: identity verification before manual action; no bypass of D5 Type 1 or Type 2 conflict policy; every support action is auditable; and the neutral rejection entry point directs the user to the support workflow. [session governance]
+
+Whether the workflow is self-service, manual, or hybrid; the exact verification method; SLA/timing; escalation path; notification mechanism; support authority; and detailed interaction with OQ4 remain open. [open — implementation]
+
+#### A.3 OQ1 — Neutral Wording for Linking Rejection
+
+Status: **Decided (session governance), exact wording open.** [session governance]
+
+User-facing rejection wording MUST NOT distinguish D5 Type 1 from Type 2, disclose another account owner, disclose an email-match condition, or expose backend audit-reason strings. [session governance]
+
+The wording MUST provide a neutral support pointer consistent with OQ2. [session governance]
+
+Backend reason codes such as `account_owned_by_other` and `email_match_other_user` remain audit semantics and MUST NOT be surfaced as user-facing wording. [ADR-015] [session governance]
+
+Exact localized text, error codes, accessibility details, and any secondary notification channel remain open. [open — implementation]
+
+#### A.4 OQ3 — AuditEvent Schema vs Structured Logs
+
+Status: **Decided (session governance) across six governance axes; implementation/evidence gates remain open.** [session governance]
+
+The six axes and their closure are recorded in Section B. [session governance]
+
+### Section B — OQ3 Axis Closure
+
+#### B.1 Failure Semantics (FS)
+
+Canonical events are `social.signup` (E1), `social.login` (E2), `social.linking.attempted` (E3), and `social.linking.rejected` (E4). [ADR-015]
+
+E4 is **Class A — security-critical, fail-loud**: linking rejection itself MUST remain enforced even if audit persistence fails; audit failure MUST NOT roll back the rejection; audit failure MUST be explicitly observable/alertable; silent failure is prohibited. [session governance]
+
+E1, E2, and E3 are **Class B — operational observability, best-effort after-commit**: business flow continues if audit persistence fails; no rollback is required; a silent log is acceptable; alerting is optional. [session governance]
+
+“Auditable” does not mean transactionally coupled or fail-closed. [session governance]
+
+“Alertable” is a governance requirement and does not assert that alerting infrastructure currently exists. [session governance]
+
+The classification is static-by-default and reviewable; class changes require explicit governance review and MUST NOT be runtime-configurable. [session governance]
+
+#### B.2 PII Classification
+
+This classification applies only to E1–E4 and does not establish a general VORNEQ logging/privacy policy. [session governance]
+
+- F1 VORNEQ user id: **Required**, internal id only. [session governance]
+- F2 provider name: **Required**, closed provider enum. [session governance]
+- F3 provider subject/user id: **Allowed-bounded**, opaque, bounded type/length, with no semantic interpretation. [session governance]
+- F4 provider email: **Prohibited** from the audit payload. [session governance]
+- F5 IP address: **Deferred / prohibited-by-default**; it MUST NOT be collected until independently justified and approved. [session governance]
+- F6 user-agent: **Deferred / prohibited-by-default**; it MUST NOT be collected until independently justified and approved. [session governance]
+- F7 correlation id: **Required** only when generated by VORNEQ and not derived from PII. [session governance]
+- F8 reason code: **Required where applicable and event-schema-bounded**; it is required for `social.linking.rejected` but is not globally required for successful events. [session governance]
+- F9 raw provider payload, token, or credential material: **Prohibited absolutely** in the audit payload. [session governance]
+
+Data minimization applies even to Class A events; auditability does not license raw provider identity or credential data. [session governance]
+
+A `Prohibited` field may become allowed/required only through explicit governance review with independent justification; implementation/runtime configuration MUST NOT broaden the payload. [session governance]
+
+#### B.3 Access / Query Audience
+
+A1 Security/Incident, A2 Support, and A3 Privileged Operational/Admin are in-scope human read audiences; A4 Automated Alerting is in-scope as emission-side behavior, not a read audience; A5 User Self-Service and A6 External/Compliance Export are deferred pending independent use cases. [session governance]
+
+A1 MAY read all four events and F1/F2/F3/F7/F8 only as necessary for a specific investigation. [session governance]
+
+A2 defaults to E3/E4 and F1/F2/F7/F8; F3 is visible only for an explicit provider-conflict/provider-confusion use case. Support queries MUST use F1 as the input selector, not email or provider subject, and MUST remain single-user scoped. [session governance]
+
+A3 is allowed only for approved, bounded operations and MUST NOT be broad-by-default or serve as a bypass around A1/A2 constraints. [session governance]
+
+A4 is emission-side for E4, not a polling/read path, and uses only the minimal F1/F2/F7/F8 alert payload unless a separate justification is approved. [session governance]
+
+Bulk browsing, unrestricted search, and default export are prohibited. Human queries MUST be selector-based and purpose-bound; result windows/counts MUST be bounded; rate limiting is required with exact values deferred to implementation. [session governance] [open — implementation]
+
+Every privileged human audit read MUST itself be recorded through a non-recursive access-log channel containing at least actor, purpose, selector class, timestamp, and result count, without the returned payload. [session governance]
+
+The persistence location of the access-log is deferred to topology/implementation. [open — implementation]
+
+#### B.4 Retention
+
+Status: **Partially Decided — class mapping and semantics decided; numeric duration and deletion mechanism evidence/implementation-gated.** [session governance]
+
+For Art-1 social-auth events: E4 maps to `security`; E1/E2/E3 map to `standard`. A future E1 promotion to Class A would require a separate retention-class governance review rather than changing automatically. [session governance]
+
+For Art-2 access logs: A1 and A3 access entries map to `security`; A2 access entries map to `standard`; A4 emission-side alerting creates no read-access-log artifact. [session governance]
+
+Retention class does not determine retention duration; retention policy does not prove implementation; and longer retention is not automatically safer. [session governance] [repo evidence]
+
+Numeric duration is deferred/evidence-gated. Security duration requires incident-detection and investigation-window evidence; standard duration requires support operational-window evidence; Art-2 duration requires an accountability/abuse-detection window. [open — evidence-gated]
+
+After an approved duration, expiry semantics are **hard delete**; soft-delete is rejected because it continues retention. [session governance]
+
+Archival is **none by default**. Archive/cold-storage/export requires an independent use case and governance review and MUST NOT be used to bypass retention. [session governance]
+
+The deletion mechanism (TTL, periodic job, storage lifecycle, or equivalent) is implementation-gated and MUST be fail-observable and testable. [open — implementation]
+
+Legal/compliance hold is absent by default and requires an independent obligation plus explicit governance review. [session governance] [open — evidence-gated]
+
+Art-2 retention remains independent from Art-1 even when both use the same `standard` or `security` class label. [session governance]
+
+Unresolved duration MUST NOT be interpreted as infinite retention or as authorization for arbitrary deletion. [session governance]
+
+#### B.5 Immutability / Tamper-Evidence
+
+Status: **Decided at requirements level; mechanism/topology-gated.** [session governance]
+
+Immutability and tamper-evidence are distinct; the existing ORM append-only guard is application-layer evidence only and does not prove DB-level immutability or protection against privileged actors. [session governance] [repo evidence]
+
+The bounded threat model is T1 application bug/ordinary application actor, T2 compromised application credential, and T3 privileged DB/operator actor. T1/T2 prevention is required; T3 requires independently verifiable detection rather than absolute prevention. [session governance]
+
+For both Art-1 and Art-2, unauthorized UPDATE, pre-expiry DELETE, and unauthorized INSERT MUST be prevented against T1/T2 and detectable against T3. [session governance]
+
+Authorized expiry deletion remains permitted and MUST be distinguishable and auditable. [session governance]
+
+The protection level is an I6 bounded combination at requirements level: DB-level write separation/control for T1/T2 plus a tamper-evidence mechanism for T3. The concrete choice among hash-chain, external signing, WORM-like storage, or equivalent is deferred to topology discovery. [session governance] [open — implementation]
+
+Tamper-evidence MUST be independently verifiable relative to the actor under threat. If the same actor/credential can rewrite both the authoritative audit record and its tamper evidence without leaving detectable evidence, the T3 requirement is not satisfied. [session governance]
+
+The protection mechanism MUST NOT convert authorized hard expiry into infinite retention. [session governance]
+
+#### B.6 Topology
+
+Status: **Decided at architecture level; mechanism discovery-gated.** [session governance]
+
+The selected architecture is **C-3 Hybrid bounded**. [session governance]
+
+Art-1 authoritative source is the `AuditEvent` database store. [session governance] [repo evidence]
+
+Art-2 uses an authoritative logical store independent from Art-1 in authority and lifecycle; it MAY later share the same physical database only with appropriate logical/role separation. [session governance] [open — implementation]
+
+The tamper-evidence channel is non-authoritative, independent from the authoritative store, and exists only for tamper detection; it MUST NOT serve A1/A2/A3 queries. [session governance]
+
+Structured logs remain non-authoritative non-audit observability and MUST NOT silently become a fallback source of truth for Art-1 or Art-2. [session governance]
+
+Hybrid does not mean dual-authoritative. A mismatch between the authoritative record and the evidence channel MUST become a failure/security signal rather than causing one source to silently replace the other. [session governance]
+
+A4 remains emission-side and MUST NOT poll or broadly read the authoritative audit store. [session governance]
+
+C-1 Dedicated AuditEvent-only and C-2 Structured logs-only are rejected because they do not independently satisfy the T3 tamper-detection requirement; C-4 External audit backend is not selected and remains conditional because external SaaS is the last option. [session governance]
+
+D-c (DB + independently controlled external evidence storage) and D-d (DB + signing service) enter a Topology Discovery Gate. [session governance] [open — evidence-gated]
+
+The gate requires all of the following: (G1) a T3 actor may be able to alter the authoritative DB but cannot alter tamper evidence without a detectable trace; (G2) credential ownership/access boundaries proving this separation are demonstrable; (G3) authorized expiry remains possible and auditable; and (G4) failure mode and verification path are testable. [session governance]
+
+D-c is preferred if it satisfies the gate because it has lower intended complexity/external dependency; if D-c fails, D-d is evaluated; if D-d also fails, C-4 may enter the decision space and the external-SaaS trust-boundary interaction requires explicit review. [session governance] [open — evidence-gated]
+
+### Section C — Provenance Discipline
+
+The C1 decisions in this amendment are session-governance decisions recorded against baseline `main@803a6d153a1819c41d678b3b0e6d5f60da4f4b5f`. [session governance]
+
+Existing ADR statements are marked `[ADR-015]` where needed to distinguish source policy from the amendment. [session governance]
+
+Read-only repository findings supporting this amendment are marked `[repo evidence]`; they establish repository state only and do not prove runtime-active behavior. [repo evidence]
+
+Implementation and evidence gaps remain explicitly marked `[open — implementation]` or `[open — evidence-gated]` and MUST NOT be interpreted as implemented, deployed, or runtime-active. [session governance]
+
+### Section D — Open Implementation / Evidence Gates
+
+#### D.1 Retention gates
+
+- Incident detection window data. [open — evidence-gated]
+- Investigation window data. [open — evidence-gated]
+- Support operational window. [open — evidence-gated]
+- Numeric duration for `security`, `standard`, and Art-2 retention. [open — evidence-gated]
+- Concrete deletion mechanism and deletion observability. [open — implementation]
+- Structured-log retention interaction. [open — evidence-gated]
+
+#### D.2 Topology / trust-boundary gates
+
+- Demonstrate D-c against G1–G4 in actual infrastructure. [open — evidence-gated]
+- If D-c fails, demonstrate D-d against G1–G4. [open — evidence-gated]
+- If both fail, reopen C-4 External audit backend and explicitly review the external trust boundary. [open — evidence-gated]
+- Concrete DB role/write-separation design for T1/T2 prevention. [open — implementation]
+- Concrete tamper-evidence mechanism and independently-verifiable verification path. [open — implementation]
+
+#### D.3 Social-audit implementation gates
+
+- Add E1–E4 to the audit-event schema/validation gateway; the current repository gateway does not yet include the four social events. [repo evidence] [open — implementation]
+- Implement the bounded A1/A2/A3 query/read layer without broad browsing. [open — implementation]
+- Implement Art-2 non-recursive access-log storage and writer. [open — implementation]
+- Select and implement the A4 alert target/channel. [open — implementation]
+- Implement and test authorized-expiry deletion and its audit signal. [open — implementation]
+- Define tests for T3 detection and tamper-evidence mismatch behavior. [open — implementation]
+
+#### D.4 Other evidence gates
+
+- Establish whether alerting infrastructure exists and is suitable for the Class A fail-loud requirement. [open — evidence-gated]
+- Resolve applicable jurisdiction/privacy obligations, including any right-to-erasure interaction, before using them as retention requirements. [open — evidence-gated]
+- Establish any independent legal/compliance-hold use case before introducing a hold mechanism. [open — evidence-gated]
+- Establish any justified aggregation/anonymization window before retaining aggregates beyond raw-event expiry. [open — evidence-gated]
+- F5 IP address and F6 user-agent remain prohibited-by-default unless a separate threat model or independent requirement justifies collection. [session governance] [open — evidence-gated]
+
+### Section E — Cross-Cutting Boundaries
+
+1. Least privilege and purpose-bound access apply to every human read; permission alone is insufficient. [session governance]
+2. The PII classification is a ceiling, not a visibility floor for every audience. [session governance]
+3. F4 provider email and F9 raw provider payload/token/credential material are prohibited from these audit payloads; F5/F6 are not collected while deferred. [session governance]
+4. Auditability does not authorize raw provider data collection. [session governance]
+5. Privileged audit reads are recorded through a non-recursive access-log path. [session governance]
+6. Bulk browsing, unrestricted search, and default export are prohibited. [session governance]
+7. Retention duration unresolved does not mean keep forever and does not authorize arbitrary deletion. [session governance]
+8. Authorized hard-expiry deletion is compatible with immutability and MUST be distinguishable from unauthorized pre-expiry deletion. [session governance]
+9. T3 tamper evidence must be independently verifiable relative to the privileged actor being detected. [session governance]
+10. Hybrid topology has one authoritative source per artifact; the tamper-evidence channel is not a second source of truth. [session governance]
+11. External audit SaaS/backend is not selected by this amendment and is considered only if the bounded hybrid discovery gate fails. [session governance]
+12. Implementation/runtime configuration MUST NOT widen event classes, PII payload, audiences, authoritative-source definitions, retention policy, or protection requirements without explicit governance review. [session governance]
+
+### Section F — Status of This Amendment
+
+This amendment records session-canonical governance decisions for C1 and closes OQ1–OQ4 at the governance level, including the six-axis OQ3 decision. [session governance]
+
+The ADR document status remains **Proposed (frozen architecture; implementation deferred)**. [ADR-015] [session governance]
+
+This amendment does not implement social authentication, create migrations, modify settings, configure a provider, alter OAuth credentials, change runtime behavior, deploy code, or establish that any evidence-gated mechanism is active. [session governance]
+
+Retention remains partially decided because numeric duration and deletion mechanism are still evidence/implementation-gated. [session governance]
+
+Immutability is decided at requirements level while the concrete mechanism is topology-gated, and topology is decided at architecture level while D-c/D-d remain discovery-gated. [session governance]
+
+Open Questions 1–4 remain textually present above for historical traceability; this amendment is the controlling C1 governance record for their decisions. Open Questions 5–6 remain unresolved by C1. [session governance]
