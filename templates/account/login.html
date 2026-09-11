@@ -6,57 +6,82 @@
 {% block extra_head %}
 {{ block.super }}
 <link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/account-login.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="account-shell">
-  <div class="account-card">
-    <p class="account-card__eyebrow">VORNEQ / {% trans "Account" %}</p>
-    <h1 class="account-card__title">{% trans "Sign In" %}</h1>
-    <p class="account-card__subtitle">{% trans "Welcome back. Sign in to continue your discovery journey." %}</p>
+<div class="account-shell account-shell--login">
+  <div class="account-login">
+    <aside class="account-login__intro" aria-labelledby="account-login-title">
+      <p class="account-card__eyebrow">VORNEQ / {% trans "Account" %}</p>
+      <h1 id="account-login-title" class="account-login__headline">{% trans "Continue your discovery journey." %}</h1>
+      <p class="account-login__copy">{% trans "Sign in to access your workspace, saved context, documents, notes, and identity-linked activity." %}</p>
 
-    {% if not SOCIALACCOUNT_ONLY %}
-      <form method="post" action="{% url 'account_login' %}" class="account-form">
-        {% csrf_token %}
-        {% if redirect_field_value %}
-          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
-        {% endif %}
-
-        {% if form.non_field_errors %}
-          <div class="account-form__errors" role="alert">
-            {% for error in form.non_field_errors %}<p class="account-form__error">{{ error }}</p>{% endfor %}
-          </div>
-        {% endif %}
-
-        <div class="account-form__fields">
-          {% for field in form %}
-            {% if field.is_hidden %}
-              {{ field }}
-            {% else %}
-              <div class="account-form__field{% if field.field.widget.input_type == 'checkbox' %} account-form__field--checkbox{% endif %}">
-                {{ field.label_tag }}
-                {{ field }}
-                {% for error in field.errors %}<span class="account-form__field-error">{{ error }}</span>{% endfor %}
-                {% if field.help_text %}<span class="account-form__help">{{ field.help_text|safe }}</span>{% endif %}
-              </div>
-            {% endif %}
-          {% endfor %}
-        </div>
-
-        <button type="submit" class="account-form__button account-form__button--primary">{% trans "Sign In" %}</button>
-
-        <div class="account-form__links">
-          <a href="{% url 'account_reset_password' %}" class="account-form__link">{% trans "Forgot your password?" %}</a>
-          <a href="{% url 'account_signup' %}" class="account-form__link">{% trans "Don't have an account? Sign up" %}</a>
-        </div>
-      </form>
-    {% endif %}
-
-    {% if SOCIALACCOUNT_ENABLED %}
-      <div class="account-social">
-        {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+      <div class="account-login__principles" aria-label="VORNEQ principles">
+        <span>{% trans "Context, not Score" %}</span>
+        <span>{% trans "Evidence, not Truth" %}</span>
+        <span>{% trans "Portable Identity" %}</span>
       </div>
-    {% endif %}
+
+      <div class="account-login__assurance">
+        <strong>{% trans "Secure sign-in" %}</strong>
+        <span>{% trans "Your credentials are used only to authenticate your VORNEQ account." %}</span>
+      </div>
+    </aside>
+
+    <section class="account-card account-card--login" aria-labelledby="account-form-title">
+      <p class="account-card__eyebrow">{% trans "Welcome back" %}</p>
+      <h2 id="account-form-title" class="account-card__title">{% trans "Sign In" %}</h2>
+      <p class="account-card__subtitle">{% trans "Use your email address or username and password." %}</p>
+
+      {% if not SOCIALACCOUNT_ONLY %}
+        <form method="post" action="{% url 'account_login' %}" class="account-form">
+          {% csrf_token %}
+          {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+          {% endif %}
+
+          {% if form.non_field_errors %}
+            <div class="account-form__errors" role="alert" aria-live="polite">
+              <strong class="account-form__error-title">{% trans "We couldn't sign you in" %}</strong>
+              {% for error in form.non_field_errors %}<p class="account-form__error">{{ error }}</p>{% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="account-form__fields">
+            {% for field in form %}
+              {% if field.is_hidden %}
+                {{ field }}
+              {% else %}
+                <div class="account-form__field{% if field.field.widget.input_type == 'checkbox' %} account-form__field--checkbox{% endif %}">
+                  {{ field.label_tag }}
+                  {{ field }}
+                  {% for error in field.errors %}<span class="account-form__field-error">{{ error }}</span>{% endfor %}
+                  {% if field.help_text %}<span class="account-form__help">{{ field.help_text|safe }}</span>{% endif %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          <div class="account-form__utility">
+            <a href="{% url 'account_reset_password' %}" class="account-form__link">{% trans "Forgot your password?" %}</a>
+          </div>
+
+          <button type="submit" class="account-form__button account-form__button--primary account-form__button--login">{% trans "Sign In" %}</button>
+
+          <p class="account-form__signup">
+            {% trans "New to VORNEQ?" %}
+            <a href="{% url 'account_signup' %}" class="account-form__link">{% trans "Create an account" %}</a>
+          </p>
+        </form>
+      {% endif %}
+
+      {% if SOCIALACCOUNT_ENABLED %}
+        <div class="account-social">
+          {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+        </div>
+      {% endif %}
+    </section>
   </div>
 </div>
 {% endblock %}

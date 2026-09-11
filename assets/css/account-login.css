@@ -1,0 +1,170 @@
+.account-shell--login {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(var(--space-5), 7vh, var(--space-8));
+}
+
+.account-shell--login::before {
+  content: "";
+  position: absolute;
+  inset: 8% auto auto 8%;
+  width: 280px;
+  height: 280px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.account-login {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+  width: min(100%, 980px);
+  overflow: hidden;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius-lg) + 4px);
+  box-shadow: var(--shadow-medium);
+}
+
+.account-login__intro {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 560px;
+  padding: clamp(var(--space-6), 6vw, var(--space-8));
+  background: var(--color-bg-surface);
+  border-inline-end: 1px solid var(--color-border);
+}
+
+.account-login__intro .account-card__eyebrow {
+  text-align: start;
+}
+
+.account-login__headline {
+  max-width: 12ch;
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-primary);
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.account-login__copy {
+  max-width: 48ch;
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.75;
+}
+
+.account-login__principles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+}
+
+.account-login__principles span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding-inline: var(--space-3);
+  color: var(--color-accent);
+  background: var(--color-accent-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+}
+
+.account-login__assurance {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: auto;
+  padding-top: var(--space-6);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+}
+
+.account-login__assurance strong {
+  color: var(--color-text-primary);
+}
+
+.account-card--login {
+  width: 100%;
+  align-self: center;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.account-form__error-title {
+  display: block;
+  margin-bottom: var(--space-1);
+  color: var(--color-error);
+  font-size: var(--font-size-small);
+}
+
+.account-form__utility {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: calc(var(--space-2) * -1);
+  font-size: var(--font-size-small);
+}
+
+.account-form__button--login {
+  width: 100%;
+  min-height: 48px;
+}
+
+.account-form__signup {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+  text-align: center;
+}
+
+.account-form__signup .account-form__link {
+  margin-inline-start: var(--space-1);
+  font-weight: 700;
+}
+
+@media (max-width: 860px) {
+  .account-login {
+    grid-template-columns: 1fr;
+    width: min(100%, 540px);
+  }
+
+  .account-login__intro {
+    min-height: auto;
+    padding: var(--space-5);
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .account-login__headline {
+    max-width: none;
+    font-size: var(--font-size-h2);
+  }
+
+  .account-login__principles,
+  .account-login__assurance {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-shell--login {
+    padding-inline: var(--space-2);
+  }
+
+  .account-login__intro {
+    padding: var(--space-4);
+  }
+
+  .account-card--login {
+    padding: var(--space-4);
+  }
+}
