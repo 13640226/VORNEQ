@@ -11,6 +11,7 @@
 
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var currentId = null;
+    var pendingTargetId = null;
     var pulseTimer = null;
 
     function setActive(sectionId, shouldPulse) {
@@ -43,6 +44,21 @@
       window.history.replaceState(null, '', nextUrl);
     }
 
+    function releasePendingTarget() {
+      pendingTargetId = null;
+    }
+
+    function releasePendingTargetOnKeydown(event) {
+      var scrollKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'];
+      if (scrollKeys.indexOf(event.key) !== -1 || event.code === 'Space') {
+        releasePendingTarget();
+      }
+    }
+
+    window.addEventListener('wheel', releasePendingTarget, { passive: true });
+    window.addEventListener('touchstart', releasePendingTarget, { passive: true });
+    window.addEventListener('keydown', releasePendingTargetOnKeydown);
+
     links.forEach(function (link) {
       link.addEventListener('click', function (event) {
         var sectionId = link.dataset.signalTarget;
@@ -51,6 +67,7 @@
 
         event.preventDefault();
         setActive(sectionId, true);
+        pendingTargetId = sectionId;
 
         if (window.history && window.history.pushState) {
           var nextUrl = window.location.pathname + window.location.search + '#' + sectionId;
@@ -65,6 +82,20 @@
     });
 
     var observer = new IntersectionObserver(function (entries) {
+      if (pendingTargetId) {
+        var pendingTargetEntry = entries.find(function (entry) {
+          return entry.isIntersecting && entry.target.id === pendingTargetId;
+        });
+
+        if (!pendingTargetEntry) return;
+
+        var targetId = pendingTargetId;
+        pendingTargetId = null;
+        setActive(targetId, true);
+        replaceHash(targetId);
+        return;
+      }
+
       var visible = entries
         .filter(function (entry) { return entry.isIntersecting; })
         .sort(function (a, b) { return b.intersectionRatio - a.intersectionRatio; });
