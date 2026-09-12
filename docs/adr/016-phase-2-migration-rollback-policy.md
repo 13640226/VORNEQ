@@ -259,3 +259,44 @@ The numeric execution budget is intentionally resolved per change window rather 
 - PR A migration implementation details.
 - PR C backfill command design.
 - Automated rollback in CI/CD.
+
+## Amendment — Restore-Rehearsal Freshness Decision (2026-09-11)
+
+This append-only amendment records a session-governance decision for the unresolved restore-rehearsal freshness window in D5. It does not change this ADR's document status, rewrite existing policy sections, or authorize migration/runtime implementation.
+
+### Decision Record — Freshness
+
+- **Status:** Decided (`[session governance]`) — 2026-09-11.
+- **Decision:** ADR-016 restore-rehearsal freshness is **30 days**.
+- **Rationale:** ADR-016 defines the restore rehearsal as a global migration prerequisite rather than a per-migration prerequisite. A 30-day baseline is adopted, while preserving authority to require a tighter window for materially higher-risk changes.
+
+### Canonical Rule
+
+A successful **infrastructure restore rehearsal** MUST have occurred within the preceding **30 days** for the general D5 restore-rehearsal prerequisite to be considered satisfied.
+
+### Tighter Override Conditions
+
+A change-specific rehearsal or a shorter freshness window MAY be required when any of the following applies:
+
+1. the migration is classified as high-risk;
+2. there has been a material change to PostgreSQL, provider, backup, restore, or database topology; or
+3. the Change Approver determines that the migration environment or recovery path is materially different from the most recent qualifying rehearsal.
+
+Any such tighter requirement is change-specific and does not alter the 30-day general baseline unless this ADR is amended again.
+
+### Locked Distinctions
+
+- A repo-contract rehearsal using CI or ephemeral PostgreSQL does **not** substitute for an infrastructure restore rehearsal.
+- The qualifying infrastructure restore rehearsal must fall within the 30-day freshness window unless a tighter override applies.
+- The existing requirement for a production database backup less than 24 hours old within the migration window remains a separate prerequisite and is unchanged by this decision.
+- This decision creates no new RPO or RTO commitment.
+
+### Provenance Discipline
+
+- `[session governance]` — the 30-day freshness decision and the override rule recorded by this amendment.
+- `[ADR-016 existing]` — the pre-existing D5 separation between backup freshness, restore-rehearsal freshness, and change-specific risk handling.
+- `[open — evidence-gated]` — whether a qualifying infrastructure restore rehearsal exists and is fresh enough for a specific migration window remains an evidence question.
+
+### Status Recording
+
+The ADR document status remains exactly as recorded above: `Proposed (frozen policy; implementation deferred)`. This amendment records only the freshness decision and does not change any other ADR-016 decision, implementation state, deployment state, or evidence-gated prerequisite.
