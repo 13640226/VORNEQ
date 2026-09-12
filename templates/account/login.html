@@ -12,6 +12,34 @@
 <div class="account-shell">
   <div class="account-card">
     <p class="account-card__eyebrow">VORNEQ / {% trans "Account" %}</p>
+
+    <form method="post" action="{% url 'set_language' %}" class="account-form" aria-label="{% trans 'Choose language' %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <div class="account-form__actions account-form__actions--wrap">
+        <button
+          type="submit"
+          name="language"
+          value="fa"
+          class="account-form__button {% if request.LANGUAGE_CODE == 'fa' %}account-form__button--primary{% else %}account-form__button--secondary{% endif %}"
+          lang="fa"
+          dir="rtl">
+          فارسی
+        </button>
+        <button
+          type="submit"
+          name="language"
+          value="en"
+          class="account-form__button {% if request.LANGUAGE_CODE == 'en' %}account-form__button--primary{% else %}account-form__button--secondary{% endif %}"
+          lang="en"
+          dir="ltr">
+          English
+        </button>
+      </div>
+    </form>
+
+    <div class="account-divider" aria-hidden="true"></div>
+
     <h1 class="account-card__title">{% trans "Sign In" %}</h1>
     <p class="account-card__subtitle">{% trans "Welcome back. Sign in to continue your discovery journey." %}</p>
 
