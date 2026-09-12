@@ -556,3 +556,84 @@ Claims in this amendment use the following provenance labels: [session governanc
 - `[open — implementation]` — a requirement whose implementation/runtime effectiveness remains open.
 
 Nothing in this amendment authorizes provider mutation, database access, deployment, runtime verification, secret disclosure, or implementation work. [session governance]
+
+## Amendment — D4 Database Topology Assessment / Closure (2026-09-11)
+
+This amendment is append-only and records the authorized D4 repo-level deep check and the resulting governance closure against baseline `main@e2f9b9d0e2c03c48f529ddc14e0a259b4ada1bf2`. It does not change ADR-018 status, does not implement D4, and does not promote any evidence-gated control to PASS or FAIL. [session governance] [open — evidence-gated]
+
+### D4 Deep Check Provenance
+
+The D4 assessment has two independent provenance paths: (1) the earlier B1 read-only provider-UI inspection and (2) the authorized repo-level deep check. Both paths reached the same conclusion: the concrete database association remains unproven and provider-blocked. [session governance] [repo evidence] [open — evidence-gated]
+
+| Output | Finding | Assessment |
+|---|---|---|
+| O1 — named DB resource in `render.yaml` | No named database resource mapping found | No declarative resource identity |
+| O2 — `fromDatabase` / `connectionString` | Not present in the inspected Blueprint | No declarative DB binding |
+| O3 — resource name in docs | No concrete named DB mapping found | Documentation intent only |
+| O4 — resource in settings/config | `DATABASE_URL` abstraction only | No provider resource binding |
+| O5 — CI resource binding | Environment-specific secret names exist, but no provider resource name | CI intent evidence only |
+| O6 — usable repo mapping | No usable `DATABASE_URL` → concrete resource mapping found in targeted artifacts | D4 unresolved confirmed |
+
+### D4 Verdict
+
+Status: **Closed as Assessment / Unresolved as Control / Provider-blocked.** [session governance]
+
+D4 remains evidence-gated. The authorized assessment is complete for the currently available evidence, but the control is neither passed nor failed. The absence of a proven binding MUST NOT be interpreted as proof that no binding exists. [session governance] [open — evidence-gated]
+
+### Evidence Chain
+
+The repository establishes the following staging path: [repo evidence]
+
+```text
+staging workflow / Render settings
+  → DATABASE_URL abstraction
+    → PostgreSQL
+```
+
+The repository establishes the following production-intent path: [repo evidence]
+
+```text
+production workflow
+  → PRODUCTION_SOURCE_DATABASE_URL
+    → DATABASE_URL abstraction
+      → PostgreSQL
+```
+
+The key missing link is: [open — evidence-gated]
+
+```text
+DATABASE_URL
+  → concrete provider PostgreSQL resource
+```
+
+That final mapping is not established by the repo-level evidence and was not resolved by the B1 provider-UI inspection. [session governance] [repo evidence] [open — evidence-gated]
+
+### C3 / C4 State
+
+- **C3 — DB mapping:** Unresolved — provider-blocked; the concrete resource behind the effective database URL is not proven. [open — evidence-gated]
+- **C4 — Internal vs External:** Unresolved — repo-indeterminable; the repository does not establish whether the effective provider path is internal/private, restricted-network, or external TLS. [open — evidence-gated]
+
+### Deep-Check Limitations
+
+- GitHub Code Search returned `incomplete_results=true` for relevant searches. [repo evidence]
+- A local clone fallback could not be completed because outbound DNS was unavailable in the execution runtime. [session execution evidence]
+- Therefore, a null code-search result alone is **not** treated as proof of absence across the entire repository. [session governance]
+- The directly inspected targeted artifacts in authorized scopes S1–S5 did not provide a named provider-resource binding. [repo evidence]
+
+### D4 Reopening Triggers
+
+D4 returns from Closed-as-Assessment to In-progress if any of the following becomes available: [session governance]
+
+1. **RT-1 — Provider association metadata:** read-only provider UI evidence directly links the application/service to a concrete database resource.
+2. **RT-2 — Declarative IaC binding:** a Render Blueprint or other approved IaC artifact introduces `fromDatabase`, `connectionString`, or an equivalent concrete resource binding.
+3. **RT-3 — Provider support evidence:** a provider support response supplies verifiable resource-binding evidence.
+4. **RT-4 — Read-only shell/hostname evidence:** a plan/tooling change permits a read-only inspection that reveals database hostname/resource identity without credential disclosure.
+5. **RT-5 — Read-only resource identity path:** any approved read-only provider mechanism exposes the hostname/resource identity without secret values.
+6. **RT-6 — GitHub secret metadata:** non-value metadata validly identifies the bound provider resource.
+7. **RT-7 — Direct new evidence:** any new evidence directly binds `DATABASE_URL` to a concrete named provider resource.
+
+After any reopening trigger, D4 must be reassessed before a PASS/FAIL or implementation claim is made. [session governance]
+
+### Governance Principle
+
+**Governance is not a substitute for evidence about actual resource membership.** The D4 closure records assessment completeness and the provider-blocked state; it does not manufacture a database identity, classify an unverified provider resource, or claim runtime implementation. [session governance] [open — evidence-gated]
