@@ -52,7 +52,7 @@
 
 .vorneq-traj {
   fill: none;
-  stroke: #1f4fd8;
+  stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -66,11 +66,11 @@
 }
 
 .vorneq-node--cobalt {
-  fill: #1f4fd8;
+  fill: currentColor;
 }
 
 .vorneq-node--cyan {
-  fill: #00bfea;
+  fill: var(--color-accent);
 }
 
 .standalone-nav__brand.is-logo-busy {
