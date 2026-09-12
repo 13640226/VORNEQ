@@ -12,6 +12,9 @@
 
   function completeActivation() {
     if (onHome) {
+      if (window.location.hash && window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
       window.location.reload();
       return;
     }
