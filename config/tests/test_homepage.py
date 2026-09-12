@@ -46,6 +46,15 @@ class HomepageSignalNavigationTests(TestCase):
         self.assertNotContains(response, "Future contract")
         self.assertNotContains(response, "Executable providers & integrations")
 
+    def test_homepage_renders_hero_atlas_and_preserves_labels(self):
+        response = self.get_english_home()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="global-home__atlas"')
+        self.assertNotContains(response, "global-home__globe")
+        for label in ("Knowledge", "Software", "Products", "Services", "Media"):
+            self.assertContains(response, f">{label}</span>")
+
     def test_homepage_preserves_live_search_contract(self):
         response = self.get_english_home()
 
