@@ -30,18 +30,16 @@
           <p class="global-home__kicker">{% trans "Context, not Score · Evidence, not Truth · Portable Identity" %}</p>
         </div>
         <div class="global-home__visual" aria-hidden="true">
-          <svg class="global-home__globe" viewBox="0 0 440 440" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation">
-            <circle cx="220" cy="220" r="150" stroke="currentColor" stroke-opacity=".28"/>
-            <ellipse cx="220" cy="220" rx="150" ry="58" stroke="currentColor" stroke-opacity=".24" transform="rotate(28 220 220)"/>
-            <ellipse cx="220" cy="220" rx="150" ry="58" stroke="currentColor" stroke-opacity=".2" transform="rotate(-62 220 220)"/>
-            <ellipse cx="220" cy="220" rx="148" ry="35" stroke="currentColor" stroke-opacity=".18" transform="rotate(90 220 220)"/>
-            <line x1="220" y1="70" x2="126" y2="166" stroke="currentColor" stroke-opacity=".5" stroke-dasharray="5 7"/>
-            <line x1="126" y1="166" x2="88" y2="292" stroke="currentColor" stroke-opacity=".38" stroke-dasharray="5 7"/>
-            <line x1="220" y1="70" x2="314" y2="166" stroke="currentColor" stroke-opacity=".5" stroke-dasharray="5 7"/>
-            <line x1="314" y1="166" x2="352" y2="292" stroke="currentColor" stroke-opacity=".38" stroke-dasharray="5 7"/>
-            <line x1="88" y1="292" x2="220" y2="370" stroke="currentColor" stroke-opacity=".42" stroke-dasharray="5 7"/>
-            <line x1="352" y1="292" x2="220" y2="370" stroke="currentColor" stroke-opacity=".42" stroke-dasharray="5 7"/>
-            <g fill="currentColor"><circle cx="220" cy="70" r="7"/><circle cx="126" cy="166" r="6"/><circle cx="314" cy="166" r="6"/><circle cx="88" cy="292" r="5"/><circle cx="352" cy="292" r="5"/><circle cx="220" cy="370" r="7"/></g>
+          <svg class="global-home__atlas" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" aria-hidden="true" focusable="false" role="presentation">
+            <g class="vorneq-hero-field">
+              <path class="vorneq-traj vorneq-traj--thin" d="M 280 130 C 220 200, 185 310, 180 420" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path class="vorneq-traj vorneq-traj--thin" d="M 180 420 C 320 360, 460 320, 590 320" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path class="vorneq-traj vorneq-traj--heavy" d="M 180 420 C 220 560, 340 660, 480 640 C 570 640, 650 580, 690 500" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle class="vorneq-node vorneq-node--cobalt" cx="280" cy="130" r="14" fill="currentColor"/>
+              <circle class="vorneq-node vorneq-node--cobalt" cx="180" cy="420" r="14" fill="currentColor"/>
+              <circle class="vorneq-node vorneq-node--cobalt" cx="480" cy="640" r="14" fill="currentColor"/>
+              <circle class="vorneq-node vorneq-node--cyan" cx="590" cy="320" r="14" fill="var(--color-accent)"/>
+            </g>
           </svg>
           <div class="global-home__atlas-labels">
             <span>{% trans "Knowledge" %}</span>
