@@ -43,15 +43,53 @@
   inline-size: 32px;
   block-size: 32px;
   flex: 0 0 32px;
-  background-color: currentColor;
-  -webkit-mask-image: url("../images/brand/ia-s.svg");
-  mask-image: url("../images/brand/ia-s.svg");
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: contain;
-  mask-size: contain;
+}
+
+.vorneq-mark {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+
+.vorneq-traj {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.vorneq-traj--thin {
+  stroke-width: 1.4;
+}
+
+.vorneq-traj--heavy {
+  stroke-width: 5.6;
+}
+
+.vorneq-node--cobalt {
+  fill: currentColor;
+}
+
+.vorneq-node--cyan {
+  fill: var(--color-accent);
+}
+
+.standalone-nav__brand.is-logo-busy {
+  pointer-events: none;
+}
+
+.vorneq-mark.is-rotating {
+  will-change: transform;
+  animation: vorneq-logo-rotate 600ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+@keyframes vorneq-logo-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(-180deg);
+  }
 }
 
 .standalone-nav__wordmark {
@@ -261,5 +299,9 @@
   .standalone-nav__link,
   .standalone-nav__action {
     transition: none;
+  }
+
+  .vorneq-mark.is-rotating {
+    animation: none;
   }
 }
