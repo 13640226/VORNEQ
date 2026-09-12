@@ -4,8 +4,26 @@
   <div class="standalone-nav__inner">
     <a href="{% url 'home' %}"
        class="standalone-nav__brand"
+       data-brand-logo
+       data-brand-home-url="{% url 'home' %}"
+       data-brand-on-home="{% if request.resolver_match.url_name == 'home' %}true{% else %}false{% endif %}"
        aria-label="{% trans 'VORNEQ — Trust Infrastructure' %}">
-      <span class="standalone-nav__symbol" aria-hidden="true"></span>
+      <svg class="standalone-nav__symbol"
+           viewBox="0 0 64 64"
+           role="presentation"
+           aria-hidden="true"
+           focusable="false">
+        <g class="vorneq-logo__atlas">
+          <path class="vorneq-logo__path vorneq-logo__path--primary" d="M9 42 C15 17 34 10 52 21" />
+          <path class="vorneq-logo__path vorneq-logo__path--secondary" d="M10 42 C25 31 39 28 52 22" />
+          <path class="vorneq-logo__path vorneq-logo__path--primary" d="M10 43 C23 57 42 57 53 39" />
+          <path class="vorneq-logo__path vorneq-logo__path--secondary" d="M52 22 C57 28 58 34 56 39" />
+          <circle class="vorneq-logo__node" cx="10" cy="42" r="2.7" />
+          <circle class="vorneq-logo__node" cx="24" cy="14" r="2.7" />
+          <circle class="vorneq-logo__node" cx="43" cy="52" r="2.7" />
+          <circle class="vorneq-logo__node vorneq-logo__node--discovery" cx="52" cy="22" r="2.5" />
+        </g>
+      </svg>
       <span class="standalone-nav__wordmark">VORNEQ</span>
     </a>
 
