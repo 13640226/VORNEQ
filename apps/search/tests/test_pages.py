@@ -3,7 +3,6 @@ from unittest.mock import patch
 
 from django.test import TestCase
 from django.urls import reverse
-from django.utils.translation import override
 
 from apps.search.services import UnifiedSearch
 
@@ -18,9 +17,9 @@ EMPTY_SEARCH_PAYLOAD = {
 }
 
 
-class HomeSearchExpansionTests(TestCase):
+class HomeSearchBoundaryTests(TestCase):
     @patch.object(UnifiedSearch, "collect", return_value=[])
-    def test_home_forwards_supported_filters(self, collect):
+    def test_home_does_not_execute_search_or_forward_advanced_filters(self, collect):
         response = self.client.get(
             reverse("home"),
             {
@@ -35,80 +34,16 @@ class HomeSearchExpansionTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        filters = collect.call_args.kwargs["filters"]
-        self.assertEqual(filters["types"], {"product"})
-        self.assertNotIn("item_type", filters)
-        self.assertEqual(filters["media_type"], "image")
-        self.assertEqual(filters["category"], "ebook")
-        self.assertEqual(filters["price_min"], Decimal("1.50"))
-        self.assertEqual(filters["price_max"], Decimal("9.99"))
-        self.assertContains(response, 'name="item_type"')
-        self.assertContains(response, 'name="media_type"')
-        self.assertContains(response, 'name="category"')
-        self.assertContains(response, 'name="price_min"')
-        self.assertContains(response, 'name="price_max"')
-
-    @patch.object(UnifiedSearch, "collect", return_value=[])
-    def test_home_ignores_invalid_advanced_filters(self, collect):
-        self.client.get(
-            reverse("home"),
-            {
-                "item_type": "private",
-                "media_type": "audio",
-                "price_min": "-1",
-                "price_max": "not-a-number",
-            },
-        )
-
-        filters = collect.call_args.kwargs["filters"]
-        self.assertNotIn("item_type", filters)
-        self.assertNotIn("media_type", filters)
-        self.assertNotIn("price_min", filters)
-        self.assertNotIn("price_max", filters)
-
-    @patch.object(UnifiedSearch, "collect", return_value=[])
-    def test_home_type_book_keeps_implied_item_type(self, collect):
-        self.client.get(
-            reverse("home"),
-            {"type": "book", "item_type": "document"},
-        )
-
-        filters = collect.call_args.kwargs["filters"]
-        self.assertEqual(filters["types"], {"libraryitem"})
-        self.assertEqual(filters["item_type"], "book")
-
-    @patch.object(UnifiedSearch, "collect", return_value=[])
-    def test_home_type_all_allows_item_type(self, collect):
-        self.client.get(
-            reverse("home"),
-            {"type": "all", "item_type": "document"},
-        )
-
-        filters = collect.call_args.kwargs["filters"]
-        self.assertNotIn("types", filters)
-        self.assertEqual(filters["item_type"], "document")
-
-    @patch.object(UnifiedSearch, "collect", return_value=[])
-    def test_home_type_article_keeps_implied_item_type(self, collect):
-        self.client.get(
-            reverse("home"),
-            {"type": "article", "item_type": "book"},
-        )
-
-        filters = collect.call_args.kwargs["filters"]
-        self.assertEqual(filters["types"], {"article", "libraryitem"})
-        self.assertEqual(filters["item_type"], "article")
-
-    @patch.object(UnifiedSearch, "collect", return_value=[])
-    def test_home_type_audio_ignores_item_type(self, collect):
-        self.client.get(
-            reverse("home"),
-            {"type": "audio", "item_type": "document"},
-        )
-
-        filters = collect.call_args.kwargs["filters"]
-        self.assertEqual(filters["types"], {"audio"})
-        self.assertNotIn("item_type", filters)
+        collect.assert_not_called()
+        self.assertContains(response, 'name="q"')
+        self.assertNotContains(response, 'name="type"')
+        self.assertNotContains(response, 'name="item_type"')
+        self.assertNotContains(response, 'name="media_type"')
+        self.assertNotContains(response, 'name="category"')
+        self.assertNotContains(response, 'name="price_min"')
+        self.assertNotContains(response, 'name="price_max"')
+        self.assertNotContains(response, "Advanced filters")
+        self.assertNotContains(response, "Quick content filters")
 
     @patch.object(
         UnifiedSearch,
@@ -116,168 +51,31 @@ class HomeSearchExpansionTests(TestCase):
         return_value=[
             {
                 "type": "article",
-                "title": "Article without route",
-                "description": "Article summary",
+                "title": "Legacy Home result",
+                "description": "Legacy result presentation",
                 "url": None,
             }
         ],
     )
-    def test_home_displays_article_without_url(self, collect):
+    def test_home_does_not_render_query_results_or_featured_feed(self, collect):
         response = self.client.get(reverse("home"), {"q": "article"})
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Article without route")
-        self.assertContains(response, "<h3>Article without route</h3>", html=True)
+        collect.assert_not_called()
+        self.assertNotContains(response, "Legacy Home result")
+        self.assertNotContains(response, "Featured discovery")
+        self.assertNotContains(response, "Latest Discoveries")
+        self.assertNotContains(response, 'id="discoveries"')
 
-    @patch.object(
-        UnifiedSearch,
-        "collect",
-        return_value=[
-            {
-                "type": "mediaasset",
-                "title": "Media without route",
-                "description": "Media metadata",
-                "url": None,
-            }
-        ],
-    )
-    def test_home_displays_media_without_url(self, collect):
-        response = self.client.get(reverse("home"), {"q": "media"})
+    @patch.object(UnifiedSearch, "collect", return_value=[])
+    def test_home_keeps_search_as_handoff_only(self, collect):
+        response = self.client.get(reverse("home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Media without route")
-        self.assertContains(response, "<h3>Media without route</h3>", html=True)
-
-    @patch.object(
-        UnifiedSearch,
-        "collect",
-        return_value=[
-            {
-                "type": "product",
-                "title": "Linked product",
-                "description": "Product summary",
-                "url": "/products/example/",
-            }
-        ],
-    )
-    def test_home_keeps_link_for_result_with_url(self, collect):
-        response = self.client.get(reverse("home"), {"q": "product"})
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(
-            response,
-            '<h3><a href="/products/example/">Linked product</a></h3>',
-            html=True,
-        )
-
-    @patch.object(
-        UnifiedSearch,
-        "collect",
-        return_value=[
-            {
-                "type": "product",
-                "title": "Featured product",
-                "description": "Lead item",
-                "url": "/products/featured/",
-            },
-            {
-                "type": "article",
-                "title": "Second discovery",
-                "description": "Feed item",
-                "url": None,
-            },
-        ],
-    )
-    def test_home_uses_first_page_item_as_presentation_featured(self, collect):
-        with override("en"):
-            response = self.client.get(
-                reverse("home"),
-                {"q": "dashboard"},
-            )
-
-        self.assertEqual(response.status_code, 200)
-
-        self.assertEqual(
-            response.context["featured"][0]["title"],
-            "Featured product",
-        )
-        self.assertEqual(
-            response.context["results"][0]["title"],
-            "Second discovery",
-        )
-        self.assertEqual(
-            response.context["total_results"],
-            2,
-        )
-
-        self.assertContains(
-            response,
-            "Featured discovery",
-        )
-
-    @patch.object(
-        UnifiedSearch,
-        "collect",
-        return_value=[],
-    )
-    def test_home_exposes_contract_safe_quick_filters_without_unbacked_trust(
-        self,
-        collect,
-    ):
-        with override("en"):
-            response = self.client.get(
-                reverse("home"),
-                {"q": "dashboard"},
-            )
-
-        self.assertEqual(response.status_code, 200)
-
-        self.assertEqual(
-            [
-                item["value"]
-                for item in response.context["quick_filters"]
-            ],
-            [
-                "product",
-                "book",
-                "article",
-                "document",
-                "audio",
-            ],
-        )
-
-        # #162 intentionally keeps the Trust section and its explanatory copy
-        # out of the DOM until a complete KPI data contract exists. Restore
-        # positive Trust assertions only when all required KPI values are valid.
-        self.assertNotContains(
-            response,
-            'id="trust"',
-        )
-        self.assertNotContains(
-            response,
-            "No global trust score",
-        )
-        self.assertNotContains(
-            response,
-            "Verification produces inspectable findings and evidence about an assertion",
-        )
-        self.assertNotContains(
-            response,
-            "Reputation is contextual",
-        )
-        self.assertContains(
-            response,
-            "Identity is designed to be portable across experiences rather than app-local.",
-        )
-
-        self.assertNotContains(
-            response,
-            "trust_score",
-        )
-        self.assertNotContains(
-            response,
-            "contextual_reputation",
-        )
+        collect.assert_not_called()
+        self.assertContains(response, 'role="search"')
+        self.assertContains(response, f'action="{reverse("search_page")}"')
+        self.assertContains(response, "Start searching")
 
 
 class StandaloneSearchPageTests(TestCase):
