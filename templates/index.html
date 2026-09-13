@@ -30,24 +30,20 @@
           <p class="global-home__kicker">{% trans "Context, not Score · Evidence, not Truth · Portable Identity" %}</p>
         </div>
         <div class="global-home__visual" aria-hidden="true">
-          <svg class="global-home__atlas" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" aria-hidden="true" focusable="false" role="presentation">
-            <g class="vorneq-hero-field">
-              <path class="vorneq-traj vorneq-traj--thin" d="M 280 130 C 220 200, 185 310, 180 420" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path class="vorneq-traj vorneq-traj--thin" d="M 180 420 C 320 360, 460 320, 590 320" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path class="vorneq-traj vorneq-traj--heavy" d="M 180 420 C 220 560, 340 660, 480 640 C 570 640, 650 580, 690 500" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle class="vorneq-node vorneq-node--cobalt" cx="280" cy="130" r="14" fill="currentColor"/>
-              <circle class="vorneq-node vorneq-node--cobalt" cx="180" cy="420" r="14" fill="currentColor"/>
-              <circle class="vorneq-node vorneq-node--cobalt" cx="480" cy="640" r="14" fill="currentColor"/>
-              <circle class="vorneq-node vorneq-node--cyan" cx="590" cy="320" r="14" fill="var(--color-accent)"/>
+          <svg class="global-home__globe" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" aria-hidden="true" focusable="false" role="presentation">
+            <g class="global-home__globe-grid">
+              <circle cx="120" cy="120" r="86"/>
+              <ellipse cx="120" cy="120" rx="44" ry="86"/>
+              <ellipse cx="120" cy="120" rx="70" ry="86"/>
+              <ellipse cx="120" cy="120" rx="86" ry="34"/>
+              <ellipse cx="120" cy="120" rx="86" ry="62"/>
+              <path d="M34 120h172"/>
             </g>
+            <path class="global-home__globe-path" d="M61 151c27-44 67-66 119-58-11 37-37 65-79 80"/>
+            <circle class="global-home__globe-node" cx="61" cy="151" r="4.5"/>
+            <circle class="global-home__globe-node" cx="129" cy="105" r="4.5"/>
+            <circle class="global-home__globe-node" cx="180" cy="93" r="4.5"/>
           </svg>
-          <div class="global-home__atlas-labels">
-            <span>{% trans "Knowledge" %}</span>
-            <span>{% trans "Software" %}</span>
-            <span>{% trans "Products" %}</span>
-            <span>{% trans "Services" %}</span>
-            <span>{% trans "Media" %}</span>
-          </div>
         </div>
       </div>
     </div>
