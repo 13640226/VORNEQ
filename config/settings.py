@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 
 from csp.constants import NONE, SELF, UNSAFE_INLINE
+import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
 
@@ -44,10 +45,18 @@ def env_list(name, default=""):
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-development-only-change-me",
-)
+DEVELOPMENT_SECRET_KEY = "django-insecure-development-only-change-me"
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or DEVELOPMENT_SECRET_KEY
+
+if VORNEQ_ENV == "production" and (
+    not os.environ.get("DJANGO_SECRET_KEY", "").strip()
+    or SECRET_KEY == DEVELOPMENT_SECRET_KEY
+):
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY must be explicitly configured with a non-development "
+        "value when VORNEQ_ENV=production."
+    )
+
 DEBUG = env_bool("DJANGO_DEBUG", True)
 
 if VORNEQ_ENV == "production" and DEBUG:
@@ -141,12 +150,16 @@ TEMPLATES = [
 ]
 
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+_DATABASE_URL = os.environ.get("DATABASE_URL")
+if _DATABASE_URL:
+    DATABASES = {"default": dj_database_url.parse(_DATABASE_URL, conn_max_age=600)}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -303,7 +316,7 @@ SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": [SELF],
-        "script-src": [SELF, UNSAFE_INLINE],
+        "script-src": [SELF],
         "style-src": [SELF, UNSAFE_INLINE],
         "img-src": [SELF, "data:", "blob:", "https:"],
         "font-src": [SELF, "data:"],

@@ -64,10 +64,15 @@ class BrandIntegrationTests(TestCase):
         preference = Path(preference_path).read_text(encoding="utf-8")
         selector = Path(selector_path).read_text(encoding="utf-8")
 
-        self.assertIn("var valid = ['navy',", base)
-        self.assertIn("var preference = 'navy';", base)
-        self.assertIn("localStorage.getItem('vorneq-theme') || 'navy'", base)
-        self.assertIn("navy: '#071426'", base)
+        bootstrap_path = finders.find("js/theme-bootstrap.js")
+        self.assertIsNotNone(bootstrap_path)
+        bootstrap = Path(bootstrap_path).read_text(encoding="utf-8")
+
+        self.assertIn("js/theme-bootstrap.js", base)
+        self.assertIn("var valid = ['navy',", bootstrap)
+        self.assertIn("var preference = 'navy';", bootstrap)
+        self.assertIn("localStorage.getItem('vorneq-theme') || 'navy'", bootstrap)
+        self.assertIn("navy: '#071426'", bootstrap)
 
         self.assertIn("const DEFAULT_THEME = 'navy';", preference)
         self.assertIn("'navy',", preference)

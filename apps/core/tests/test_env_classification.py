@@ -21,15 +21,18 @@ class VorneqEnvBootTests(SimpleTestCase):
         "import logging; logging.basicConfig(level=logging.WARNING); import config.settings",
     ]
 
-    def _boot(self, *, env_value=None, debug_value=None):
+    def _boot(self, *, env_value=None, debug_value=None, secret_value=None):
         env = os.environ.copy()
         env.pop("VORNEQ_ENV", None)
         env.pop("DJANGO_DEBUG", None)
+        env.pop("DJANGO_SECRET_KEY", None)
 
         if env_value is not None:
             env["VORNEQ_ENV"] = env_value
         if debug_value is not None:
             env["DJANGO_DEBUG"] = debug_value
+        if secret_value is not None:
+            env["DJANGO_SECRET_KEY"] = secret_value
 
         return subprocess.run(
             self.BOOT_COMMAND,
@@ -61,11 +64,11 @@ class VorneqEnvBootTests(SimpleTestCase):
         self.assertIn("staging", stderr_lower)
 
     def test_production_with_debug_false_succeeds(self):
-        result = self._boot(env_value="production", debug_value="False")
+        result = self._boot(env_value="production", debug_value="False", secret_value="p0-test-production-secret")
         self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_production_with_debug_true_fails(self):
-        result = self._boot(env_value="production", debug_value="True")
+        result = self._boot(env_value="production", debug_value="True", secret_value="p0-test-production-secret")
         self._assert_improperly_configured(result)
         self.assertIn("production", result.stderr)
         self.assertIn("DEBUG", result.stderr)
@@ -89,3 +92,25 @@ class VorneqEnvBootTests(SimpleTestCase):
         result = self._boot(env_value="Production", debug_value="False")
         self._assert_improperly_configured(result)
         self.assertIn("invalid", result.stderr)
+
+    def test_production_without_secret_key_fails(self):
+        result = self._boot(env_value="production", debug_value="False")
+        self._assert_improperly_configured(result)
+        self.assertIn("DJANGO_SECRET_KEY", result.stderr)
+
+    def test_production_with_development_secret_key_fails(self):
+        result = self._boot(
+            env_value="production",
+            debug_value="False",
+            secret_value="django-insecure-development-only-change-me",
+        )
+        self._assert_improperly_configured(result)
+        self.assertIn("DJANGO_SECRET_KEY", result.stderr)
+
+    def test_production_with_explicit_secret_key_succeeds(self):
+        result = self._boot(
+            env_value="production",
+            debug_value="False",
+            secret_value="p0-test-production-secret",
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)

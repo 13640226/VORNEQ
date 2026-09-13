@@ -40,3 +40,54 @@ jobs:
         run: python manage.py collectstatic --noinput
       - name: Run tests
         run: python manage.py test
+
+  test-postgres:
+    runs-on: ubuntu-latest
+    env:
+      VORNEQ_ENV: development
+      DJANGO_SECRET_KEY: ci-only-secret
+      DJANGO_DEBUG: "1"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+      DJANGO_CSRF_TRUSTED_ORIGINS: http://localhost,http://127.0.0.1
+      DATABASE_URL: postgres://vorneq:vorneq@localhost:5432/vorneq
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: vorneq
+          POSTGRES_PASSWORD: vorneq
+          POSTGRES_DB: vorneq
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+      - name: Compile translations
+        run: python manage.py compilemessages
+      - name: Django system check
+        run: python manage.py check
+      - name: Apply migrations
+        run: python manage.py migrate --noinput
+      - name: Check migration drift
+        run: python manage.py makemigrations --check --dry-run
+      - name: Collect static files
+        run: python manage.py collectstatic --noinput
+      - name: Run tests
+        run: python manage.py test
