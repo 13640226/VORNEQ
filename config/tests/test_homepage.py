@@ -30,7 +30,10 @@ class HomepageSimplificationTests(TestCase):
     def test_homepage_search_is_primary_entry_without_refinement(self):
         response = self.get_english_home()
 
-        self.assertContains(response, f'action="{reverse("search_page")}"')
+        with override("en"):
+            search_url = reverse("search_page")
+
+        self.assertContains(response, f'action="{search_url}"')
         self.assertContains(response, 'name="q"')
         self.assertNotContains(response, 'name="type"')
         self.assertNotContains(response, 'name="item_type"')
@@ -42,7 +45,8 @@ class HomepageSimplificationTests(TestCase):
 
     def test_homepage_has_independent_discover_handoff(self):
         response = self.get_english_home()
-        discover_url = reverse("discover")
+        with override("en"):
+            discover_url = reverse("discover")
 
         self.assertContains(response, f'href="{discover_url}"')
         self.assertContains(response, "Explore Discover")
@@ -51,11 +55,14 @@ class HomepageSimplificationTests(TestCase):
     def test_homepage_capability_surface_routes_without_replication(self):
         response = self.get_english_home()
 
-        for url in (
-            reverse("search_page"),
-            reverse("discover"),
-            reverse("marketplace:index"),
-        ):
+        with override("en"):
+            expected_urls = (
+                reverse("search_page"),
+                reverse("discover"),
+                reverse("marketplace:index"),
+            )
+
+        for url in expected_urls:
             self.assertContains(response, f'href="{url}"')
 
         self.assertContains(response, "Choose your next step")
