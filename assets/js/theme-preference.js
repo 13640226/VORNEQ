@@ -1,7 +1,8 @@
 (function () {
   const STORAGE_KEY = 'vorneq-theme';
-  const DEFAULT_THEME = 'vorneq';
+  const DEFAULT_THEME = 'navy';
   const VALID_PREFERENCES = new Set([
+    'navy',
     'vorneq',
     'light',
     'dark',
@@ -12,6 +13,7 @@
     'system',
   ]);
   const THEME_COLORS = {
+    navy: '#071426',
     vorneq: '#f7f8fa',
     light: '#f8f6f2',
     dark: '#0d1117',
@@ -49,7 +51,7 @@
 
     const themeColor = document.querySelector('meta[name="theme-color"]');
     if (themeColor) {
-      themeColor.content = THEME_COLORS[resolved] || THEME_COLORS.vorneq;
+      themeColor.content = THEME_COLORS[resolved] || THEME_COLORS.navy;
     }
 
     document.querySelectorAll('[data-theme-option]').forEach((button) => {

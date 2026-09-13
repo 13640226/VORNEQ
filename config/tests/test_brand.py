@@ -51,3 +51,28 @@ class BrandIntegrationTests(TestCase):
         self.assertNotIn("--color-success", vorneq_block)
         self.assertNotIn("--color-warning", vorneq_block)
         self.assertNotIn("--color-error", vorneq_block)
+
+    def test_navy_is_default_runtime_theme_and_selectable_preference(self):
+        project_root = Path(__file__).resolve().parents[2]
+        base = (project_root / "templates" / "base.html").read_text(encoding="utf-8")
+        profile = (project_root / "templates" / "profile.html").read_text(encoding="utf-8")
+
+        preference_path = finders.find("js/theme-preference.js")
+        selector_path = finders.find("css/theme-selector.css")
+        self.assertIsNotNone(preference_path)
+        self.assertIsNotNone(selector_path)
+        preference = Path(preference_path).read_text(encoding="utf-8")
+        selector = Path(selector_path).read_text(encoding="utf-8")
+
+        self.assertIn("var valid = ['navy',", base)
+        self.assertIn("var preference = 'navy';", base)
+        self.assertIn("localStorage.getItem('vorneq-theme') || 'navy'", base)
+        self.assertIn("navy: '#071426'", base)
+
+        self.assertIn("const DEFAULT_THEME = 'navy';", preference)
+        self.assertIn("'navy',", preference)
+        self.assertIn("navy: '#071426'", preference)
+
+        self.assertIn('data-theme-option="navy"', profile)
+        self.assertIn("theme-selector-preview--navy", profile)
+        self.assertIn(".theme-selector-preview--navy", selector)
