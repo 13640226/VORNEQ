@@ -3,207 +3,119 @@ from django.urls import reverse
 from django.utils.translation import override
 
 
-class HomepageSignalNavigationTests(TestCase):
+class HomepageSimplificationTests(TestCase):
     def get_english_home(self, params=None):
-        """Render Home explicitly in English for stable structural assertions."""
         with override("en"):
             return self.client.get(reverse("home"), data=params or {})
 
-    def test_homepage_renders_signal_navigation_and_semantic_anchors(self):
+    def test_homepage_keeps_only_orientation_and_routing_surfaces(self):
         response = self.get_english_home()
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "data-homepage-signal-nav")
-        self.assertContains(response, 'aria-label="Homepage sections"')
-
-        self.assertContains(response, 'href="#home-intro"')
-        self.assertContains(response, 'data-signal-target="home-intro"')
-        self.assertContains(response, 'href="#explore"')
-        self.assertContains(response, 'data-signal-target="explore"')
-        self.assertContains(response, 'href="#values"')
-        self.assertContains(response, 'data-signal-target="values"')
-        self.assertContains(response, 'href="#apps"')
-        self.assertContains(response, 'data-signal-target="apps"')
-        self.assertNotContains(response, 'data-signal-target="discoveries"')
-
         self.assertContains(response, 'id="home-intro"')
-        self.assertContains(response, 'id="explore"')
+        self.assertContains(response, 'id="start"')
         self.assertContains(response, 'id="values"')
-        self.assertContains(response, 'id="discoveries"')
-        self.assertContains(response, 'id="identity"')
-        self.assertContains(response, 'id="apps"')
-        self.assertNotContains(response, 'id="trust"')
-        self.assertNotContains(response, 'id="platform"')
+        self.assertContains(response, 'id="capabilities"')
+        self.assertContains(response, 'class="global-home__footer"')
 
-        self.assertContains(response, ">Discover</")
-        self.assertContains(response, ">Explore</")
-        self.assertContains(response, ">Principles</")
-        self.assertContains(response, ">Capabilities</")
+        self.assertNotContains(response, 'id="discoveries"')
+        self.assertNotContains(response, 'id="identity"')
+        self.assertNotContains(response, 'id="apps"')
+        self.assertNotContains(response, 'id="explore"')
+        self.assertNotContains(response, "Featured Discoveries")
+        self.assertNotContains(response, "Latest Discoveries")
+        self.assertNotContains(response, "Explore topics")
+        self.assertNotContains(response, "Software categories")
 
-        self.assertNotContains(response, "Platform status")
-        self.assertNotContains(response, "Apps, Registry, Launcher & Workspace")
-        self.assertNotContains(response, "Capability discovery")
-        self.assertNotContains(response, "Future contract")
-        self.assertNotContains(response, "Executable providers & integrations")
-
-    def test_homepage_renders_geometric_globe_without_atlas(self):
+    def test_homepage_search_is_primary_entry_without_refinement(self):
         response = self.get_english_home()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'class="global-home__globe"')
-        self.assertContains(response, 'class="global-home__globe-grid"')
-        self.assertContains(response, 'class="global-home__globe-path"')
-        self.assertContains(response, 'class="global-home__globe-node"', count=3)
-        self.assertNotContains(response, "global-home__atlas")
-        self.assertNotContains(response, "global-home__atlas-labels")
+        self.assertContains(response, f'action="{reverse("search_page")}"')
+        self.assertContains(response, 'name="q"')
+        self.assertNotContains(response, 'name="type"')
+        self.assertNotContains(response, 'name="item_type"')
+        self.assertNotContains(response, 'name="media_type"')
+        self.assertNotContains(response, 'name="category"')
+        self.assertNotContains(response, "Advanced filters")
+        self.assertNotContains(response, "Quick content filters")
+        self.assertNotContains(response, "Open advanced search")
 
-    def test_homepage_preserves_live_search_contract(self):
+    def test_homepage_has_independent_discover_handoff(self):
+        response = self.get_english_home()
+        discover_url = reverse("discover")
+
+        self.assertContains(response, f'href="{discover_url}"')
+        self.assertContains(response, "Explore Discover")
+        self.assertContains(response, "Open Discover")
+
+    def test_homepage_capability_surface_routes_without_replication(self):
         response = self.get_english_home()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, '<form method="get" class="global-search"')
-        self.assertContains(response, 'name="type"')
-        self.assertContains(response, 'class="global-search__advanced"')
-        self.assertContains(response, "Advanced filters")
-        self.assertContains(response, 'class="quick-filters global-home__quick-filters"')
-        self.assertContains(response, "Open advanced search")
-        self.assertContains(
-            response,
-            "Search knowledge, software, products, services, media, and more…",
-        )
-
-    def test_homepage_preserves_right_rail_and_adds_four_action_cards(self):
-        response = self.get_english_home()
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'class="right-rail global-home__right-rail"')
-        self.assertContains(response, 'class="global-home__feature-card"', count=3)
-        self.assertContains(response, 'class="global-home__action-card"', count=4)
-
-        self.assertContains(response, "Identity across experiences, not app-local.")
-        self.assertContains(response, "Find relevant resources")
-        self.assertContains(response, "Save and organize your findings")
-        self.assertContains(response, "Discover complementary tools and services")
-
-        self.assertContains(
-            response,
-            "Search across knowledge, software, products, services, documents, media, and more.",
-        )
-        self.assertContains(
-            response,
-            "Save, tag, and structure your findings so they remain usable.",
-        )
-        self.assertContains(
-            response,
-            "Discover complementary software, tools, and specialized services.",
-        )
-        self.assertContains(
-            response,
-            "Explore digital and physical products and professional services.",
-        )
-
-        with override("en"):
-            expected_urls = (
-                reverse("search_page"),
-                reverse("notes:list"),
-                reverse("marketplace:index"),
-            )
-
-        for url in expected_urls:
+        for url in (
+            reverse("search_page"),
+            reverse("discover"),
+            reverse("marketplace:index"),
+        ):
             self.assertContains(response, f'href="{url}"')
 
-        self.assertNotContains(response, "Open Launcher")
-        self.assertNotContains(response, "Workspace")
-        self.assertNotContains(response, "Registry")
-        self.assertNotContains(response, "Manifest")
+        self.assertContains(response, "Choose your next step")
+        self.assertNotContains(response, "Checkout")
+        self.assertNotContains(response, "Entitlement")
+        self.assertNotContains(response, "Search results")
 
-    def test_homepage_renders_platform_philosophy_without_overclaiming(self):
+    def test_homepage_preserves_platform_principles_and_visual_contract(self):
         response = self.get_english_home()
 
-        self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Global Knowledge Platform")
-        self.assertContains(
-            response,
-            "Context, not Score · Evidence, not Truth · Portable Identity",
-        )
         self.assertContains(response, "Context, not Score")
         self.assertContains(response, "Evidence, not Truth")
         self.assertContains(response, "Portable Identity")
-        self.assertContains(
-            response,
-            "Information should be understood in context rather than reduced to a single, opaque score.",
-        )
-        self.assertContains(
-            response,
-            "Expose sources, evidence, and perspectives so you can form your own conclusions.",
-        )
-        self.assertContains(
-            response,
-            "Your identity is designed to travel across experiences, not be trapped in a single app.",
-        )
-        self.assertNotContains(response, "AI Search")
-        self.assertNotContains(response, "Buy")
-        self.assertNotContains(response, "Checkout")
-        self.assertNotContains(response, "Trade")
+        self.assertContains(response, 'class="global-home__globe"')
+        self.assertContains(response, 'class="global-home__globe-node"', count=3)
+        self.assertNotContains(response, "global-home__atlas")
 
-    def test_homepage_signal_navigation_has_accessible_initial_state(self):
+    def test_signal_navigation_matches_residual_home_sections(self):
         response = self.get_english_home()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(
-            response,
-            'data-signal-target="home-intro" aria-current="location"',
-        )
+        self.assertContains(response, "data-homepage-signal-nav")
+        self.assertContains(response, 'data-signal-target="home-intro" aria-current="location"')
+        self.assertContains(response, 'data-signal-target="start"')
+        self.assertContains(response, 'data-signal-target="values"')
+        self.assertContains(response, 'data-signal-target="capabilities"')
         self.assertContains(response, 'class="homepage-signal-nav__icon"', count=4)
-        self.assertContains(response, 'viewBox="0 0 24 24"', count=4)
-        self.assertContains(response, 'fill="none"', count=4)
         self.assertContains(response, 'stroke="currentColor"', count=4)
         self.assertContains(response, 'stroke-width="1.75"', count=4)
-        self.assertNotContains(response, "homepage-signal-nav__dot")
 
-    def test_homepage_stage_c_icons_follow_monoline_contract(self):
-        response = self.get_english_home()
-
-        self.assertEqual(response.status_code, 200)
-        html = response.content.decode()
-        icons = html.split('class="global-home__stage-c-icon')[1:]
-
-        self.assertEqual(len(icons), 9)
-        self.assertContains(response, "command-rail__icon", count=4)
-        self.assertContains(response, "global-home__topic-icon", count=1)
-        self.assertContains(response, 'class="global-home__stage-c-icon contextual-mark"', count=4)
-        self.assertNotContains(response, "topic-icon--neutral")
-        self.assertNotContains(response, "contextual-mark--")
-
-        for icon in icons:
-            svg = icon.split("</svg>", 1)[0]
-            self.assertIn("viewBox='0 0 24 24'", svg)
-            self.assertIn("fill='none'", svg)
-            self.assertIn("stroke='currentColor'", svg)
-            self.assertIn("stroke-width='1.75'", svg)
-
-    def test_homepage_loads_signal_navigation_assets_without_replacing_global_nav(self):
-        response = self.get_english_home()
+    def test_home_does_not_execute_search_for_query_parameters(self):
+        response = self.get_english_home({"q": "anything", "type": "product"})
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/css/homepage-signal-nav')
-        self.assertContains(response, 'src="/static/js/homepage-signal-nav')
-        self.assertContains(response, 'class="standalone-nav"')
-        self.assertContains(response, 'class="standalone-nav__menu"')
+        self.assertNotContains(response, "Search results")
+        self.assertNotContains(response, "No results found")
+        self.assertNotContains(response, 'id="discoveries"')
 
-    def test_discoveries_dashboard_stays_rendered_when_feed_is_empty(self):
-        response = self.get_english_home()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'id="discoveries"')
-        self.assertContains(response, "No public discoveries are available yet.")
-        self.assertNotContains(response, 'data-signal-target="discoveries"')
+class DiscoverRouteContractTests(TestCase):
+    def test_canonical_discover_routes_resolve(self):
+        route_names = (
+            "discover",
+            "discover_knowledge",
+            "discover_media",
+            "discover_software_services",
+            "discover_products_commerce",
+        )
 
-    def test_discoveries_live_surface_is_preserved_for_filtered_requests(self):
-        response = self.get_english_home({"q": "no-matching-query-expected"})
+        with override("en"):
+            for route_name in route_names:
+                response = self.client.get(reverse(route_name))
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, "canonical discovery route is available")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'id="discoveries"')
-        self.assertContains(response, "Search results")
-        self.assertContains(response, "No results found")
-        self.assertNotContains(response, 'data-signal-target="discoveries"')
+    def test_placeholder_does_not_define_discover_product_surface(self):
+        with override("en"):
+            response = self.client.get(reverse("discover"))
+
+        self.assertNotContains(response, "Search results")
+        self.assertNotContains(response, "Advanced filters")
+        self.assertNotContains(response, "Checkout")
+        self.assertNotContains(response, "Buy")
