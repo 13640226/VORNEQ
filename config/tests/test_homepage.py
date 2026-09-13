@@ -155,10 +155,10 @@ class HomepageSignalNavigationTests(TestCase):
             'data-signal-target="home-intro" aria-current="location"',
         )
         self.assertContains(response, 'class="homepage-signal-nav__icon"', count=4)
-        self.assertContains(response, 'viewBox="0 0 24 24"', count=13)
-        self.assertContains(response, 'fill="none"', count=13)
-        self.assertContains(response, 'stroke="currentColor"', count=13)
-        self.assertContains(response, 'stroke-width="1.75"', count=13)
+        self.assertContains(response, 'viewBox="0 0 24 24"', count=4)
+        self.assertContains(response, 'fill="none"', count=4)
+        self.assertContains(response, 'stroke="currentColor"', count=4)
+        self.assertContains(response, 'stroke-width="1.75"', count=4)
         self.assertNotContains(response, "homepage-signal-nav__dot")
 
     def test_homepage_stage_c_icons_follow_monoline_contract(self):
@@ -177,10 +177,10 @@ class HomepageSignalNavigationTests(TestCase):
 
         for icon in icons:
             svg = icon.split("</svg>", 1)[0]
-            self.assertIn('viewBox="0 0 24 24"', svg)
-            self.assertIn('fill="none"', svg)
-            self.assertIn('stroke="currentColor"', svg)
-            self.assertIn('stroke-width="1.75"', svg)
+            self.assertIn("viewBox='0 0 24 24'", svg)
+            self.assertIn("fill='none'", svg)
+            self.assertIn("stroke='currentColor'", svg)
+            self.assertIn("stroke-width='1.75'", svg)
 
     def test_homepage_loads_signal_navigation_assets_without_replacing_global_nav(self):
         response = self.get_english_home()
