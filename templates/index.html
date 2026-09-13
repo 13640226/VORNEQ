@@ -31,319 +31,77 @@
         </div>
         <div class="global-home__visual" aria-hidden="true">
           <svg class="global-home__globe" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" aria-hidden="true" focusable="false" role="presentation">
-            <g class="global-home__globe-grid">
-              <circle cx="120" cy="120" r="86"/>
-              <ellipse cx="120" cy="120" rx="44" ry="86"/>
-              <ellipse cx="120" cy="120" rx="70" ry="86"/>
-              <ellipse cx="120" cy="120" rx="86" ry="34"/>
-              <ellipse cx="120" cy="120" rx="86" ry="62"/>
-              <path d="M34 120h172"/>
-            </g>
+            <g class="global-home__globe-grid"><circle cx="120" cy="120" r="86"/><ellipse cx="120" cy="120" rx="44" ry="86"/><ellipse cx="120" cy="120" rx="70" ry="86"/><ellipse cx="120" cy="120" rx="86" ry="34"/><ellipse cx="120" cy="120" rx="86" ry="62"/><path d="M34 120h172"/></g>
             <path class="global-home__globe-path" d="M61 151c27-44 67-66 119-58-11 37-37 65-79 80"/>
-            <circle class="global-home__globe-node" cx="61" cy="151" r="4.5"/>
-            <circle class="global-home__globe-node" cx="129" cy="105" r="4.5"/>
-            <circle class="global-home__globe-node" cx="180" cy="93" r="4.5"/>
+            <circle class="global-home__globe-node" cx="61" cy="151" r="4.5"/><circle class="global-home__globe-node" cx="129" cy="105" r="4.5"/><circle class="global-home__globe-node" cx="180" cy="93" r="4.5"/>
           </svg>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="global-home__search-section" aria-label="{% trans 'Search' %}">
-    <div class="global-home__shell">
-      <div class="global-home__search-surface">
-        <div class="global-home__hero-actions">
-          <form method="get" class="global-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
-            <div class="global-search__primary">
-              <div class="global-search__input-wrap">
-                <input class="global-search__input" type="search" name="q" value="{{ search_query }}" maxlength="200" placeholder="{% trans 'Search knowledge, software, products, services, media, and more…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
-                <button class="global-search__button" type="submit" aria-label="{% trans 'Start searching' %}"><span class="global-search__button-label">{% trans "Start searching" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></button>
-              </div>
-              <select class="global-search__select" name="type" aria-label="{% trans 'Content type' %}">
-                <option value="all"{% if current_type == 'all' %} selected{% endif %}>{% trans "All" %}</option>
-                <option value="book"{% if current_type == 'book' %} selected{% endif %}>{% trans "Books" %}</option>
-                <option value="article"{% if current_type == 'article' %} selected{% endif %}>{% trans "Articles" %}</option>
-                <option value="document"{% if current_type == 'document' %} selected{% endif %}>{% trans "Documents" %}</option>
-                <option value="other"{% if current_type == 'other' %} selected{% endif %}>{% trans "Other library items" %}</option>
-                <option value="audio"{% if current_type == 'audio' %} selected{% endif %}>{% trans "Audio" %}</option>
-                <option value="product"{% if current_type == 'product' %} selected{% endif %}>{% trans "Products" %}</option>
-              </select>
-            </div>
-            <details class="global-search__advanced"{% if current_item_type or current_media_type or current_category or current_price_min or current_price_max %} open{% endif %}>
-              <summary>{% trans "Advanced filters" %}</summary>
-              <div class="global-search__advanced-grid">
-                <select name="item_type" aria-label="{% trans 'Library item type' %}">
-                  <option value="">{% trans "Any library type" %}</option>
-                  <option value="book"{% if current_item_type == 'book' %} selected{% endif %}>{% trans "Book" %}</option>
-                  <option value="article"{% if current_item_type == 'article' %} selected{% endif %}>{% trans "Article" %}</option>
-                  <option value="document"{% if current_item_type == 'document' %} selected{% endif %}>{% trans "Document" %}</option>
-                  <option value="other"{% if current_item_type == 'other' %} selected{% endif %}>{% trans "Other" %}</option>
-                </select>
-                <select name="media_type" aria-label="{% trans 'Media type' %}">
-                  <option value="">{% trans "Any media type" %}</option>
-                  <option value="image"{% if current_media_type == 'image' %} selected{% endif %}>{% trans "Image" %}</option>
-                  <option value="video"{% if current_media_type == 'video' %} selected{% endif %}>{% trans "Video" %}</option>
-                </select>
-                <input type="text" name="category" value="{{ current_category }}" maxlength="120" placeholder="{% trans 'Category' %}" aria-label="{% trans 'Category' %}">
-                <input type="number" name="price_min" value="{{ current_price_min }}" min="0" step="0.01" placeholder="{% trans 'Min price' %}" aria-label="{% trans 'Minimum price' %}">
-                <input type="number" name="price_max" value="{{ current_price_max }}" min="0" step="0.01" placeholder="{% trans 'Max price' %}" aria-label="{% trans 'Maximum price' %}">
-              </div>
-            </details>
-          </form>
-          <a class="global-home__secondary-cta" href="#values">{% trans "Learn more about VORNEQ" %}</a>
-        </div>
-        <div class="global-home__search-meta">
-          <nav class="quick-filters global-home__quick-filters" aria-label="{% trans 'Quick content filters' %}">
-            <a class="global-home__quick-filter{% if current_type == 'all' %} is-active{% endif %}" href="?type=all">{% trans "All" %}</a>
-            {% for filter in quick_filters %}
-            <a class="global-home__quick-filter{% if current_type == filter.value %} is-active{% endif %}" href="?type={{ filter.value|urlencode }}">{{ filter.label }}</a>
-            {% endfor %}
-          </nav>
-          <a class="global-home__advanced-link" href="{% url 'search_page' %}">{% trans "Open advanced search" %} <span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="global-home__shortcuts" aria-labelledby="shortcuts-title">
-    <div class="global-home__shell">
-      <p id="shortcuts-title" class="global-home__eyebrow">{% trans "DISCOVERY SHORTCUTS" %}</p>
-      <nav class="global-home__command-rail" aria-label="{% trans 'Discovery shortcuts' %}">
-        <a class="command-rail__item" href="{% url 'search_page' %}"><svg class="global-home__stage-c-icon command-rail__icon" viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.75' aria-hidden="true" focusable="false"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11a3 3 0 0 1 3 3v15a3 3 0 0 0-3-3H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H14"/><path d="M20 5.5v15a2.5 2.5 0 0 0-2.5-2.5H14"/></svg><span><strong>{% trans "Knowledge" %}</strong><small>{% trans "Books, articles and research" %}</small></span></a>
-        <a class="command-rail__item" href="{% url 'search_page' %}"><svg class="global-home__stage-c-icon command-rail__icon" viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.75' aria-hidden="true" focusable="false"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5"/><path d="M10 12h5M10 16h5"/></svg><span><strong>{% trans "Documents & Media" %}</strong><small>{% trans "Documents, audio and media" %}</small></span></a>
-        <a class="command-rail__item" href="{% url 'search_page' %}"><svg class="global-home__stage-c-icon command-rail__icon" viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.75' aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m9 9-3 3 3 3M15 9l3 3-3 3M13 8l-2 8"/></svg><span><strong>{% trans "Software & Apps" %}</strong><small>{% trans "Applications and digital tools" %}</small></span></a>
-        <a class="command-rail__item" href="{% url 'search_page' %}"><svg class="global-home__stage-c-icon command-rail__icon" viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.75' aria-hidden="true" focusable="false"><path d="M5 8h14l-1 12H6z"/><path d="M8 8a4 4 0 0 1 8 0M9 12h6"/></svg><span><strong>{% trans "Products & Commerce" %}</strong><small>{% trans "Physical and digital products" %}</small></span></a>
-        <a class="command-rail__item command-rail__item--advanced" href="{% url 'search_page' %}">{% trans "Advanced discovery" %}<span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
-      </nav>
-    </div>
-  </section>
-
-  <section id="explore" class="global-home__explore" aria-labelledby="explore-title" data-homepage-signal-section>
+  <section id="start" class="global-home__search-section" aria-labelledby="start-title" data-homepage-signal-section>
     <div class="global-home__shell">
       <header class="global-home__section-heading">
-        <p class="global-home__eyebrow">{% trans "EXPLORE" %}</p>
-        <h2 id="explore-title">{% trans "Discover across formats" %}</h2>
+        <p class="global-home__eyebrow">{% trans "START" %}</p>
+        <h2 id="start-title">{% trans "Search or discover" %}</h2>
       </header>
-
-      <div class="global-home__explore-block">
-        <div class="global-home__format-grid" aria-label="{% trans 'Discovery formats' %}">
-          <span class="global-home__format-chip is-active">{% trans "Videos" %}</span>
-          <span class="global-home__format-chip">{% trans "Images" %}</span>
-          <span class="global-home__format-chip">{% trans "Audio" %}</span>
-          <span class="global-home__format-chip">{% trans "Documents" %}</span>
-          <span class="global-home__format-chip">{% trans "News" %}</span>
-          <span class="global-home__format-chip">{% trans "Software" %}</span>
-          <span class="global-home__format-chip">{% trans "Datasets" %}</span>
-          <span class="global-home__format-chip">{% trans "Presentations" %}</span>
-        </div>
-        <div class="global-home__format-secondary" aria-label="{% trans 'Additional formats' %}">
-          <span>{% trans "GIFs" %}</span><span>{% trans "Social Media" %}</span>
-        </div>
-      </div>
-
-      <div class="global-home__explore-block">
-        <h3>{% trans "Explore topics" %}</h3>
-        <div class="global-home__topic-grid">
-          <span>{% trans "Software" %}</span><span><svg class="global-home__stage-c-icon global-home__topic-icon" viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.75' aria-hidden="true" focusable="false"><path d="M3 5h2l2 10h10l2-7H6"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></svg>{% trans "E-commerce" %}</span><span>{% trans "Business" %}</span><span>{% trans "Science" %}</span><span>{% trans "Technology" %}</span><span>{% trans "Education" %}</span><span>{% trans "Health" %}</span><span>{% trans "Finance" %}</span><span>{% trans "Art & Design" %}</span><span>{% trans "Entertainment" %}</span><span>{% trans "Games" %}</span><span>{% trans "Digital Collectibles" %}</span><span>{% trans "Crypto & Blockchain" %}</span><span>{% trans "Stocks & Markets" %}</span><span>{% trans "Real Estate" %}</span><span>{% trans "Travel" %}</span><span>{% trans "Services" %}</span>
-        </div>
-      </div>
-
-      <div class="global-home__explore-block global-home__software-block">
-        <div class="global-home__subheading">
-          <p class="global-home__eyebrow">{% trans "SOFTWARE & DIGITAL TOOLS" %}</p>
-          <h3>{% trans "Software categories" %}</h3>
-        </div>
-        <div class="global-home__category-row">
-          <span>{% trans "Productivity" %}</span><span>{% trans "Development" %}</span><span>{% trans "Design" %}</span><span>{% trans "Business" %}</span><span>{% trans "Education" %}</span><span>{% trans "Communication" %}</span><span>{% trans "Media" %}</span><span>{% trans "Utilities" %}</span>
-        </div>
-        <div class="global-home__preview-grid global-home__preview-grid--three">
-          <article class="global-home__preview-card"><span>{% trans "Format Preview" %}</span><h4>{% trans "Software preview" %}</h4><p>{% trans "Productivity" %}</p></article>
-          <article class="global-home__preview-card"><span>{% trans "Format Preview" %}</span><h4>{% trans "Software preview" %}</h4><p>{% trans "Design" %}</p></article>
-          <article class="global-home__preview-card"><span>{% trans "Format Preview" %}</span><h4>{% trans "Software preview" %}</h4><p>{% trans "Development" %}</p></article>
-        </div>
-      </div>
-
-      <div class="global-home__explore-block global-home__commerce-block">
-        <div class="global-home__subheading">
-          <p class="global-home__eyebrow">{% trans "COMMERCE" %}</p>
-          <h3>{% trans "Commerce discovery" %}</h3>
-        </div>
-        <div class="global-home__commerce-columns">
-          <div>
-            <h4>{% trans "Products" %}</h4>
-            <div class="global-home__category-row"><span>{% trans "Digital products" %}</span><span>{% trans "Physical products" %}</span><span>{% trans "Software licenses" %}</span><span>{% trans "Templates" %}</span><span>{% trans "Digital assets" %}</span><span>{% trans "Educational resources" %}</span></div>
+      <div class="global-home__search-surface">
+        <form method="get" action="{% url 'search_page' %}" class="global-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
+          <div class="global-search__primary">
+            <div class="global-search__input-wrap">
+              <input class="global-search__input" type="search" name="q" maxlength="200" placeholder="{% trans 'Search knowledge, software, products, services, media, and more…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
+              <button class="global-search__button" type="submit" aria-label="{% trans 'Start searching' %}"><span class="global-search__button-label">{% trans "Start searching" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></button>
+            </div>
           </div>
-          <div>
-            <h4>{% trans "Services" %}</h4>
-            <div class="global-home__category-row"><span>{% trans "Professional services" %}</span><span>{% trans "Creative services" %}</span><span>{% trans "Technical services" %}</span><span>{% trans "Business services" %}</span><span>{% trans "Education & consulting" %}</span></div>
-          </div>
+        </form>
+        <div class="global-home__hero-actions">
+          <a class="global-home__secondary-cta" href="{% url 'discover' %}">{% trans "Explore Discover" %} <span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
         </div>
-        <div class="global-home__preview-grid global-home__preview-grid--four">
-          <article class="global-home__preview-card"><span>{% trans "Format Preview" %}</span><h4>{% trans "Product preview" %}</h4><p>{% trans "Digital products" %}</p></article>
-          <article class="global-home__preview-card"><span>{% trans "Format Preview" %}</span><h4>{% trans "Product preview" %}</h4><p>{% trans "Templates" %}</p></article>
-          <article class="global-home__preview-card"><span>{% trans "Format Preview" %}</span><h4>{% trans "Service preview" %}</h4><p>{% trans "Professional services" %}</p></article>
-          <article class="global-home__preview-card"><span>{% trans "Format Preview" %}</span><h4>{% trans "Service preview" %}</h4><p>{% trans "Creative services" %}</p></article>
-        </div>
-      </div>
-
-      <div class="global-home__explore-block global-home__featured-previews">
-        <h3>{% trans "Featured discoveries" %}</h3>
-        <div class="global-home__preview-grid global-home__preview-grid--featured">
-          <article class="global-home__preview-card"><span>{% trans "Format Preview" %}</span><h4>{% trans "Video preview" %}</h4><p>{% trans "Video · 12:34" %}</p></article>
-          <article class="global-home__preview-card"><span>{% trans "Format Preview" %}</span><h4>{% trans "Image preview" %}</h4><p>{% trans "Image · Preview" %}</p></article>
-          <article class="global-home__preview-card"><span>{% trans "Format Preview" %}</span><h4>{% trans "Audio preview" %}</h4><p>{% trans "Audio · 08:21" %}</p></article>
-          <article class="global-home__preview-card"><span>{% trans "Format Preview" %}</span><h4>{% trans "News preview" %}</h4><p>{% trans "News · Preview" %}</p></article>
-          <article class="global-home__preview-card"><span>{% trans "Format Preview" %}</span><h4>{% trans "Software preview" %}</h4><p>{% trans "Software · Preview" %}</p></article>
-          <article class="global-home__preview-card"><span>{% trans "Format Preview" %}</span><h4>{% trans "Product preview" %}</h4><p>{% trans "Product · Preview" %}</p></article>
-          <article class="global-home__preview-card"><span>{% trans "Format Preview" %}</span><h4>{% trans "Service preview" %}</h4><p>{% trans "Service · Preview" %}</p></article>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="global-home__contextual" aria-labelledby="contextual-title">
-    <div class="global-home__shell">
-      <header class="global-home__section-heading global-home__section-heading--quiet">
-        <h2 id="contextual-title">{% trans "Contextual Topics" %}</h2>
-      </header>
-      <div class="global-home__contextual-grid">
-        <article><svg class="global-home__stage-c-icon contextual-mark" viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.75' aria-hidden="true" focusable="false"><path d="m12 3 7 5v8l-7 5-7-5V8z"/><path d="m5 8 7 5 7-5M12 13v8"/></svg><h3>{% trans "Digital Collectibles" %}</h3><p>{% trans "Abstract digital objects in context." %}</p></article>
-        <article><svg class="global-home__stage-c-icon contextual-mark" viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.75' aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><path d="M10 6.5h4a3.5 3.5 0 0 1 3.5 3.5v4M14 17.5h-4A3.5 3.5 0 0 1 6.5 14v-4"/></svg><h3>{% trans "Crypto & Blockchain" %}</h3><p>{% trans "Connected systems and distributed records." %}</p></article>
-        <article><svg class="global-home__stage-c-icon contextual-mark" viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.75' aria-hidden="true" focusable="false"><path d="M4 20V5M4 20h16"/><path d="m7 16 4-5 3 3 5-7"/><path d="M16 7h3v3"/></svg><h3>{% trans "Stocks & Markets" %}</h3><p>{% trans "Market context without live pricing or trading." %}</p></article>
-        <article><svg class="global-home__stage-c-icon contextual-mark" viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.75' aria-hidden="true" focusable="false"><path d="M8 8h8a5 5 0 0 1 4.8 6.4l-1 3.4a2.5 2.5 0 0 1-4.1 1.1L13.8 17h-3.6l-1.9 1.9a2.5 2.5 0 0 1-4.1-1.1l-1-3.4A5 5 0 0 1 8 8Z"/><path d="M7 12v4M5 14h4M16.5 12.5h.01M18.5 14.5h.01"/></svg><h3>{% trans "Games" %}</h3><p>{% trans "Game knowledge and discovery context." %}</p></article>
       </div>
     </div>
   </section>
 
   <section id="values" class="global-home__values" aria-labelledby="values-title" data-homepage-signal-section>
     <div class="global-home__shell">
-      <header class="global-home__values-heading">
-        <p class="global-home__eyebrow">{% trans "OUR FOUNDATION" %}</p>
-        <h2 id="values-title">{% trans "Platform Principles" %}</h2>
+      <header class="global-home__section-heading">
+        <p class="global-home__eyebrow">{% trans "PLATFORM PRINCIPLES" %}</p>
+        <h2 id="values-title">{% trans "Why VORNEQ" %}</h2>
       </header>
-      <div class="global-home__principles-grid">
-        <article class="global-home__principle-card"><span>01</span><h3>{% trans "Context, not Score" %}</h3><p>{% trans "Information should be understood in context rather than reduced to a single, opaque score." %}</p></article>
-        <article class="global-home__principle-card"><span>02</span><h3>{% trans "Evidence, not Truth" %}</h3><p>{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}</p></article>
-        <article class="global-home__principle-card"><span>03</span><h3>{% trans "Portable Identity" %}</h3><p>{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}</p></article>
+      <div class="global-home__preview-grid global-home__preview-grid--three">
+        <article class="global-home__preview-card"><h3>{% trans "Context, not Score" %}</h3><p>{% trans "Information should be understood in context rather than reduced to a single, opaque score." %}</p></article>
+        <article class="global-home__preview-card"><h3>{% trans "Evidence, not Truth" %}</h3><p>{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}</p></article>
+        <article class="global-home__preview-card"><h3>{% trans "Portable Identity" %}</h3><p>{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}</p></article>
       </div>
     </div>
   </section>
 
-  <section id="discoveries" class="global-home__dashboard" aria-labelledby="discoveries-title">
-    <div class="global-home__shell global-home__dashboard-grid">
-      <main class="main-feed global-home__main-feed">
-        <header class="global-home__feed-heading">
-          <p class="global-home__kicker">{% if is_filtered %}{% trans "Search results" %}{% else %}{% trans "Across VORNEQ" %}{% endif %}</p>
-          <h2 id="discoveries-title">{% if search_query %}{% blocktrans with query=search_query %}Results for “{{ query }}”{% endblocktrans %}{% else %}{% trans "Latest discoveries" %}{% endif %}</h2>
-          {% if is_filtered %}<p>{% blocktrans count counter=total_results %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}</p>{% endif %}
-        </header>
-
-        {% for item in featured %}
-        <article class="featured-discovery global-home__featured">
-          <span class="global-home__result-type">{% include "partials/_content_type_label.html" with type=item.type %}</span>
-          <p class="global-home__featured-label">{% trans "Featured discovery" %}</p>
-          <h3>{% if item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}</h3>
-          {% if item.description %}<p>{{ item.description }}</p>{% endif %}
-        </article>
-        {% endfor %}
-
-        <div class="global-home__results-grid">
-          {% for item in results %}
-          <article class="global-home__result">
-            <span class="global-home__result-type">{% include "partials/_content_type_label.html" with type=item.type %}</span>
-            <h3>{% if item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}</h3>
-            {% if item.description %}<p>{{ item.description }}</p>{% endif %}
-          </article>
-          {% empty %}
-            {% if is_filtered and not featured %}
-            <article class="global-home__result global-home__empty-state">
-              <span class="global-home__result-type">{% trans "No matches" %}</span>
-              <h3>{% trans "No results found" %}</h3>
-              <p>{% trans "Try adjusting your keywords or content type." %}</p>
-            </article>
-            {% elif not is_filtered and not featured %}
-            <article class="global-home__result global-home__empty-state">
-              <span class="global-home__result-type">{% trans "Discovery" %}</span>
-              <h3>{% trans "No public discoveries are available yet." %}</h3>
-              <p>{% trans "Use search or explore installed VORNEQ apps while the public discovery feed grows." %}</p>
-            </article>
-            {% endif %}
-          {% endfor %}
-        </div>
-
-        {% if page_obj.has_other_pages %}
-        <nav class="global-home__pagination" aria-label="{% trans 'Pagination' %}">
-          <span>{% blocktrans with current=page_obj.number total=page_obj.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}</span>
-          <span>
-            {% if page_obj.has_previous %}<a href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;media_type={{ current_media_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}
-            {% if page_obj.has_previous and page_obj.has_next %} · {% endif %}
-            {% if page_obj.has_next %}<a href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;media_type={{ current_media_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>{% endif %}
-          </span>
-        </nav>
-        {% endif %}
-      </main>
-
-      <aside class="right-rail global-home__right-rail" aria-label="{% trans 'VORNEQ context and shortcuts' %}">
-        <section id="identity" class="right-rail__block global-home__rail-block" aria-labelledby="identity-title">
-          <p class="global-home__kicker">{% trans "Portable identity" %}</p>
-          <h2 id="identity-title">{% trans "Identity across experiences, not app-local." %}</h2>
-          <p>{% trans "Identity is designed to be portable across experiences rather than app-local." %}</p>
-        </section>
-
-        <section class="right-rail__block global-home__rail-block" aria-labelledby="apps-teaser-title">
-          <p class="global-home__kicker">{% trans "Apps shortcuts" %}</p>
-          <h2 id="apps-teaser-title">{% trans "Move from discovery to work." %}</h2>
-          <div class="global-home__feature-grid">
-            <article class="global-home__feature-card">
-              <h3>{% trans "Find relevant resources" %}</h3>
-              <p>{% trans "Unified search across books, articles, documents, and audio content" %}</p>
-              <a href="{% url 'search_page' %}"><span>{% trans "Start searching" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
-            </article>
-            <article class="global-home__feature-card">
-              <h3>{% trans "Save and organize your findings" %}</h3>
-              <p>{% trans "Note-taking, tagging, and quick access to information" %}</p>
-              <a href="{% url 'notes:list' %}"><span>{% trans "Go to notes" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
-            </article>
-            <article class="global-home__feature-card">
-              <h3>{% trans "Discover complementary tools and services" %}</h3>
-              <p>{% trans "Extensions, analytical tools, and specialized services" %}</p>
-              <a href="{% url 'marketplace:index' %}"><span>{% trans "View marketplace" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
-            </article>
-          </div>
-        </section>
-      </aside>
-    </div>
-  </section>
-
-  <section id="apps" class="global-home__actions" aria-labelledby="actions-title" data-homepage-signal-section>
+  <section id="capabilities" class="global-home__actions" aria-labelledby="capabilities-title" data-homepage-signal-section>
     <div class="global-home__shell">
       <header class="global-home__section-heading">
-        <h2 id="actions-title">{% trans "What you can do" %}</h2>
+        <p class="global-home__eyebrow">{% trans "WHAT YOU CAN DO" %}</p>
+        <h2 id="capabilities-title">{% trans "Choose your next step" %}</h2>
       </header>
-      <div class="global-home__action-grid">
-        <article class="global-home__action-card"><h3>{% trans "FIND" %}</h3><span>{% trans "Search across knowledge, software, products, services, documents, media, and more." %}</span><a href="{% url 'search_page' %}">{% trans "Start searching" %} <span class="global-home__directional-arrow" aria-hidden="true">→</span></a></article>
-        <article class="global-home__action-card"><h3>{% trans "ORGANIZE" %}</h3><span>{% trans "Save, tag, and structure your findings so they remain usable." %}</span><a href="{% url 'notes:list' %}">{% trans "Go to notes" %} <span class="global-home__directional-arrow" aria-hidden="true">→</span></a></article>
-        <article class="global-home__action-card"><h3>{% trans "EXTEND" %}</h3><span>{% trans "Discover complementary software, tools, and specialized services." %}</span><a href="{% url 'marketplace:index' %}">{% trans "View marketplace" %} <span class="global-home__directional-arrow" aria-hidden="true">→</span></a></article>
-        <article class="global-home__action-card"><h3>{% trans "COMMERCE" %}</h3><span>{% trans "Explore digital and physical products and professional services." %}</span><a href="#explore">{% trans "Explore products" %} <span class="global-home__directional-arrow" aria-hidden="true">→</span></a></article>
+      <div class="global-home__preview-grid global-home__preview-grid--three">
+        <article class="global-home__preview-card"><h3>{% trans "Search" %}</h3><p>{% trans "Use a query when you know what you want to find." %}</p><a href="{% url 'search_page' %}">{% trans "Open Search" %} →</a></article>
+        <article class="global-home__preview-card"><h3>{% trans "Discover" %}</h3><p>{% trans "Browse the platform through its canonical discovery entry." %}</p><a href="{% url 'discover' %}">{% trans "Open Discover" %} →</a></article>
+        <article class="global-home__preview-card"><h3>{% trans "Marketplace" %}</h3><p>{% trans "Continue to the transactional surface for offerings and purchases." %}</p><a href="{% url 'marketplace:index' %}">{% trans "Open Marketplace" %} →</a></article>
       </div>
     </div>
   </section>
 
-  <footer class="global-home__footer">
-    <div class="global-home__shell global-home__footer-row">
-      <p>VORNEQ<br><span>© 2026 — {% trans "Knowledge discovered." %}</span></p>
-      <nav aria-label="{% trans 'Homepage sections' %}">
-        <a href="#home-intro">{% trans "Intro" %}</a>
-        <a href="#values">{% trans "Values" %}</a>
-        <a href="#apps">{% trans "Apps" %}</a>
+  <footer class="global-home__footer" aria-label="{% trans 'Homepage supporting navigation' %}">
+    <div class="global-home__shell">
+      <nav aria-label="{% trans 'Homepage links' %}">
+        <a href="{% url 'search_page' %}">{% trans "Search" %}</a>
+        <a href="{% url 'discover' %}">{% trans "Discover" %}</a>
         <a href="{% url 'marketplace:index' %}">{% trans "Marketplace" %}</a>
-        <span>{% trans "English" %}</span>
       </nav>
     </div>
   </footer>
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block extra_scripts %}
 <script src="{% static 'js/homepage-signal-nav.js' %}" defer></script>
 {% endblock %}
