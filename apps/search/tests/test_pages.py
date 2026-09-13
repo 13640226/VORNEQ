@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from django.test import TestCase
 from django.urls import reverse
+from django.utils.translation import override
 
 from apps.search.services import UnifiedSearch
 
@@ -69,13 +70,14 @@ class HomeSearchBoundaryTests(TestCase):
 
     @patch.object(UnifiedSearch, "collect", return_value=[])
     def test_home_keeps_search_as_handoff_only(self, collect):
-        response = self.client.get(reverse("home"))
+        with override("en"):
+            response = self.client.get(reverse("home"))
 
-        self.assertEqual(response.status_code, 200)
-        collect.assert_not_called()
-        self.assertContains(response, 'role="search"')
-        self.assertContains(response, f'action="{reverse("search_page")}"')
-        self.assertContains(response, "Start searching")
+            self.assertEqual(response.status_code, 200)
+            collect.assert_not_called()
+            self.assertContains(response, 'role="search"')
+            self.assertContains(response, f'action="{reverse("search_page")}"')
+            self.assertContains(response, "Start searching")
 
 
 class StandaloneSearchPageTests(TestCase):
