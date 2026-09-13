@@ -154,10 +154,12 @@ class HomepageSignalNavigationTests(TestCase):
             response,
             'data-signal-target="home-intro" aria-current="location"',
         )
-        self.assertContains(
-            response,
-            'class="homepage-signal-nav__dot" aria-hidden="true"',
-        )
+        self.assertContains(response, 'class="homepage-signal-nav__icon"', count=4)
+        self.assertContains(response, 'viewBox="0 0 24 24"', count=4)
+        self.assertContains(response, 'fill="none"', count=4)
+        self.assertContains(response, 'stroke="currentColor"', count=4)
+        self.assertContains(response, 'stroke-width="1.75"', count=4)
+        self.assertNotContains(response, "homepage-signal-nav__dot")
 
     def test_homepage_loads_signal_navigation_assets_without_replacing_global_nav(self):
         response = self.get_english_home()
