@@ -13,7 +13,7 @@ from apps.platform_shell.registry import registry as platform_registry
 from config.health import health_check
 from config.inspect_views import context_view, inspect_entry
 from config.metrics import metrics_view
-from config.views import home, profile, search_page
+from config.views import discover, home, profile, search_page
 
 
 # Non-localized operational and API endpoints.
@@ -32,6 +32,21 @@ urlpatterns = [
 urlpatterns += i18n_patterns(
     path("admin/", admin.site.urls),
     path("", home, name="home"),
+    path("discover/", discover, name="discover"),
+    path("discover/knowledge/", discover, {"domain": "knowledge"}, name="discover_knowledge"),
+    path("discover/media/", discover, {"domain": "media"}, name="discover_media"),
+    path(
+        "discover/software-services/",
+        discover,
+        {"domain": "software-services"},
+        name="discover_software_services",
+    ),
+    path(
+        "discover/products-commerce/",
+        discover,
+        {"domain": "products-commerce"},
+        name="discover_products_commerce",
+    ),
     path("search/", search_page, name="search_page"),
     path("inspect/", inspect_entry, name="inspect_entry"),
     path("context/<uuid:artifact_id>/", context_view, name="context_view"),

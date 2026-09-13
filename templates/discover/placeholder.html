@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Discover" %} — VORNEQ{% endblock %}
+
+{% block content %}
+<main class="global-home">
+  <section class="global-home__hero" aria-labelledby="discover-route-title">
+    <div class="global-home__shell">
+      <p class="global-home__eyebrow">{% trans "DISCOVER" %}</p>
+      <h1 id="discover-route-title" class="global-home__title">{% trans "Discover" %}{% if discover_domain %}: {{ discover_domain }}{% endif %}</h1>
+      <p class="global-home__subtitle">{% trans "This canonical discovery route is available. Its product surface is intentionally not defined in this implementation gate." %}</p>
+      <a class="global-home__secondary-cta" href="{% url 'home' %}">{% trans "Back to Home" %}</a>
+    </div>
+  </section>
+</main>
+{% endblock %}
