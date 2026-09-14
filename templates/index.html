@@ -27,7 +27,8 @@
     </section>
 
     <section id="start" class="world-search-section" aria-labelledby="world-search-title">
-      <div class="world-section-head">
+      <div class="world-section-head world-section-head--interactive">
+        <span class="world-status-led" aria-hidden="true"></span>
         <h2 id="world-search-title" class="world-section-title">{% trans "Search" %}</h2>
       </div>
       <form method="get" action="{% url 'search_page' %}" class="world-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
@@ -65,9 +66,30 @@
         <h2 id="world-capabilities-title" class="world-section-title">{% trans "Capabilities" %}</h2>
       </div>
       <ul class="world-capabilities__grid">
-        <li class="world-capability"><h3>{% trans "Search" %}</h3><p>{% trans "Structured query across knowledge, software, products, and services." %}</p><a class="world-capability__link" href="{% url 'search_page' %}">{% trans "Open Search" %}</a></li>
-        <li class="world-capability"><h3>{% trans "Discover" %}</h3><p>{% trans "A canonical discovery surface within the VORNEQ ecosystem." %}</p><a class="world-capability__link" href="{% url 'discover' %}">{% trans "Open Discover" %}</a></li>
-        <li class="world-capability"><h3>{% trans "Marketplace" %}</h3><p>{% trans "A trusted transactional surface for offerings and solutions." %}</p><a class="world-capability__link" href="{% url 'marketplace:index' %}">{% trans "Open Marketplace" %}</a></li>
+        <li class="world-capability">
+          <a class="world-capability__surface" href="{% url 'search_page' %}">
+            <span class="world-status-led" aria-hidden="true"></span>
+            <h3>{% trans "Search" %}</h3>
+            <p>{% trans "Structured query across knowledge, software, products, and services." %}</p>
+            <span class="world-capability__link">{% trans "Open Search" %}</span>
+          </a>
+        </li>
+        <li class="world-capability">
+          <a class="world-capability__surface" href="{% url 'discover' %}">
+            <span class="world-status-led" aria-hidden="true"></span>
+            <h3>{% trans "Discover" %}</h3>
+            <p>{% trans "A canonical discovery surface within the VORNEQ ecosystem." %}</p>
+            <span class="world-capability__link">{% trans "Open Discover" %}</span>
+          </a>
+        </li>
+        <li class="world-capability">
+          <a class="world-capability__surface" href="{% url 'marketplace:index' %}">
+            <span class="world-status-led" aria-hidden="true"></span>
+            <h3>{% trans "Marketplace" %}</h3>
+            <p>{% trans "A trusted transactional surface for offerings and solutions." %}</p>
+            <span class="world-capability__link">{% trans "Open Marketplace" %}</span>
+          </a>
+        </li>
       </ul>
     </section>
 
