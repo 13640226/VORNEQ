@@ -17,7 +17,13 @@ class HomepageResponsiveCssContractTests(SimpleTestCase):
         self.assertIn("padding: 96px 48px 64px;", self.css)
 
     def test_canonical_compact_and_medium_breakpoints_are_preserved(self):
-        self.assertIn("@media (max-width: 1023px)", self.css)
+        self.assertIn(
+            "@media (min-width: 640px) and (max-width: 1023px)",
+            self.css,
+        )
         self.assertIn("@media (max-width: 639px)", self.css)
+        self.assertIn("grid-template-columns: repeat(8, minmax(0, 1fr));", self.css)
+        self.assertIn("grid-template-columns: repeat(4, minmax(0, 1fr));", self.css)
         self.assertIn(".world-principles__grid", self.css)
-        self.assertIn(".world-search { grid-template-columns: 1fr; }", self.css)
+        self.assertIn(".world-search {", self.css)
+        self.assertIn("grid-template-columns: 1fr;", self.css)
