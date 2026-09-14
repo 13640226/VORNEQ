@@ -17,81 +17,51 @@
 {% endblock %}
 
 {% block content %}
-<div class="global-home">
-  {% include "partials/_homepage_signal_nav.html" %}
-
-  <section id="home-intro" class="global-home__hero" aria-labelledby="global-home-title" data-homepage-signal-section>
-    <div class="global-home__shell">
-      <div class="global-home__brand-row">
-        <div class="global-home__brand-copy">
-          <p class="global-home__eyebrow">{% trans "KNOWLEDGE WITHOUT BORDERS" %}</p>
-          <h1 id="global-home-title" class="global-home__title">{% trans "Global Knowledge Platform" %}</h1>
-          <p class="global-home__subtitle">{% trans "Find and organize knowledge, software, products, services, media, and digital resources from one place." %}</p>
-          <p class="global-home__kicker">{% trans "Context, not Score · Evidence, not Truth · Portable Identity" %}</p>
+<div class="world-home">
+  <main class="world-home__main">
+    <section class="world-hero" aria-labelledby="world-home-title">
+      <div class="world-hero__copy">
+        <p class="world-eyebrow">{% trans "INFRASTRUCTURE FOR TRUSTED SYSTEMS" %}</p>
+        <h1 id="world-home-title" class="world-title">{% trans "Precision infrastructure for a trusted digital future." %}</h1>
+        <p class="world-subtitle">{% trans "VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust." %}</p>
+        <div class="world-hero__actions">
+          <a class="world-button world-button--primary" href="#start">{% trans "Start searching" %}</a>
+          <a class="world-button world-button--secondary" href="#principles">{% trans "Platform principles" %}</a>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="start" class="global-home__search-section" aria-labelledby="start-title" data-homepage-signal-section>
-    <div class="global-home__shell">
-      <header class="global-home__section-heading">
-        <p class="global-home__eyebrow">{% trans "START" %}</p>
-        <h2 id="start-title">{% trans "Search or discover" %}</h2>
-      </header>
-      <div class="global-home__search-surface">
-        <form method="get" action="{% url 'search_page' %}" class="global-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
-          <div class="global-search__primary">
-            <div class="global-search__input-wrap">
-              <input class="global-search__input" type="search" name="q" maxlength="200" placeholder="{% trans 'Search knowledge, software, products, services, media, and more…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
-              <button class="global-search__button" type="submit" aria-label="{% trans 'Start searching' %}"><span class="global-search__button-label">{% trans "Start searching" %}</span><span class="global-home__directional-arrow" aria-hidden="true">→</span></button>
-            </div>
-          </div>
-        </form>
-        <div class="global-home__hero-actions">
-          <a class="global-home__secondary-cta" href="{% url 'discover' %}">{% trans "Explore Discover" %} <span class="global-home__directional-arrow" aria-hidden="true">→</span></a>
-        </div>
+    <section id="start" class="world-search-section" aria-labelledby="world-search-title">
+      <h2 id="world-search-title" class="world-section-title">{% trans "Search" %}</h2>
+      <form method="get" action="{% url 'search_page' %}" class="world-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
+        <input type="search" name="q" maxlength="200" class="world-search__input" placeholder="{% trans 'Search across VORNEQ…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
+        <button type="submit" class="world-search__submit">{% trans "Search" %}</button>
+      </form>
+      <p class="world-search__hint">{% trans "Use a query when you know what you want to find." %}</p>
+    </section>
+
+    <section id="principles" class="world-principles" aria-labelledby="world-principles-title">
+      <div class="world-section-head">
+        <h2 id="world-principles-title" class="world-section-title">{% trans "Platform Principles" %}</h2>
       </div>
-    </div>
-  </section>
+      <ul class="world-principles__grid">
+        <li class="world-card"><h3>{% trans "Context, not Score" %}</h3><p>{% trans "Information should be understood in context, not reduced to a single, opaque score." %}</p></li>
+        <li class="world-card"><h3>{% trans "Evidence, not Truth" %}</h3><p>{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}</p></li>
+        <li class="world-card"><h3>{% trans "Portable Identity" %}</h3><p>{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}</p></li>
+      </ul>
+    </section>
 
-  <section id="values" class="global-home__values" aria-labelledby="values-title" data-homepage-signal-section>
-    <div class="global-home__shell">
-      <header class="global-home__section-heading">
-        <p class="global-home__eyebrow">{% trans "PLATFORM PRINCIPLES" %}</p>
-        <h2 id="values-title">{% trans "Why VORNEQ" %}</h2>
-      </header>
-      <div class="global-home__preview-grid global-home__preview-grid--three">
-        <article class="global-home__preview-card"><h3>{% trans "Context, not Score" %}</h3><p>{% trans "Information should be understood in context rather than reduced to a single, opaque score." %}</p></article>
-        <article class="global-home__preview-card"><h3>{% trans "Evidence, not Truth" %}</h3><p>{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}</p></article>
-        <article class="global-home__preview-card"><h3>{% trans "Portable Identity" %}</h3><p>{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}</p></article>
+    <section id="capabilities" class="world-capabilities" aria-labelledby="world-capabilities-title">
+      <div class="world-section-head">
+        <h2 id="world-capabilities-title" class="world-section-title">{% trans "Capabilities" %}</h2>
       </div>
-    </div>
-  </section>
-
-  <section id="capabilities" class="global-home__actions" aria-labelledby="capabilities-title" data-homepage-signal-section>
-    <div class="global-home__shell">
-      <header class="global-home__section-heading">
-        <p class="global-home__eyebrow">{% trans "WHAT YOU CAN DO" %}</p>
-        <h2 id="capabilities-title">{% trans "Choose your next step" %}</h2>
-      </header>
-      <div class="global-home__preview-grid global-home__preview-grid--three">
-        <article class="global-home__preview-card"><h3>{% trans "Search" %}</h3><p>{% trans "Use a query when you know what you want to find." %}</p><a href="{% url 'search_page' %}">{% trans "Open Search" %} →</a></article>
-        <article class="global-home__preview-card"><h3>{% trans "Discover" %}</h3><p>{% trans "Browse the platform through its canonical discovery entry." %}</p><a href="{% url 'discover' %}">{% trans "Open Discover" %} →</a></article>
-        <article class="global-home__preview-card"><h3>{% trans "Marketplace" %}</h3><p>{% trans "Continue to the transactional surface for offerings and purchases." %}</p><a href="{% url 'marketplace:index' %}">{% trans "Open Marketplace" %} →</a></article>
-      </div>
-    </div>
-  </section>
-
-  <footer class="global-home__footer" aria-label="{% trans 'Homepage supporting navigation' %}">
-    <div class="global-home__shell">
-      <nav aria-label="{% trans 'Homepage links' %}">
-        <a href="{% url 'search_page' %}">{% trans "Search" %}</a>
-        <a href="{% url 'discover' %}">{% trans "Discover" %}</a>
-        <a href="{% url 'marketplace:index' %}">{% trans "Marketplace" %}</a>
-      </nav>
-    </div>
-  </footer>
+      <ul class="world-capabilities__grid">
+        <li class="world-capability"><h3>{% trans "Search" %}</h3><p>{% trans "Structured query across knowledge, software, products, and services." %}</p><a class="world-capability__link" href="{% url 'search_page' %}">{% trans "Open Search" %}</a></li>
+        <li class="world-capability"><h3>{% trans "Discover" %}</h3><p>{% trans "A canonical discovery surface within the VORNEQ ecosystem." %}</p><a class="world-capability__link" href="{% url 'discover' %}">{% trans "Open Discover" %}</a></li>
+        <li class="world-capability"><h3>{% trans "Marketplace" %}</h3><p>{% trans "A trusted transactional surface for offerings and solutions." %}</p><a class="world-capability__link" href="{% url 'marketplace:index' %}">{% trans "Open Marketplace" %}</a></li>
+      </ul>
+    </section>
+  </main>
 </div>
 {% endblock %}
 
