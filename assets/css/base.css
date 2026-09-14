@@ -287,3 +287,35 @@ html[dir="rtl"] .u-scroll-inline {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   VORNEQ · FROZEN SYMBOL A · WEBSITE APPLICATION
+   Geometry source: assets/brand/vorneq-symbol-a.svg
+   Monochrome only; currentColor adapts to theme without accenting the mark.
+   ============================================================ */
+
+html body .brand-sigil,
+html body .hero-poster__sigil {
+  flex: 0 0 auto;
+  display: inline-block !important;
+  width: 2rem;
+  height: 2rem;
+  background: currentColor !important;
+  -webkit-mask: url("../brand/vorneq-symbol-a.svg") center / contain no-repeat;
+  mask: url("../brand/vorneq-symbol-a.svg") center / contain no-repeat;
+}
+
+html body .hero-poster__sigil {
+  width: clamp(5rem, 10vw, 8rem);
+  height: clamp(5rem, 10vw, 8rem);
+}
+
+html body .brand-sigil > span,
+html body .hero-poster__sigil > span {
+  display: none !important;
+}
+
+html body .site-brand::before {
+  display: none !important;
+  content: none !important;
+}
