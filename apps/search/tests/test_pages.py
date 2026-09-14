@@ -104,7 +104,7 @@ class StandaloneSearchPageTests(TestCase):
         self.assertEqual(kwargs["filters"]["types"], {"libraryitem"})
         self.assertEqual(kwargs["filters"]["item_type"], "document")
         self.assertEqual(kwargs["filters"]["media_type"], "video")
-        self.assertEqual(kwargs["filters"]["category"], "ebook")
+        self.assertEqual(kwargs["filters"]["category"], "research")
         self.assertEqual(kwargs["filters"]["price_min"], Decimal("2"))
         self.assertEqual(kwargs["filters"]["price_max"], Decimal("20"))
         self.assertEqual(kwargs["page"], 2)
