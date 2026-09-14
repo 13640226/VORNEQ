@@ -1,19 +1,18 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}VORNEQ — {% trans "Global Knowledge Platform" %}{% endblock %}
+{% block title %}VORNEQ — {% trans "Precision Digital Infrastructure" %}{% endblock %}
 
 {% block meta %}
-<meta name="description" content="{% trans 'Find and organize knowledge, software, products, services, media, and digital resources from one place.' %}">
-<meta property="og:title" content="VORNEQ — {% trans 'Global Knowledge Platform' %}">
-<meta property="og:description" content="{% trans 'Find and organize knowledge, software, products, services, media, and digital resources from one place.' %}">
+<meta name="description" content="{% trans 'VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust.' %}">
+<meta property="og:title" content="VORNEQ — {% trans 'Precision Digital Infrastructure' %}">
+<meta property="og:description" content="{% trans 'Dependable digital infrastructure for clarity, resilience, and long-term trust.' %}">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 {% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
-<link rel="stylesheet" href="{% static 'css/homepage-signal-nav.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -63,8 +62,4 @@
     </section>
   </main>
 </div>
-{% endblock %}
-
-{% block extra_scripts %}
-<script src="{% static 'js/homepage-signal-nav.js' %}" defer></script>
 {% endblock %}
