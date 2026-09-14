@@ -77,7 +77,8 @@ class HomeSearchBoundaryTests(TestCase):
             collect.assert_not_called()
             self.assertContains(response, 'role="search"')
             self.assertContains(response, f'action="{reverse("search_page")}"')
-            self.assertContains(response, "Start searching")
+            self.assertContains(response, "Search across VORNEQ")
+            self.assertNotContains(response, "Start searching")
 
 
 class StandaloneSearchPageTests(TestCase):

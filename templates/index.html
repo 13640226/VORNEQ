@@ -23,15 +23,13 @@
         <p class="world-eyebrow">{% trans "INFRASTRUCTURE FOR TRUSTED SYSTEMS" %}</p>
         <h1 id="world-home-title" class="world-title">{% trans "Precision infrastructure for a trusted digital future." %}</h1>
         <p class="world-subtitle">{% trans "VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust." %}</p>
-        <div class="world-hero__actions">
-          <a class="world-button world-button--primary" href="#start">{% trans "Start searching" %}</a>
-          <a class="world-button world-button--secondary" href="#principles">{% trans "Platform principles" %}</a>
-        </div>
       </div>
     </section>
 
     <section id="start" class="world-search-section" aria-labelledby="world-search-title">
-      <h2 id="world-search-title" class="world-section-title">{% trans "Search" %}</h2>
+      <div class="world-section-head">
+        <h2 id="world-search-title" class="world-section-title">{% trans "Search" %}</h2>
+      </div>
       <form method="get" action="{% url 'search_page' %}" class="world-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
         <input type="search" name="q" maxlength="200" class="world-search__input" placeholder="{% trans 'Search across VORNEQ…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
         <button type="submit" class="world-search__submit">{% trans "Search" %}</button>
@@ -44,9 +42,21 @@
         <h2 id="world-principles-title" class="world-section-title">{% trans "Platform Principles" %}</h2>
       </div>
       <ul class="world-principles__grid">
-        <li class="world-card"><h3>{% trans "Context, not Score" %}</h3><p>{% trans "Information should be understood in context, not reduced to a single, opaque score." %}</p></li>
-        <li class="world-card"><h3>{% trans "Evidence, not Truth" %}</h3><p>{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}</p></li>
-        <li class="world-card"><h3>{% trans "Portable Identity" %}</h3><p>{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}</p></li>
+        <li class="world-principle">
+          <span class="world-item-index" aria-hidden="true">01</span>
+          <h3>{% trans "Context, not Score" %}</h3>
+          <p>{% trans "Information should be understood in context, not reduced to a single, opaque score." %}</p>
+        </li>
+        <li class="world-principle">
+          <span class="world-item-index" aria-hidden="true">02</span>
+          <h3>{% trans "Evidence, not Truth" %}</h3>
+          <p>{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}</p>
+        </li>
+        <li class="world-principle">
+          <span class="world-item-index" aria-hidden="true">03</span>
+          <h3>{% trans "Portable Identity" %}</h3>
+          <p>{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}</p>
+        </li>
       </ul>
     </section>
 
@@ -59,6 +69,10 @@
         <li class="world-capability"><h3>{% trans "Discover" %}</h3><p>{% trans "A canonical discovery surface within the VORNEQ ecosystem." %}</p><a class="world-capability__link" href="{% url 'discover' %}">{% trans "Open Discover" %}</a></li>
         <li class="world-capability"><h3>{% trans "Marketplace" %}</h3><p>{% trans "A trusted transactional surface for offerings and solutions." %}</p><a class="world-capability__link" href="{% url 'marketplace:index' %}">{% trans "Open Marketplace" %}</a></li>
       </ul>
+    </section>
+
+    <section class="world-closing" aria-label="{% trans 'VORNEQ positioning' %}">
+      <p>{% trans "Precision infrastructure for a trusted digital future." %}</p>
     </section>
   </main>
 </div>
