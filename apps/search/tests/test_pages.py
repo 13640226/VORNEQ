@@ -77,7 +77,8 @@ class HomeSearchBoundaryTests(TestCase):
             collect.assert_not_called()
             self.assertContains(response, 'role="search"')
             self.assertContains(response, f'action="{reverse("search_page")}"')
-            self.assertContains(response, "Start searching")
+            self.assertContains(response, "Search across VORNEQ")
+            self.assertNotContains(response, "Start searching")
 
 
 class StandaloneSearchPageTests(TestCase):
@@ -103,7 +104,7 @@ class StandaloneSearchPageTests(TestCase):
         self.assertEqual(kwargs["filters"]["types"], {"libraryitem"})
         self.assertEqual(kwargs["filters"]["item_type"], "document")
         self.assertEqual(kwargs["filters"]["media_type"], "video")
-        self.assertEqual(kwargs["filters"]["category"], "research")
+        self.assertEqual(kwargs["filters"]["category"], "ebook")
         self.assertEqual(kwargs["filters"]["price_min"], Decimal("2"))
         self.assertEqual(kwargs["filters"]["price_max"], Decimal("20"))
         self.assertEqual(kwargs["page"], 2)
