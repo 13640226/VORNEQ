@@ -7,11 +7,13 @@
   const placeholder = document.getElementById('mediaPlaceholder');
   const status = document.getElementById('mediaStatus');
 
-  if (!input || !choose || !reset || !image || !video || !placeholder || !status) return;
-
   const MAX_FILE_SIZE = 25 * 1024 * 1024;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let objectUrl = null;
+
+  const setStatus = (message) => {
+    if (status) status.textContent = message;
+  };
 
   const clearObjectUrl = () => {
     if (objectUrl) {
@@ -22,45 +24,53 @@
 
   const clearMedia = () => {
     clearObjectUrl();
-    video.pause();
-    video.removeAttribute('src');
-    video.hidden = true;
-    image.removeAttribute('src');
-    image.hidden = true;
-    placeholder.hidden = false;
-    input.value = '';
+    if (video) {
+      video.pause();
+      video.removeAttribute('src');
+      video.hidden = true;
+    }
+    if (image) {
+      image.removeAttribute('src');
+      image.hidden = true;
+    }
+    if (placeholder) placeholder.hidden = false;
+    if (input) input.value = '';
   };
 
   const resetMedia = () => {
     clearMedia();
-    status.textContent = 'Optional';
+    setStatus('Optional');
   };
 
   const showError = (message) => {
     clearMedia();
-    status.textContent = message;
+    setStatus(message);
   };
 
   const applyMotionPreference = () => {
+    if (!video) return;
     video.loop = !reducedMotion.matches;
     if (reducedMotion.matches) video.pause();
   };
 
-  applyMotionPreference();
-  reducedMotion.addEventListener('change', applyMotionPreference);
+  if (video) {
+    applyMotionPreference();
+    reducedMotion.addEventListener('change', applyMotionPreference);
+    video.addEventListener('error', () => {
+      showError('Video preview failed');
+    });
+  }
 
-  image.addEventListener('error', () => {
-    showError('Image preview failed');
-  });
+  if (image) {
+    image.addEventListener('error', () => {
+      showError('Image preview failed');
+    });
+  }
 
-  video.addEventListener('error', () => {
-    showError('Video preview failed');
-  });
+  if (choose && input) choose.addEventListener('click', () => input.click());
+  if (reset) reset.addEventListener('click', resetMedia);
 
-  choose.addEventListener('click', () => input.click());
-  reset.addEventListener('click', resetMedia);
-
-  input.addEventListener('change', () => {
+  if (input) input.addEventListener('change', () => {
     const file = input.files && input.files[0];
     if (!file) return;
 
@@ -76,15 +86,25 @@
       return;
     }
 
+    if (isImage && !image) {
+      showError('Image preview unavailable');
+      return;
+    }
+
+    if (isVideo && !video) {
+      showError('Video preview unavailable');
+      return;
+    }
+
     clearObjectUrl();
     objectUrl = URL.createObjectURL(file);
-    placeholder.hidden = true;
+    if (placeholder) placeholder.hidden = true;
 
     if (isVideo) {
-      image.hidden = true;
+      if (image) image.hidden = true;
       video.hidden = false;
       video.src = objectUrl;
-      status.textContent = 'Video preview';
+      setStatus('Video preview');
       applyMotionPreference();
       if (reducedMotion.matches) return;
       video.play().catch(() => {
@@ -93,13 +113,15 @@
       return;
     }
 
-    video.pause();
-    video.removeAttribute('src');
-    video.load();
-    video.hidden = true;
+    if (video) {
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+      video.hidden = true;
+    }
     image.hidden = false;
     image.src = objectUrl;
-    status.textContent = 'Image preview';
+    setStatus('Image preview');
   });
 
   window.addEventListener('beforeunload', clearObjectUrl);
