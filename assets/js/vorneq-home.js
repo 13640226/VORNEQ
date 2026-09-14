@@ -10,6 +10,7 @@
   if (!input || !choose || !reset || !image || !video || !placeholder || !status) return;
 
   const MAX_FILE_SIZE = 25 * 1024 * 1024;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let objectUrl = null;
 
   const clearObjectUrl = () => {
@@ -39,6 +40,14 @@
     clearMedia();
     status.textContent = message;
   };
+
+  const applyMotionPreference = () => {
+    video.loop = !reducedMotion.matches;
+    if (reducedMotion.matches) video.pause();
+  };
+
+  applyMotionPreference();
+  reducedMotion.addEventListener('change', applyMotionPreference);
 
   image.addEventListener('error', () => {
     showError('Image preview failed');
@@ -76,6 +85,8 @@
       video.hidden = false;
       video.src = objectUrl;
       status.textContent = 'Video preview';
+      applyMotionPreference();
+      if (reducedMotion.matches) return;
       video.play().catch(() => {
         showError('Video playback failed');
       });
