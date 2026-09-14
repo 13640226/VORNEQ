@@ -77,8 +77,8 @@ class HomepageSimplificationTests(TestCase):
         self.assertContains(response, "Context, not Score")
         self.assertContains(response, "Evidence, not Truth")
         self.assertContains(response, "Portable Identity")
-        self.assertContains(response, 'class="global-home__globe"')
-        self.assertContains(response, 'class="global-home__globe-node"', count=3)
+        self.assertNotContains(response, 'class="global-home__globe"')
+        self.assertNotContains(response, 'class="global-home__globe-node"')
         self.assertNotContains(response, "global-home__atlas")
 
     def test_signal_navigation_matches_residual_home_sections(self):
