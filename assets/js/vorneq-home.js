@@ -32,7 +32,7 @@
 
   const resetMedia = () => {
     clearMedia();
-    status.textContent = 'Default';
+    status.textContent = 'Optional';
   };
 
   const showError = (message) => {
