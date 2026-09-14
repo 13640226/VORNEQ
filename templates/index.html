@@ -24,6 +24,47 @@
         <h1 id="world-home-title" class="world-title">{% trans "Precision infrastructure for a trusted digital future." %}</h1>
         <p class="world-subtitle">{% trans "VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust." %}</p>
       </div>
+
+      <aside class="world-monitor" aria-labelledby="world-monitor-title">
+        <div class="world-monitor__header">
+          <div>
+            <p class="world-monitor__eyebrow">{% trans "PLATFORM MONITOR" %}</p>
+            <h2 id="world-monitor-title" class="world-monitor__title">{% trans "Connected surfaces" %}</h2>
+          </div>
+          <span class="world-monitor__pulse" aria-hidden="true"></span>
+        </div>
+        <div class="world-monitor__rail" aria-hidden="true"><span></span></div>
+        <ul class="world-monitor__list">
+          <li>
+            <a class="world-monitor__item" href="{% url 'search_page' %}">
+              <span class="world-status-led" aria-hidden="true"></span>
+              <span class="world-monitor__name">{% trans "Search" %}</span>
+              <span class="world-monitor__state">{% trans "Surface" %}</span>
+            </a>
+          </li>
+          <li>
+            <a class="world-monitor__item" href="{% url 'discover' %}">
+              <span class="world-status-led" aria-hidden="true"></span>
+              <span class="world-monitor__name">{% trans "Discover" %}</span>
+              <span class="world-monitor__state">{% trans "Surface" %}</span>
+            </a>
+          </li>
+          <li>
+            <a class="world-monitor__item" href="{% url 'marketplace:index' %}">
+              <span class="world-status-led" aria-hidden="true"></span>
+              <span class="world-monitor__name">{% trans "Marketplace" %}</span>
+              <span class="world-monitor__state">{% trans "Surface" %}</span>
+            </a>
+          </li>
+          <li>
+            <div class="world-monitor__item world-monitor__item--static">
+              <span class="world-status-led" aria-hidden="true"></span>
+              <span class="world-monitor__name">{% trans "Core infrastructure" %}</span>
+              <span class="world-monitor__state">{% trans "Foundation" %}</span>
+            </div>
+          </li>
+        </ul>
+      </aside>
     </section>
 
     <section id="start" class="world-search-section" aria-labelledby="world-search-title">
