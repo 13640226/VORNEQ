@@ -9,6 +9,7 @@
 
   if (!input || !choose || !reset || !image || !video || !placeholder || !status) return;
 
+  const MAX_FILE_SIZE = 25 * 1024 * 1024;
   let objectUrl = null;
 
   const clearObjectUrl = () => {
@@ -18,7 +19,7 @@
     }
   };
 
-  const resetMedia = () => {
+  const clearMedia = () => {
     clearObjectUrl();
     video.pause();
     video.removeAttribute('src');
@@ -26,9 +27,26 @@
     image.removeAttribute('src');
     image.hidden = true;
     placeholder.hidden = false;
-    status.textContent = 'Default';
     input.value = '';
   };
+
+  const resetMedia = () => {
+    clearMedia();
+    status.textContent = 'Default';
+  };
+
+  const showError = (message) => {
+    clearMedia();
+    status.textContent = message;
+  };
+
+  image.addEventListener('error', () => {
+    showError('Image preview failed');
+  });
+
+  video.addEventListener('error', () => {
+    showError('Video preview failed');
+  });
 
   choose.addEventListener('click', () => input.click());
   reset.addEventListener('click', resetMedia);
@@ -40,7 +58,12 @@
     const isImage = file.type.startsWith('image/');
     const isVideo = file.type.startsWith('video/');
     if (!isImage && !isVideo) {
-      resetMedia();
+      showError('Unsupported media type');
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      showError('File exceeds 25 MB');
       return;
     }
 
@@ -52,8 +75,10 @@
       image.hidden = true;
       video.hidden = false;
       video.src = objectUrl;
-      video.play().catch(() => {});
       status.textContent = 'Video preview';
+      video.play().catch(() => {
+        showError('Video playback failed');
+      });
       return;
     }
 
