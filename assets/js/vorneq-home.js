@@ -27,6 +27,7 @@
     if (video) {
       video.pause();
       video.removeAttribute('src');
+      video.load();
       video.hidden = true;
     }
     if (image) {
@@ -101,7 +102,10 @@
     if (placeholder) placeholder.hidden = true;
 
     if (isVideo) {
-      if (image) image.hidden = true;
+      if (image) {
+        image.hidden = true;
+        image.removeAttribute('src');
+      }
       video.hidden = false;
       video.src = objectUrl;
       setStatus('Video preview');
