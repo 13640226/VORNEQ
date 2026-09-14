@@ -94,7 +94,7 @@ dd { margin: 4px 0 0; font-size: 14px; font-weight: 500; font-variant-numeric: t
 
 .developer-callout { row-gap: 48px; }
 .developer-callout > div { grid-column: 1 / -1; }
-.code-block { margin: 0 0 24px; padding: 24px; overflow: auto; border: 1px solid var(--line); background: var(--graphite); color: var(--ink); font-family: 'DejaVu Sans Mono','SFMono-Regular',Consolas,'Liberation Mono',monospace; font-size: 14px; line-height: 1.5; }
+.code-block { margin: 0 0 24px; padding: 24px; overflow: auto; border: 1px solid var(--line); background: var(--graphite); color: var(--ink); font-family: ui-monospace,'SFMono-Regular','SF Mono',Menlo,Consolas,'Liberation Mono',monospace; font-size: 14px; line-height: 1.5; }
 .final-cta { row-gap: 24px; }
 .final-cta .eyebrow, .final-cta h2, .final-cta .button { grid-column: 1 / -1; }
 .final-cta .button { width: fit-content; }
