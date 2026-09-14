@@ -11,14 +11,13 @@ class HomepageResponsiveCssContractTests(SimpleTestCase):
         css_path = Path(settings.BASE_DIR) / "assets" / "css" / "homepage.css"
         cls.css = css_path.read_text(encoding="utf-8")
 
-    def test_desktop_shell_uses_1280px_max_width_with_32px_inline_space(self):
-        self.assertIn(
-            ".global-home__shell{width:min(1280px,calc(100% - 64px));margin-inline:auto}",
-            self.css,
-        )
+    def test_desktop_shell_uses_1440px_max_width_with_48px_inline_space(self):
+        self.assertIn(".world-home {", self.css)
+        self.assertIn("max-width: 1440px;", self.css)
+        self.assertIn("padding: 96px 48px 64px;", self.css)
 
-    def test_tablet_breakpoint_stacks_hero_at_1024px_boundary(self):
-        self.assertIn(
-            "@media(max-width:1023px){.global-home__brand-row{grid-template-columns:1fr;gap:var(--space-5)}",
-            self.css,
-        )
+    def test_canonical_compact_and_medium_breakpoints_are_preserved(self):
+        self.assertIn("@media (max-width: 1023px)", self.css)
+        self.assertIn("@media (max-width: 639px)", self.css)
+        self.assertIn(".world-principles__grid", self.css)
+        self.assertIn(".world-search { grid-template-columns: 1fr; }", self.css)

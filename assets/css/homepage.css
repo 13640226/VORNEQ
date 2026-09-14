@@ -207,7 +207,7 @@
     outline-offset: 3px;
 }
 
-@media (max-width: 820px) {
+@media (max-width: 1023px) {
     .world-home { padding: 64px 32px 48px; }
     .world-principles__grid,
     .world-capabilities__grid {
@@ -216,7 +216,7 @@
     }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 639px) {
     .world-home { padding: 48px 16px 32px; }
     .world-search { grid-template-columns: 1fr; }
     .world-search__submit { width: 100%; }

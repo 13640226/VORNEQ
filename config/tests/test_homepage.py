@@ -12,11 +12,10 @@ class HomepageSimplificationTests(TestCase):
         response = self.get_english_home()
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'id="home-intro"')
+        self.assertContains(response, 'class="world-home"')
         self.assertContains(response, 'id="start"')
-        self.assertContains(response, 'id="values"')
+        self.assertContains(response, 'id="principles"')
         self.assertContains(response, 'id="capabilities"')
-        self.assertContains(response, 'class="global-home__footer"')
 
         self.assertNotContains(response, 'id="discoveries"')
         self.assertNotContains(response, 'id="identity"')
@@ -49,7 +48,6 @@ class HomepageSimplificationTests(TestCase):
             discover_url = reverse("discover")
 
         self.assertContains(response, f'href="{discover_url}"')
-        self.assertContains(response, "Explore Discover")
         self.assertContains(response, "Open Discover")
 
     def test_homepage_capability_surface_routes_without_replication(self):
@@ -65,7 +63,7 @@ class HomepageSimplificationTests(TestCase):
         for url in expected_urls:
             self.assertContains(response, f'href="{url}"')
 
-        self.assertContains(response, "Choose your next step")
+        self.assertContains(response, "Capabilities")
         self.assertNotContains(response, "Checkout")
         self.assertNotContains(response, "Entitlement")
         self.assertNotContains(response, "Search results")
@@ -73,25 +71,16 @@ class HomepageSimplificationTests(TestCase):
     def test_homepage_preserves_platform_principles_and_visual_contract(self):
         response = self.get_english_home()
 
-        self.assertContains(response, "Global Knowledge Platform")
+        self.assertContains(
+            response,
+            "Precision infrastructure for a trusted digital future.",
+        )
         self.assertContains(response, "Context, not Score")
         self.assertContains(response, "Evidence, not Truth")
         self.assertContains(response, "Portable Identity")
         self.assertNotContains(response, 'class="global-home__globe"')
         self.assertNotContains(response, 'class="global-home__globe-node"')
         self.assertNotContains(response, "global-home__atlas")
-
-    def test_signal_navigation_matches_residual_home_sections(self):
-        response = self.get_english_home()
-
-        self.assertContains(response, "data-homepage-signal-nav")
-        self.assertContains(response, 'data-signal-target="home-intro" aria-current="location"')
-        self.assertContains(response, 'data-signal-target="start"')
-        self.assertContains(response, 'data-signal-target="values"')
-        self.assertContains(response, 'data-signal-target="capabilities"')
-        self.assertContains(response, 'class="homepage-signal-nav__icon"', count=4)
-        self.assertContains(response, 'stroke="currentColor"', count=4)
-        self.assertContains(response, 'stroke-width="1.75"', count=4)
 
     def test_home_does_not_execute_search_for_query_parameters(self):
         response = self.get_english_home({"q": "anything", "type": "product"})
