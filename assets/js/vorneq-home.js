@@ -83,6 +83,8 @@
     }
 
     video.pause();
+    video.removeAttribute('src');
+    video.load();
     video.hidden = true;
     image.hidden = false;
     image.src = objectUrl;
