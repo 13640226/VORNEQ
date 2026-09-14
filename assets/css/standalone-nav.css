@@ -1,6 +1,6 @@
 /* ==========================================================
    VORNEQ GLOBAL NAVIGATION
-   Based on tokens.css — v2.1 (PR-C)
+   Canonical infrastructure-first shell
    ========================================================== */
 
 .standalone-nav {
@@ -26,93 +26,31 @@
   padding-inline: var(--space-4);
 }
 
-/* ----- Brand / Wordmark ----- */
 .standalone-nav__brand {
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
-  gap: var(--space-3);
   min-block-size: var(--control-height);
   color: var(--color-text-primary);
   text-decoration: none;
   transition: color var(--motion-duration-fast) var(--motion-easing-standard);
 }
 
-.standalone-nav__symbol {
-  display: block;
-  inline-size: 32px;
-  block-size: 32px;
-  flex: 0 0 32px;
-}
-
-.vorneq-mark {
-  transform-box: view-box;
-  transform-origin: 50% 50%;
-}
-
-.vorneq-traj {
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.vorneq-traj--thin {
-  stroke-width: 1.4;
-}
-
-.vorneq-traj--heavy {
-  stroke-width: 5.6;
-}
-
-.vorneq-node--cobalt {
-  fill: currentColor;
-}
-
-.vorneq-node--cyan {
-  fill: var(--color-accent);
-}
-
-.standalone-nav__brand.is-logo-busy {
-  pointer-events: none;
-}
-
-.vorneq-mark.is-rotating {
-  will-change: transform;
-  animation: vorneq-logo-rotate 600ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-}
-
-@keyframes vorneq-logo-rotate {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(-180deg);
-  }
-}
-
 .standalone-nav__wordmark {
+  color: var(--color-text-primary);
   font-size: 1.5rem;
   font-weight: var(--font-weight-display);
-  color: var(--color-accent);
   letter-spacing: -0.5px;
   line-height: 1.2;
   transition: color var(--motion-duration-fast) var(--motion-easing-standard);
 }
 
-.standalone-nav__brand:hover {
+.standalone-nav__brand:hover .standalone-nav__wordmark,
+.standalone-nav__brand:focus-visible .standalone-nav__wordmark {
   color: var(--color-accent);
 }
 
-.standalone-nav__brand:hover .standalone-nav__wordmark {
-  color: var(--color-accent-hover);
-}
-
-/* ----- Primary Navigation ----- */
-.standalone-nav__menu {
-  flex: 0 1 auto;
-}
+.standalone-nav__menu { flex: 0 1 auto; }
 
 .standalone-nav__list {
   display: flex;
@@ -124,9 +62,7 @@
   white-space: nowrap;
 }
 
-.standalone-nav__item {
-  margin: 0;
-}
+.standalone-nav__item { margin: 0; }
 
 .standalone-nav__link {
   display: inline-flex;
@@ -143,16 +79,13 @@
     border-color var(--motion-duration-fast) var(--motion-easing-standard);
 }
 
-.standalone-nav__link:hover {
-  color: var(--color-text-primary);
-}
+.standalone-nav__link:hover { color: var(--color-text-primary); }
 
 .standalone-nav__link.is-active {
   color: var(--color-accent);
   border-bottom-color: var(--color-accent);
 }
 
-/* ----- Account Actions ----- */
 .standalone-nav__actions {
   display: flex;
   flex-shrink: 0;
@@ -190,7 +123,7 @@
   align-items: center;
   min-block-size: 44px;
   padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-pill);
+  border-radius: 0;
   font-size: var(--font-size-small);
   font-weight: 500;
   text-decoration: none;
@@ -201,12 +134,13 @@
 }
 
 .standalone-nav__action--login {
-  background: var(--color-accent);
-  color: var(--color-text-on-accent);
+  background: var(--color-text-primary);
+  color: var(--color-bg-elevated);
 }
 
 .standalone-nav__action--login:hover {
-  background: var(--color-accent-hover);
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
 }
 
 .standalone-nav__action--logout {
@@ -221,29 +155,14 @@
   border-color: var(--color-border-strong);
 }
 
-/* ==========================================================
-   RESPONSIVE — Mobile (≤ 768px)
-   ========================================================== */
-
-@media (max-width: 768px) {
+@media (max-width: 639px) {
   .standalone-nav__inner {
     flex-wrap: wrap;
     row-gap: var(--space-2);
   }
 
-  .standalone-nav__brand {
-    flex: 0 1 auto;
-  }
-
-  .standalone-nav__symbol {
-    inline-size: 24px;
-    block-size: 24px;
-    flex-basis: 24px;
-  }
-
-  .standalone-nav__actions {
-    margin-inline-start: 0;
-  }
+  .standalone-nav__brand { flex: 0 1 auto; }
+  .standalone-nav__actions { margin-inline-start: 0; }
 
   .standalone-nav__menu {
     order: 3;
@@ -254,27 +173,16 @@
     -ms-overflow-style: none;
   }
 
-  .standalone-nav__menu::-webkit-scrollbar {
-    display: none;
-  }
+  .standalone-nav__menu::-webkit-scrollbar { display: none; }
 
   .standalone-nav__list {
     gap: var(--space-4);
     padding-block: var(--space-1);
   }
 
-  .standalone-nav__link {
-    font-size: var(--font-size-small);
-  }
-
-  .standalone-nav__wordmark {
-    font-size: 1.25rem;
-  }
+  .standalone-nav__link { font-size: var(--font-size-small); }
+  .standalone-nav__wordmark { font-size: 1.25rem; }
 }
-
-/* ==========================================================
-   ACCESSIBILITY — Focus & Reduced Motion
-   ========================================================== */
 
 .standalone-nav__brand:focus-visible,
 .standalone-nav__link:focus-visible,
@@ -282,15 +190,6 @@
 .standalone-nav__user:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px var(--color-focus-ring);
-}
-
-.standalone-nav__brand:focus-visible {
-  color: var(--color-accent);
-}
-
-.standalone-nav__brand:focus-visible .standalone-nav__wordmark {
-  color: var(--color-accent-hover);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -299,9 +198,5 @@
   .standalone-nav__link,
   .standalone-nav__action {
     transition: none;
-  }
-
-  .vorneq-mark.is-rotating {
-    animation: none;
   }
 }

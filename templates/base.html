@@ -7,18 +7,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#071426">
+    <meta name="theme-color" content="#fafafa">
     <script src="{% static 'js/theme-bootstrap.js' %}"></script>
-    </script>
 
     {% block meta %}
     <meta
         name="description"
-        content="{% trans 'VORNEQ — Knowledge Discovery Platform' %}"
+        content="{% trans 'VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust.' %}"
     >
     {% endblock %}
 
-    <title>{% block title %}{% trans "VORNEQ — Knowledge Discovery Platform" %}{% endblock %}</title>
+    <title>{% block title %}{% trans "VORNEQ — Precision Digital Infrastructure" %}{% endblock %}</title>
 
     <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
     <link rel="stylesheet" href="{% static 'css/theme-palettes.css' %}">
@@ -65,7 +64,7 @@
         <div class="container site-footer__inner">
             <span class="site-footer__brand">VORNEQ</span>
             <span class="site-footer__copy">
-                &copy; {% now "Y" %} — {% trans "Knowledge, discovered." %}
+                &copy; {% now "Y" %} — {% trans "Precision infrastructure for a trusted digital future." %}
             </span>
         </div>
     </footer>
@@ -73,7 +72,6 @@
 
     <script src="{% static 'js/theme-preference.js' %}" defer></script>
     <script src="{% static 'js/global-back.js' %}" defer></script>
-    <script src="{% static 'js/brand-logo.js' %}" defer></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
