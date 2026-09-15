@@ -1,11 +1,11 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}VORNEQ â€” {% trans "Precision Digital Infrastructure" %}{% endblock %}
+{% block title %}VORNEQ — {% trans "Precision Digital Infrastructure" %}{% endblock %}
 
 {% block meta %}
 <meta name="description" content="{% trans 'VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust.' %}">
-<meta property="og:title" content="VORNEQ â€” {% trans 'Precision Digital Infrastructure' %}">
+<meta property="og:title" content="VORNEQ — {% trans 'Precision Digital Infrastructure' %}">
 <meta property="og:description" content="{% trans 'Dependable digital infrastructure for clarity, resilience, and long-term trust.' %}">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
@@ -26,16 +26,16 @@
       </div>
 
       <aside class="world-hero-cover" aria-label="{% trans 'VORNEQ platform' %}">
-  <img
-    src="{% static 'images/vorneq-hero-integrated.png' %}"
-    alt="{% trans 'VORNEQ digital infrastructure platform' %}"
-    class="world-hero-cover__image"
-    width="1536"
-    height="768"
-    loading="eager"
-    fetchpriority="high"
-  >
-</aside>
+        <img
+          src="{% static 'images/vorneq-hero-integrated.png' %}"
+          alt="{% trans 'VORNEQ digital infrastructure platform' %}"
+          class="world-hero-cover__image"
+          width="1536"
+          height="768"
+          loading="eager"
+          fetchpriority="high"
+        >
+      </aside>
     </section>
 
     <section id="start" class="world-search-section" aria-labelledby="world-search-title">
@@ -44,7 +44,7 @@
         <h2 id="world-search-title" class="world-section-title">{% trans "Search" %}</h2>
       </div>
       <form method="get" action="{% url 'search_page' %}" class="world-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
-        <input type="search" name="q" maxlength="200" class="world-search__input" placeholder="{% trans 'Search across VORNEQâ€¦' %}" aria-label="{% trans 'Search across VORNEQ' %}">
+        <input type="search" name="q" maxlength="200" class="world-search__input" placeholder="{% trans 'Search across VORNEQ…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
         <button type="submit" class="world-search__submit">{% trans "Search" %}</button>
       </form>
       <p class="world-search__hint">{% trans "Use a query when you know what you want to find." %}</p>
@@ -111,4 +111,3 @@
   </main>
 </div>
 {% endblock %}
-
