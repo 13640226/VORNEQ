@@ -78,6 +78,44 @@
     align-self: center;
 }
 
+.world-hero__actions {
+    margin-top: 40px;
+}
+
+.world-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 20px;
+    border: 1px solid #0a0a0b;
+    border-radius: 0;
+    background: #0a0a0b;
+    color: #fafafa;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 500;
+    font-variation-settings: "opsz" 14, "wght" 500;
+    text-decoration: none;
+    transition: background .12s ease, color .12s ease, transform .16s ease;
+}
+
+.world-cta:hover {
+    background: #f5f5f7;
+    color: #0a0a0b;
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+.world-cta:active {
+    transform: translateY(1px);
+}
+
+.world-cta:focus-visible {
+    outline: 2px solid #4a4a8c;
+    outline-offset: 3px;
+}
+
 .world-monitor {
     grid-column: 9 / -1;
     align-self: center;
@@ -464,7 +502,8 @@
     .world-monitor__item,
     .world-search__input,
     .world-search__submit,
-    .world-capability__surface {
+    .world-capability__surface,
+    .world-cta {
         transition: none;
     }
 
@@ -476,6 +515,8 @@
     .world-search__input:focus-visible,
     .world-search__submit:hover:not(:disabled),
     .world-search__submit:active:not(:disabled),
+    .world-cta:hover,
+    .world-cta:active,
     .world-capability__surface:hover,
     .world-capability__surface:active {
         transform: none;
