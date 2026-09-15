@@ -182,7 +182,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LANGUAGE_CODE = "fa"
+LANGUAGE_CODE = os.environ.get("VORNEQ_DEFAULT_LANGUAGE", "fa")
 LANGUAGES = [
     ("fa", "فارسی"),
     ("en", "English"),
