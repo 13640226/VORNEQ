@@ -78,6 +78,33 @@
     align-self: center;
 }
 
+.world-hero__actions {
+    margin-top: 2.5rem;
+}
+
+.world-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: 2px;
+    background: var(--color-text-primary);
+    color: var(--color-bg-elevated);
+    transition: opacity var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.world-cta:hover {
+    opacity: 0.85;
+}
+
+.world-cta:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
 .world-monitor {
     grid-column: 9 / -1;
     align-self: center;
@@ -464,7 +491,8 @@
     .world-monitor__item,
     .world-search__input,
     .world-search__submit,
-    .world-capability__surface {
+    .world-capability__surface,
+    .world-cta {
         transition: none;
     }
 
