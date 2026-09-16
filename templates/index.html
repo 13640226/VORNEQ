@@ -13,6 +13,7 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
+<link rel="stylesheet" href="{% static 'css/homepage-redesign.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -55,29 +56,6 @@
       <p class="world-search__hint">{% trans "Use a query when you know what you want to find." %}</p>
     </section>
 
-    <section id="principles" class="world-principles" aria-labelledby="world-principles-title">
-      <div class="world-section-head">
-        <h2 id="world-principles-title" class="world-section-title">{% trans "Platform Principles" %}</h2>
-      </div>
-      <ul class="world-principles__grid">
-        <li class="world-principle">
-          <span class="world-item-index" aria-hidden="true">01</span>
-          <h3>{% trans "Context, not Score" %}</h3>
-          <p>{% trans "Information should be understood in context, not reduced to a single, opaque score." %}</p>
-        </li>
-        <li class="world-principle">
-          <span class="world-item-index" aria-hidden="true">02</span>
-          <h3>{% trans "Evidence, not Truth" %}</h3>
-          <p>{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}</p>
-        </li>
-        <li class="world-principle">
-          <span class="world-item-index" aria-hidden="true">03</span>
-          <h3>{% trans "Portable Identity" %}</h3>
-          <p>{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}</p>
-        </li>
-      </ul>
-    </section>
-
     <section id="capabilities" class="world-capabilities" aria-labelledby="world-capabilities-title">
       <div class="world-section-head">
         <h2 id="world-capabilities-title" class="world-section-title">{% trans "Capabilities" %}</h2>
@@ -108,6 +86,103 @@
           </a>
         </li>
       </ul>
+    </section>
+
+    <section id="how-it-works" class="world-flow" aria-labelledby="world-flow-title">
+      <header class="world-flow__header">
+        <p class="world-eyebrow">{% trans "How VORNEQ works" %}</p>
+        <h2 id="world-flow-title" class="world-title world-title--md">{% trans "From information to trusted knowledge." %}</h2>
+        <p class="world-flow__intro">{% trans "A structured path from source material to information you can inspect, connect, and explore." %}</p>
+      </header>
+      <ol class="world-flow__steps">
+        <li class="world-flow__step">
+          <span class="world-flow__num" aria-hidden="true">01</span>
+          <h3>{% trans "Collect" %}</h3>
+          <p>{% trans "Bring documents, media, and structured information into a consistent system." %}</p>
+        </li>
+        <li class="world-flow__step">
+          <span class="world-flow__num" aria-hidden="true">02</span>
+          <h3>{% trans "Structure" %}</h3>
+          <p>{% trans "Organize information into clear, addressable records." %}</p>
+        </li>
+        <li class="world-flow__step">
+          <span class="world-flow__num" aria-hidden="true">03</span>
+          <h3>{% trans "Verify" %}</h3>
+          <p>{% trans "Connect claims with evidence and preserve their context." %}</p>
+        </li>
+        <li class="world-flow__step">
+          <span class="world-flow__num" aria-hidden="true">04</span>
+          <h3>{% trans "Connect" %}</h3>
+          <p>{% trans "Build meaningful relationships across records, entities, and sources." %}</p>
+        </li>
+        <li class="world-flow__step">
+          <span class="world-flow__num" aria-hidden="true">05</span>
+          <h3>{% trans "Discover" %}</h3>
+          <p>{% trans "Explore connected information through VORNEQ's discovery surfaces." %}</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="world-trust" aria-labelledby="world-trust-title">
+      <header class="world-trust__header">
+        <p class="world-eyebrow">{% trans "Trust by architecture" %}</p>
+        <h2 id="world-trust-title" class="world-title world-title--md">{% trans "Infrastructure designed for clarity and accountability." %}</h2>
+        <p class="world-trust__intro">{% trans "Trust is supported by visible structure, evidence, boundaries, and traceable system behavior." %}</p>
+      </header>
+      <div class="world-trust__grid">
+        <article class="world-trust__item">
+          <span class="world-trust__index" aria-hidden="true">01</span>
+          <h3>{% trans "Privacy by architecture" %}</h3>
+          <p>{% trans "Privacy boundaries are considered as part of the system design." %}</p>
+        </article>
+        <article class="world-trust__item">
+          <span class="world-trust__index" aria-hidden="true">02</span>
+          <h3>{% trans "Auditability" %}</h3>
+          <p>{% trans "Important actions and state changes can remain inspectable and traceable." %}</p>
+        </article>
+        <article class="world-trust__item">
+          <span class="world-trust__index" aria-hidden="true">03</span>
+          <h3>{% trans "Evidence" %}</h3>
+          <p>{% trans "Sources and supporting material stay connected to the information they support." %}</p>
+        </article>
+        <article class="world-trust__item">
+          <span class="world-trust__index" aria-hidden="true">04</span>
+          <h3>{% trans "Resilience" %}</h3>
+          <p>{% trans "Infrastructure is designed with continuity, recovery, and long-term operation in mind." %}</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="principles" class="world-principles" aria-labelledby="world-principles-title">
+      <div class="world-section-head">
+        <h2 id="world-principles-title" class="world-section-title">{% trans "Platform Principles" %}</h2>
+      </div>
+      <ul class="world-principles__grid">
+        <li class="world-principle">
+          <span class="world-item-index" aria-hidden="true">01</span>
+          <h3>{% trans "Context, not Score" %}</h3>
+          <p>{% trans "Information should be understood in context, not reduced to a single, opaque score." %}</p>
+        </li>
+        <li class="world-principle">
+          <span class="world-item-index" aria-hidden="true">02</span>
+          <h3>{% trans "Evidence, not Truth" %}</h3>
+          <p>{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}</p>
+        </li>
+        <li class="world-principle">
+          <span class="world-item-index" aria-hidden="true">03</span>
+          <h3>{% trans "Portable Identity" %}</h3>
+          <p>{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}</p>
+        </li>
+      </ul>
+    </section>
+
+    <section class="world-final-cta" aria-labelledby="world-final-cta-title">
+      <div class="world-final-cta__content">
+        <p class="world-eyebrow">{% trans "Explore VORNEQ" %}</p>
+        <h2 id="world-final-cta-title" class="world-title world-title--lg">{% trans "Explore a more structured way to work with information." %}</h2>
+        <p class="world-final-cta__copy">{% trans "Search, discover, and navigate the connected surfaces of the VORNEQ platform." %}</p>
+        <a href="{% url 'discover' %}" class="world-cta">{% trans "Explore Platform" %}</a>
+      </div>
     </section>
 
     <section class="world-closing" aria-label="{% trans 'VORNEQ positioning' %}">

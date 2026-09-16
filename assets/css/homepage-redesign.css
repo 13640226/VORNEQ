@@ -1,0 +1,211 @@
+/* VORNEQ Homepage Redesign
+   Additive presentation layer for the homepage.
+
+   Scope:
+   - Typography modifiers
+   - How VORNEQ Works
+   - Trust / Infrastructure
+   - Final CTA
+
+   Explicitly out of scope:
+   - Hero
+   - Hero actions
+   - Hero cover
+   - homepage.css
+   - Issue #304
+*/
+
+.world-title--md {
+    max-width: 22ch;
+    font-size: var(--font-size-h2);
+    line-height: 1.12;
+    font-weight: var(--font-weight-h2);
+}
+
+.world-title--lg {
+    max-width: 20ch;
+    font-size: var(--font-size-h1);
+    line-height: 1.08;
+    font-weight: var(--font-weight-h1);
+}
+
+.world-flow,
+.world-trust,
+.world-final-cta {
+    grid-column: 1 / -1;
+}
+
+.world-flow,
+.world-trust {
+    padding-block: var(--space-10);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.world-flow__header,
+.world-trust__header {
+    max-width: var(--reading-width);
+    margin-bottom: var(--space-8);
+}
+
+.world-flow__intro,
+.world-trust__intro,
+.world-final-cta__copy {
+    max-width: 62ch;
+    margin: var(--space-5) 0 0;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
+}
+
+.world-flow__steps {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.world-flow__step {
+    min-width: 0;
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+}
+
+.world-flow__num {
+    display: block;
+    margin-bottom: var(--space-5);
+    color: var(--color-accent);
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-h3);
+    letter-spacing: 0.1em;
+}
+
+.world-flow__step h3 {
+    margin: 0 0 var(--space-3);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-h3);
+    line-height: 1.25;
+}
+
+.world-flow__step p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-small);
+    line-height: var(--line-height-body);
+}
+
+.world-trust {
+    padding-inline: var(--space-6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-surface);
+}
+
+.world-trust__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-6);
+}
+
+.world-trust__item {
+    min-width: 0;
+    padding: var(--space-6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-elevated);
+    box-shadow: var(--shadow-low);
+}
+
+.world-trust__index {
+    display: block;
+    margin-bottom: var(--space-6);
+    color: var(--color-accent);
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-h3);
+    letter-spacing: 0.1em;
+}
+
+.world-trust__item h3 {
+    margin: 0 0 var(--space-3);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-h3);
+    line-height: 1.25;
+}
+
+.world-trust__item p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-small);
+    line-height: var(--line-height-body);
+}
+
+.world-final-cta {
+    padding-block: var(--space-11);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.world-final-cta__content {
+    max-width: 900px;
+    margin-inline: auto;
+    text-align: center;
+}
+
+.world-final-cta__content .world-title {
+    margin-inline: auto;
+}
+
+.world-final-cta__copy {
+    margin-inline: auto;
+    margin-bottom: var(--space-6);
+}
+
+@media (max-width: 1023px) {
+    .world-flow__steps {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-6);
+    }
+
+    .world-trust__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 639px) {
+    .world-flow,
+    .world-trust {
+        padding-block: var(--space-8);
+    }
+
+    .world-flow__header,
+    .world-trust__header {
+        margin-bottom: var(--space-7);
+    }
+
+    .world-flow__steps,
+    .world-trust__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .world-flow__steps {
+        gap: var(--space-7);
+    }
+
+    .world-trust {
+        padding-inline: var(--space-5);
+    }
+
+    .world-trust__grid {
+        gap: var(--space-4);
+    }
+
+    .world-trust__item {
+        padding: var(--space-5);
+    }
+
+    .world-final-cta {
+        padding-block: var(--space-9);
+    }
+}
