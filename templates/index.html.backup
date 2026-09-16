@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}VORNEQ — {% trans "Precision Digital Infrastructure" %}{% endblock %}
+
+{% block meta %}
+<meta name="description" content="{% trans 'VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust.' %}">
+<meta property="og:title" content="VORNEQ — {% trans 'Precision Digital Infrastructure' %}">
+<meta property="og:description" content="{% trans 'Dependable digital infrastructure for clarity, resilience, and long-term trust.' %}">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/homepage.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="world-home">
+  <main class="world-home__main">
+    <section class="world-hero" aria-labelledby="world-home-title">
+      <div class="world-hero__copy">
+        <p class="world-eyebrow">{% trans "INFRASTRUCTURE FOR TRUSTED SYSTEMS" %}</p>
+        <h1 id="world-home-title" class="world-title">{% trans "Precision infrastructure for a trusted digital future." %}</h1>
+        <p class="world-subtitle">{% trans "VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust." %}</p>
+        <div class="world-hero__actions">
+          <a href="{% url 'discover' %}" class="world-cta">
+            {% trans "Explore Platform" %}
+          </a>
+        </div>
+      </div>
+
+      <aside class="world-hero-cover" aria-label="{% trans 'VORNEQ platform' %}">
+        <img
+          src="{% static 'images/vorneq-platform-cover.webp' %}"
+          alt="{% trans 'VORNEQ digital infrastructure platform' %}"
+          class="world-hero-cover__image"
+          width="1536"
+          height="768"
+          loading="eager"
+          fetchpriority="high"
+        >
+      </aside>
+    </section>
+
+    <section id="start" class="world-search-section" aria-labelledby="world-search-title">
+      <div class="world-section-head world-section-head--interactive">
+        <span class="world-status-led" aria-hidden="true"></span>
+        <h2 id="world-search-title" class="world-section-title">{% trans "Search" %}</h2>
+      </div>
+      <form method="get" action="{% url 'search_page' %}" class="world-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
+        <input type="search" name="q" maxlength="200" class="world-search__input" placeholder="{% trans 'Search across VORNEQ…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
+        <button type="submit" class="world-search__submit">{% trans "Search" %}</button>
+      </form>
+      <p class="world-search__hint">{% trans "Use a query when you know what you want to find." %}</p>
+    </section>
+
+    <section id="principles" class="world-principles" aria-labelledby="world-principles-title">
+      <div class="world-section-head">
+        <h2 id="world-principles-title" class="world-section-title">{% trans "Platform Principles" %}</h2>
+      </div>
+      <ul class="world-principles__grid">
+        <li class="world-principle">
+          <span class="world-item-index" aria-hidden="true">01</span>
+          <h3>{% trans "Context, not Score" %}</h3>
+          <p>{% trans "Information should be understood in context, not reduced to a single, opaque score." %}</p>
+        </li>
+        <li class="world-principle">
+          <span class="world-item-index" aria-hidden="true">02</span>
+          <h3>{% trans "Evidence, not Truth" %}</h3>
+          <p>{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}</p>
+        </li>
+        <li class="world-principle">
+          <span class="world-item-index" aria-hidden="true">03</span>
+          <h3>{% trans "Portable Identity" %}</h3>
+          <p>{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}</p>
+        </li>
+      </ul>
+    </section>
+
+    <section id="capabilities" class="world-capabilities" aria-labelledby="world-capabilities-title">
+      <div class="world-section-head">
+        <h2 id="world-capabilities-title" class="world-section-title">{% trans "Capabilities" %}</h2>
+      </div>
+      <ul class="world-capabilities__grid">
+        <li class="world-capability">
+          <a class="world-capability__surface" href="{% url 'search_page' %}">
+            <span class="world-status-led" aria-hidden="true"></span>
+            <h3>{% trans "Search" %}</h3>
+            <p>{% trans "Structured query across knowledge, software, products, and services." %}</p>
+            <span class="world-capability__link">{% trans "Open Search" %}</span>
+          </a>
+        </li>
+        <li class="world-capability">
+          <a class="world-capability__surface" href="{% url 'discover' %}">
+            <span class="world-status-led" aria-hidden="true"></span>
+            <h3>{% trans "Discover" %}</h3>
+            <p>{% trans "A canonical discovery surface within the VORNEQ ecosystem." %}</p>
+            <span class="world-capability__link">{% trans "Open Discover" %}</span>
+          </a>
+        </li>
+        <li class="world-capability">
+          <a class="world-capability__surface" href="{% url 'marketplace:index' %}">
+            <span class="world-status-led" aria-hidden="true"></span>
+            <h3>{% trans "Marketplace" %}</h3>
+            <p>{% trans "A trusted transactional surface for offerings and solutions." %}</p>
+            <span class="world-capability__link">{% trans "Open Marketplace" %}</span>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="world-closing" aria-label="{% trans 'VORNEQ positioning' %}">
+      <p>{% trans "Precision infrastructure for a trusted digital future." %}</p>
+    </section>
+  </main>
+</div>
+{% endblock %}
