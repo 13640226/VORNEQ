@@ -1,30 +1,49 @@
-{% load i18n %}
+﻿{% load i18n %}
 
-<nav class="homepage-signal-nav" aria-label="{% trans 'Homepage sections' %}" data-homepage-signal-nav>
-  <ul class="homepage-signal-nav__list">
-    <li class="homepage-signal-nav__item">
-      <a class="homepage-signal-nav__link is-active" href="#home-intro" data-signal-target="home-intro" aria-current="location">
-        <svg class="homepage-signal-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="7.25"/><path d="m14.9 9.1-2 3.8-3.8 2 2-3.8 3.8-2Z"/></svg>
-        <span class="homepage-signal-nav__label">{% trans "Home" %}</span>
-      </a>
-    </li>
-    <li class="homepage-signal-nav__item">
-      <a class="homepage-signal-nav__link" href="#start" data-signal-target="start">
-        <svg class="homepage-signal-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
-        <span class="homepage-signal-nav__label">{% trans "Start" %}</span>
-      </a>
-    </li>
-    <li class="homepage-signal-nav__item">
-      <a class="homepage-signal-nav__link" href="#values" data-signal-target="values">
-        <svg class="homepage-signal-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true" focusable="false"><path d="m12 5 7 4-7 4-7-4 7-4Z"/><path d="m5 13 7 4 7-4M5 17l7 4 7-4"/></svg>
-        <span class="homepage-signal-nav__label">{% trans "Principles" %}</span>
-      </a>
-    </li>
-    <li class="homepage-signal-nav__item">
-      <a class="homepage-signal-nav__link" href="#capabilities" data-signal-target="capabilities">
-        <svg class="homepage-signal-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true" focusable="false"><rect x="5" y="5" width="5" height="5" rx="1"/><rect x="14" y="5" width="5" height="5" rx="1"/><rect x="5" y="14" width="5" height="5" rx="1"/><rect x="14" y="14" width="5" height="5" rx="1"/></svg>
-        <span class="homepage-signal-nav__label">{% trans "Capabilities" %}</span>
-      </a>
-    </li>
-  </ul>
+<nav
+    class="homepage-signal-nav"
+    aria-label="{% trans 'Section navigation' %}"
+    data-homepage-signal-nav
+>
+    <ol class="homepage-signal-nav__list">
+        <li class="homepage-signal-nav__item">
+            <a class="homepage-signal-nav__link" href="#home" data-homepage-signal-link aria-current="location">
+                {% trans "Home" %}
+            </a>
+        </li>
+        <li class="homepage-signal-nav__item">
+            <a class="homepage-signal-nav__link" href="#start" data-homepage-signal-link>
+                {% trans "Search" %}
+            </a>
+        </li>
+        <li class="homepage-signal-nav__item">
+            <a class="homepage-signal-nav__link" href="#capabilities" data-homepage-signal-link>
+                {% trans "Capabilities" %}
+            </a>
+        </li>
+        <li class="homepage-signal-nav__item">
+            <a class="homepage-signal-nav__link" href="#how-it-works" data-homepage-signal-link>
+                {% trans "How it works" %}
+            </a>
+        </li>
+        <li class="homepage-signal-nav__item">
+            <a class="homepage-signal-nav__link" href="#trust" data-homepage-signal-link>
+                {% trans "Trust" %}
+            </a>
+        </li>
+        <li class="homepage-signal-nav__item">
+            <a class="homepage-signal-nav__link" href="#principles" data-homepage-signal-link>
+                {% trans "Principles" %}
+            </a>
+        </li>
+        <li class="homepage-signal-nav__item">
+            <a class="homepage-signal-nav__link" href="#explore" data-homepage-signal-link>
+                {% trans "Explore" %}
+            </a>
+        </li>
+    </ol>
+
+    <div class="homepage-signal-nav__progress" aria-hidden="true">
+        <span class="homepage-signal-nav__progress-value" data-homepage-signal-progress></span>
+    </div>
 </nav>
