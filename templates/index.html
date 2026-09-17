@@ -14,12 +14,15 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
 <link rel="stylesheet" href="{% static 'css/homepage-redesign.css' %}">
+<link rel="stylesheet" href="{% static 'css/homepage-signal-nav-v2.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="world-home">
+  {% include "partials/_homepage_signal_nav.html" %}
+
   <main class="world-home__main">
-    <section class="world-hero" aria-labelledby="world-home-title">
+    <section id="home" class="world-hero" data-homepage-signal-section aria-labelledby="world-home-title">
       <div class="world-hero__copy">
         <p class="world-eyebrow">{% trans "INFRASTRUCTURE FOR TRUSTED SYSTEMS" %}</p>
         <h1 id="world-home-title" class="world-title">{% trans "Precision infrastructure for a trusted digital future." %}</h1>
@@ -44,7 +47,7 @@
       </aside>
     </section>
 
-    <section id="start" class="world-search-section" aria-labelledby="world-search-title">
+    <section id="start" class="world-search-section" data-homepage-signal-section aria-labelledby="world-search-title">
       <div class="world-section-head world-section-head--interactive">
         <span class="world-status-led" aria-hidden="true"></span>
         <h2 id="world-search-title" class="world-section-title">{% trans "Search" %}</h2>
@@ -56,7 +59,7 @@
       <p class="world-search__hint">{% trans "Use a query when you know what you want to find." %}</p>
     </section>
 
-    <section id="capabilities" class="world-capabilities" aria-labelledby="world-capabilities-title">
+    <section id="capabilities" class="world-capabilities" data-homepage-signal-section aria-labelledby="world-capabilities-title">
       <div class="world-section-head">
         <h2 id="world-capabilities-title" class="world-section-title">{% trans "Capabilities" %}</h2>
       </div>
@@ -88,7 +91,7 @@
       </ul>
     </section>
 
-    <section id="how-it-works" class="world-flow" aria-labelledby="world-flow-title">
+    <section id="how-it-works" class="world-flow" data-homepage-signal-section aria-labelledby="world-flow-title">
       <header class="world-flow__header">
         <p class="world-eyebrow">{% trans "How VORNEQ works" %}</p>
         <h2 id="world-flow-title" class="world-title world-title--md">{% trans "From information to trusted knowledge." %}</h2>
@@ -123,7 +126,7 @@
       </ol>
     </section>
 
-    <section class="world-trust" aria-labelledby="world-trust-title">
+    <section id="trust" class="world-trust" data-homepage-signal-section aria-labelledby="world-trust-title">
       <header class="world-trust__header">
         <p class="world-eyebrow">{% trans "Trust by architecture" %}</p>
         <h2 id="world-trust-title" class="world-title world-title--md">{% trans "Infrastructure designed for clarity and accountability." %}</h2>
@@ -153,7 +156,7 @@
       </div>
     </section>
 
-    <section id="principles" class="world-principles" aria-labelledby="world-principles-title">
+    <section id="principles" class="world-principles" data-homepage-signal-section aria-labelledby="world-principles-title">
       <div class="world-section-head">
         <h2 id="world-principles-title" class="world-section-title">{% trans "Platform Principles" %}</h2>
       </div>
@@ -176,7 +179,7 @@
       </ul>
     </section>
 
-    <section class="world-final-cta" aria-labelledby="world-final-cta-title">
+    <section id="explore" class="world-final-cta" data-homepage-signal-section aria-labelledby="world-final-cta-title">
       <div class="world-final-cta__content">
         <p class="world-eyebrow">{% trans "Explore VORNEQ" %}</p>
         <h2 id="world-final-cta-title" class="world-title world-title--lg">{% trans "Explore a more structured way to work with information." %}</h2>
@@ -190,4 +193,8 @@
     </section>
   </main>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/homepage-signal-nav-v2.js' %}" defer></script>
 {% endblock %}

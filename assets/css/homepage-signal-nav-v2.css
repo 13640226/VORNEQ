@@ -1,0 +1,157 @@
+﻿/*
+ * Homepage Signal Navigation v2
+ * Homepage-only section navigation.
+ *
+ * Desktop: persistent content-edge rail.
+ * Compact: bottom bar.
+ */
+
+.homepage-signal-nav {
+    --signal-bottom-bar-size: 64px;
+    --signal-scroll-offset: calc(var(--header-height) + var(--space-4));
+    --signal-progress: 0;
+
+    position: fixed;
+    inset-block-start: 50%;
+    inset-inline-start: max(
+        var(--space-4),
+        calc((100vw - 1440px) / 2 + var(--space-4))
+    );
+    transform: translateY(-50%);
+    width: min(176px, calc(100vw - (2 * var(--space-4))));
+    max-block-size: calc(100vh - (2 * var(--space-6)));
+    overflow-y: auto;
+
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--space-3);
+    background: var(--color-bg-surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.homepage-signal-nav__list {
+    display: grid;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.homepage-signal-nav__link {
+    display: flex;
+    align-items: center;
+    min-block-size: var(--control-height);
+    padding-inline: var(--space-3);
+    border-radius: var(--space-2);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+}
+
+.homepage-signal-nav__link:hover {
+    color: var(--color-text-primary);
+    background: var(--color-bg-elevated);
+}
+
+.homepage-signal-nav__link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.homepage-signal-nav__link[aria-current="location"] {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+    background: var(--color-bg-elevated);
+}
+
+.homepage-signal-nav__progress {
+    position: relative;
+    block-size: 2px;
+    margin-block-start: var(--space-3);
+    overflow: hidden;
+    background: var(--color-border);
+}
+
+.homepage-signal-nav__progress-value {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    background: var(--color-accent);
+    transform: scaleX(var(--signal-progress));
+    transform-origin: inline-start center;
+}
+
+[data-homepage-signal-section] {
+    scroll-margin-block-start: var(--signal-scroll-offset);
+}
+
+/*
+ * Compact mode:
+ * - existing project width boundary <= 1023px
+ * - short viewports use the bottom bar even at wider widths
+ */
+@media (max-width: 1023px), (max-height: 599px) {
+    .homepage-signal-nav {
+        inset-block-start: auto;
+        inset-block-end: 0;
+        inset-inline: 0;
+        transform: none;
+
+        width: auto;
+        max-block-size: none;
+        overflow: visible;
+
+        padding: var(--space-2) var(--space-3);
+        padding-block-end: calc(
+            var(--space-2) + env(safe-area-inset-bottom, 0px)
+        );
+        border-width: 1px 0 0;
+        border-radius: 0;
+    }
+
+    .homepage-signal-nav__list {
+        display: flex;
+        gap: var(--space-1);
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        scrollbar-width: none;
+    }
+
+    .homepage-signal-nav__list::-webkit-scrollbar {
+        display: none;
+    }
+
+    .homepage-signal-nav__item {
+        flex: 0 0 auto;
+    }
+
+    .homepage-signal-nav__link {
+        white-space: nowrap;
+    }
+
+    .homepage-signal-nav__progress {
+        margin-block-start: var(--space-2);
+    }
+
+    /*
+     * Additive clearance only. Do not reset the Homepage shell's existing
+     * block-start or inline padding.
+     */
+    .world-home {
+        padding-block-end: calc(
+            var(--signal-bottom-bar-size) +
+            env(safe-area-inset-bottom, 0px) +
+            var(--space-4)
+        );
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .homepage-signal-nav *,
+    .homepage-signal-nav *::before,
+    .homepage-signal-nav *::after {
+        scroll-behavior: auto;
+        transition-duration: 0.01ms;
+        animation-duration: 0.01ms;
+        animation-iteration-count: 1;
+    }
+}
