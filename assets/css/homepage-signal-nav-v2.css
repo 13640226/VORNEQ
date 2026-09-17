@@ -85,6 +85,23 @@
 }
 
 /*
+ * Desktop rail clearance:
+ * reserve inline-start space for the fixed navigation so it cannot
+ * overlay Hero, Search, Flow, Trust, or other homepage content.
+ *
+ * Compact mode is intentionally excluded.
+ */
+@media (min-width: 1024px) and (min-height: 600px) {
+    .world-home {
+        padding-inline-start: calc(
+            176px +
+            var(--space-4) +
+            var(--space-4)
+        );
+    }
+}
+
+/*
  * Compact mode:
  * - existing project width boundary <= 1023px
  * - short viewports use the bottom bar even at wider widths
