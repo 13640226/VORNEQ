@@ -134,7 +134,7 @@ def request_verification(
         raise ValidationError("Verification method is inactive.")
 
     content_type = _validate_artifact(artifact)
-    resolve_verification_target(
+    target_identity = resolve_verification_target(
         legacy_target=artifact,
         expected_canonical_artifact=expected_canonical_artifact,
     )
@@ -153,6 +153,7 @@ def request_verification(
     verification_request = VerificationRequest(
         artifact_content_type=content_type,
         artifact_object_id=object_id,
+        canonical_artifact=target_identity.canonical_artifact,
         claim=claim,
         method=method,
         requested_by=requested_by,
