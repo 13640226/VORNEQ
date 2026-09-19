@@ -8,7 +8,7 @@ from .services.target_identity import resolve_verification_request_target
 def _validate_public_result_targets(results):
     """Fail closed before public aggregation if any contributing target conflicts."""
     requests = (
-        VerificationRequest.objects.filter(result__in=results)
+        VerificationRequest.objects.filter(results__in=results)
         .select_related("artifact_content_type", "canonical_artifact")
         .distinct()
     )
