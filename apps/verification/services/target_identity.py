@@ -42,3 +42,25 @@ def resolve_verification_target(*, legacy_target, expected_canonical_artifact=No
         legacy_target=legacy_target,
         canonical_artifact=canonical_artifact,
     )
+
+
+def resolve_verification_request_target(verification_request):
+    """Resolve and validate a persisted VerificationRequest target read-only."""
+    legacy_target = verification_request.artifact
+    persisted_canonical = verification_request.canonical_artifact
+    bound_canonical = resolve_artifact(legacy_target)
+
+    if persisted_canonical is not None:
+        if bound_canonical is None:
+            raise CanonicalTargetConflict(
+                "Persisted canonical Artifact has no matching legacy target binding."
+            )
+        if bound_canonical.pk != persisted_canonical.pk:
+            raise CanonicalTargetConflict(
+                "Persisted canonical Artifact conflicts with the legacy target binding."
+            )
+
+    return VerificationTargetIdentity(
+        legacy_target=legacy_target,
+        canonical_artifact=persisted_canonical or bound_canonical,
+    )
