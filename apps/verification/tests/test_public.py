@@ -14,6 +14,7 @@ from apps.verification.models import (
 )
 from apps.verification.public import get_public_verification_summary
 from apps.verification.services.target_identity import CanonicalTargetConflict
+from library.models import LibraryItem
 from marketplace.models import Product
 
 
@@ -167,6 +168,66 @@ class PublicVerificationSummaryTests(TestCase):
         self.assertNotEqual(bound.pk, conflicting.pk)
         self.assertEqual((Artifact.objects.count(), ArtifactBinding.objects.count()), before)
         self.assertEqual(self.request.canonical_artifact_id, conflicting.pk)
+
+    def test_product_summary_canonical_conflict_returns_generic_500(self):
+        canonical = Artifact.objects.create(kind=Artifact.Kind.PRODUCT)
+        self.request.canonical_artifact = canonical
+        self.request.save(update_fields=["canonical_artifact"])
+
+        response = self.client.get(
+            reverse("verification:product_summary", args=[self.product.pk])
+        )
+
+        expected = {
+            "error": "verification_unavailable",
+            "message": "Verification data is temporarily unavailable",
+        }
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.json(), expected)
+        body = response.content.decode()
+        self.assertNotIn(str(canonical.pk), body)
+        self.assertNotIn("canonical", body.lower())
+        self.assertNotIn("binding", body.lower())
+
+    def test_library_summary_canonical_conflict_returns_same_generic_500(self):
+        item = LibraryItem.objects.create(
+            title="Conflict Library Item",
+            slug="conflict-library-item",
+            is_published=True,
+        )
+        content_type = ContentType.objects.get_for_model(item, for_concrete_model=False)
+        request = VerificationRequest.objects.create(
+            artifact_content_type=content_type,
+            artifact_object_id=str(item.pk),
+            claim=self.claim,
+            method=self.method,
+            requested_by=self.user,
+            status=VerificationRequest.Status.COMPLETED,
+        )
+        VerificationResult.objects.create(
+            request=request,
+            verifier=self.user,
+            outcome=VerificationResult.Outcome.PASS,
+            reported_confidence=80,
+        )
+        canonical = Artifact.objects.create(kind=Artifact.Kind.PRODUCT)
+        request.canonical_artifact = canonical
+        request.save(update_fields=["canonical_artifact"])
+
+        response = self.client.get(
+            reverse("verification:library_summary", args=[item.pk])
+        )
+
+        expected = {
+            "error": "verification_unavailable",
+            "message": "Verification data is temporarily unavailable",
+        }
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.json(), expected)
+        body = response.content.decode()
+        self.assertNotIn(str(canonical.pk), body)
+        self.assertNotIn("canonical", body.lower())
+        self.assertNotIn("binding", body.lower())
 
     def test_api_does_not_expose_evidence_content_or_verifier_identity(self):
         self.make_evidence_link(VerificationEvidence.Visibility.PRIVATE, "TOP SECRET EVIDENCE")

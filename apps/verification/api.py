@@ -7,6 +7,7 @@ from marketplace.models import Product
 
 from .public import get_public_evidence_projection, get_public_verification_summary
 from .services.activity import get_verification_activity
+from .services.target_identity import CanonicalTargetConflict
 
 
 _PUBLIC_ARTIFACT_TYPES = {
@@ -26,12 +27,27 @@ _PUBLIC_ARTIFACT_TYPES = {
 }
 
 
+def _canonical_conflict_response():
+    return JsonResponse(
+        {
+            "error": "verification_unavailable",
+            "message": "Verification data is temporarily unavailable",
+        },
+        status=500,
+    )
+
+
 def _summary_response(artifact, artifact_type):
+    try:
+        verification = get_public_verification_summary(artifact)
+    except CanonicalTargetConflict:
+        return _canonical_conflict_response()
+
     return JsonResponse(
         {
             "artifact_type": artifact_type,
             "artifact_id": str(artifact.pk),
-            "verification": get_public_verification_summary(artifact),
+            "verification": verification,
         }
     )
 
@@ -102,12 +118,15 @@ def public_evidence_projection(request):
             status=404,
         )
 
-    return JsonResponse(
-        get_public_evidence_projection(
+    try:
+        projection = get_public_evidence_projection(
             artifact,
             artifact_type,
         )
-    )
+    except CanonicalTargetConflict:
+        return _canonical_conflict_response()
+
+    return JsonResponse(projection)
 
 
 @require_GET

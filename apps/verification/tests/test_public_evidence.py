@@ -219,6 +219,26 @@ class PublicEvidenceProjectionTests(TestCase):
         self.assertEqual((Artifact.objects.count(), ArtifactBinding.objects.count()), before)
         self.assertEqual(result.request.canonical_artifact_id, conflicting.pk)
 
+    def test_api_canonical_conflict_returns_generic_500(self):
+        claim, result = self._create_result(self.product, "API conflict claim")
+        self._link_evidence(claim, result)
+        canonical = Artifact.objects.create(kind=Artifact.Kind.PRODUCT)
+        result.request.canonical_artifact = canonical
+        result.request.save(update_fields=["canonical_artifact"])
+
+        response = self._get_projection()
+
+        expected = {
+            "error": "verification_unavailable",
+            "message": "Verification data is temporarily unavailable",
+        }
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.json(), expected)
+        body = response.content.decode()
+        self.assertNotIn(str(canonical.pk), body)
+        self.assertNotIn("canonical", body.lower())
+        self.assertNotIn("binding", body.lower())
+
     def test_public_link_for_another_artifact_is_not_exposed(self):
         claim, result = self._create_result(self.product, "Target claim")
         target_evidence, _, _ = self._link_evidence(claim, result, content="target")
