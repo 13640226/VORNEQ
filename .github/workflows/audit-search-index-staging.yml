@@ -1,0 +1,87 @@
+name: Audit Staging Search Index
+
+on:
+  workflow_dispatch:
+    inputs:
+      timeout:
+        description: Statement timeout in seconds per EXPLAIN ANALYZE
+        required: false
+        default: "30"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify staging database secret
+        env:
+          STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+        run: |
+          if [ -z "$STAGING_DATABASE_URL" ]; then
+            echo "STAGING_DATABASE_URL is not configured in GitHub Actions secrets." >&2
+            exit 1
+          fi
+
+      - name: Check migration status
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DJANGO_SETTINGS_MODULE: config.settings_render
+        run: |
+          python manage.py showmigrations --plan
+
+      - name: Audit production-equivalent search plans
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DJANGO_SETTINGS_MODULE: config.settings_render
+        run: |
+          set -euo pipefail
+          python manage.py audit_search_index \
+            --timeout "${{ inputs.timeout }}" \
+            --output-dir audit-output
+
+      - name: Validate audit artifact
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(Path("audit-output/audit-report.json").read_text())
+          metadata = payload["metadata"]
+          if metadata["database_vendor"] != "postgresql":
+              raise SystemExit("Index audit must run against PostgreSQL")
+          if metadata["plan_count_expected"] != 20:
+              raise SystemExit(f"Expected 20 plans, found metadata={metadata['plan_count_expected']}")
+          results = payload["explain_results"]
+          if len(results) != 20:
+              raise SystemExit(f"Expected 20 audit results, found {len(results)}")
+          failures = [row for row in results if "error" in row]
+          if failures:
+              raise SystemExit(f"Audit contains {len(failures)} failed EXPLAIN runs")
+          print("Validated 5 adapters x 4 queries with no EXPLAIN failures.")
+          PY
+
+      - name: Upload audit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-search-index-audit-${{ github.run_id }}
+          path: audit-output/
+          retention-days: 14
+          if-no-files-found: error
