@@ -57,7 +57,10 @@ class VerificationRequestTargetReadTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="request-target-read-user")
         self.product = Product.objects.create(seller=self.user, title="Read Target Product")
-        self.claim = Claim.objects.create(\n            claim_text="Read target claim",\n            created_by=self.user,\n        )
+        self.claim = Claim.objects.create(
+            claim_text="Read target claim",
+            created_by=self.user,
+        )
         self.method = VerificationMethod.objects.create(code="read-target", name="Read target")
         from django.contrib.contenttypes.models import ContentType
         self.content_type = ContentType.objects.get_for_model(self.product, for_concrete_model=False)
