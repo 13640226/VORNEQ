@@ -6,6 +6,7 @@ from django.db import transaction
 
 from apps.audit.services import record_audit_event
 from apps.evidence.models import ReviewRecord
+from apps.verification.services.target_identity import resolve_verification_target
 from apps.verification.models import (
     ALLOWED_ARTIFACT_MODELS,
     VerificationEvidence,
@@ -118,12 +119,25 @@ def _validate_artifact(artifact):
 
 
 @transaction.atomic
-def request_verification(*, artifact, claim, method, requested_by, expires_at=None, context=None):
+def request_verification(
+    *,
+    artifact,
+    claim,
+    method,
+    requested_by,
+    expires_at=None,
+    context=None,
+    expected_canonical_artifact=None,
+):
     _require_permission(requested_by, "verification.add_verificationrequest")
     if not method.is_active:
         raise ValidationError("Verification method is inactive.")
 
     content_type = _validate_artifact(artifact)
+    resolve_verification_target(
+        legacy_target=artifact,
+        expected_canonical_artifact=expected_canonical_artifact,
+    )
     object_id = str(artifact.pk)
 
     duplicate = VerificationRequest.objects.select_for_update().filter(
