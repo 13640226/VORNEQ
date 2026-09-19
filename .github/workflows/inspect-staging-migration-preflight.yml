@@ -14,6 +14,7 @@ jobs:
   preflight:
     runs-on: ubuntu-latest
     env:
+      VORNEQ_ENV: staging
       STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
       DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
       DJANGO_SETTINGS_MODULE: config.settings_render
