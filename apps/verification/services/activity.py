@@ -4,19 +4,19 @@ from library.models import LibraryItem
 from marketplace.models import Product
 
 from ..models import VerificationRequest, VerificationResult
+from .target_identity import resolve_verification_request_target
 
 
 def _artifact_projection(verification_request):
     """Return a narrow title/URL projection for supported Verification artifacts."""
-    content_type = verification_request.artifact_content_type
-    artifact = verification_request.artifact
-    key = (content_type.app_label, content_type.model)
+    identity = resolve_verification_request_target(verification_request)
+    artifact = identity.legacy_target
 
     if artifact is None:
         return None, None
-    if key == ("marketplace", "product") and isinstance(artifact, Product):
+    if isinstance(artifact, Product):
         return artifact.title, artifact.get_absolute_url()
-    if key == ("library", "libraryitem") and isinstance(artifact, LibraryItem):
+    if isinstance(artifact, LibraryItem):
         return artifact.title, reverse("library:detail", kwargs={"slug": artifact.slug})
     return None, None
 
