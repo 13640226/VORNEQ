@@ -143,7 +143,6 @@ def request_verification(
     duplicate = VerificationRequest.objects.select_for_update().filter(
         artifact_content_type=content_type,
         artifact_object_id=object_id,
-        canonical_artifact=target_identity.canonical_artifact,
         claim=claim,
         method=method,
         status__in=ACTIVE_STATUSES,
@@ -154,6 +153,7 @@ def request_verification(
     verification_request = VerificationRequest(
         artifact_content_type=content_type,
         artifact_object_id=object_id,
+        canonical_artifact=target_identity.canonical_artifact,
         claim=claim,
         method=method,
         requested_by=requested_by,
