@@ -2,6 +2,18 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Avg, Count
 
 from .models import VerificationEvidence, VerificationRequest, VerificationResult
+from .services.target_identity import resolve_verification_request_target
+
+
+def _validate_public_result_targets(results):
+    """Fail closed before public aggregation if any contributing target conflicts."""
+    requests = (
+        VerificationRequest.objects.filter(result__in=results)
+        .select_related("artifact_content_type", "canonical_artifact")
+        .distinct()
+    )
+    for verification_request in requests:
+        resolve_verification_request_target(verification_request)
 
 
 def get_public_verification_summary(artifact):
@@ -21,6 +33,8 @@ def get_public_verification_summary(artifact):
         request__artifact_object_id=str(artifact.pk),
         request__status=VerificationRequest.Status.COMPLETED,
     ).select_related("request__method")
+
+    _validate_public_result_targets(results)
 
     outcome_counts = {
         choice: 0
@@ -89,14 +103,26 @@ def get_public_evidence_projection(artifact, artifact_type):
             result__request__status=VerificationRequest.Status.COMPLETED,
             visibility=VerificationEvidence.Visibility.PUBLIC,
         )
-        .select_related("evidence_relation")
+        .select_related(
+            "evidence_relation",
+            "result__request__artifact_content_type",
+            "result__request__canonical_artifact",
+        )
         .order_by("evidence_relation__claim_id", "created_at", "id")
     )
+
+    links = list(evidence_links)
+    validated_request_ids = set()
+    for link in links:
+        verification_request = link.result.request
+        if verification_request.pk not in validated_request_ids:
+            resolve_verification_request_target(verification_request)
+            validated_request_ids.add(verification_request.pk)
 
     claims = {}
     total_public_evidence_count = 0
 
-    for link in evidence_links:
+    for link in links:
         relation = link.evidence_relation
         claim_id = str(relation.claim_id)
         claim_projection = claims.setdefault(

@@ -3,6 +3,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import reverse
 
+from apps.core.models import Artifact, ArtifactBinding
+from apps.core.services.registry import register_artifact
 from apps.evidence.models import Claim, Evidence, EvidenceRelation
 from apps.verification.models import (
     VerificationEvidence,
@@ -10,6 +12,7 @@ from apps.verification.models import (
     VerificationRequest,
     VerificationResult,
 )
+from apps.verification.services.target_identity import CanonicalTargetConflict
 from library.models import LibraryItem
 from marketplace.models import Product
 
@@ -152,6 +155,69 @@ class PublicEvidenceProjectionTests(TestCase):
         self.assertNotIn("PRIVATE RAW CONTENT", body)
         self.assertNotIn("PARTICIPANTS RAW CONTENT", body)
         self.assertNotIn("claim_text", body)
+
+    def test_projection_legacy_bound_is_read_only(self):
+        claim, result = self._create_result(self.product, "Bound claim")
+        self._link_evidence(claim, result)
+        canonical, _ = register_artifact(self.product, created_by=self.user)
+        before = (Artifact.objects.count(), ArtifactBinding.objects.count())
+
+        response = self._get_projection()
+
+        result.request.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["total_public_evidence_count"], 1)
+        self.assertEqual((Artifact.objects.count(), ArtifactBinding.objects.count()), before)
+        self.assertIsNone(result.request.canonical_artifact_id)
+        self.assertTrue(Artifact.objects.filter(pk=canonical.pk).exists())
+
+    def test_projection_matching_persisted_canonical_is_valid(self):
+        claim, result = self._create_result(self.product, "Matching claim")
+        self._link_evidence(claim, result)
+        canonical, _ = register_artifact(self.product, created_by=self.user)
+        result.request.canonical_artifact = canonical
+        result.request.save(update_fields=["canonical_artifact"])
+
+        response = self._get_projection()
+
+        result.request.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["total_public_evidence_count"], 1)
+        self.assertEqual(result.request.canonical_artifact_id, canonical.pk)
+
+    def test_projection_persisted_canonical_without_binding_fails_closed(self):
+        claim, result = self._create_result(self.product, "Missing binding claim")
+        self._link_evidence(claim, result)
+        canonical = Artifact.objects.create(kind=Artifact.Kind.PRODUCT)
+        result.request.canonical_artifact = canonical
+        result.request.save(update_fields=["canonical_artifact"])
+        before = (Artifact.objects.count(), ArtifactBinding.objects.count())
+
+        with self.assertRaises(CanonicalTargetConflict):
+            from apps.verification.public import get_public_evidence_projection
+            get_public_evidence_projection(self.product, "product")
+
+        result.request.refresh_from_db()
+        self.assertEqual((Artifact.objects.count(), ArtifactBinding.objects.count()), before)
+        self.assertEqual(result.request.canonical_artifact_id, canonical.pk)
+
+    def test_projection_persisted_canonical_mismatch_fails_closed(self):
+        claim, result = self._create_result(self.product, "Mismatch claim")
+        self._link_evidence(claim, result)
+        bound, _ = register_artifact(self.product, created_by=self.user)
+        conflicting = Artifact.objects.create(kind=Artifact.Kind.PRODUCT)
+        result.request.canonical_artifact = conflicting
+        result.request.save(update_fields=["canonical_artifact"])
+        before = (Artifact.objects.count(), ArtifactBinding.objects.count())
+
+        with self.assertRaises(CanonicalTargetConflict):
+            from apps.verification.public import get_public_evidence_projection
+            get_public_evidence_projection(self.product, "product")
+
+        result.request.refresh_from_db()
+        self.assertNotEqual(bound.pk, conflicting.pk)
+        self.assertEqual((Artifact.objects.count(), ArtifactBinding.objects.count()), before)
+        self.assertEqual(result.request.canonical_artifact_id, conflicting.pk)
 
     def test_public_link_for_another_artifact_is_not_exposed(self):
         claim, result = self._create_result(self.product, "Target claim")
