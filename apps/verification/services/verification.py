@@ -134,7 +134,7 @@ def request_verification(
         raise ValidationError("Verification method is inactive.")
 
     content_type = _validate_artifact(artifact)
-    resolve_verification_target(
+    target_identity = resolve_verification_target(
         legacy_target=artifact,
         expected_canonical_artifact=expected_canonical_artifact,
     )
@@ -143,6 +143,7 @@ def request_verification(
     duplicate = VerificationRequest.objects.select_for_update().filter(
         artifact_content_type=content_type,
         artifact_object_id=object_id,
+        canonical_artifact=target_identity.canonical_artifact,
         claim=claim,
         method=method,
         status__in=ACTIVE_STATUSES,
