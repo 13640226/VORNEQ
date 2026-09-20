@@ -47,6 +47,14 @@ def runtime_db_identity(request):
                     "authorization_header_present": (
                         "HTTP_AUTHORIZATION" in request.META
                     ),
+                    "control_header_request_present": (
+                        "X-VORNEQ-Diagnostic-Control" in request.headers
+                    ),
+                    "control_header_wsgi_present": (
+                        "HTTP_X_VORNEQ_DIAGNOSTIC_CONTROL" in request.META
+                    ),
+                    "user_agent_present": bool(request.META.get("HTTP_USER_AGENT")),
+                    "accept_present": bool(request.META.get("HTTP_ACCEPT")),
                 }
             },
             status=403,
