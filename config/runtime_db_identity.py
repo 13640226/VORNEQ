@@ -10,17 +10,35 @@ from django.views.decorators.http import require_GET
 
 @require_GET
 def runtime_db_identity(request):
-    enabled = os.environ.get("VORNEQ_RUNTIME_DB_IDENTITY_ENABLED", "").strip().lower()
+    enabled_raw = os.environ.get("VORNEQ_RUNTIME_DB_IDENTITY_ENABLED", "")
+    enabled = enabled_raw.strip().lower()
     expected_token = os.environ.get("VORNEQ_RUNTIME_DB_IDENTITY_TOKEN", "")
+    provided_token = request.headers.get("X-VORNEQ-Runtime-DB-Identity-Token", "")
 
-    if enabled not in {"1", "true", "yes", "on"} or not expected_token:
+    if enabled not in {"1", "true", "yes", "on"}:
         response = JsonResponse({"detail": "Not found."}, status=404)
         response["Cache-Control"] = "no-store"
         return response
 
-    provided_token = request.headers.get("X-VORNEQ-Runtime-DB-Identity-Token", "")
-    if not provided_token or not secrets.compare_digest(provided_token, expected_token):
-        response = JsonResponse({"detail": "Not found."}, status=404)
+    token_match = (
+        bool(expected_token)
+        and bool(provided_token)
+        and secrets.compare_digest(provided_token, expected_token)
+    )
+
+    if not token_match:
+        response = JsonResponse(
+            {
+                "diagnostic": {
+                    "enabled_configured": bool(enabled_raw),
+                    "enabled_recognized": True,
+                    "token_configured": bool(expected_token),
+                    "token_header_present": bool(provided_token),
+                    "token_match": False,
+                }
+            },
+            status=403,
+        )
         response["Cache-Control"] = "no-store"
         return response
 
