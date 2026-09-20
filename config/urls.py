@@ -13,13 +13,11 @@ from apps.platform_shell.registry import registry as platform_registry
 from config.health import health_check
 from config.inspect_views import context_view, inspect_entry
 from config.metrics import metrics_view
-from config.runtime_db_identity import runtime_db_identity
 from config.views import discover, home, profile, search_page
 
 
 # Non-localized operational and API endpoints.
 urlpatterns = [
-    path("_ops/runtime-db-identity/", runtime_db_identity, name="runtime_db_identity"),
     path("health/", health_check, name="health"),
     path("metrics", metrics_view, name="prometheus-django-metrics"),
     path("", include("django_prometheus.urls")),
