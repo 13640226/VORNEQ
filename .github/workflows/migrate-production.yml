@@ -25,6 +25,7 @@ jobs:
       PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
       DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
       DJANGO_SETTINGS_MODULE: config.settings_render
+      VORNEQ_ENV: production
       VORNEQ_ALLOW_INSPECT_MIGRATION_PREFLIGHT: 'yes'
       VORNEQ_INSPECT_MIGRATION_PREFLIGHT_LABEL: 'Production Migration Preflight'
 
