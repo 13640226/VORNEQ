@@ -35,6 +35,18 @@ def runtime_db_identity(request):
                     "token_configured": bool(expected_token),
                     "token_header_present": bool(provided_token),
                     "token_match": False,
+                    "request_headers_present": (
+                        "X-VORNEQ-Runtime-DB-Identity-Token" in request.headers
+                    ),
+                    "wsgi_http_header_present": (
+                        "HTTP_X_VORNEQ_RUNTIME_DB_IDENTITY_TOKEN" in request.META
+                    ),
+                    "wsgi_raw_header_variant_present": (
+                        "X-VORNEQ-Runtime-DB-Identity-Token" in request.META
+                    ),
+                    "authorization_header_present": (
+                        "HTTP_AUTHORIZATION" in request.META
+                    ),
                 }
             },
             status=403,
