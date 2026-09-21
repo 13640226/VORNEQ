@@ -1367,4 +1367,60 @@ msgstr "دانش کشف‌شده."
 
 msgid "English"
 msgstr "انگلیسی"
-\nmsgid "Discover connected evidence."\nmsgstr "شواهدِ مرتبط را کشف کنید."\n\nmsgid "Explore information through evidence, context, provenance, and relationships."\nmsgstr "اطلاعات را از مسیر شواهد، زمینه، منشأ و روابط کاوش کنید."\n\nmsgid "Discover public information"\nmsgstr "کشف اطلاعات عمومی"\n\nmsgid "Explore a topic, source, document, or entity"\nmsgstr "یک موضوع، منبع، سند یا موجودیت را کاوش کنید"\n\nmsgid "Explore a topic, source, document, or entity…"\nmsgstr "یک موضوع، منبع، سند یا موجودیت را کاوش کنید…"\n\nmsgid "Discovery filters"\nmsgstr "فیلترهای کشف"\n\nmsgid "STARTING POINT"\nmsgstr "نقطه شروع"\n\nmsgid "DISCOVERY"\nmsgstr "کشف"\n\nmsgid "Recently added"\nmsgstr "تازه افزوده‌شده"\n\nmsgid "public results"\nmsgstr "نتیجه عمومی"\n\nmsgid "This discovery domain is not available yet."\nmsgstr "این حوزهٔ کشف هنوز در دسترس نیست."\n\nmsgid "VORNEQ will not broaden product metadata into software or service semantics without a verified contract."\nmsgstr "VORNEQ بدون قرارداد تأییدشده، فرادادهٔ محصول را به معنای نرم‌افزار یا خدمات گسترش نمی‌دهد."\n\nmsgid "Source"\nmsgstr "منبع"\n\nmsgid "Media type"\nmsgstr "نوع رسانه"\n\nmsgid "Open record"\nmsgstr "باز کردن رکورد"\n\nmsgid "Discovery pages"\nmsgstr "صفحه‌های کشف"\n\nmsgid "No connected results found."\nmsgstr "هیچ نتیجهٔ مرتبطی پیدا نشد."\n\nmsgid "Try another topic, broaden the current filters, or use Search for an exact query."\nmsgstr "موضوع دیگری را امتحان کنید، فیلترهای فعلی را گسترده‌تر کنید، یا برای جستجوی دقیق از Search استفاده کنید."\n\nmsgid "Open Search"\nmsgstr "باز کردن جستجو"\n
+
+msgid "Discover connected evidence."
+msgstr "شواهدِ مرتبط را کشف کنید."
+
+msgid "Explore information through evidence, context, provenance, and relationships."
+msgstr "اطلاعات را از مسیر شواهد، زمینه، منشأ و روابط کاوش کنید."
+
+msgid "Discover public information"
+msgstr "کشف اطلاعات عمومی"
+
+msgid "Explore a topic, source, document, or entity"
+msgstr "یک موضوع، منبع، سند یا موجودیت را کاوش کنید"
+
+msgid "Explore a topic, source, document, or entity…"
+msgstr "یک موضوع، منبع، سند یا موجودیت را کاوش کنید…"
+
+msgid "Discovery filters"
+msgstr "فیلترهای کشف"
+
+msgid "STARTING POINT"
+msgstr "نقطه شروع"
+
+msgid "DISCOVERY"
+msgstr "کشف"
+
+msgid "Recently added"
+msgstr "تازه افزوده‌شده"
+
+msgid "public results"
+msgstr "نتیجه عمومی"
+
+msgid "This discovery domain is not available yet."
+msgstr "این حوزهٔ کشف هنوز در دسترس نیست."
+
+msgid "VORNEQ will not broaden product metadata into software or service semantics without a verified contract."
+msgstr "VORNEQ بدون قرارداد تأییدشده، فرادادهٔ محصول را به معنای نرم‌افزار یا خدمات گسترش نمی‌دهد."
+
+msgid "Source"
+msgstr "منبع"
+
+msgid "Media type"
+msgstr "نوع رسانه"
+
+msgid "Open record"
+msgstr "باز کردن رکورد"
+
+msgid "Discovery pages"
+msgstr "صفحه‌های کشف"
+
+msgid "No connected results found."
+msgstr "هیچ نتیجهٔ مرتبطی پیدا نشد."
+
+msgid "Try another topic, broaden the current filters, or use Search for an exact query."
+msgstr "موضوع دیگری را امتحان کنید، فیلترهای فعلی را گسترده‌تر کنید، یا برای جستجوی دقیق از Search استفاده کنید."
+
+msgid "Open Search"
+msgstr "باز کردن جستجو"
