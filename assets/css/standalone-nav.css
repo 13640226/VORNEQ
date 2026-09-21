@@ -96,6 +96,7 @@
 
 .standalone-nav__language {
   position: relative;
+  z-index: calc(var(--z-header) + 1);
   flex: 0 0 auto;
 }
 
@@ -147,8 +148,9 @@
   position: absolute;
   inset-block-start: calc(100% + var(--space-1));
   inset-inline-end: 0;
-  z-index: calc(var(--z-header) + 1);
+  z-index: calc(var(--z-header) + 2);
   min-inline-size: 10rem;
+  pointer-events: auto;
   padding: var(--space-1);
   border: 1px solid var(--color-border);
   background: var(--color-bg-elevated);
