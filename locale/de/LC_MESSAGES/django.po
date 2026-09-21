@@ -1548,4 +1548,60 @@ msgstr "Wissen entdeckt."
 
 msgid "English"
 msgstr "Englisch"
-\nmsgid "Discover connected evidence."\nmsgstr "Vernetzte Evidenz entdecken."\n\nmsgid "Explore information through evidence, context, provenance, and relationships."\nmsgstr "Informationen anhand von Evidenz, Kontext, Provenienz und Beziehungen erkunden."\n\nmsgid "Discover public information"\nmsgstr "Öffentliche Informationen entdecken"\n\nmsgid "Explore a topic, source, document, or entity"\nmsgstr "Thema, Quelle, Dokument oder Entität erkunden"\n\nmsgid "Explore a topic, source, document, or entity…"\nmsgstr "Thema, Quelle, Dokument oder Entität erkunden…"\n\nmsgid "Discovery filters"\nmsgstr "Entdeckungsfilter"\n\nmsgid "STARTING POINT"\nmsgstr "EINSTIEG"\n\nmsgid "DISCOVERY"\nmsgstr "ENTDECKEN"\n\nmsgid "Recently added"\nmsgstr "Kürzlich hinzugefügt"\n\nmsgid "public results"\nmsgstr "öffentliche Ergebnisse"\n\nmsgid "This discovery domain is not available yet."\nmsgstr "Dieser Entdeckungsbereich ist noch nicht verfügbar."\n\nmsgid "VORNEQ will not broaden product metadata into software or service semantics without a verified contract."\nmsgstr "VORNEQ erweitert Produktmetadaten nicht ohne verifizierten Vertrag um Software- oder Dienstleistungssemantik."\n\nmsgid "Source"\nmsgstr "Quelle"\n\nmsgid "Media type"\nmsgstr "Medientyp"\n\nmsgid "Open record"\nmsgstr "Datensatz öffnen"\n\nmsgid "Discovery pages"\nmsgstr "Entdeckungsseiten"\n\nmsgid "No connected results found."\nmsgstr "Keine verbundenen Ergebnisse gefunden."\n\nmsgid "Try another topic, broaden the current filters, or use Search for an exact query."\nmsgstr "Versuchen Sie ein anderes Thema, erweitern Sie die aktuellen Filter oder verwenden Sie die Suche für eine genaue Anfrage."\n\nmsgid "Open Search"\nmsgstr "Suche öffnen"\n
+
+msgid "Discover connected evidence."
+msgstr "Vernetzte Evidenz entdecken."
+
+msgid "Explore information through evidence, context, provenance, and relationships."
+msgstr "Informationen anhand von Evidenz, Kontext, Provenienz und Beziehungen erkunden."
+
+msgid "Discover public information"
+msgstr "Öffentliche Informationen entdecken"
+
+msgid "Explore a topic, source, document, or entity"
+msgstr "Thema, Quelle, Dokument oder Entität erkunden"
+
+msgid "Explore a topic, source, document, or entity…"
+msgstr "Thema, Quelle, Dokument oder Entität erkunden…"
+
+msgid "Discovery filters"
+msgstr "Entdeckungsfilter"
+
+msgid "STARTING POINT"
+msgstr "EINSTIEG"
+
+msgid "DISCOVERY"
+msgstr "ENTDECKEN"
+
+msgid "Recently added"
+msgstr "Kürzlich hinzugefügt"
+
+msgid "public results"
+msgstr "öffentliche Ergebnisse"
+
+msgid "This discovery domain is not available yet."
+msgstr "Dieser Entdeckungsbereich ist noch nicht verfügbar."
+
+msgid "VORNEQ will not broaden product metadata into software or service semantics without a verified contract."
+msgstr "VORNEQ erweitert Produktmetadaten nicht ohne verifizierten Vertrag um Software- oder Dienstleistungssemantik."
+
+msgid "Source"
+msgstr "Quelle"
+
+msgid "Media type"
+msgstr "Medientyp"
+
+msgid "Open record"
+msgstr "Datensatz öffnen"
+
+msgid "Discovery pages"
+msgstr "Entdeckungsseiten"
+
+msgid "No connected results found."
+msgstr "Keine verbundenen Ergebnisse gefunden."
+
+msgid "Try another topic, broaden the current filters, or use Search for an exact query."
+msgstr "Versuchen Sie ein anderes Thema, erweitern Sie die aktuellen Filter oder verwenden Sie die Suche für eine genaue Anfrage."
+
+msgid "Open Search"
+msgstr "Suche öffnen"
