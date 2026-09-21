@@ -209,3 +209,103 @@
         padding-block: var(--space-9);
     }
 }
+
+
+/* Modern interactive section system */
+.world-flow__step,
+.world-trust__item,
+.world-principle {
+    position: relative;
+    transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease, border-color .22s ease, background .22s ease;
+}
+
+.world-flow__step::before,
+.world-trust__item::before,
+.world-principle::after {
+    content: "";
+    display: block;
+    width: 9px;
+    height: 9px;
+    margin-bottom: var(--space-4);
+    border-radius: 50%;
+    background: #2563eb;
+    box-shadow: 0 0 0 5px rgb(37 99 235 / 10%), 0 0 18px rgb(37 99 235 / 32%);
+    transition: transform .22s ease, box-shadow .22s ease;
+}
+
+.world-flow__step::after {
+    content: "↗";
+    position: absolute;
+    inset-block-start: var(--space-5);
+    inset-inline-end: 0;
+    color: #60a5fa;
+    font-size: 18px;
+    opacity: .72;
+}
+
+.world-trust__item::after {
+    content: "◇";
+    position: absolute;
+    inset-block-start: var(--space-5);
+    inset-inline-end: var(--space-5);
+    color: #2563eb;
+    font-size: 22px;
+}
+
+.world-principle::after {
+    position: absolute;
+    inset-block-start: 3px;
+    inset-inline-end: 4px;
+    margin: 0;
+}
+
+.world-flow__step:hover,
+.world-trust__item:hover,
+.world-principle:hover {
+    transform: translateY(-6px);
+}
+
+.world-trust__item:hover {
+    border-color: rgb(37 99 235 / 34%);
+    box-shadow: 0 18px 44px rgb(11 31 61 / 10%);
+}
+
+.world-flow__step:active,
+.world-trust__item:active,
+.world-principle:active {
+    transform: translateY(3px) scale(.995);
+}
+
+.world-flow__step:hover::before,
+.world-trust__item:hover::before,
+.world-principle:hover::after {
+    transform: scale(1.18);
+    box-shadow: 0 0 0 7px rgb(37 99 235 / 10%), 0 0 24px rgb(37 99 235 / 42%);
+}
+
+.world-flow__step,
+.world-trust__item,
+.world-principle {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .world-flow__step,
+    .world-trust__item,
+    .world-principle,
+    .world-flow__step::before,
+    .world-trust__item::before,
+    .world-principle::after {
+        transition: none;
+    }
+
+    .world-flow__step:hover,
+    .world-trust__item:hover,
+    .world-principle:hover,
+    .world-flow__step:active,
+    .world-trust__item:active,
+    .world-principle:active {
+        transform: none;
+    }
+}
