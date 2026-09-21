@@ -5,6 +5,8 @@ from django.db import IntegrityError
 from django.test import TestCase
 
 from apps.audit.models import AuditEvent
+from apps.core.models import Artifact, ArtifactBinding
+from apps.core.services.registry import register_artifact
 from apps.evidence.models import Claim, Evidence, EvidenceRelation, ReviewRecord
 from apps.verification.models import VerificationEvidence, VerificationMethod, VerificationRequest
 from apps.verification.services import (
@@ -16,6 +18,7 @@ from apps.verification.services import (
     start_verification,
     submit_verification_result,
 )
+from apps.verification.services.target_identity import CanonicalTargetConflict
 from marketplace.models import Product
 
 
@@ -74,6 +77,69 @@ class VerificationServiceTests(TestCase):
                 method=self.method,
                 requested_by=self.regular,
             )
+
+    def test_request_preserves_unbound_legacy_target_without_registration(self):
+        self.assertFalse(ArtifactBinding.objects.exists())
+
+        request = self.make_request()
+
+        self.assertEqual(request.artifact, self.product)
+        self.assertIsNone(request.canonical_artifact)
+        self.assertFalse(Artifact.objects.exists())
+        self.assertFalse(ArtifactBinding.objects.exists())
+
+    def test_request_persists_existing_canonical_binding_and_legacy_coordinates(self):
+        canonical, _ = register_artifact(self.product, created_by=self.staff)
+
+        request = self.make_request()
+
+        self.assertEqual(request.canonical_artifact, canonical)
+        self.assertEqual(request.artifact, self.product)
+        self.assertEqual(request.artifact_object_id, str(self.product.pk))
+
+    def test_request_persists_explicit_consistent_canonical_identity(self):
+        canonical, _ = register_artifact(self.product, created_by=self.staff)
+
+        request = request_verification(
+            artifact=self.product,
+            claim=self.claim,
+            method=self.method,
+            requested_by=self.staff,
+            expected_canonical_artifact=canonical,
+        )
+
+        self.assertEqual(request.canonical_artifact, canonical)
+
+    def test_request_fails_closed_for_explicit_canonical_identity_without_binding(self):
+        expected = Artifact.objects.create(kind=Artifact.Kind.PRODUCT)
+
+        with self.assertRaises(CanonicalTargetConflict):
+            request_verification(
+                artifact=self.product,
+                claim=self.claim,
+                method=self.method,
+                requested_by=self.staff,
+                expected_canonical_artifact=expected,
+            )
+
+        self.assertFalse(VerificationRequest.objects.exists())
+        self.assertFalse(ArtifactBinding.objects.exists())
+        self.assertEqual(Artifact.objects.count(), 1)
+
+    def test_request_fails_closed_for_explicit_conflicting_canonical_identity(self):
+        register_artifact(self.product, created_by=self.staff)
+        conflicting = Artifact.objects.create(kind=Artifact.Kind.PRODUCT)
+
+        with self.assertRaises(CanonicalTargetConflict):
+            request_verification(
+                artifact=self.product,
+                claim=self.claim,
+                method=self.method,
+                requested_by=self.staff,
+                expected_canonical_artifact=conflicting,
+            )
+
+        self.assertFalse(VerificationRequest.objects.exists())
 
     def test_duplicate_active_request_is_rejected_but_history_can_repeat(self):
         first = self.make_request()

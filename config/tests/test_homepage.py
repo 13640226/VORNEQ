@@ -1,4 +1,4 @@
-from django.test import TestCase
+﻿from django.test import TestCase
 from django.urls import reverse
 from django.utils.translation import override
 
@@ -20,11 +20,76 @@ class HomepageSimplificationTests(TestCase):
         self.assertNotContains(response, 'id="discoveries"')
         self.assertNotContains(response, 'id="identity"')
         self.assertNotContains(response, 'id="apps"')
-        self.assertNotContains(response, 'id="explore"')
+        self.assertContains(response, 'id="explore"')
         self.assertNotContains(response, "Featured Discoveries")
         self.assertNotContains(response, "Latest Discoveries")
         self.assertNotContains(response, "Explore topics")
         self.assertNotContains(response, "Software categories")
+
+    def test_homepage_signal_navigation_contract(self):
+        response = self.get_english_home()
+        html = response.content.decode()
+
+        section_ids = (
+            "home",
+            "start",
+            "capabilities",
+            "how-it-works",
+            "trust",
+            "principles",
+            "explore",
+        )
+
+        for section_id in section_ids:
+            self.assertContains(response, f'id="{section_id}"')
+
+        self.assertContains(response, 'href="#home"')
+        self.assertContains(response, 'href="#start"')
+        self.assertContains(response, 'href="#capabilities"')
+        self.assertContains(response, 'href="#how-it-works"')
+        self.assertContains(response, 'href="#trust"')
+        self.assertContains(response, 'href="#principles"')
+        self.assertContains(response, 'href="#explore"')
+
+        self.assertEqual(
+            html.count("data-homepage-signal-section"),
+            7,
+        )
+        self.assertEqual(
+            html.count("data-homepage-signal-link"),
+            7,
+        )
+
+        self.assertContains(
+            response,
+            'aria-label="Section navigation"',
+        )
+        self.assertEqual(
+            html.count('aria-current="location"'),
+            1,
+        )
+
+        self.assertContains(
+            response,
+            "css/homepage-signal-nav-v2",
+        )
+        self.assertContains(
+            response,
+            "js/homepage-signal-nav-v2",
+        )
+
+        # Global navigation and homepage section navigation coexist.
+        self.assertContains(response, 'class="standalone-nav')
+        self.assertContains(response, 'class="homepage-signal-nav')
+
+    def test_signal_navigation_is_homepage_only(self):
+        with override("en"):
+            response = self.client.get(reverse("discover"))
+
+        self.assertNotContains(
+            response,
+            'class="homepage-signal-nav',
+        )
 
     def test_homepage_search_is_primary_entry_without_refinement(self):
         response = self.get_english_home()
@@ -105,7 +170,10 @@ class DiscoverRouteContractTests(TestCase):
             for route_name in route_names:
                 response = self.client.get(reverse(route_name))
                 self.assertEqual(response.status_code, 200)
-                self.assertContains(response, "canonical discovery route is available")
+                self.assertContains(
+                    response,
+                    "canonical discovery route is available",
+                )
 
     def test_placeholder_does_not_define_discover_product_surface(self):
         with override("en"):

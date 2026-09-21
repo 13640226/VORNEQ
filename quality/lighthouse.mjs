@@ -49,6 +49,11 @@ async function assertTargetReachable(url, timeoutMs = 15000) {
     if (!response.ok) {
       throw new Error(`HTTP ${response.status} ${response.statusText}`);
     }
+  } catch (error) {
+    throw new Error(
+      `Target URL is not reachable before Lighthouse run: ${url}\n` +
+        String(error?.stack || error)
+    );
   } finally {
     clearTimeout(timer);
   }
@@ -205,6 +210,11 @@ async function runWarmMeasurements() {
 
     for (const surface of full) {
       const url = localizedUrl('en', surface.path);
+
+      console.log(
+        `[warm] start surface=${surface.id} url=${url}`
+      );
+
       await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
       const started = Date.now();
       await page.reload({ waitUntil: 'networkidle', timeout: 30000 });
@@ -220,6 +230,10 @@ async function runWarmMeasurements() {
         observed: { reloadWallTimeMs: Date.now() - started },
         productConformance: 'informational-only'
       });
+
+      console.log(
+        `[warm] complete surface=${surface.id}`
+      );
     }
   } finally {
     await warmBrowser.close();

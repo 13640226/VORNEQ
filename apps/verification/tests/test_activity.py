@@ -3,14 +3,16 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import reverse
 
-from apps.core.models import Identity, UserIdentity
+from apps.core.models import Artifact, ArtifactBinding, Identity, UserIdentity
+from apps.core.services.registry import register_artifact
 from apps.evidence.models import Claim
 from apps.verification.models import (
     VerificationMethod,
     VerificationRequest,
     VerificationResult,
 )
-from apps.verification.services.activity import get_verification_activity
+from apps.verification.services.activity import _artifact_projection, get_verification_activity
+from apps.verification.services.target_identity import CanonicalTargetConflict
 from library.models import LibraryItem
 from marketplace.models import Product
 
@@ -120,6 +122,84 @@ class VerificationActivityTests(TestCase):
             activity[0]["artifact_url"],
             reverse("library:detail", kwargs={"slug": item.slug}),
         )
+
+    def test_artifact_projection_legacy_unbound_preserves_output_without_mutation(self):
+        request = self._result(self.verifier).request
+        before = (
+            Artifact.objects.count(),
+            ArtifactBinding.objects.count(),
+            request.canonical_artifact_id,
+        )
+
+        title, url = _artifact_projection(request)
+
+        request.refresh_from_db()
+        self.assertEqual((title, url), (self.product.title, self.product.get_absolute_url()))
+        self.assertEqual(
+            (
+                Artifact.objects.count(),
+                ArtifactBinding.objects.count(),
+                request.canonical_artifact_id,
+            ),
+            before,
+        )
+
+    def test_artifact_projection_legacy_bound_resolves_in_memory_only(self):
+        canonical, _ = register_artifact(self.product, created_by=self.verifier)
+        request = self._result(self.verifier).request
+        binding_count = ArtifactBinding.objects.count()
+
+        title, url = _artifact_projection(request)
+
+        request.refresh_from_db()
+        self.assertEqual((title, url), (self.product.title, self.product.get_absolute_url()))
+        self.assertEqual(ArtifactBinding.objects.count(), binding_count)
+        self.assertIsNone(request.canonical_artifact_id)
+        self.assertTrue(Artifact.objects.filter(pk=canonical.pk).exists())
+
+    def test_artifact_projection_matching_persisted_canonical_preserves_output(self):
+        canonical, _ = register_artifact(self.product, created_by=self.verifier)
+        request = self._result(self.verifier).request
+        request.canonical_artifact = canonical
+        request.save(update_fields=["canonical_artifact"])
+        before = (Artifact.objects.count(), ArtifactBinding.objects.count())
+
+        title, url = _artifact_projection(request)
+
+        request.refresh_from_db()
+        self.assertEqual((title, url), (self.product.title, self.product.get_absolute_url()))
+        self.assertEqual((Artifact.objects.count(), ArtifactBinding.objects.count()), before)
+        self.assertEqual(request.canonical_artifact_id, canonical.pk)
+
+    def test_artifact_projection_persisted_canonical_without_binding_fails_closed(self):
+        canonical = Artifact.objects.create(kind=Artifact.Kind.PRODUCT)
+        request = self._result(self.verifier).request
+        request.canonical_artifact = canonical
+        request.save(update_fields=["canonical_artifact"])
+        before = (Artifact.objects.count(), ArtifactBinding.objects.count())
+
+        with self.assertRaises(CanonicalTargetConflict):
+            _artifact_projection(request)
+
+        request.refresh_from_db()
+        self.assertEqual((Artifact.objects.count(), ArtifactBinding.objects.count()), before)
+        self.assertEqual(request.canonical_artifact_id, canonical.pk)
+
+    def test_artifact_projection_persisted_canonical_mismatch_fails_closed(self):
+        bound, _ = register_artifact(self.product, created_by=self.verifier)
+        conflicting = Artifact.objects.create(kind=Artifact.Kind.PRODUCT)
+        request = self._result(self.verifier).request
+        request.canonical_artifact = conflicting
+        request.save(update_fields=["canonical_artifact"])
+        before = (Artifact.objects.count(), ArtifactBinding.objects.count())
+
+        with self.assertRaises(CanonicalTargetConflict):
+            _artifact_projection(request)
+
+        request.refresh_from_db()
+        self.assertNotEqual(bound.pk, conflicting.pk)
+        self.assertEqual((Artifact.objects.count(), ArtifactBinding.objects.count()), before)
+        self.assertEqual(request.canonical_artifact_id, conflicting.pk)
 
     def test_service_returns_empty_for_invalid_or_unsaved_user(self):
         self.assertEqual(get_verification_activity(None), [])

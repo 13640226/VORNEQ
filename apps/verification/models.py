@@ -64,6 +64,13 @@ class VerificationRequest(models.Model):
         "artifact_object_id",
         for_concrete_model=False,
     )
+    canonical_artifact = models.ForeignKey(
+        "core.Artifact",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="verification_requests",
+    )
     claim = models.ForeignKey(
         Claim,
         on_delete=models.PROTECT,
