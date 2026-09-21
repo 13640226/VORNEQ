@@ -67,9 +67,58 @@ def home(request):
     return render(request, "index.html")
 
 
+DISCOVER_TYPES = {"article", "product", "libraryitem", "mediaasset", "audio"}
+DISCOVER_DOMAIN_TYPES = {
+    "knowledge": {"article", "libraryitem", "audio"},
+    "media": {"mediaasset", "audio"},
+    "products-commerce": {"product"},
+}
+
+
 def discover(request, domain=None):
-    """Resolve the canonical Discover route contract without defining its product surface."""
-    return render(request, "discover/placeholder.html", {"discover_domain": domain})
+    """Render public discovery using retrieval-only, disclosure-safe metadata."""
+    service = UnifiedSearch()
+    query = service.normalize_query(request.GET.get("q", ""))
+    requested_type = request.GET.get("type", "").strip().lower()
+    page = _positive_int(request.GET.get("page"), 1)
+
+    filters = {}
+    if requested_type in DISCOVER_TYPES:
+        filters["types"] = {requested_type}
+    elif domain in DISCOVER_DOMAIN_TYPES:
+        filters["types"] = DISCOVER_DOMAIN_TYPES[domain]
+
+    # software-services intentionally has no V1A retrieval mapping: Product is
+    # broader than software/services, so treating all products as software would
+    # invent semantics. Keep the canonical route but fail closed.
+    domain_supported = domain != "software-services"
+    if domain_supported:
+        payload = service.search(
+            query,
+            filters=filters,
+            page=page,
+            page_size=UnifiedSearch.DEFAULT_PAGE_SIZE,
+            language=get_language() or "en",
+        )
+    else:
+        payload = {
+            "results": [],
+            "total": 0,
+            "page": 1,
+            "total_pages": 1,
+            "has_next": False,
+            "has_previous": False,
+        }
+
+    context = {
+        **payload,
+        "discover_domain": domain,
+        "discover_query": query,
+        "current_type": requested_type if requested_type in DISCOVER_TYPES else "",
+        "domain_supported": domain_supported,
+        "is_recent": not query and not requested_type,
+    }
+    return render(request, "discover/placeholder.html", context)
 
 
 def search_page(request):
