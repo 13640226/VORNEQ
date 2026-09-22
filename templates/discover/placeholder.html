@@ -1,17 +1,88 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load static i18n %}
 
 {% block title %}{% trans "Discover" %} — VORNEQ{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/discover.css' %}">
+{% endblock %}
+
 {% block content %}
-<main class="global-home">
-  <section class="global-home__hero" aria-labelledby="discover-route-title">
-    <div class="global-home__shell">
-      <p class="global-home__eyebrow">{% trans "DISCOVER" %}</p>
-      <h1 id="discover-route-title" class="global-home__title">{% trans "Discover" %}{% if discover_domain %}: {{ discover_domain }}{% endif %}</h1>
-      <p class="global-home__subtitle">{% trans "This canonical discovery route is available. Its product surface is intentionally not defined in this implementation gate." %}</p>
-      <a class="global-home__secondary-cta" href="{% url 'home' %}">{% trans "Back to Home" %}</a>
-    </div>
+<div class="discover-page">
+  <section class="discover-hero" aria-labelledby="discover-title">
+    <p class="discover-eyebrow">{% trans "DISCOVER" %}</p>
+    <h1 id="discover-title">{% trans "Discover connected evidence." %}</h1>
+    <p>{% trans "Explore information through evidence, context, provenance, and relationships." %}</p>
   </section>
-</main>
+
+  <section class="discover-controls" aria-labelledby="discover-controls-title">
+    <h2 id="discover-controls-title" class="sr-only">{% trans "Discover public information" %}</h2>
+    <form class="discover-search" role="search" method="get">
+      <label class="sr-only" for="discover-q">{% trans "Explore a topic, source, document, or entity" %}</label>
+      <input id="discover-q" name="q" value="{{ discover_query }}" maxlength="200"
+             placeholder="{% trans 'Explore a topic, source, document, or entity…' %}">
+      {% if current_type %}<input type="hidden" name="type" value="{{ current_type }}">{% endif %}
+      <button type="submit">{% trans "Discover" %}</button>
+    </form>
+
+    <nav class="discover-filters" aria-label="{% trans 'Discovery filters' %}">
+      <a href="?{% if discover_query %}q={{ discover_query|urlencode }}{% endif %}"{% if not current_type %} aria-current="page"{% endif %}>{% trans "All" %}</a>
+      <a href="?type=article{% if discover_query %}&amp;q={{ discover_query|urlencode }}{% endif %}"{% if current_type == "article" %} aria-current="page"{% endif %}>{% trans "Articles" %}</a>
+      <a href="?type=libraryitem{% if discover_query %}&amp;q={{ discover_query|urlencode }}{% endif %}"{% if current_type == "libraryitem" %} aria-current="page"{% endif %}>{% trans "Library" %}</a>
+      <a href="?type=mediaasset{% if discover_query %}&amp;q={{ discover_query|urlencode }}{% endif %}"{% if current_type == "mediaasset" %} aria-current="page"{% endif %}>{% trans "Media" %}</a>
+      <a href="?type=audio{% if discover_query %}&amp;q={{ discover_query|urlencode }}{% endif %}"{% if current_type == "audio" %} aria-current="page"{% endif %}>{% trans "Audio" %}</a>
+      <a href="?type=product{% if discover_query %}&amp;q={{ discover_query|urlencode }}{% endif %}"{% if current_type == "product" %} aria-current="page"{% endif %}>{% trans "Products" %}</a>
+    </nav>
+  </section>
+
+  <section class="discover-results" aria-labelledby="discover-results-title" aria-live="polite">
+    <div class="discover-section-heading">
+      <div>
+        <p class="discover-eyebrow">{% if is_recent %}{% trans "STARTING POINT" %}{% else %}{% trans "DISCOVERY" %}{% endif %}</p>
+        <h2 id="discover-results-title">{% if is_recent %}{% trans "Recently added" %}{% else %}{% trans "Discovery results" %}{% endif %}</h2>
+      </div>
+      {% if domain_supported %}<span class="discover-count">{{ total }} {% trans "public results" %}</span>{% endif %}
+    </div>
+
+    {% if not domain_supported %}
+      <div class="discover-state">
+        <h3>{% trans "This discovery domain is not available yet." %}</h3>
+        <p>{% trans "VORNEQ will not broaden product metadata into software or service semantics without a verified contract." %}</p>
+      </div>
+    {% elif results %}
+      <div class="discover-grid">
+        {% for result in results %}
+          <article class="discover-object">
+            <div class="discover-object__meta">
+              <span>{{ result.type }}</span>
+              {% if result.published_at %}<time datetime="{{ result.published_at|date:'c' }}">{{ result.published_at|date:"DATE_FORMAT" }}</time>{% endif %}
+            </div>
+            <h3>{% if result.url %}<a href="{{ result.url }}">{{ result.title }}</a>{% else %}{{ result.title }}{% endif %}</h3>
+            {% if result.description %}<p>{{ result.description|truncatechars:220 }}</p>{% endif %}
+            <dl>
+              {% if result.source %}<div><dt>{% trans "Source" %}</dt><dd>{{ result.source }}</dd></div>{% endif %}
+              {% if result.category %}<div><dt>{% trans "Category" %}</dt><dd>{{ result.category }}</dd></div>{% endif %}
+              {% if result.media_type %}<div><dt>{% trans "Media type" %}</dt><dd>{{ result.media_type }}</dd></div>{% endif %}
+            </dl>
+            {% if result.url %}<a class="discover-inspect" href="{{ result.url }}">{% trans "Open record" %} <span aria-hidden="true">→</span></a>{% endif %}
+          </article>
+        {% endfor %}
+      </div>
+
+      {% if has_previous or has_next %}
+      <nav class="discover-pagination" aria-label="{% trans 'Discovery pages' %}">
+        {% if has_previous %}<a href="?page={{ page|add:'-1' }}{% if discover_query %}&amp;q={{ discover_query|urlencode }}{% endif %}{% if current_type %}&amp;type={{ current_type }}{% endif %}">{% trans "Previous" %}</a>{% endif %}
+        <span>{% blocktrans %}Page {{ page }} of {{ total_pages }}{% endblocktrans %}</span>
+        {% if has_next %}<a href="?page={{ page|add:'1' }}{% if discover_query %}&amp;q={{ discover_query|urlencode }}{% endif %}{% if current_type %}&amp;type={{ current_type }}{% endif %}">{% trans "Next" %}</a>{% endif %}
+      </nav>
+      {% endif %}
+    {% else %}
+      <div class="discover-state">
+        <h3>{% trans "No connected results found." %}</h3>
+        <p>{% trans "Try another topic, broaden the current filters, or use Search for an exact query." %}</p>
+        <a href="{% url 'search_page' %}{% if discover_query %}?q={{ discover_query|urlencode }}{% endif %}">{% trans "Open Search" %}</a>
+      </div>
+    {% endif %}
+  </section>
+</div>
 {% endblock %}

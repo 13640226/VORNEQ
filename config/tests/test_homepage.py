@@ -170,10 +170,8 @@ class DiscoverRouteContractTests(TestCase):
             for route_name in route_names:
                 response = self.client.get(reverse(route_name))
                 self.assertEqual(response.status_code, 200)
-                self.assertContains(
-                    response,
-                    "canonical discovery route is available",
-                )
+                self.assertContains(response, 'class="discover-page"')
+                self.assertContains(response, 'class="discover-controls"')
 
     def test_placeholder_does_not_define_discover_product_surface(self):
         with override("en"):

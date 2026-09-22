@@ -125,3 +125,55 @@ class StandaloneSearchPageTests(TestCase):
         self.assertContains(response, 'name="category"')
         self.assertContains(response, 'name="price_min"')
         self.assertContains(response, 'name="price_max"')
+
+
+class DiscoverV1ATests(TestCase):
+    @patch.object(UnifiedSearch, "search", return_value=EMPTY_SEARCH_PAYLOAD)
+    def test_discover_uses_public_retrieval_without_advanced_search_filters(self, search):
+        response = self.client.get(
+            reverse("discover"),
+            {
+                "q": "Evidence",
+                "type": "libraryitem",
+                "category": "ignored",
+                "price_min": "1",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        kwargs = search.call_args.kwargs
+        self.assertEqual(kwargs["filters"], {"types": {"libraryitem"}})
+        self.assertEqual(kwargs["query"] if "query" in kwargs else search.call_args.args[0], "evidence")
+        self.assertNotContains(response, "trust_score")
+        self.assertNotContains(response, "Verification badge")
+        self.assertNotContains(response, 'name="category"')
+        self.assertNotContains(response, 'name="price_min"')
+
+    @patch.object(UnifiedSearch, "search", return_value=EMPTY_SEARCH_PAYLOAD)
+    def test_discover_empty_query_is_recently_added_starting_point(self, search):
+        with override("en"):
+            response = self.client.get(reverse("discover"))
+
+        self.assertEqual(response.status_code, 200)
+        search.assert_called_once()
+        self.assertContains(response, "Recently added")
+        self.assertContains(response, "No connected results found.")
+
+    @patch.object(UnifiedSearch, "search", return_value=EMPTY_SEARCH_PAYLOAD)
+    def test_discover_domain_uses_verified_type_mapping(self, search):
+        response = self.client.get(reverse("discover_knowledge"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            search.call_args.kwargs["filters"]["types"],
+            {"article", "libraryitem", "audio"},
+        )
+
+    @patch.object(UnifiedSearch, "search", return_value=EMPTY_SEARCH_PAYLOAD)
+    def test_software_services_domain_fails_closed(self, search):
+        with override("en"):
+            response = self.client.get(reverse("discover_software_services"))
+
+        self.assertEqual(response.status_code, 200)
+        search.assert_not_called()
+        self.assertContains(response, "This discovery domain is not available yet.")
