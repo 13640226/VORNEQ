@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.utils.translation import get_language
 
-from apps.core.models import ContextualReputation, Entitlement
+from apps.core.models import Artifact, ContextualReputation, Entitlement
+from apps.core.services.public_graph import PublicGraphUnavailable, get_public_graph
 from apps.search.services import UnifiedSearch
 from apps.verification.services.activity import get_verification_activity
 from marketplace.models import Product
@@ -75,6 +76,49 @@ DISCOVER_DOMAIN_TYPES = {
 }
 
 
+DISCOVER_GRAPH_TARGETS = {
+    "product": ("marketplace", "product"),
+    "library": ("library", "libraryitem"),
+}
+
+
+def _discover_graph_for_result(result):
+    """Return Public Graph V1 for an existing eligible Discover result, or None."""
+    key = result.get("key", "")
+    prefix, separator, object_id = key.partition(":")
+    target = DISCOVER_GRAPH_TARGETS.get(prefix)
+    if not separator or not object_id or target is None:
+        return None
+
+    artifact = (
+        Artifact.objects.filter(
+            binding__content_type__app_label=target[0],
+            binding__content_type__model=target[1],
+            binding__object_id=object_id,
+            is_active=True,
+        )
+        .only("id")
+        .first()
+    )
+    if artifact is None:
+        return None
+
+    try:
+        return get_public_graph(artifact.pk)
+    except PublicGraphUnavailable:
+        return None
+
+
+def _attach_discover_graphs(payload):
+    """Enrich only the current public result page; never create canonical records."""
+    enriched = []
+    for result in payload["results"]:
+        item = dict(result)
+        item["public_graph"] = _discover_graph_for_result(item)
+        enriched.append(item)
+    return {**payload, "results": enriched}
+
+
 def discover(request, domain=None):
     """Render public discovery using retrieval-only, disclosure-safe metadata."""
     service = UnifiedSearch()
@@ -93,13 +137,13 @@ def discover(request, domain=None):
     # invent semantics. Keep the canonical route but fail closed.
     domain_supported = domain != "software-services"
     if domain_supported:
-        payload = service.search(
+        payload = _attach_discover_graphs(service.search(
             query,
             filters=filters,
             page=page,
             page_size=UnifiedSearch.DEFAULT_PAGE_SIZE,
             language=get_language() or "en",
-        )
+        ))
     else:
         payload = {
             "results": [],
