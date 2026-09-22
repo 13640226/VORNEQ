@@ -306,6 +306,33 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
 
 
     @patch("config.views.get_public_graph")
+    @patch.object(UnifiedSearch, "search")
+    def test_missing_artifact_has_no_context_handoff_or_registry_mutation(self, search, graph):
+        user = get_user_model().objects.create_user(
+            username="discover-context-no-artifact",
+            password="test-pass-123",
+        )
+        product = Product.objects.create(
+            seller=user,
+            title="Discover Context Product",
+            status=Product.STATUS_APPROVED,
+            is_published=True,
+        )
+        search.return_value = self._payload(key=f"product:{product.pk}", result_type="product")
+        before_artifacts = Artifact.objects.count()
+        before_bindings = ArtifactBinding.objects.count()
+
+        with override("en"):
+            response = self.client.get(reverse("discover"), {"type": "product"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Inspect context")
+        self.assertNotContains(response, "Evidence graph")
+        self.assertEqual(Artifact.objects.count(), before_artifacts)
+        self.assertEqual(ArtifactBinding.objects.count(), before_bindings)
+        graph.assert_not_called()
+
+    @patch("config.views.get_public_graph")
     @patch("config.views.Artifact.objects.filter")
     @patch.object(UnifiedSearch, "search")
     def test_public_graph_unavailable_hides_graph_affordance(self, search, artifact_filter, graph):
