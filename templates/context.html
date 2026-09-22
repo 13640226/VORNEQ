@@ -30,6 +30,7 @@
 
   <nav class="context-actions" aria-labelledby="context-title">
     <a href="{% url 'discover' %}"><span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}→{% else %}←{% endif %}</span> {% trans "Discover" %}</a>
+    <a href="{% url 'orientation' %}">{% trans "Evidence vocabulary" %} <span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}←{% else %}→{% endif %}</span></a>
     {% if public_graph_url %}<a href="{{ public_graph_url }}">{% trans "Inspect Evidence Graph" %} <span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}←{% else %}→{% endif %}</span></a>{% endif %}
   </nav>
 

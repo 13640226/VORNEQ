@@ -1719,3 +1719,42 @@ msgstr "Keine öffentlichen Provenienzschritte sind verfügbar."
 
 msgid "Inspect another artifact"
 msgstr "Weiteres Artefakt prüfen"
+
+# Public Evidence Orientation V1
+
+msgid "Evidence vocabulary"
+msgstr "Evidenzvokabular"
+
+msgid "A short guide to the public evidence vocabulary used across VORNEQ."
+msgstr "Ein kurzer Leitfaden zum öffentlichen Evidenzvokabular in VORNEQ."
+
+msgid "ORIENTATION"
+msgstr "ORIENTIERUNG"
+
+msgid "A short guide to the terms used across Discover, Context, and the Evidence Graph."
+msgstr "Ein kurzer Leitfaden zu den Begriffen in Discover, Kontext und Evidenzgraph."
+
+msgid "Core terms"
+msgstr "Kernbegriffe"
+
+msgid "A public record that can be inspected through its recorded context and relationships."
+msgstr "Ein öffentlicher Datensatz, der anhand seines aufgezeichneten Kontexts und seiner Beziehungen betrachtet werden kann."
+
+msgid "Recorded material connected to an artifact through a public evidence relationship."
+msgstr "Aufgezeichnetes Material, das über eine öffentliche Evidenzbeziehung mit einem Artefakt verbunden ist."
+
+msgid "Recorded source and time context associated with public evidence."
+msgstr "Aufgezeichneter Quellen- und Zeitkontext, der mit öffentlicher Evidenz verbunden ist."
+
+msgid "The recorded category of a source associated with public evidence."
+msgstr "Die aufgezeichnete Kategorie einer Quelle, die mit öffentlicher Evidenz verbunden ist."
+
+msgid "A bounded view of an artifact and its public evidence and provenance relationships."
+msgstr "Eine begrenzte Ansicht eines Artefakts und seiner öffentlichen Evidenz- und Provenienzbeziehungen."
+
+msgid "Context"
+msgstr "Kontext"
+
+msgid "The recorded public information presented around an artifact, including attribution and evidence relationships."
+msgstr "Die aufgezeichneten öffentlichen Informationen zu einem Artefakt, einschließlich Zuordnung und Evidenzbeziehungen."
+

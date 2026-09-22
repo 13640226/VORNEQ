@@ -69,6 +69,11 @@ def home(request):
     return render(request, "index.html")
 
 
+def orientation(request):
+    """Render the public evidence vocabulary orientation surface."""
+    return render(request, "orientation.html")
+
+
 DISCOVER_TYPES = {"article", "product", "libraryitem", "mediaasset", "audio"}
 DISCOVER_DOMAIN_TYPES = {
     "knowledge": {"article", "libraryitem", "audio"},

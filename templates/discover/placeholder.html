@@ -13,6 +13,7 @@
     <p class="discover-eyebrow">{% trans "DISCOVER" %}</p>
     <h1 id="discover-title">{% trans "Discover connected evidence." %}</h1>
     <p>{% trans "Explore information through evidence, context, provenance, and relationships." %}</p>
+    <p><a href="{% url 'orientation' %}">{% trans "Evidence vocabulary" %} <span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}←{% else %}→{% endif %}</span></a></p>
   </section>
 
   <section class="discover-controls" aria-labelledby="discover-controls-title">

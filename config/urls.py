@@ -14,7 +14,7 @@ from config.health import health_check
 from config.inspect_views import context_view, inspect_entry
 from config.metrics import metrics_view
 from config.public_graph_views import public_graph_view
-from config.views import discover, home, profile, search_page
+from config.views import discover, home, orientation, profile, search_page
 
 
 # Non-localized operational and API endpoints.
@@ -35,6 +35,7 @@ urlpatterns += i18n_patterns(
     path("admin/", admin.site.urls),
     path("", home, name="home"),
     path("discover/", discover, name="discover"),
+    path("orientation/", orientation, name="orientation"),
     path("discover/knowledge/", discover, {"domain": "knowledge"}, name="discover_knowledge"),
     path("discover/media/", discover, {"domain": "media"}, name="discover_media"),
     path(
