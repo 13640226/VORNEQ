@@ -184,6 +184,28 @@ class DiscoverV1ATests(TestCase):
         self.assertContains(response, "This discovery domain is not available yet.")
 
 
+    @patch.object(UnifiedSearch, "search", return_value=EMPTY_SEARCH_PAYLOAD)
+    def test_discover_exposes_existing_structural_accessibility_contracts(self, search):
+        with override("en"):
+            response = self.client.get(reverse("discover"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<main id="main-content"')
+        self.assertContains(response, 'href="#main-content"')
+        self.assertContains(response, 'aria-labelledby="discover-title"')
+        self.assertContains(response, 'id="discover-title"')
+        self.assertContains(response, 'aria-labelledby="discover-results-title"')
+        self.assertContains(response, 'id="discover-results-title"')
+        self.assertContains(response, 'role="search"')
+        self.assertContains(response, '<label class="sr-only" for="discover-q">')
+        self.assertContains(response, 'id="discover-q"')
+        self.assertContains(response, 'aria-label="Discovery filters"')
+        self.assertContains(response, 'type="button"')
+        self.assertContains(response, 'class="global-back__button"')
+        self.assertContains(response, 'aria-label="Go back to the previous page"')
+        self.assertContains(response, 'class="global-back__icon" aria-hidden="true"')
+
+
+
 class DiscoverGraphV1AIntegrationTests(TestCase):
     def _public_product_with_artifact(self, *, active=True):
         user = get_user_model().objects.create_user(
@@ -610,6 +632,56 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
         state = (result["context_availability"], result["graph_availability"])
         self.assertNotEqual(state, ("UNAVAILABLE", "AVAILABLE"))
         graph.assert_not_called()
+
+
+    @patch("config.views.get_public_graph")
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_discover_result_actions_have_accessible_structure(self, search, artifact_filter, graph):
+        search.return_value = self._payload(key="product:7", result_type="product")
+        artifact = MagicMock(pk="00000000-0000-0000-0000-000000000001")
+        artifact_filter.return_value.only.return_value.first.return_value = artifact
+        graph.return_value = self._graph()
+        with override("en"):
+            response = self.client.get(reverse("discover"), {"type": "product"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="discover-actions" aria-label="Page navigation"')
+        self.assertContains(response, "Open record")
+        self.assertContains(response, "Inspect context")
+        self.assertContains(response, 'aria-hidden="true"')
+
+    @patch.object(UnifiedSearch, "search")
+    def test_discover_pagination_has_accessible_label(self, search):
+        search.return_value = {
+            **EMPTY_SEARCH_PAYLOAD,
+            "results": [{
+                "key": "article:1", "type": "article", "title": "Paged result",
+                "description": "", "url": "/record/", "image_url": None,
+                "source": "", "published_at": None, "price": None,
+                "category": None, "media_type": None,
+            }],
+            "total": 2, "total_pages": 2, "has_next": True,
+        }
+        with override("en"):
+            response = self.client.get(reverse("discover"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="discover-pagination" aria-label="Discovery pages"')
+
+    @patch("config.views.get_public_graph")
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_unavailable_affordances_do_not_render_interactive_placeholders(
+        self, search, artifact_filter, graph
+    ):
+        search.return_value = self._payload(key="product:7", result_type="product")
+        artifact_filter.return_value.only.return_value.first.return_value = None
+        with override("en"):
+            response = self.client.get(reverse("discover"), {"type": "product"})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Inspect context")
+        self.assertNotContains(response, "Evidence graph")
+        graph.assert_not_called()
+
 
 
 class DiscoverI18nRtlStructuralTests(TestCase):

@@ -144,6 +144,41 @@ class InspectContextV1Tests(TestCase):
         self.assertEqual(ArtifactBinding.objects.count(), before_bindings)
 
 
+    @patch("config.inspect_views.get_public_graph")
+    def test_context_page_has_single_canonical_main_and_accessible_affordances(self, graph):
+        graph.return_value = {"root": {}, "nodes": [], "edges": []}
+        with override("en"):
+            response = self.client.get(
+                reverse("context_view", kwargs={"artifact_id": self.artifact.id})
+            )
+        html = response.content.decode()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(html.count("<main"), 1)
+        self.assertContains(response, '<main id="main-content"')
+        self.assertNotContains(response, '<main class="container"')
+        self.assertContains(response, '<div class="container" aria-labelledby="context-title">')
+        self.assertContains(response, 'id="context-title"')
+        self.assertContains(response, "Open source artifact")
+        self.assertContains(response, "Inspect Evidence Graph")
+        self.assertContains(response, 'aria-hidden="true"')
+        self.assertContains(response, 'href="#main-content"')
+        self.assertContains(response, 'type="button"')
+        self.assertContains(response, 'class="global-back__button"')
+        self.assertContains(response, 'aria-label="Go back to the previous page"')
+        self.assertContains(response, 'class="global-back__icon" aria-hidden="true"')
+
+    @patch("config.inspect_views.get_public_graph")
+    def test_context_graph_unavailable_has_no_interactive_graph_affordance(self, graph):
+        graph.side_effect = PublicGraphUnavailable
+        with override("en"):
+            response = self.client.get(
+                reverse("context_view", kwargs={"artifact_id": self.artifact.id})
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Inspect Evidence Graph")
+
+
+
 class InspectContextI18nRtlStructuralTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(
