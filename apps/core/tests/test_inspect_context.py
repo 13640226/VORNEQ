@@ -103,9 +103,10 @@ class InspectContextV1Tests(TestCase):
             "edges": [],
         }
 
-        response = self.client.get(
-            reverse("context_view", kwargs={"artifact_id": self.artifact.id})
-        )
+        with override("en"):
+            response = self.client.get(
+                reverse("context_view", kwargs={"artifact_id": self.artifact.id})
+            )
         expected_url = reverse("public_graph", kwargs={"artifact_id": self.artifact.id})
 
         self.assertEqual(response.status_code, 200)
@@ -143,7 +144,26 @@ class InspectContextV1Tests(TestCase):
         self.assertEqual(ArtifactBinding.objects.count(), before_bindings)
 
 
-class InspectContextI18nRtlStructuralTests(InspectContextV1Tests):
+class InspectContextI18nRtlStructuralTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="inspect-i18n-owner",
+            email="inspect-i18n@example.com",
+            password="test-password",
+        )
+        self.product = Product.objects.create(
+            seller=self.user,
+            title="Inspectable I18n Artifact",
+            slug="inspectable-i18n-artifact",
+            short_description="A public artifact used by Context i18n/RTL tests.",
+            status=Product.STATUS_APPROVED,
+            is_published=True,
+        )
+        self.artifact, _created = register_artifact(
+            self.product,
+            created_by=self.user,
+        )
+
     @patch("config.inspect_views.get_public_graph")
     def test_context_de_renders_translated_affordances(self, graph):
         graph.return_value = {"root": {}, "nodes": [], "edges": []}
