@@ -1620,3 +1620,6 @@ msgstr "Quellentyp"
 
 msgid "Additional provenance is not shown in this bounded view."
 msgstr "Weitere Provenienz wird in dieser begrenzten Ansicht nicht angezeigt."
+
+msgid "Inspect context"
+msgstr "Kontext prüfen"
