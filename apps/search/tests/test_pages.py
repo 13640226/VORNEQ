@@ -1,12 +1,16 @@
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils.translation import override
 
+from apps.core.models import Artifact, ArtifactBinding
 from apps.core.services.public_graph import PublicGraphUnavailable
+from apps.core.services.registry import register_artifact
 from apps.search.services import UnifiedSearch
+from marketplace.models import Product
 
 
 EMPTY_SEARCH_PAYLOAD = {
@@ -181,6 +185,23 @@ class DiscoverV1ATests(TestCase):
 
 
 class DiscoverGraphV1AIntegrationTests(TestCase):
+    def _public_product_with_artifact(self, *, active=True):
+        user = get_user_model().objects.create_user(
+            username=f"discover-graph-{Artifact.objects.count()}",
+            password="test-pass-123",
+        )
+        product = Product.objects.create(
+            seller=user,
+            title="Discover Graph Product",
+            status=Product.STATUS_APPROVED,
+            is_published=True,
+        )
+        artifact, _ = register_artifact(product, created_by=user)
+        if not active:
+            artifact.is_active = False
+            artifact.save(update_fields=["is_active"])
+        return product, artifact
+
     def _payload(self, *, key, result_type):
         return {
             **EMPTY_SEARCH_PAYLOAD,
@@ -307,6 +328,76 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
             self.assertNotContains(response, "Evidence graph")
 
         artifact_filter.assert_not_called()
+
+    @patch("config.views.get_public_graph")
+    @patch.object(UnifiedSearch, "search")
+    def test_inactive_artifact_has_no_graph_affordance(self, search, graph):
+        product, artifact = self._public_product_with_artifact(active=False)
+        search.return_value = self._payload(key=f"product:{product.pk}", result_type="product")
+        before_artifacts = Artifact.objects.count()
+        before_bindings = ArtifactBinding.objects.count()
+
+        with override("en"):
+            response = self.client.get(reverse("discover"), {"type": "product"})
+
+        self.assertEqual(response.status_code, 200)
+        artifact.refresh_from_db()
+        self.assertFalse(artifact.is_active)
+        self.assertEqual(Artifact.objects.count(), before_artifacts)
+        self.assertEqual(ArtifactBinding.objects.count(), before_bindings)
+        graph.assert_not_called()
+        self.assertNotContains(response, "Evidence graph")
+
+    @patch.object(UnifiedSearch, "search")
+    def test_discover_get_does_not_mutate_artifact_registry(self, search):
+        product, artifact = self._public_product_with_artifact()
+        search.return_value = self._payload(key=f"product:{product.pk}", result_type="product")
+        before_artifacts = Artifact.objects.count()
+        before_bindings = ArtifactBinding.objects.count()
+
+        with override("en"):
+            response = self.client.get(reverse("discover"), {"type": "product"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Evidence graph")
+        self.assertEqual(Artifact.objects.count(), before_artifacts)
+        self.assertEqual(ArtifactBinding.objects.count(), before_bindings)
+        self.assertTrue(Artifact.objects.filter(pk=artifact.pk, is_active=True).exists())
+
+    @patch("config.views.get_public_graph")
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_discover_graph_presentation_ignores_private_fields(self, search, artifact_filter, graph):
+        search.return_value = self._payload(key="product:7", result_type="product")
+        artifact = MagicMock(pk="00000000-0000-0000-0000-000000000001")
+        artifact_filter.return_value.only.return_value.first.return_value = artifact
+        payload = self._graph()
+        payload["root"]["trust_score"] = "SECRET TRUST SCORE"
+        payload["root"]["claim_text"] = "SECRET CLAIM TEXT"
+        payload["nodes"][1]["canonical_id"] = "SECRET PROVENANCE UUID"
+        payload["nodes"][1]["source_ref"] = "SECRET SOURCE REF"
+        payload["nodes"][1]["transformation"] = "SECRET TRANSFORMATION"
+        payload["nodes"][1]["note"] = "SECRET NOTE"
+        payload["edges"][0]["relation_basis"] = "SECRET RELATION BASIS"
+        payload["edges"][0]["count"] = 99
+        graph.return_value = payload
+
+        with override("en"):
+            response = self.client.get(reverse("discover"), {"type": "product"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Evidence graph")
+        for secret in (
+            "SECRET TRUST SCORE",
+            "SECRET CLAIM TEXT",
+            "SECRET PROVENANCE UUID",
+            "SECRET SOURCE REF",
+            "SECRET TRANSFORMATION",
+            "SECRET NOTE",
+            "SECRET RELATION BASIS",
+        ):
+            self.assertNotContains(response, secret)
+        self.assertNotContains(response, ">99<", html=True)
 
     @patch("config.views.get_public_graph")
     @patch("config.views.Artifact.objects.filter")
