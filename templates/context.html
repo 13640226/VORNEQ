@@ -25,8 +25,8 @@
       {% if source.published_at %}<dt>{% trans "Published" %}</dt><dd>{{ source.published_at }}</dd>{% endif %}
     </dl>
     {% if source.description %}<p>{{ source.description }}</p>{% endif %}
-    {% if source.url %}<p><a href="{{ source.url }}">{% trans "Open source artifact" %} →</a></p>{% endif %}
-    {% if public_graph_url %}<p><a href="{{ public_graph_url }}">{% trans "Inspect Evidence Graph" %} →</a></p>{% endif %}
+    {% if source.url %}<p><a href="{{ source.url }}">{% trans "Open source artifact" %} <span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}←{% else %}→{% endif %}</span></a></p>{% endif %}
+    {% if public_graph_url %}<p><a href="{{ public_graph_url }}">{% trans "Inspect Evidence Graph" %} <span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}←{% else %}→{% endif %}</span></a></p>{% endif %}
   </section>
 
   <section aria-labelledby="identity-title">
@@ -97,7 +97,7 @@
   </section>
 
   <footer>
-    <p><a href="{% url 'inspect_entry' %}">← {% trans "Inspect another artifact" %}</a></p>
+    <p><a href="{% url 'inspect_entry' %}"><span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}→{% else %}←{% endif %}</span> {% trans "Inspect another artifact" %}</a></p>
   </footer>
 </main>
 {% endblock %}

@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils.translation import override
 from unittest.mock import patch
 
 from apps.core.models import ArtifactBinding
@@ -102,9 +103,10 @@ class InspectContextV1Tests(TestCase):
             "edges": [],
         }
 
-        response = self.client.get(
-            reverse("context_view", kwargs={"artifact_id": self.artifact.id})
-        )
+        with override("en"):
+            response = self.client.get(
+                reverse("context_view", kwargs={"artifact_id": self.artifact.id})
+            )
         expected_url = reverse("public_graph", kwargs={"artifact_id": self.artifact.id})
 
         self.assertEqual(response.status_code, 200)
@@ -140,3 +142,49 @@ class InspectContextV1Tests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(type(self.artifact).objects.count(), before_artifacts)
         self.assertEqual(ArtifactBinding.objects.count(), before_bindings)
+
+
+class InspectContextI18nRtlStructuralTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="inspect-i18n-owner",
+            email="inspect-i18n@example.com",
+            password="test-password",
+        )
+        self.product = Product.objects.create(
+            seller=self.user,
+            title="Inspectable I18n Artifact",
+            slug="inspectable-i18n-artifact",
+            short_description="A public artifact used by Context i18n/RTL tests.",
+            status=Product.STATUS_APPROVED,
+            is_published=True,
+        )
+        self.artifact, _created = register_artifact(
+            self.product,
+            created_by=self.user,
+        )
+
+    @patch("config.inspect_views.get_public_graph")
+    def test_context_de_renders_translated_affordances(self, graph):
+        graph.return_value = {"root": {}, "nodes": [], "edges": []}
+        with override("de"):
+            response = self.client.get(
+                reverse("context_view", kwargs={"artifact_id": self.artifact.id})
+            )
+        self.assertContains(response, 'lang="de"')
+        self.assertContains(response, "Kontext prüfen")
+        self.assertContains(response, "Evidenzgraph prüfen")
+        self.assertNotContains(response, "Inspect Evidence Graph")
+
+    @patch("config.inspect_views.get_public_graph")
+    def test_context_fa_renders_rtl_translated_affordances(self, graph):
+        graph.return_value = {"root": {}, "nodes": [], "edges": []}
+        with override("fa"):
+            response = self.client.get(
+                reverse("context_view", kwargs={"artifact_id": self.artifact.id})
+            )
+        self.assertContains(response, 'lang="fa"')
+        self.assertContains(response, 'dir="rtl"')
+        self.assertContains(response, "بررسی زمینه")
+        self.assertContains(response, "بررسی گراف شواهد")
+        self.assertNotContains(response, "Inspect Evidence Graph")

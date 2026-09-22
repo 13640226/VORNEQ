@@ -1623,3 +1623,99 @@ msgstr "Weitere Provenienz wird in dieser begrenzten Ansicht nicht angezeigt."
 
 msgid "Inspect context"
 msgstr "Kontext prüfen"
+
+msgid "DISCOVER"
+msgstr "ENTDECKEN"
+
+msgid "Page navigation"
+msgstr "Seitennavigation"
+
+msgid "Evidence"
+msgstr "Evidenz"
+
+msgid "Provenance"
+msgstr "Provenienz"
+
+#, python-format
+msgid "Page %(page)s of %(total_pages)s"
+msgstr "Seite %(page)s von %(total_pages)s"
+
+msgid "Inspect Context"
+msgstr "Kontext prüfen"
+
+msgid "Public attribution, verification, evidence relationships, and provenance context for this VORNEQ artifact."
+msgstr "Öffentliche Zuordnung, Verifizierung, Evidenzbeziehungen und Provenienzkontext für dieses VORNEQ-Artefakt."
+
+msgid "This page presents recorded public context. It does not decide whether the artifact is true, trustworthy, or valuable."
+msgstr "Diese Seite zeigt aufgezeichneten öffentlichen Kontext. Sie entscheidet nicht, ob das Artefakt wahr, vertrauenswürdig oder wertvoll ist."
+
+msgid "Source / Artifact"
+msgstr "Quelle / Artefakt"
+
+msgid "Type"
+msgstr "Typ"
+
+msgid "Artifact ID"
+msgstr "Artefakt-ID"
+
+msgid "Open source artifact"
+msgstr "Quellartefakt öffnen"
+
+msgid "Inspect Evidence Graph"
+msgstr "Evidenzgraph prüfen"
+
+msgid "Identity / Attribution"
+msgstr "Identität / Zuordnung"
+
+msgid "primary"
+msgstr "primär"
+
+msgid "Identity"
+msgstr "Identität"
+
+msgid "No active canonical attribution is recorded for this artifact."
+msgstr "Für dieses Artefakt ist keine aktive kanonische Zuordnung erfasst."
+
+msgid "Verification Summary"
+msgstr "Verifizierungsübersicht"
+
+#, python-format
+msgid "%(count)s completed verification results are publicly summarized for this artifact."
+msgstr "%(count)s abgeschlossene Verifizierungsergebnisse werden für dieses Artefakt öffentlich zusammengefasst."
+
+msgid "Latest outcome"
+msgstr "Letztes Ergebnis"
+
+msgid "Reported confidence"
+msgstr "Gemeldete Konfidenz"
+
+msgid "Recorded"
+msgstr "Erfasst"
+
+msgid "No completed verification result is available."
+msgstr "Kein abgeschlossenes Verifizierungsergebnis ist verfügbar."
+
+msgid "Methods"
+msgstr "Methoden"
+
+msgid "Evidence (Public)"
+msgstr "Evidenz (öffentlich)"
+
+#, python-format
+msgid "%(count)s public evidence relationships are available. Raw claim and evidence content remain undisclosed in V1."
+msgstr "%(count)s öffentliche Evidenzbeziehungen sind verfügbar. Rohe Behauptungs- und Evidenzinhalte bleiben in V1 unveröffentlicht."
+
+msgid "Claim context"
+msgstr "Behauptungskontext"
+
+msgid "No public evidence relationships are available."
+msgstr "Keine öffentlichen Evidenzbeziehungen sind verfügbar."
+
+msgid "V1 shows only non-sensitive provenance fields for evidence already marked public."
+msgstr "V1 zeigt nur nicht sensible Provenienzfelder für Evidenz, die bereits als öffentlich markiert ist."
+
+msgid "No public provenance steps are available."
+msgstr "Keine öffentlichen Provenienzschritte sind verfügbar."
+
+msgid "Inspect another artifact"
+msgstr "Weiteres Artefakt prüfen"

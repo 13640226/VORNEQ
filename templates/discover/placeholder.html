@@ -66,8 +66,8 @@
             </dl>
             {% if result.url or result.context_url %}
             <nav class="discover-actions" aria-label="{% trans 'Page navigation' %}">
-              {% if result.url %}<a class="discover-action discover-action--record" href="{{ result.url }}">{% trans "Open record" %} <span aria-hidden="true">→</span></a>{% endif %}
-              {% if result.context_url %}<a class="discover-action discover-action--context" href="{{ result.context_url }}">{% trans "Inspect context" %} <span aria-hidden="true">→</span></a>{% endif %}
+              {% if result.url %}<a class="discover-action discover-action--record" href="{{ result.url }}">{% trans "Open record" %} <span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}←{% else %}→{% endif %}</span></a>{% endif %}
+              {% if result.context_url %}<a class="discover-action discover-action--context" href="{{ result.context_url }}">{% trans "Inspect context" %} <span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}←{% else %}→{% endif %}</span></a>{% endif %}
             </nav>
             {% endif %}
             {% if result.public_graph %}

@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import override
 
 from apps.evidence.models import Claim
 from apps.verification.models import VerificationMethod, VerificationRequest, VerificationResult
@@ -136,9 +137,10 @@ class LatestVerificationBadgeTests(TestCase):
         api_response = self.client.get(
             reverse("verification:product_summary", args=[self.product.pk])
         )
-        detail_response = self.client.get(
-            reverse("marketplace:detail", args=[self.product.slug])
-        )
+        with override("en"):
+            detail_response = self.client.get(
+                reverse("marketplace:detail", args=[self.product.slug])
+            )
 
         self.assertEqual(api_response.status_code, 200)
         self.assertEqual(detail_response.status_code, 200)
