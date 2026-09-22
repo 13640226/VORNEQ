@@ -4,6 +4,7 @@ from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.translation import get_language
 
 from apps.core.models import Artifact, ContextualReputation, Entitlement
@@ -82,15 +83,15 @@ DISCOVER_GRAPH_TARGETS = {
 }
 
 
-def _discover_graph_for_result(result):
-    """Return Public Graph V1 for an existing eligible Discover result, or None."""
+def _discover_artifact_for_result(result):
+    """Resolve the existing active Artifact for a supported Discover result."""
     key = result.get("key", "")
     prefix, separator, object_id = key.partition(":")
     target = DISCOVER_GRAPH_TARGETS.get(prefix)
     if not separator or not object_id or target is None:
         return None
 
-    artifact = (
+    return (
         Artifact.objects.filter(
             binding__content_type__app_label=target[0],
             binding__content_type__model=target[1],
@@ -100,9 +101,12 @@ def _discover_graph_for_result(result):
         .only("id")
         .first()
     )
+
+
+def _discover_graph_for_artifact(artifact):
+    """Return Public Graph V1 for an already eligible Artifact, or None."""
     if artifact is None:
         return None
-
     try:
         return get_public_graph(artifact.pk)
     except PublicGraphUnavailable:
@@ -110,11 +114,17 @@ def _discover_graph_for_result(result):
 
 
 def _attach_discover_graphs(payload):
-    """Enrich only the current public result page; never create canonical records."""
+    """Attach bounded inspection affordances without creating canonical records."""
     enriched = []
     for result in payload["results"]:
         item = dict(result)
-        item["public_graph"] = _discover_graph_for_result(item)
+        artifact = _discover_artifact_for_result(item)
+        item["context_url"] = (
+            reverse("context_view", kwargs={"artifact_id": artifact.pk})
+            if artifact is not None
+            else None
+        )
+        item["public_graph"] = _discover_graph_for_artifact(artifact)
         enriched.append(item)
     return {**payload, "results": enriched}
 
