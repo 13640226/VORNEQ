@@ -485,3 +485,128 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
         self.assertContains(response, "Provenance")
         self.assertContains(response, "INCLUDES_EVIDENCE")
         self.assertContains(response, "HAS_PROVENANCE")
+
+
+    @patch("config.views.get_public_graph")
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_affordance_availability_without_artifact_is_unavailable_unavailable(
+        self, search, artifact_filter, graph
+    ):
+        for key, result_type in (
+            ("product:7", "product"),
+            ("library:9", "book"),
+        ):
+            search.return_value = self._payload(key=key, result_type=result_type)
+            artifact_filter.return_value.only.return_value.first.return_value = None
+
+            response = self.client.get(reverse("discover"))
+            result = response.context["results"][0]
+
+            self.assertEqual(result["context_availability"], "UNAVAILABLE")
+            self.assertEqual(result["graph_availability"], "UNAVAILABLE")
+            self.assertIsNone(result["context_url"])
+            self.assertIsNone(result["public_graph"])
+
+        graph.assert_not_called()
+
+    @patch("config.views.get_public_graph")
+    @patch.object(UnifiedSearch, "search")
+    def test_affordance_availability_inactive_artifact_is_unavailable_unavailable(
+        self, search, graph
+    ):
+        product, _artifact = self._public_product_with_artifact(active=False)
+        search.return_value = self._payload(
+            key=f"product:{product.pk}", result_type="product"
+        )
+
+        response = self.client.get(reverse("discover"), {"type": "product"})
+        result = response.context["results"][0]
+
+        self.assertEqual(result["context_availability"], "UNAVAILABLE")
+        self.assertEqual(result["graph_availability"], "UNAVAILABLE")
+        graph.assert_not_called()
+
+    @patch("config.views.get_public_graph")
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_affordance_availability_graph_success_and_empty_graph_are_available(
+        self, search, artifact_filter, graph
+    ):
+        search.return_value = self._payload(key="product:7", result_type="product")
+        artifact = MagicMock(pk="00000000-0000-0000-0000-000000000001")
+        artifact_filter.return_value.only.return_value.first.return_value = artifact
+        graph.return_value = {
+            "root": {
+                "type": "artifact",
+                "ref": str(artifact.pk),
+                "truncated": False,
+            },
+            "nodes": [],
+            "edges": [],
+        }
+
+        response = self.client.get(reverse("discover"), {"type": "product"})
+        result = response.context["results"][0]
+
+        self.assertEqual(result["context_availability"], "AVAILABLE")
+        self.assertEqual(result["graph_availability"], "AVAILABLE")
+        self.assertIsNotNone(result["context_url"])
+        self.assertEqual(result["public_graph"], graph.return_value)
+
+    @patch("config.views.get_public_graph")
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_affordance_availability_graph_unavailable_keeps_context_available(
+        self, search, artifact_filter, graph
+    ):
+        search.return_value = self._payload(key="product:7", result_type="product")
+        artifact = MagicMock(pk="00000000-0000-0000-0000-000000000001")
+        artifact_filter.return_value.only.return_value.first.return_value = artifact
+        graph.side_effect = PublicGraphUnavailable
+
+        response = self.client.get(reverse("discover"), {"type": "product"})
+        result = response.context["results"][0]
+
+        self.assertEqual(result["context_availability"], "AVAILABLE")
+        self.assertEqual(result["graph_availability"], "UNAVAILABLE")
+        self.assertIsNotNone(result["context_url"])
+        self.assertIsNone(result["public_graph"])
+        self.assertNotIn("reason", result)
+        self.assertNotIn("trust_score", result)
+        self.assertNotIn("evidence_count", result)
+
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_affordance_availability_unsupported_types_are_unavailable_unavailable(
+        self, search, artifact_filter
+    ):
+        for key, result_type in (
+            ("article:1", "article"),
+            ("media:2", "mediaasset"),
+            ("audio:3", "audio"),
+        ):
+            search.return_value = self._payload(key=key, result_type=result_type)
+            response = self.client.get(reverse("discover"))
+            result = response.context["results"][0]
+
+            self.assertEqual(result["context_availability"], "UNAVAILABLE")
+            self.assertEqual(result["graph_availability"], "UNAVAILABLE")
+
+        artifact_filter.assert_not_called()
+
+    @patch("config.views.get_public_graph")
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_affordance_availability_never_produces_unavailable_available(
+        self, search, artifact_filter, graph
+    ):
+        search.return_value = self._payload(key="product:7", result_type="product")
+        artifact_filter.return_value.only.return_value.first.return_value = None
+
+        response = self.client.get(reverse("discover"))
+        result = response.context["results"][0]
+
+        state = (result["context_availability"], result["graph_availability"])
+        self.assertNotEqual(state, ("UNAVAILABLE", "AVAILABLE"))
+        graph.assert_not_called()

@@ -82,6 +82,9 @@ DISCOVER_GRAPH_TARGETS = {
     "library": ("library", "libraryitem"),
 }
 
+DISCOVER_AFFORDANCE_AVAILABLE = "AVAILABLE"
+DISCOVER_AFFORDANCE_UNAVAILABLE = "UNAVAILABLE"
+
 
 def _discover_artifact_for_result(result):
     """Resolve the existing active Artifact for a supported Discover result."""
@@ -119,12 +122,23 @@ def _attach_discover_graphs(payload):
     for result in payload["results"]:
         item = dict(result)
         artifact = _discover_artifact_for_result(item)
+        context_available = artifact is not None
+        item["context_availability"] = (
+            DISCOVER_AFFORDANCE_AVAILABLE
+            if context_available
+            else DISCOVER_AFFORDANCE_UNAVAILABLE
+        )
         item["context_url"] = (
             reverse("context_view", kwargs={"artifact_id": artifact.pk})
-            if artifact is not None
+            if context_available
             else None
         )
         item["public_graph"] = _discover_graph_for_artifact(artifact)
+        item["graph_availability"] = (
+            DISCOVER_AFFORDANCE_AVAILABLE
+            if item["public_graph"] is not None
+            else DISCOVER_AFFORDANCE_UNAVAILABLE
+        )
         enriched.append(item)
     return {**payload, "results": enriched}
 
