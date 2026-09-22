@@ -65,6 +65,25 @@
               {% if result.media_type %}<div><dt>{% trans "Media type" %}</dt><dd>{{ result.media_type }}</dd></div>{% endif %}
             </dl>
             {% if result.url %}<a class="discover-inspect" href="{{ result.url }}">{% trans "Open record" %} <span aria-hidden="true">→</span></a>{% endif %}
+            {% if result.public_graph %}
+            <details class="discover-graph">
+              <summary>{% trans "Evidence graph" %}</summary>
+              <div class="discover-graph__body">
+                <p class="discover-graph__root"><span>{% trans "Artifact" %}</span> <code>{{ result.public_graph.root.ref }}</code></p>
+                {% if result.public_graph.root.truncated %}<p class="discover-graph__notice">{% trans "Additional public evidence is not shown in this bounded view." %}</p>{% endif %}
+                <ul class="discover-graph__nodes">
+                {% for node in result.public_graph.nodes %}
+                  <li><span>{{ node.type }}</span> <code>{{ node.ref }}</code>{% if node.source_type %} · {% trans "Source type" %}: {{ node.source_type }}{% endif %}{% if node.timestamp %} · <time datetime="{{ node.timestamp|date:'c' }}">{{ node.timestamp|date:"DATETIME_FORMAT" }}</time>{% endif %}{% if node.type == "evidence" and node.truncated %}<span class="discover-graph__notice">{% trans "Additional provenance is not shown in this bounded view." %}</span>{% endif %}</li>
+                {% endfor %}
+                </ul>
+                <ul class="discover-graph__edges">
+                {% for edge in result.public_graph.edges %}
+                  <li><code>{{ edge.source.type }}:{{ edge.source.ref }}</code> <strong>{{ edge.relation }}</strong> <code>{{ edge.target.type }}:{{ edge.target.ref }}</code></li>
+                {% endfor %}
+                </ul>
+              </div>
+            </details>
+            {% endif %}
           </article>
         {% endfor %}
       </div>

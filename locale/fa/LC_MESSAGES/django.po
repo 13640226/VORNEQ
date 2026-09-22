@@ -1424,3 +1424,18 @@ msgstr "موضوع دیگری را امتحان کنید، فیلترهای فع
 
 msgid "Open Search"
 msgstr "باز کردن جستجو"
+
+msgid "Evidence graph"
+msgstr "گراف شواهد"
+
+msgid "Artifact"
+msgstr "مصنوع"
+
+msgid "Additional public evidence is not shown in this bounded view."
+msgstr "شواهد عمومی بیشتری در این نمای محدود نمایش داده نمی‌شود."
+
+msgid "Source type"
+msgstr "نوع منبع"
+
+msgid "Additional provenance is not shown in this bounded view."
+msgstr "اطلاعات منشأ بیشتری در این نمای محدود نمایش داده نمی‌شود."
