@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils.translation import override
 
+from apps.core.services.public_graph import PublicGraphUnavailable
 from apps.search.services import UnifiedSearch
 
 
@@ -272,6 +273,21 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
         self.assertNotContains(response, "Evidence graph")
         self.assertNotContains(response, "unverified")
         self.assertNotContains(response, "low trust")
+
+
+    @patch("config.views.get_public_graph")
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_public_graph_unavailable_hides_graph_affordance(self, search, artifact_filter, graph):
+        search.return_value = self._payload(key="product:7", result_type="product")
+        artifact = MagicMock(pk="00000000-0000-0000-0000-000000000001")
+        artifact_filter.return_value.only.return_value.first.return_value = artifact
+        graph.side_effect = PublicGraphUnavailable
+
+        response = self.client.get(reverse("discover"), {"type": "product"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Evidence graph")
 
     @patch("config.views.Artifact.objects.filter")
     @patch.object(UnifiedSearch, "search")
