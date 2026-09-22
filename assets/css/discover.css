@@ -41,7 +41,11 @@
 .discover-object dl div { display: flex; gap: 8px; margin-block-start: 6px; font-size: .84rem; }
 .discover-object dt { color: #64748b; }
 .discover-object dd { margin: 0; }
-.discover-inspect { display: inline-block; margin-block-start: 18px; color: var(--discover-blue); font-weight: 650; text-decoration: none; }
+.discover-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-block-start: 18px; }
+.discover-action { display: inline-flex; align-items: center; gap: 6px; min-height: 42px; padding: 9px 13px; border-radius: 7px; font-weight: 650; text-decoration: none; }
+.discover-action--record { background: var(--discover-blue); color: #fff; }
+.discover-action--record:hover { color: #fff; }
+.discover-action--context { border: 1px solid var(--discover-border); color: var(--discover-navy); background: #fff; }
 
 .discover-graph { margin-block-start: 18px; border-block-start: 1px solid var(--discover-border); padding-block-start: 14px; }
 .discover-graph summary { width: fit-content; color: var(--discover-blue); font-weight: 650; cursor: pointer; }
@@ -51,7 +55,10 @@
 .discover-graph__nodes, .discover-graph__edges { margin: 10px 0 0; padding-inline-start: 20px; }
 .discover-graph__nodes li, .discover-graph__edges li { margin-block-start: 7px; line-height: 1.55; overflow-wrap: anywhere; }
 .discover-graph code { color: var(--discover-navy); font-size: .78rem; }
-.discover-graph__edges strong { margin-inline: 6px; color: var(--discover-blue); font-size: .72rem; }
+.discover-graph__edge { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.discover-graph__relation { display: inline-flex; align-items: center; gap: 6px; color: #64748b; }
+.discover-graph__edges strong { color: var(--discover-blue); font-size: .78rem; }
+.discover-graph__relation-token { color: #64748b; font-size: .68rem; }
 .discover-graph__notice { display: block; margin-block-start: 6px; color: #475569; }
 
 .discover-state { padding: 32px; border: 1px solid var(--discover-border); border-radius: 10px; background: #f8fafc; }

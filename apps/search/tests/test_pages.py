@@ -459,3 +459,29 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("count", str(graph.return_value).lower())
         self.assertContains(response, "p1")
+
+
+    @patch("config.views.get_public_graph")
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_discover_graph_actions_have_distinct_hierarchy_and_readable_relations(self, search, artifact_filter, graph):
+        search.return_value = self._payload(key="product:7", result_type="product")
+        artifact = MagicMock(pk="00000000-0000-0000-0000-000000000001")
+        artifact_filter.return_value.only.return_value.first.return_value = artifact
+        graph.return_value = self._graph()
+
+        with override("en"):
+            response = self.client.get(reverse("discover"), {"type": "product"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="discover-actions"')
+        self.assertContains(response, 'class="discover-action discover-action--record"')
+        self.assertContains(response, 'class="discover-action discover-action--context"')
+        self.assertContains(response, "Open record")
+        self.assertContains(response, "Inspect context")
+        self.assertContains(response, "Evidence graph")
+        self.assertContains(response, 'class="discover-graph__relation"')
+        self.assertContains(response, "Evidence")
+        self.assertContains(response, "Provenance")
+        self.assertContains(response, "INCLUDES_EVIDENCE")
+        self.assertContains(response, "HAS_PROVENANCE")
