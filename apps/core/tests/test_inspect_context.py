@@ -107,12 +107,15 @@ class InspectContextV1Tests(TestCase):
             response = self.client.get(
                 reverse("context_view", kwargs={"artifact_id": self.artifact.id})
             )
+            expected_discover_url = reverse("discover")
         expected_url = reverse("public_graph", kwargs={"artifact_id": self.artifact.id})
 
         self.assertEqual(response.status_code, 200)
         graph.assert_called_once_with(self.artifact.id)
         self.assertContains(response, "Inspect Evidence Graph")
         self.assertContains(response, expected_url)
+        self.assertContains(response, '<nav class="context-actions" aria-labelledby="context-title">')
+        self.assertContains(response, expected_discover_url)
         self.assertNotContains(response, "SECRET GRAPH DTO")
         self.assertNotContains(response, "trust score")
 
@@ -126,6 +129,8 @@ class InspectContextV1Tests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Inspect Evidence Graph")
+        self.assertContains(response, '<nav class="context-actions" aria-labelledby="context-title">')
+        self.assertContains(response, reverse("discover"))
         self.assertNotContains(response, "unverified")
         self.assertNotContains(response, "low trust")
 
@@ -151,6 +156,7 @@ class InspectContextV1Tests(TestCase):
             response = self.client.get(
                 reverse("context_view", kwargs={"artifact_id": self.artifact.id})
             )
+            expected_discover_url = reverse("discover")
         html = response.content.decode()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(html.count("<main"), 1)
@@ -160,6 +166,8 @@ class InspectContextV1Tests(TestCase):
         self.assertContains(response, 'id="context-title"')
         self.assertContains(response, "Open source artifact")
         self.assertContains(response, "Inspect Evidence Graph")
+        self.assertContains(response, '<nav class="context-actions" aria-labelledby="context-title">')
+        self.assertContains(response, expected_discover_url)
         self.assertContains(response, 'aria-hidden="true"')
         self.assertContains(response, 'href="#main-content"')
         self.assertContains(response, 'type="button"')
@@ -174,8 +182,11 @@ class InspectContextV1Tests(TestCase):
             response = self.client.get(
                 reverse("context_view", kwargs={"artifact_id": self.artifact.id})
             )
+            expected_discover_url = reverse("discover")
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Inspect Evidence Graph")
+        self.assertContains(response, '<nav class="context-actions" aria-labelledby="context-title">')
+        self.assertContains(response, expected_discover_url)
 
 
 
