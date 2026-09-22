@@ -253,12 +253,13 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
 
         with override("en"):
             response = self.client.get(reverse("discover"), {"type": "product"})
+            expected_context_url = reverse("context_view", kwargs={"artifact_id": artifact.pk})
 
         self.assertEqual(response.status_code, 200)
         graph.assert_called_once_with(artifact.pk)
         self.assertContains(response, "Evidence graph")
         self.assertContains(response, "Inspect context")
-        self.assertContains(response, reverse("context_view", kwargs={"artifact_id": artifact.pk}))
+        self.assertContains(response, expected_context_url)
         self.assertContains(response, "INCLUDES_EVIDENCE")
         self.assertContains(response, "HAS_PROVENANCE")
         self.assertContains(response, "Additional public evidence is not shown")
@@ -280,13 +281,14 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
                 reverse("discover"),
                 {"type": "libraryitem"},
             )
+            expected_context_url = reverse("context_view", kwargs={"artifact_id": artifact.pk})
 
         self.assertEqual(response.status_code, 200)
         artifact_filter.assert_called_once()
         graph.assert_called_once_with(artifact.pk)
         self.assertContains(response, "Evidence graph")
         self.assertContains(response, "Inspect context")
-        self.assertContains(response, reverse("context_view", kwargs={"artifact_id": artifact.pk}))
+        self.assertContains(response, expected_context_url)
 
     @patch("config.views.get_public_graph")
     @patch("config.views.Artifact.objects.filter")
@@ -341,12 +343,14 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
         artifact_filter.return_value.only.return_value.first.return_value = artifact
         graph.side_effect = PublicGraphUnavailable
 
-        response = self.client.get(reverse("discover"), {"type": "product"})
+        with override("en"):
+            response = self.client.get(reverse("discover"), {"type": "product"})
+            expected_context_url = reverse("context_view", kwargs={"artifact_id": artifact.pk})
 
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Evidence graph")
         self.assertContains(response, "Inspect context")
-        self.assertContains(response, reverse("context_view", kwargs={"artifact_id": artifact.pk}))
+        self.assertContains(response, expected_context_url)
 
     @patch("config.views.Artifact.objects.filter")
     @patch.object(UnifiedSearch, "search")
@@ -393,11 +397,12 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
 
         with override("en"):
             response = self.client.get(reverse("discover"), {"type": "product"})
+            expected_context_url = reverse("context_view", kwargs={"artifact_id": artifact.pk})
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Evidence graph")
         self.assertContains(response, "Inspect context")
-        self.assertContains(response, reverse("context_view", kwargs={"artifact_id": artifact.pk}))
+        self.assertContains(response, expected_context_url)
         self.assertEqual(Artifact.objects.count(), before_artifacts)
         self.assertEqual(ArtifactBinding.objects.count(), before_bindings)
         self.assertTrue(Artifact.objects.filter(pk=artifact.pk, is_active=True).exists())
