@@ -1,5 +1,5 @@
 from decimal import Decimal
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 from django.urls import reverse
@@ -177,3 +177,128 @@ class DiscoverV1ATests(TestCase):
         self.assertEqual(response.status_code, 200)
         search.assert_not_called()
         self.assertContains(response, "This discovery domain is not available yet.")
+
+
+class DiscoverGraphV1AIntegrationTests(TestCase):
+    def _payload(self, *, key, result_type):
+        return {
+            **EMPTY_SEARCH_PAYLOAD,
+            "results": [{
+                "key": key,
+                "type": result_type,
+                "title": "Public result",
+                "description": "Public metadata",
+                "url": "/record/",
+                "image_url": None,
+                "source": "",
+                "published_at": None,
+                "price": None,
+                "category": None,
+                "media_type": None,
+            }],
+            "total": 1,
+        }
+
+    def _graph(self, *, root_truncated=False, evidence_truncated=False):
+        return {
+            "root": {"type": "artifact", "ref": "00000000-0000-0000-0000-000000000001", "truncated": root_truncated},
+            "nodes": [
+                {"type": "evidence", "ref": "evidence-1", "truncated": evidence_truncated},
+                {"type": "provenance", "ref": "p1", "source_type": "document", "timestamp": None},
+            ],
+            "edges": [
+                {
+                    "source": {"type": "artifact", "ref": "00000000-0000-0000-0000-000000000001"},
+                    "target": {"type": "evidence", "ref": "evidence-1"},
+                    "relation": "INCLUDES_EVIDENCE",
+                },
+                {
+                    "source": {"type": "evidence", "ref": "evidence-1"},
+                    "target": {"type": "provenance", "ref": "p1"},
+                    "relation": "HAS_PROVENANCE",
+                },
+            ],
+        }
+
+    @patch("config.views.get_public_graph")
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_product_with_existing_artifact_renders_public_graph(self, search, artifact_filter, graph):
+        search.return_value = self._payload(key="product:7", result_type="product")
+        artifact = MagicMock(pk="00000000-0000-0000-0000-000000000001")
+        artifact_filter.return_value.only.return_value.first.return_value = artifact
+        graph.return_value = self._graph(root_truncated=True, evidence_truncated=True)
+
+        with override("en"):
+            response = self.client.get(reverse("discover"), {"type": "product"})
+
+        self.assertEqual(response.status_code, 200)
+        graph.assert_called_once_with(artifact.pk)
+        self.assertContains(response, "Evidence graph")
+        self.assertContains(response, "INCLUDES_EVIDENCE")
+        self.assertContains(response, "HAS_PROVENANCE")
+        self.assertContains(response, "Additional public evidence is not shown")
+        self.assertContains(response, "Additional provenance is not shown")
+        self.assertNotContains(response, "trust score")
+        self.assertNotContains(response, "relation_basis")
+
+    @patch("config.views.get_public_graph")
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_library_item_uses_existing_artifact_without_creation(self, search, artifact_filter, graph):
+        search.return_value = self._payload(key="library:9", result_type="book")
+        artifact = MagicMock(pk="00000000-0000-0000-0000-000000000002")
+        artifact_filter.return_value.only.return_value.first.return_value = artifact
+        graph.return_value = self._graph()
+
+        response = self.client.get(reverse("discover"), {"type": "libraryitem"})
+
+        self.assertEqual(response.status_code, 200)
+        artifact_filter.assert_called_once()
+        graph.assert_called_once_with(artifact.pk)
+        self.assertContains(response, "Evidence graph")
+
+    @patch("config.views.get_public_graph")
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_supported_result_without_artifact_has_no_graph_affordance(self, search, artifact_filter, graph):
+        search.return_value = self._payload(key="product:7", result_type="product")
+        artifact_filter.return_value.only.return_value.first.return_value = None
+
+        with override("en"):
+            response = self.client.get(reverse("discover"), {"type": "product"})
+
+        graph.assert_not_called()
+        self.assertNotContains(response, "Evidence graph")
+        self.assertNotContains(response, "unverified")
+        self.assertNotContains(response, "low trust")
+
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_unsupported_discover_types_never_resolve_graph_artifacts(self, search, artifact_filter):
+        for key, result_type in (
+            ("article:1", "article"),
+            ("media:2", "mediaasset"),
+            ("audio:3", "audio"),
+        ):
+            search.return_value = self._payload(key=key, result_type=result_type)
+            response = self.client.get(reverse("discover"))
+            self.assertEqual(response.status_code, 200)
+            self.assertNotContains(response, "Evidence graph")
+
+        artifact_filter.assert_not_called()
+
+    @patch("config.views.get_public_graph")
+    @patch("config.views.Artifact.objects.filter")
+    @patch.object(UnifiedSearch, "search")
+    def test_discover_graph_request_is_read_only_at_integration_boundary(self, search, artifact_filter, graph):
+        search.return_value = self._payload(key="product:7", result_type="product")
+        artifact = MagicMock(pk="00000000-0000-0000-0000-000000000001")
+        artifact_filter.return_value.only.return_value.first.return_value = artifact
+        graph.return_value = self._graph()
+
+        response = self.client.get(reverse("discover"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("count", str(graph.return_value).lower())
+        self.assertContains(response, "p1")
