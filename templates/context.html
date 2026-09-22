@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block content %}
-<main class="container" aria-labelledby="context-title">
+<div class="container" aria-labelledby="context-title">
   <header>
     <p>{% trans "Inspect Context" %}</p>
     <h1 id="context-title">{{ source.title }}</h1>
@@ -99,5 +99,5 @@
   <footer>
     <p><a href="{% url 'inspect_entry' %}"><span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}→{% else %}←{% endif %}</span> {% trans "Inspect another artifact" %}</a></p>
   </footer>
-</main>
+</div>
 {% endblock %}
