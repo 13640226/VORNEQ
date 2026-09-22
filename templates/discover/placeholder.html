@@ -65,6 +65,7 @@
               {% if result.media_type %}<div><dt>{% trans "Media type" %}</dt><dd>{{ result.media_type }}</dd></div>{% endif %}
             </dl>
             {% if result.url %}<a class="discover-inspect" href="{{ result.url }}">{% trans "Open record" %} <span aria-hidden="true">→</span></a>{% endif %}
+            {% if result.context_url %}<a class="discover-inspect" href="{{ result.context_url }}">{% trans "Inspect context" %} <span aria-hidden="true">→</span></a>{% endif %}
             {% if result.public_graph %}
             <details class="discover-graph">
               <summary>{% trans "Evidence graph" %}</summary>
