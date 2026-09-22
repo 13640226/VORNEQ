@@ -13,6 +13,7 @@ from apps.platform_shell.registry import registry as platform_registry
 from config.health import health_check
 from config.inspect_views import context_view, inspect_entry
 from config.metrics import metrics_view
+from config.public_graph_views import public_graph_view
 from config.views import discover, home, profile, search_page
 
 
@@ -26,6 +27,7 @@ urlpatterns = [
     path("api/verification/", include("apps.verification.urls")),
     path("api/media/", include("apps.media.urls")),
     path("api/search/", include("apps.search.urls")),
+    path("artifacts/<uuid:artifact_id>/graph/", public_graph_view, name="public_graph"),
 ]
 
 
