@@ -57,15 +57,19 @@
               <span>{{ result.type }}</span>
               {% if result.published_at %}<time datetime="{{ result.published_at|date:'c' }}">{{ result.published_at|date:"DATE_FORMAT" }}</time>{% endif %}
             </div>
-            <h3>{% if result.url %}<a href="{{ result.url }}">{{ result.title }}</a>{% else %}{{ result.title }}{% endif %}</h3>
+            <h3>{{ result.title }}</h3>
             {% if result.description %}<p>{{ result.description|truncatechars:220 }}</p>{% endif %}
             <dl>
               {% if result.source %}<div><dt>{% trans "Source" %}</dt><dd>{{ result.source }}</dd></div>{% endif %}
               {% if result.category %}<div><dt>{% trans "Category" %}</dt><dd>{{ result.category }}</dd></div>{% endif %}
               {% if result.media_type %}<div><dt>{% trans "Media type" %}</dt><dd>{{ result.media_type }}</dd></div>{% endif %}
             </dl>
-            {% if result.url %}<a class="discover-inspect" href="{{ result.url }}">{% trans "Open record" %} <span aria-hidden="true">→</span></a>{% endif %}
-            {% if result.context_url %}<a class="discover-inspect" href="{{ result.context_url }}">{% trans "Inspect context" %} <span aria-hidden="true">→</span></a>{% endif %}
+            {% if result.url or result.context_url %}
+            <nav class="discover-actions" aria-label="{% trans 'Page navigation' %}">
+              {% if result.url %}<a class="discover-action discover-action--record" href="{{ result.url }}">{% trans "Open record" %} <span aria-hidden="true">→</span></a>{% endif %}
+              {% if result.context_url %}<a class="discover-action discover-action--context" href="{{ result.context_url }}">{% trans "Inspect context" %} <span aria-hidden="true">→</span></a>{% endif %}
+            </nav>
+            {% endif %}
             {% if result.public_graph %}
             <details class="discover-graph">
               <summary>{% trans "Evidence graph" %}</summary>
@@ -77,11 +81,26 @@
                   <li><span>{{ node.type }}</span> <code>{{ node.ref }}</code>{% if node.source_type %} · {% trans "Source type" %}: {{ node.source_type }}{% endif %}{% if node.timestamp %} · <time datetime="{{ node.timestamp|date:'c' }}">{{ node.timestamp|date:"DATETIME_FORMAT" }}</time>{% endif %}{% if node.type == "evidence" and node.truncated %}<span class="discover-graph__notice">{% trans "Additional provenance is not shown in this bounded view." %}</span>{% endif %}</li>
                 {% endfor %}
                 </ul>
-                <ul class="discover-graph__edges">
+                <ol class="discover-graph__edges">
                 {% for edge in result.public_graph.edges %}
-                  <li><code>{{ edge.source.type }}:{{ edge.source.ref }}</code> <strong>{{ edge.relation }}</strong> <code>{{ edge.target.type }}:{{ edge.target.ref }}</code></li>
+                  <li class="discover-graph__edge">
+                    <code>{{ edge.source.type }}:{{ edge.source.ref }}</code>
+                    <span class="discover-graph__relation" aria-label="{{ edge.relation }}">
+                      <span aria-hidden="true">→</span>
+                      {% if edge.relation == "INCLUDES_EVIDENCE" %}
+                        <strong>{% trans "Evidence" %}</strong>
+                      {% elif edge.relation == "HAS_PROVENANCE" %}
+                        <strong>{% trans "Provenance" %}</strong>
+                      {% else %}
+                        <strong>{{ edge.relation }}</strong>
+                      {% endif %}
+                      <code class="discover-graph__relation-token">{{ edge.relation }}</code>
+                      <span aria-hidden="true">→</span>
+                    </span>
+                    <code>{{ edge.target.type }}:{{ edge.target.ref }}</code>
+                  </li>
                 {% endfor %}
-                </ul>
+                </ol>
               </div>
             </details>
             {% endif %}
