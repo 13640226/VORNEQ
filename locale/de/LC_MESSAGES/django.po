@@ -1605,3 +1605,4 @@ msgstr "Versuchen Sie ein anderes Thema, erweitern Sie die aktuellen Filter oder
 
 msgid "Open Search"
 msgstr "Suche öffnen"
+\nmsgid "Evidence graph"\nmsgstr "Evidenzgraph"\n\nmsgid "Artifact"\nmsgstr "Artefakt"\n\nmsgid "Additional public evidence is not shown in this bounded view."\nmsgstr "Weitere öffentliche Evidenz wird in dieser begrenzten Ansicht nicht angezeigt."\n\nmsgid "Source type"\nmsgstr "Quellentyp"\n\nmsgid "Additional provenance is not shown in this bounded view."\nmsgstr "Weitere Provenienz wird in dieser begrenzten Ansicht nicht angezeigt."\n
