@@ -1442,3 +1442,102 @@ msgstr "اطلاعات منشأ بیشتری در این نمای محدود ن�
 
 msgid "Inspect context"
 msgstr "بررسی زمینه"
+
+msgid "DISCOVER"
+msgstr "کشف"
+
+msgid "Page navigation"
+msgstr "پیمایش صفحه"
+
+msgid "Evidence"
+msgstr "شواهد"
+
+msgid "Provenance"
+msgstr "منشأ"
+
+#, python-format
+msgid "Page %(page)s of %(total_pages)s"
+msgstr "صفحه %(page)s از %(total_pages)s"
+
+msgid "Inspect Context"
+msgstr "بررسی زمینه"
+
+msgid "Public attribution, verification, evidence relationships, and provenance context for this VORNEQ artifact."
+msgstr "زمینهٔ عمومیِ انتساب، راستی‌آزمایی، روابط شواهد و منشأ برای این مصنوع VORNEQ."
+
+msgid "This page presents recorded public context. It does not decide whether the artifact is true, trustworthy, or valuable."
+msgstr "این صفحه زمینهٔ عمومیِ ثبت‌شده را ارائه می‌کند و دربارهٔ درست، قابل‌اعتماد یا ارزشمند بودن مصنوع داوری نمی‌کند."
+
+msgid "Source / Artifact"
+msgstr "منبع / مصنوع"
+
+msgid "Type"
+msgstr "نوع"
+
+msgid "Artifact ID"
+msgstr "شناسهٔ مصنوع"
+
+msgid "Open source artifact"
+msgstr "باز کردن مصنوع منبع"
+
+msgid "Inspect Evidence Graph"
+msgstr "بررسی گراف شواهد"
+
+msgid "Identity / Attribution"
+msgstr "هویت / انتساب"
+
+msgid "primary"
+msgstr "اصلی"
+
+msgid "Identity"
+msgstr "هویت"
+
+msgid "No active canonical attribution is recorded for this artifact."
+msgstr "هیچ انتساب متعارف فعالی برای این مصنوع ثبت نشده است."
+
+msgid "Verification Summary"
+msgstr "خلاصهٔ راستی‌آزمایی"
+
+#, python-format
+msgid "%(count)s completed verification results are publicly summarized for this artifact."
+msgstr "%(count)s نتیجهٔ تکمیل‌شدهٔ راستی‌آزمایی برای این مصنوع به‌صورت عمومی خلاصه شده است."
+
+msgid "Latest outcome"
+msgstr "آخرین نتیجه"
+
+msgid "Method"
+msgstr "روش"
+
+msgid "Reported confidence"
+msgstr "اطمینان گزارش‌شده"
+
+msgid "Recorded"
+msgstr "ثبت‌شده"
+
+msgid "No completed verification result is available."
+msgstr "هیچ نتیجهٔ تکمیل‌شدهٔ راستی‌آزمایی در دسترس نیست."
+
+msgid "Methods"
+msgstr "روش‌ها"
+
+msgid "Evidence (Public)"
+msgstr "شواهد (عمومی)"
+
+#, python-format
+msgid "%(count)s public evidence relationships are available. Raw claim and evidence content remain undisclosed in V1."
+msgstr "%(count)s رابطهٔ عمومیِ شواهد در دسترس است. محتوای خام ادعا و شواهد در V1 افشا نمی‌شود."
+
+msgid "Claim context"
+msgstr "زمینهٔ ادعا"
+
+msgid "No public evidence relationships are available."
+msgstr "هیچ رابطهٔ عمومیِ شواهد در دسترس نیست."
+
+msgid "V1 shows only non-sensitive provenance fields for evidence already marked public."
+msgstr "V1 فقط فیلدهای غیرحساسِ منشأ را برای شواهدی نشان می‌دهد که از قبل عمومی علامت‌گذاری شده‌اند."
+
+msgid "No public provenance steps are available."
+msgstr "هیچ مرحلهٔ عمومیِ منشأ در دسترس نیست."
+
+msgid "Inspect another artifact"
+msgstr "بررسی مصنوع دیگر"

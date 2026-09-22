@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils.translation import override
 from unittest.mock import patch
 
 from apps.core.models import ArtifactBinding
@@ -140,3 +141,30 @@ class InspectContextV1Tests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(type(self.artifact).objects.count(), before_artifacts)
         self.assertEqual(ArtifactBinding.objects.count(), before_bindings)
+
+
+class InspectContextI18nRtlStructuralTests(InspectContextV1Tests):
+    @patch("config.inspect_views.get_public_graph")
+    def test_context_de_renders_translated_affordances(self, graph):
+        graph.return_value = {"root": {}, "nodes": [], "edges": []}
+        with override("de"):
+            response = self.client.get(
+                reverse("context_view", kwargs={"artifact_id": self.artifact.id})
+            )
+        self.assertContains(response, 'lang="de"')
+        self.assertContains(response, "Kontext prüfen")
+        self.assertContains(response, "Evidenzgraph prüfen")
+        self.assertNotContains(response, "Inspect Evidence Graph")
+
+    @patch("config.inspect_views.get_public_graph")
+    def test_context_fa_renders_rtl_translated_affordances(self, graph):
+        graph.return_value = {"root": {}, "nodes": [], "edges": []}
+        with override("fa"):
+            response = self.client.get(
+                reverse("context_view", kwargs={"artifact_id": self.artifact.id})
+            )
+        self.assertContains(response, 'lang="fa"')
+        self.assertContains(response, 'dir="rtl"')
+        self.assertContains(response, "بررسی زمینه")
+        self.assertContains(response, "بررسی گراف شواهد")
+        self.assertNotContains(response, "Inspect Evidence Graph")

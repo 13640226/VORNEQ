@@ -610,3 +610,26 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
         state = (result["context_availability"], result["graph_availability"])
         self.assertNotEqual(state, ("UNAVAILABLE", "AVAILABLE"))
         graph.assert_not_called()
+
+
+class DiscoverI18nRtlStructuralTests(TestCase):
+    @patch.object(UnifiedSearch, "search", return_value=EMPTY_SEARCH_PAYLOAD)
+    def test_discover_de_renders_translated_public_copy(self, search):
+        with override("de"):
+            response = self.client.get(reverse("discover"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'lang="de"')
+        self.assertContains(response, "Vernetzte Evidenz entdecken.")
+        self.assertContains(response, "Entdeckungsfilter")
+        self.assertNotContains(response, "Discover connected evidence.")
+
+    @patch.object(UnifiedSearch, "search", return_value=EMPTY_SEARCH_PAYLOAD)
+    def test_discover_fa_renders_rtl_translated_public_copy(self, search):
+        with override("fa"):
+            response = self.client.get(reverse("discover"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'lang="fa"')
+        self.assertContains(response, 'dir="rtl"')
+        self.assertContains(response, "شواهدِ مرتبط را کشف کنید.")
+        self.assertContains(response, "فیلترهای کشف")
+        self.assertNotContains(response, "Discover connected evidence.")
