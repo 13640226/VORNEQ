@@ -43,6 +43,17 @@
 .discover-object dd { margin: 0; }
 .discover-inspect { display: inline-block; margin-block-start: 18px; color: var(--discover-blue); font-weight: 650; text-decoration: none; }
 
+.discover-graph { margin-block-start: 18px; border-block-start: 1px solid var(--discover-border); padding-block-start: 14px; }
+.discover-graph summary { width: fit-content; color: var(--discover-blue); font-weight: 650; cursor: pointer; }
+.discover-graph summary:focus-visible { outline: 3px solid var(--discover-light); outline-offset: 3px; }
+.discover-graph__body { margin-block-start: 14px; padding: 14px; border: 1px solid var(--discover-border); border-radius: 8px; background: #f8fafc; font-size: .82rem; }
+.discover-graph__root { margin: 0 0 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+.discover-graph__nodes, .discover-graph__edges { margin: 10px 0 0; padding-inline-start: 20px; }
+.discover-graph__nodes li, .discover-graph__edges li { margin-block-start: 7px; line-height: 1.55; overflow-wrap: anywhere; }
+.discover-graph code { color: var(--discover-navy); font-size: .78rem; }
+.discover-graph__edges strong { margin-inline: 6px; color: var(--discover-blue); font-size: .72rem; }
+.discover-graph__notice { display: block; margin-block-start: 6px; color: #475569; }
+
 .discover-state { padding: 32px; border: 1px solid var(--discover-border); border-radius: 10px; background: #f8fafc; }
 .discover-state h3 { margin-top: 0; }
 .discover-state p { max-width: 680px; color: #475569; line-height: 1.6; }
