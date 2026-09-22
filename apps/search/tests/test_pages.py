@@ -1,3 +1,4 @@
+from datetime import date
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
@@ -166,7 +167,7 @@ class DiscoverV1ATests(TestCase):
                 "url": "/record/",
                 "image_url": None,
                 "source": "Example Journal",
-                "published_at": "2026-09-22",
+                "published_at": date(2026, 9, 22),
                 "price": None,
                 "category": None,
                 "media_type": None,
