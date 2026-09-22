@@ -130,6 +130,7 @@ class PublicGraphV1Tests(TestCase):
 
     def test_uniform_absence_for_nonexistent_and_ineligible_roots(self):
         missing = Artifact.objects.create(kind=Artifact.Kind.PRODUCT)
+        missing_id = missing.pk
         missing.delete()
         hidden_product = Product.objects.create(
             seller=self.user,
@@ -140,7 +141,7 @@ class PublicGraphV1Tests(TestCase):
         hidden_artifact, _ = register_artifact(hidden_product, created_by=self.user)
 
         for url in (
-            reverse("public_graph", kwargs={"artifact_id": missing.pk}),
+            reverse("public_graph", kwargs={"artifact_id": missing_id}),
             self._url(hidden_artifact),
         ):
             response = self.client.get(url)
