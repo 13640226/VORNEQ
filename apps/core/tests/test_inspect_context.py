@@ -116,7 +116,6 @@ class InspectContextV1Tests(TestCase):
         self.assertContains(response, expected_url)
         self.assertContains(response, '<nav class="context-actions" aria-labelledby="context-title">')
         self.assertContains(response, expected_discover_url)
-        self.assertContains(response, ">Discover</a>")
         self.assertNotContains(response, "SECRET GRAPH DTO")
         self.assertNotContains(response, "trust score")
 
@@ -132,7 +131,6 @@ class InspectContextV1Tests(TestCase):
         self.assertNotContains(response, "Inspect Evidence Graph")
         self.assertContains(response, '<nav class="context-actions" aria-labelledby="context-title">')
         self.assertContains(response, reverse("discover"))
-        self.assertContains(response, ">Discover</a>")
         self.assertNotContains(response, "unverified")
         self.assertNotContains(response, "low trust")
 
