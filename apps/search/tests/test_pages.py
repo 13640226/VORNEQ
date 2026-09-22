@@ -154,6 +154,65 @@ class DiscoverV1ATests(TestCase):
         self.assertNotContains(response, 'name="category"')
         self.assertNotContains(response, 'name="price_min"')
 
+    @patch.object(UnifiedSearch, "search")
+    def test_discover_result_structures_existing_source_and_published_time(self, search):
+        search.return_value = {
+            **EMPTY_SEARCH_PAYLOAD,
+            "results": [{
+                "key": "article:1",
+                "type": "article",
+                "title": "Source context result",
+                "description": "",
+                "url": "/record/",
+                "image_url": None,
+                "source": "Example Journal",
+                "published_at": "2026-09-22",
+                "price": None,
+                "category": None,
+                "media_type": None,
+            }],
+            "total": 1,
+        }
+
+        with override("en"):
+            response = self.client.get(reverse("discover"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="discover-object__context"')
+        self.assertContains(response, "<dt>Source</dt>", html=True)
+        self.assertContains(response, "Example Journal")
+        self.assertContains(response, "<dt>Published</dt>", html=True)
+        self.assertContains(response, "<time")
+
+    @patch.object(UnifiedSearch, "search")
+    def test_discover_result_omits_missing_source_and_published_time_without_placeholder(self, search):
+        search.return_value = {
+            **EMPTY_SEARCH_PAYLOAD,
+            "results": [{
+                "key": "article:1",
+                "type": "article",
+                "title": "Sparse source context result",
+                "description": "",
+                "url": "/record/",
+                "image_url": None,
+                "source": "",
+                "published_at": None,
+                "price": None,
+                "category": None,
+                "media_type": None,
+            }],
+            "total": 1,
+        }
+
+        with override("en"):
+            response = self.client.get(reverse("discover"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "<dt>Source</dt>", html=True)
+        self.assertNotContains(response, "<dt>Published</dt>", html=True)
+        self.assertNotContains(response, "unverified")
+        self.assertNotContains(response, "unknown source")
+
     @patch.object(UnifiedSearch, "search", return_value=EMPTY_SEARCH_PAYLOAD)
     def test_discover_empty_query_is_recently_added_starting_point(self, search):
         with override("en"):
