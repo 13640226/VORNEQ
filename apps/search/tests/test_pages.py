@@ -252,7 +252,7 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
         artifact_filter.return_value.only.return_value.first.return_value = artifact
         graph.return_value = self._graph()
 
-        response = self.client.get(reverse("discover"), {"type": "libraryitem"})
+        with override("en"):\n            response = self.client.get(reverse("discover"), {"type": "libraryitem"})
 
         self.assertEqual(response.status_code, 200)
         artifact_filter.assert_called_once()
