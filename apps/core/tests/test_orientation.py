@@ -28,6 +28,7 @@ class PublicEvidenceOrientationV1Tests(TestCase):
     def test_orientation_is_localized_and_structurally_accessible(self):
         with override("en"):
             response = self.client.get(reverse("orientation"))
+            expected_discover_url = reverse("discover")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'id="main-content"')
         self.assertContains(response, 'aria-labelledby="orientation-title"')
@@ -38,7 +39,7 @@ class PublicEvidenceOrientationV1Tests(TestCase):
         self.assertContains(response, "Source type")
         self.assertContains(response, "Evidence graph")
         self.assertContains(response, "Context")
-        self.assertContains(response, reverse("discover"))
+        self.assertContains(response, expected_discover_url)
 
     def test_orientation_de_uses_translated_copy(self):
         with override("de"):
@@ -60,8 +61,9 @@ class PublicEvidenceOrientationV1Tests(TestCase):
     def test_discover_exposes_orientation_handoff(self):
         with override("en"):
             response = self.client.get(reverse("discover"))
+            expected_orientation_url = reverse("orientation")
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, reverse("orientation"))
+        self.assertContains(response, expected_orientation_url)
         self.assertContains(response, "Evidence vocabulary")
 
     @patch("config.inspect_views.get_public_graph")
@@ -71,6 +73,7 @@ class PublicEvidenceOrientationV1Tests(TestCase):
             response = self.client.get(
                 reverse("context_view", kwargs={"artifact_id": self.artifact.id})
             )
+            expected_orientation_url = reverse("orientation")
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, reverse("orientation"))
+        self.assertContains(response, expected_orientation_url)
         self.assertContains(response, "Evidence vocabulary")
