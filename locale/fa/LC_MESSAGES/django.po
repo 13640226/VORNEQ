@@ -1439,3 +1439,6 @@ msgstr "نوع منبع"
 
 msgid "Additional provenance is not shown in this bounded view."
 msgstr "اطلاعات منشأ بیشتری در این نمای محدود نمایش داده نمی‌شود."
+
+msgid "Inspect context"
+msgstr "بررسی زمینه"

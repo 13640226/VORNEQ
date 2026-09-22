@@ -253,10 +253,13 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
 
         with override("en"):
             response = self.client.get(reverse("discover"), {"type": "product"})
+            expected_context_url = reverse("context_view", kwargs={"artifact_id": artifact.pk})
 
         self.assertEqual(response.status_code, 200)
         graph.assert_called_once_with(artifact.pk)
         self.assertContains(response, "Evidence graph")
+        self.assertContains(response, "Inspect context")
+        self.assertContains(response, expected_context_url)
         self.assertContains(response, "INCLUDES_EVIDENCE")
         self.assertContains(response, "HAS_PROVENANCE")
         self.assertContains(response, "Additional public evidence is not shown")
@@ -278,11 +281,14 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
                 reverse("discover"),
                 {"type": "libraryitem"},
             )
+            expected_context_url = reverse("context_view", kwargs={"artifact_id": artifact.pk})
 
         self.assertEqual(response.status_code, 200)
         artifact_filter.assert_called_once()
         graph.assert_called_once_with(artifact.pk)
         self.assertContains(response, "Evidence graph")
+        self.assertContains(response, "Inspect context")
+        self.assertContains(response, expected_context_url)
 
     @patch("config.views.get_public_graph")
     @patch("config.views.Artifact.objects.filter")
@@ -296,9 +302,37 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
 
         graph.assert_not_called()
         self.assertNotContains(response, "Evidence graph")
+        self.assertNotContains(response, "Inspect context")
         self.assertNotContains(response, "unverified")
         self.assertNotContains(response, "low trust")
 
+
+    @patch("config.views.get_public_graph")
+    @patch.object(UnifiedSearch, "search")
+    def test_missing_artifact_has_no_context_handoff_or_registry_mutation(self, search, graph):
+        user = get_user_model().objects.create_user(
+            username="discover-context-no-artifact",
+            password="test-pass-123",
+        )
+        product = Product.objects.create(
+            seller=user,
+            title="Discover Context Product",
+            status=Product.STATUS_APPROVED,
+            is_published=True,
+        )
+        search.return_value = self._payload(key=f"product:{product.pk}", result_type="product")
+        before_artifacts = Artifact.objects.count()
+        before_bindings = ArtifactBinding.objects.count()
+
+        with override("en"):
+            response = self.client.get(reverse("discover"), {"type": "product"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Inspect context")
+        self.assertNotContains(response, "Evidence graph")
+        self.assertEqual(Artifact.objects.count(), before_artifacts)
+        self.assertEqual(ArtifactBinding.objects.count(), before_bindings)
+        graph.assert_not_called()
 
     @patch("config.views.get_public_graph")
     @patch("config.views.Artifact.objects.filter")
@@ -309,10 +343,14 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
         artifact_filter.return_value.only.return_value.first.return_value = artifact
         graph.side_effect = PublicGraphUnavailable
 
-        response = self.client.get(reverse("discover"), {"type": "product"})
+        with override("en"):
+            response = self.client.get(reverse("discover"), {"type": "product"})
+            expected_context_url = reverse("context_view", kwargs={"artifact_id": artifact.pk})
 
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Evidence graph")
+        self.assertContains(response, "Inspect context")
+        self.assertContains(response, expected_context_url)
 
     @patch("config.views.Artifact.objects.filter")
     @patch.object(UnifiedSearch, "search")
@@ -326,6 +364,7 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
             response = self.client.get(reverse("discover"))
             self.assertEqual(response.status_code, 200)
             self.assertNotContains(response, "Evidence graph")
+            self.assertNotContains(response, "Inspect context")
 
         artifact_filter.assert_not_called()
 
@@ -347,6 +386,7 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
         self.assertEqual(ArtifactBinding.objects.count(), before_bindings)
         graph.assert_not_called()
         self.assertNotContains(response, "Evidence graph")
+        self.assertNotContains(response, "Inspect context")
 
     @patch.object(UnifiedSearch, "search")
     def test_discover_get_does_not_mutate_artifact_registry(self, search):
@@ -357,9 +397,12 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
 
         with override("en"):
             response = self.client.get(reverse("discover"), {"type": "product"})
+            expected_context_url = reverse("context_view", kwargs={"artifact_id": artifact.pk})
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Evidence graph")
+        self.assertContains(response, "Inspect context")
+        self.assertContains(response, expected_context_url)
         self.assertEqual(Artifact.objects.count(), before_artifacts)
         self.assertEqual(ArtifactBinding.objects.count(), before_bindings)
         self.assertTrue(Artifact.objects.filter(pk=artifact.pk, is_active=True).exists())
@@ -398,6 +441,9 @@ class DiscoverGraphV1AIntegrationTests(TestCase):
         ):
             self.assertNotContains(response, secret)
         self.assertNotContains(response, ">99<", html=True)
+        self.assertContains(response, "Inspect context")
+        self.assertNotContains(response, "SECRET CONTEXT FIELD")
+
 
     @patch("config.views.get_public_graph")
     @patch("config.views.Artifact.objects.filter")
