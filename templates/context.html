@@ -26,6 +26,7 @@
     </dl>
     {% if source.description %}<p>{{ source.description }}</p>{% endif %}
     {% if source.url %}<p><a href="{{ source.url }}">{% trans "Open source artifact" %} →</a></p>{% endif %}
+    {% if public_graph_url %}<p><a href="{{ public_graph_url }}">{% trans "Inspect Evidence Graph" %} →</a></p>{% endif %}
   </section>
 
   <section aria-labelledby="identity-title">
