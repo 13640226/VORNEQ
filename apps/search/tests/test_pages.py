@@ -182,7 +182,7 @@ class DiscoverV1ATests(TestCase):
         self.assertContains(response, "<dt>Source</dt>", html=True)
         self.assertContains(response, "Example Journal")
         self.assertContains(response, "<dt>Published</dt>", html=True)
-        self.assertContains(response, "<time")
+        self.assertContains(response, 'datetime="2026-09-22T00:00:00"')
 
     @patch.object(UnifiedSearch, "search")
     def test_discover_result_omits_missing_source_and_published_time_without_placeholder(self, search):
