@@ -1,8 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from unittest.mock import patch
 
+from apps.core.models import ArtifactBinding
 from apps.core.services.context import get_context_view, resolve_artifact_from_input
+from apps.core.services.public_graph import PublicGraphUnavailable
 from apps.core.services.registry import register_artifact
 from marketplace.models import Product
 
@@ -89,3 +92,51 @@ class InspectContextV1Tests(TestCase):
             response,
             reverse("context_view", kwargs={"artifact_id": self.artifact.id}),
         )
+
+
+    @patch("config.inspect_views.get_public_graph")
+    def test_context_exposes_existing_public_graph_handoff_when_available(self, graph):
+        graph.return_value = {
+            "root": {"private_note": "SECRET GRAPH DTO"},
+            "nodes": [],
+            "edges": [],
+        }
+
+        response = self.client.get(
+            reverse("context_view", kwargs={"artifact_id": self.artifact.id})
+        )
+        expected_url = reverse("public_graph", kwargs={"artifact_id": self.artifact.id})
+
+        self.assertEqual(response.status_code, 200)
+        graph.assert_called_once_with(self.artifact.id)
+        self.assertContains(response, "Inspect Evidence Graph")
+        self.assertContains(response, expected_url)
+        self.assertNotContains(response, "SECRET GRAPH DTO")
+        self.assertNotContains(response, "trust score")
+
+    @patch("config.inspect_views.get_public_graph")
+    def test_context_hides_graph_handoff_when_public_graph_is_unavailable(self, graph):
+        graph.side_effect = PublicGraphUnavailable
+
+        response = self.client.get(
+            reverse("context_view", kwargs={"artifact_id": self.artifact.id})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Inspect Evidence Graph")
+        self.assertNotContains(response, "unverified")
+        self.assertNotContains(response, "low trust")
+
+    @patch("config.inspect_views.get_public_graph")
+    def test_context_graph_handoff_get_does_not_mutate_artifact_registry(self, graph):
+        graph.return_value = {"root": {}, "nodes": [], "edges": []}
+        before_artifacts = type(self.artifact).objects.count()
+        before_bindings = ArtifactBinding.objects.count()
+
+        response = self.client.get(
+            reverse("context_view", kwargs={"artifact_id": self.artifact.id})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(type(self.artifact).objects.count(), before_artifacts)
+        self.assertEqual(ArtifactBinding.objects.count(), before_bindings)
