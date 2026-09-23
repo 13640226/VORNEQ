@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import reverse
 from django.utils.translation import override
@@ -8,6 +9,13 @@ from apps.core.models import ArtifactBinding
 from apps.core.services.context import get_context_view, resolve_artifact_from_input
 from apps.core.services.public_graph import PublicGraphUnavailable
 from apps.core.services.registry import register_artifact
+from apps.evidence.models import Claim, Evidence, EvidenceRelation, ProvenanceStep
+from apps.verification.models import (
+    VerificationEvidence,
+    VerificationMethod,
+    VerificationRequest,
+    VerificationResult,
+)
 from marketplace.models import Product
 
 
@@ -93,6 +101,66 @@ class InspectContextV1Tests(TestCase):
             response,
             reverse("context_view", kwargs={"artifact_id": self.artifact.id}),
         )
+
+
+    @patch("config.inspect_views.get_public_graph")
+    def test_context_cross_links_public_provenance_to_evidence_identifier(self, graph):
+        graph.return_value = {"root": {}, "nodes": [], "edges": []}
+        claim = Claim.objects.create(claim_text="Cross-linked public claim")
+        evidence = Evidence.objects.create(
+            content="Cross-linked public evidence",
+            integrity_digest="0" * 64,
+        )
+        relation = EvidenceRelation.objects.create(
+            claim=claim,
+            evidence=evidence,
+            relation=EvidenceRelation.RelationType.CONTEXTUALIZES,
+        )
+        ProvenanceStep.objects.create(
+            evidence=evidence,
+            source_type=ProvenanceStep.SourceType.DOCUMENT,
+            source_ref="cross-link-test-source",
+        )
+        method = VerificationMethod.objects.create(
+            code="context-cross-link",
+            name="Context cross-link",
+        )
+        request = VerificationRequest.objects.create(
+            artifact_content_type=ContentType.objects.get_for_model(
+                self.product,
+                for_concrete_model=False,
+            ),
+            artifact_object_id=str(self.product.pk),
+            canonical_artifact=self.artifact,
+            claim=claim,
+            method=method,
+            status=VerificationRequest.Status.COMPLETED,
+        )
+        result = VerificationResult.objects.create(
+            request=request,
+            outcome=VerificationResult.Outcome.PASS,
+            reported_confidence=100,
+        )
+        VerificationEvidence.objects.create(
+            result=result,
+            evidence_relation=relation,
+            visibility=VerificationEvidence.Visibility.PUBLIC,
+        )
+
+        response = self.client.get(
+            reverse("context_view", kwargs={"artifact_id": self.artifact.id})
+        )
+        html = response.content.decode()
+        evidence_id = str(evidence.id)
+        target = f'id="evidence-{evidence_id}"'
+        link = f'href="#evidence-{evidence_id}"'
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, target)
+        self.assertContains(response, link)
+        self.assertEqual(html.count(target), 1)
+        self.assertEqual(html.count(link), 1)
+        self.assertLess(html.index(target), html.index(link))
 
 
     @patch("config.inspect_views.get_public_graph")

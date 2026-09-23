@@ -75,7 +75,7 @@
         <ul>
           {% for item in claim.evidences %}
             <li>
-              <code>{{ item.evidence_id }}</code> — {{ item.relation }}
+              <code id="evidence-{{ item.evidence_id }}">{{ item.evidence_id }}</code> — {{ item.relation }}
               {% if item.linked_at %}<small>({{ item.linked_at }})</small>{% endif %}
             </li>
           {% endfor %}
@@ -93,7 +93,7 @@
       {% for step in provenance %}
         <li>
           {{ step.timestamp }} — {{ step.source_type_label }}
-          <small>({% trans "Evidence" %} <code>{{ step.evidence_id }}</code>)</small>
+          <small>(<a href="#evidence-{{ step.evidence_id }}">{% trans "Evidence" %} <code>{{ step.evidence_id }}</code></a>)</small>
         </li>
       {% empty %}
         <li>{% trans "No public provenance steps are available." %}</li>
