@@ -163,6 +163,82 @@ class InspectContextV1Tests(TestCase):
         self.assertLess(html.index(target), html.index(link))
 
 
+    def _create_public_provenance_fixture(self, *, source_ref, public_source_ref=None):
+        claim = Claim.objects.create(claim_text="Public source reference claim")
+        evidence = Evidence.objects.create(
+            content="Public source reference evidence",
+            integrity_digest="1" * 64,
+        )
+        relation = EvidenceRelation.objects.create(
+            claim=claim,
+            evidence=evidence,
+            relation=EvidenceRelation.RelationType.CONTEXTUALIZES,
+        )
+        ProvenanceStep.objects.create(
+            evidence=evidence,
+            source_type=ProvenanceStep.SourceType.DOCUMENT,
+            source_ref=source_ref,
+            public_source_ref=public_source_ref,
+        )
+        method = VerificationMethod.objects.create(
+            code=f"public-source-ref-{evidence.id}",
+            name="Public source reference",
+        )
+        request = VerificationRequest.objects.create(
+            artifact_content_type=ContentType.objects.get_for_model(
+                self.product,
+                for_concrete_model=False,
+            ),
+            artifact_object_id=str(self.product.pk),
+            canonical_artifact=self.artifact,
+            claim=claim,
+            method=method,
+            status=VerificationRequest.Status.COMPLETED,
+        )
+        result = VerificationResult.objects.create(
+            request=request,
+            outcome=VerificationResult.Outcome.PASS,
+            reported_confidence=100,
+        )
+        VerificationEvidence.objects.create(
+            result=result,
+            evidence_relation=relation,
+            visibility=VerificationEvidence.Visibility.PUBLIC,
+        )
+
+    @patch("config.inspect_views.get_public_graph")
+    def test_context_renders_explicit_public_source_ref(self, graph):
+        graph.return_value = {"root": {}, "nodes": [], "edges": []}
+        self._create_public_provenance_fixture(
+            source_ref="raw-source-ref-must-stay-hidden",
+            public_source_ref="test-public-ref",
+        )
+
+        response = self.client.get(
+            reverse("context_view", kwargs={"artifact_id": self.artifact.id})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "test-public-ref")
+        self.assertContains(response, 'class="context-provenance__source-ref"')
+        self.assertNotContains(response, "raw-source-ref-must-stay-hidden")
+
+    @patch("config.inspect_views.get_public_graph")
+    def test_context_does_not_fallback_to_raw_source_ref(self, graph):
+        graph.return_value = {"root": {}, "nodes": [], "edges": []}
+        self._create_public_provenance_fixture(
+            source_ref="raw-canonical-ref-should-not-render",
+        )
+
+        response = self.client.get(
+            reverse("context_view", kwargs={"artifact_id": self.artifact.id})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "raw-canonical-ref-should-not-render")
+        self.assertNotContains(response, 'class="context-provenance__source-ref"')
+
+
     @patch("config.inspect_views.get_public_graph")
     def test_context_exposes_existing_public_graph_handoff_when_available(self, graph):
         graph.return_value = {
