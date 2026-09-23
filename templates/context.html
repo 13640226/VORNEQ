@@ -95,7 +95,7 @@
           {{ step.timestamp }} — {{ step.source_type_label }}
           <small>(<a href="#evidence-{{ step.evidence_id }}">{% trans "Evidence" %} <code>{{ step.evidence_id }}</code></a>)</small>
           {% if step.public_source_ref %}
-            <small class="context-provenance__source-ref">{{ step.public_source_ref }}</small>
+            <small class="context-provenance__source-ref">{% trans "Public source reference" %}: {{ step.public_source_ref }}</small>
           {% endif %}
         </li>
       {% empty %}
