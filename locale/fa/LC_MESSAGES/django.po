@@ -1580,3 +1580,7 @@ msgstr "زمینه"
 msgid "The recorded public information presented around an artifact, including attribution and evidence relationships."
 msgstr "اطلاعات عمومی ثبت‌شده پیرامون یک مصنوع، شامل انتساب و روابط شواهد."
 
+#: templates/context.html
+msgid "Public source reference"
+msgstr "ارجاع عمومی منبع"
+

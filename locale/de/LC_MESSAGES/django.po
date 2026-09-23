@@ -1758,3 +1758,7 @@ msgstr "Kontext"
 msgid "The recorded public information presented around an artifact, including attribution and evidence relationships."
 msgstr "Die aufgezeichneten öffentlichen Informationen zu einem Artefakt, einschließlich Zuordnung und Evidenzbeziehungen."
 
+#: templates/context.html
+msgid "Public source reference"
+msgstr "Öffentliche Quellenangabe"
+

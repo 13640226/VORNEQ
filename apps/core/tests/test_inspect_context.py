@@ -223,6 +223,33 @@ class InspectContextV1Tests(TestCase):
         self.assertContains(response, 'class="context-provenance__source-ref"')
         self.assertNotContains(response, "raw-source-ref-must-stay-hidden")
 
+    def test_context_renders_public_source_reference_label_in_en(self):
+        self._create_public_provenance_fixture(
+            source_ref="private://raw-source",
+            public_source_ref="Public source",
+        )
+        with override("en"):
+            response = self.client.get(reverse("context_view", kwargs={"artifact_id": self.artifact.id}))
+        self.assertContains(response, "Public source reference")
+
+    def test_context_de_renders_translated_public_source_reference_label(self):
+        self._create_public_provenance_fixture(
+            source_ref="private://raw-source",
+            public_source_ref="Public source",
+        )
+        with override("de"):
+            response = self.client.get(reverse("context_view", kwargs={"artifact_id": self.artifact.id}))
+        self.assertContains(response, "Öffentliche Quellenangabe")
+
+    def test_context_fa_renders_translated_public_source_reference_label(self):
+        self._create_public_provenance_fixture(
+            source_ref="private://raw-source",
+            public_source_ref="Public source",
+        )
+        with override("fa"):
+            response = self.client.get(reverse("context_view", kwargs={"artifact_id": self.artifact.id}))
+        self.assertContains(response, "ارجاع عمومی منبع")
+
     @patch("config.inspect_views.get_public_graph")
     def test_context_does_not_fallback_to_raw_source_ref(self, graph):
         graph.return_value = {"root": {}, "nodes": [], "edges": []}
