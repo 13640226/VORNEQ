@@ -90,6 +90,10 @@ class InspectContextV1Tests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.product.title)
         self.assertContains(response, str(self.artifact.id))
+        self.assertContains(
+            response,
+            "No public evidence relationships are available for this artifact.",
+        )
 
     def test_inspect_post_redirects_to_canonical_context_page(self):
         response = self.client.post(
