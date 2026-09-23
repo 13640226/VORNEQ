@@ -229,7 +229,7 @@ class InspectContextV1Tests(TestCase):
             public_source_ref="Public source",
         )
         with override("en"):
-            response = self.client.get(reverse("inspect-context", kwargs={"artifact_id": self.artifact.id}))
+            response = self.client.get(reverse("context_view", kwargs={"artifact_id": self.artifact.id}))
         self.assertContains(response, "Public source reference")
 
     def test_context_de_renders_translated_public_source_reference_label(self):
@@ -238,7 +238,7 @@ class InspectContextV1Tests(TestCase):
             public_source_ref="Public source",
         )
         with override("de"):
-            response = self.client.get(reverse("inspect-context", kwargs={"artifact_id": self.artifact.id}))
+            response = self.client.get(reverse("context_view", kwargs={"artifact_id": self.artifact.id}))
         self.assertContains(response, "Öffentliche Quellenangabe")
 
     def test_context_fa_renders_translated_public_source_reference_label(self):
@@ -247,7 +247,7 @@ class InspectContextV1Tests(TestCase):
             public_source_ref="Public source",
         )
         with override("fa"):
-            response = self.client.get(reverse("inspect-context", kwargs={"artifact_id": self.artifact.id}))
+            response = self.client.get(reverse("context_view", kwargs={"artifact_id": self.artifact.id}))
         self.assertContains(response, "ارجاع عمومی منبع")
 
     @patch("config.inspect_views.get_public_graph")
