@@ -1541,3 +1541,46 @@ msgstr "هیچ مرحلهٔ عمومیِ منشأ در دسترس نیست."
 
 msgid "Inspect another artifact"
 msgstr "بررسی مصنوع دیگر"
+
+# Public Evidence Orientation V1
+
+msgid "Evidence vocabulary"
+msgstr "واژگان شواهد"
+
+msgid "A short guide to the public evidence vocabulary used across VORNEQ."
+msgstr "راهنمایی کوتاه برای واژگان شواهد عمومی در VORNEQ."
+
+msgid "ORIENTATION"
+msgstr "راهنما"
+
+msgid "A short guide to the terms used across Discover, Context, and the Evidence Graph."
+msgstr "راهنمایی کوتاه برای اصطلاحات به‌کاررفته در کشف، زمینه و گراف شواهد."
+
+msgid "Core terms"
+msgstr "اصطلاحات اصلی"
+
+msgid "A public record that can be inspected through its recorded context and relationships."
+msgstr "یک رکورد عمومی که می‌توان آن را از طریق زمینه و روابط ثبت‌شده‌اش بررسی کرد."
+
+msgid "Recorded material connected to an artifact through a public evidence relationship."
+msgstr "مادهٔ ثبت‌شده‌ای که از طریق یک رابطهٔ عمومی شواهد به یک مصنوع متصل است."
+
+msgid "Recorded source and time context associated with public evidence."
+msgstr "زمینهٔ ثبت‌شدهٔ منبع و زمان که با شواهد عمومی مرتبط است."
+
+msgid "The recorded category of a source associated with public evidence."
+msgstr "دستهٔ ثبت‌شدهٔ یک منبع که با شواهد عمومی مرتبط است."
+
+msgid "A bounded view of an artifact and its public evidence and provenance relationships."
+msgstr "نمایی محدود از یک مصنوع و روابط شواهد عمومی و منشأ آن."
+
+msgid "Context"
+msgstr "زمینه"
+
+msgid "The recorded public information presented around an artifact, including attribution and evidence relationships."
+msgstr "اطلاعات عمومی ثبت‌شده پیرامون یک مصنوع، شامل انتساب و روابط شواهد."
+
+#: templates/context.html
+msgid "Public source reference"
+msgstr "ارجاع عمومی منبع"
+

@@ -47,6 +47,14 @@ class ProvenanceStep(models.Model):
         verbose_name="ارجاع منبع",
     )
 
+    public_source_ref = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="ارجاع عمومی منبع",
+        help_text="Public-safe source reference representation only; raw source_ref remains undisclosed.",
+    )
+
     transformation = models.CharField(
         max_length=255,
         blank=True,

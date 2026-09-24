@@ -13,6 +13,7 @@
     <p class="discover-eyebrow">{% trans "DISCOVER" %}</p>
     <h1 id="discover-title">{% trans "Discover connected evidence." %}</h1>
     <p>{% trans "Explore information through evidence, context, provenance, and relationships." %}</p>
+    <p><a href="{% url 'orientation' %}">{% trans "Evidence vocabulary" %} <span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}←{% else %}→{% endif %}</span></a></p>
   </section>
 
   <section class="discover-controls" aria-labelledby="discover-controls-title">
@@ -55,12 +56,12 @@
           <article class="discover-object">
             <div class="discover-object__meta">
               <span>{{ result.type }}</span>
-              {% if result.published_at %}<time datetime="{{ result.published_at|date:'c' }}">{{ result.published_at|date:"DATE_FORMAT" }}</time>{% endif %}
             </div>
             <h3>{{ result.title }}</h3>
             {% if result.description %}<p>{{ result.description|truncatechars:220 }}</p>{% endif %}
-            <dl>
+            <dl class="discover-object__context">
               {% if result.source %}<div><dt>{% trans "Source" %}</dt><dd>{{ result.source }}</dd></div>{% endif %}
+              {% if result.published_at %}<div><dt>{% trans "Published" %}</dt><dd><time datetime="{{ result.published_at|date:'c' }}">{{ result.published_at|date:"DATE_FORMAT" }}</time></dd></div>{% endif %}
               {% if result.category %}<div><dt>{% trans "Category" %}</dt><dd>{{ result.category }}</dd></div>{% endif %}
               {% if result.media_type %}<div><dt>{% trans "Media type" %}</dt><dd>{{ result.media_type }}</dd></div>{% endif %}
             </dl>
