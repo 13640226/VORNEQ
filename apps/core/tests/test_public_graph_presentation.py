@@ -45,21 +45,22 @@ class PublicGraphPresentationV1Tests(SimpleTestCase):
             "private_note": "SECRET GRAPH DTO",
         }
 
-        response = self.client.get(self._url())
+        with override("en"):
+            response = self.client.get(self._url())
 
-        self.assertEqual(response.status_code, 200)
-        graph.assert_called_once()
-        self.assertEqual(str(graph.call_args.args[0]), self._artifact_id())
-        self.assertContains(response, self._artifact_id())
-        self.assertContains(response, "e1")
-        self.assertContains(response, "p1")
-        self.assertContains(response, "INCLUDES_EVIDENCE")
-        self.assertContains(response, "HAS_PROVENANCE")
-        self.assertContains(response, "Additional public evidence is not shown in this bounded view.")
-        self.assertContains(response, "Additional provenance is not shown in this bounded view.")
-        self.assertNotContains(response, "SECRET GRAPH DTO")
-        self.assertContains(response, reverse("context_view", kwargs={"artifact_id": self._artifact_id()}))
-        self.assertContains(response, reverse("discover"))
+            self.assertEqual(response.status_code, 200)
+            graph.assert_called_once()
+            self.assertEqual(str(graph.call_args.args[0]), self._artifact_id())
+            self.assertContains(response, self._artifact_id())
+            self.assertContains(response, "e1")
+            self.assertContains(response, "p1")
+            self.assertContains(response, "INCLUDES_EVIDENCE")
+            self.assertContains(response, "HAS_PROVENANCE")
+            self.assertContains(response, "Additional public evidence is not shown in this bounded view.")
+            self.assertContains(response, "Additional provenance is not shown in this bounded view.")
+            self.assertNotContains(response, "SECRET GRAPH DTO")
+            self.assertContains(response, reverse("context_view", kwargs={"artifact_id": self._artifact_id()}))
+            self.assertContains(response, reverse("discover"))
 
     @patch("config.public_graph_views.get_public_graph")
     def test_presentation_fails_closed_with_404(self, graph):
