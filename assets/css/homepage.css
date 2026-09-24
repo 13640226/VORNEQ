@@ -641,200 +641,23 @@
     }
 }
 
-/* VORNEQ platform hero cover */
+/* VORNEQ homepage hero cover — canonical */
+
 .world-hero-cover {
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: 0;
-  overflow: hidden;
-}
-
-.world-hero-cover__image {
-  display: block;
   width: 100%;
-  height: auto;
-  max-width: 760px;
-  object-fit: contain;
-  border-radius: 16px;
-}
-
-@media (max-width: 900px) {
-  .world-hero-cover {
-    width: 100%;
-    margin-top: 32px;
-  }
-
-  .world-hero-cover__image {
-    max-width: 100%;
-  }
-}
-
-/* Enlarge homepage platform cover */
-.world-hero-cover {
-  width: 100%;
-  max-width: 820px;
-  justify-self: end;
-}
-
-.world-hero-cover__image {
-  width: min(100%, 820px);
-  max-width: none;
-  height: auto;
-  object-fit: contain;
-}
-
-@media (min-width: 1100px) {
-  .world-hero-cover {
-    transform: scale(1.18);
-    transform-origin: center right;
-  }
-}
-
-@media (max-width: 900px) {
-  .world-hero-cover {
-    max-width: 100%;
-    transform: none;
-  }
-
-  .world-hero-cover__image {
-    width: 100%;
-  }
-}
-
-/* Final homepage platform cover layout */
-.world-hero-cover {
-  grid-column: 8 / -1;
-  align-self: center;
-  justify-self: stretch;
-  width: 100%;
-  max-width: none;
-  min-width: 0;
   overflow: visible;
-  transform: none;
 }
 
 .world-hero-cover__image {
   display: block;
   width: 100%;
-  max-width: none;
   height: auto;
   object-fit: contain;
-  border-radius: 16px;
 }
-
-@media (max-width: 900px) {
-  .world-hero-cover {
-    grid-column: 1 / -1;
-    margin-top: 32px;
-    transform: none;
-  }
-
-  .world-hero-cover__image {
-    width: 100%;
-  }
-}
-
-/* Larger desktop hero cover */
-@media (min-width: 901px) {
-  .world-hero-cover {
-    grid-column: 7 / -1;
-  }
-}
-
-/* Vertically align homepage cover with hero copy */
-@media (min-width: 901px) {
-  .world-hero {
-    align-items: center;
-  }
-
-  .world-hero-cover {
-    align-self: center;
-    margin-top: -24px;
-  }
-}
-
-/* Force hero cover upward on desktop */
-@media (min-width: 901px) {
-  .world-hero-cover {
-    grid-column: 7 / -1;
-    transform: translateY(-90px) !important;
-    margin-top: 0 !important;
-  }
-}
-
-/* Full-width VORNEQ hero cover */
-@media (min-width: 901px) {
-  .world-hero__copy {
-    display: none;
-  }
-
-  .world-hero-cover {
-    grid-column: 1 / -1;
-    width: 100%;
-    max-width: none;
-    transform: none !important;
-    margin: 0 !important;
-    align-self: stretch;
-  }
-
-  .world-hero-cover__image {
-    display: block;
-    width: 100%;
-    height: auto;
-    max-width: none;
-    object-fit: contain;
-    border-radius: 0;
-  }
-
-  .world-hero {
-    min-height: auto;
-    padding-bottom: 48px;
-    align-items: start;
-  }
-}
-/* VORNEQ hero cover - large desktop */
-@media (min-width: 901px) {
-    .world-hero-cover {
-        width: 100%;
-        max-width: none;
-        margin: 24px 0 0;
-        padding: 0;
-    }
-
-    .world-hero-cover__image {
-        display: block;
-        width: 100%;
-        max-width: none;
-        height: auto;
-        object-fit: contain;
-        border-radius: 0;
-    }
-}
-
-/* Refine integrated hero illustration size */
-@media (min-width: 901px) {
-  .world-hero-cover {
-    grid-column: 7 / -1;
-    width: 100%;
-    max-width: 720px;
-    justify-self: end;
-    margin: 0;
-  }
-
-  .world-hero-cover__image {
-    width: 100%;
-    height: auto;
-    max-width: 720px;
-    object-fit: contain;
-  }
-
-  .world-hero__copy {
-    display: block;
-  }
-}
-
-/* FINAL VORNEQ HERO LAYOUT */
 
 @media (min-width: 901px) {
   .world-hero {
@@ -855,19 +678,14 @@
     grid-column: 7 / -1;
     align-self: center;
     justify-self: end;
-    width: 100%;
     max-width: 720px;
     margin: 0;
     padding: 0;
-    transform: none !important;
+    transform: none;
   }
 
   .world-hero-cover__image {
-    display: block;
-    width: 100%;
     max-width: 720px;
-    height: auto;
-    object-fit: contain;
     border-radius: 0;
     opacity: 0.96;
   }
@@ -884,17 +702,13 @@
   }
 
   .world-hero-cover {
-    width: 100%;
+    grid-column: 1 / -1;
     max-width: none;
     margin-top: 32px;
-    transform: none !important;
+    transform: none;
   }
 
   .world-hero-cover__image {
-    display: block;
-    width: 100%;
     max-width: 100%;
-    height: auto;
-    object-fit: contain;
   }
 }
