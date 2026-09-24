@@ -1584,3 +1584,168 @@ msgstr "اطلاعات عمومی ثبت‌شده پیرامون یک مصنوع
 msgid "Public source reference"
 msgstr "ارجاع عمومی منبع"
 
+
+msgid "Notes"
+msgstr "یادداشت‌ها"
+
+msgid "Notes — VORNEQ"
+msgstr "یادداشت‌ها — VORNEQ"
+
+msgid "My Notes"
+msgstr "یادداشت‌های من"
+
+msgid "Private notes owned by your bound VORNEQ identity."
+msgstr "یادداشت‌های خصوصی متعلق به هویت متصل شما در VORNEQ."
+
+msgid "New Note"
+msgstr "یادداشت جدید"
+
+msgid "No notes yet."
+msgstr "هنوز یادداشتی وجود ندارد."
+
+msgid "Back to Notes"
+msgstr "بازگشت به یادداشت‌ها"
+
+msgid "Note"
+msgstr "یادداشت"
+
+msgid "Updated %(date)s"
+msgstr "به‌روزرسانی‌شده در %(date)s"
+
+msgid "Delete Note"
+msgstr "حذف یادداشت"
+
+msgid "Edit Note"
+msgstr "ویرایش یادداشت"
+
+msgid "Content"
+msgstr "محتوا"
+
+msgid "Save Note"
+msgstr "ذخیره یادداشت"
+
+msgid "App"
+msgstr "برنامه"
+
+msgid "Precision Digital Infrastructure"
+msgstr "زیرساخت دیجیتال دقیق"
+
+msgid "VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust."
+msgstr "VORNEQ زیرساخت دیجیتال قابل‌اتکایی برای سامانه‌ها، محصولات و سازمان‌هایی می‌سازد که به شفافیت، تاب‌آوری و اعتماد بلندمدت نیاز دارند."
+
+msgid "Dependable digital infrastructure for clarity, resilience, and long-term trust."
+msgstr "زیرساخت دیجیتال قابل‌اتکا برای شفافیت، تاب‌آوری و اعتماد بلندمدت."
+
+msgid "INFRASTRUCTURE FOR TRUSTED SYSTEMS"
+msgstr "زیرساخت برای سامانه‌های قابل‌اعتماد"
+
+msgid "Precision infrastructure for a trusted digital future."
+msgstr "زیرساختی دقیق برای آینده‌ای دیجیتال و قابل‌اعتماد."
+
+msgid "Explore Platform"
+msgstr "کاوش پلتفرم"
+
+msgid "VORNEQ platform"
+msgstr "پلتفرم VORNEQ"
+
+msgid "VORNEQ digital infrastructure platform"
+msgstr "پلتفرم زیرساخت دیجیتال VORNEQ"
+
+msgid "Search across VORNEQ…"
+msgstr "جستجو در سراسر VORNEQ…"
+
+msgid "Use a query when you know what you want to find."
+msgstr "وقتی می‌دانید به‌دنبال چه هستید، عبارت جستجو را وارد کنید."
+
+msgid "Structured query across knowledge, software, products, and services."
+msgstr "جستجوی ساختاریافته در دانش، نرم‌افزار، محصولات و خدمات."
+
+msgid "A canonical discovery surface within the VORNEQ ecosystem."
+msgstr "سطح مرجع کشف در اکوسیستم VORNEQ."
+
+msgid "Open Discover"
+msgstr "باز کردن کشف"
+
+msgid "A trusted transactional surface for offerings and solutions."
+msgstr "سطح تراکنشی قابل‌اعتماد برای ارائه‌ها و راهکارها."
+
+msgid "Open Marketplace"
+msgstr "باز کردن بازارچه"
+
+msgid "How VORNEQ works"
+msgstr "VORNEQ چگونه کار می‌کند"
+
+msgid "From information to trusted knowledge."
+msgstr "از اطلاعات تا دانش قابل‌اعتماد."
+
+msgid "A structured path from source material to information you can inspect, connect, and explore."
+msgstr "مسیری ساختاریافته از محتوای منبع تا اطلاعاتی که می‌توانید بررسی، متصل و کاوش کنید."
+
+msgid "Collect"
+msgstr "گردآوری"
+
+msgid "Bring documents, media, and structured information into a consistent system."
+msgstr "اسناد، رسانه و اطلاعات ساختاریافته را در یک سامانه منسجم گردآوری کنید."
+
+msgid "Structure"
+msgstr "ساختاربندی"
+
+msgid "Organize information into clear, addressable records."
+msgstr "اطلاعات را در رکوردهای روشن و قابل‌ارجاع سازمان‌دهی کنید."
+
+msgid "Verify"
+msgstr "راستی‌آزمایی"
+
+msgid "Connect claims with evidence and preserve their context."
+msgstr "ادعاها را به شواهد متصل کنید و زمینه آن‌ها را حفظ کنید."
+
+msgid "Connect"
+msgstr "اتصال"
+
+msgid "Build meaningful relationships across records, entities, and sources."
+msgstr "میان رکوردها، موجودیت‌ها و منابع روابط معنادار ایجاد کنید."
+
+msgid "Explore connected information through VORNEQ"
+msgstr "اطلاعات متصل را از طریق VORNEQ کاوش کنید"
+
+msgid "Trust by architecture"
+msgstr "اعتماد از طریق معماری"
+
+msgid "Infrastructure designed for clarity and accountability."
+msgstr "زیرساختی طراحی‌شده برای شفافیت و پاسخ‌گویی."
+
+msgid "Trust is supported by visible structure, evidence, boundaries, and traceable system behavior."
+msgstr "اعتماد با ساختار آشکار، شواهد، مرزها و رفتار قابل‌ردیابی سامانه پشتیبانی می‌شود."
+
+msgid "Privacy by architecture"
+msgstr "حریم خصوصی از طریق معماری"
+
+msgid "Privacy boundaries are considered as part of the system design."
+msgstr "مرزهای حریم خصوصی بخشی از طراحی سامانه در نظر گرفته می‌شوند."
+
+msgid "Auditability"
+msgstr "حسابرسی‌پذیری"
+
+msgid "Important actions and state changes can remain inspectable and traceable."
+msgstr "اقدامات مهم و تغییرات وضعیت می‌توانند قابل‌بررسی و قابل‌ردیابی باقی بمانند."
+
+msgid "Sources and supporting material stay connected to the information they support."
+msgstr "منابع و محتوای پشتیبان به اطلاعاتی که پشتیبانی می‌کنند متصل می‌مانند."
+
+msgid "Resilience"
+msgstr "تاب‌آوری"
+
+msgid "Infrastructure is designed with continuity, recovery, and long-term operation in mind."
+msgstr "زیرساخت با درنظرگرفتن تداوم، بازیابی و کارکرد بلندمدت طراحی شده است."
+
+msgid "Information should be understood in context, not reduced to a single, opaque score."
+msgstr "اطلاعات باید در زمینه خود فهمیده شوند، نه اینکه به یک امتیاز واحد و مبهم فروکاسته شوند."
+
+msgid "Explore a more structured way to work with information."
+msgstr "شیوه‌ای ساختاریافته‌تر برای کار با اطلاعات را کاوش کنید."
+
+msgid "Search, discover, and navigate the connected surfaces of the VORNEQ platform."
+msgstr "در سطوح متصل پلتفرم VORNEQ جستجو، کشف و پیمایش کنید."
+
+msgid "VORNEQ positioning"
+msgstr "جایگاه VORNEQ"
