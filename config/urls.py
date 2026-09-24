@@ -13,7 +13,7 @@ from apps.platform_shell.registry import registry as platform_registry
 from config.health import health_check
 from config.inspect_views import context_view, inspect_entry
 from config.metrics import metrics_view
-from config.public_graph_views import public_graph_view
+from config.public_graph_views import public_graph_presentation_view, public_graph_view
 from config.views import discover, home, orientation, profile, search_page
 
 
@@ -53,6 +53,11 @@ urlpatterns += i18n_patterns(
     path("search/", search_page, name="search_page"),
     path("inspect/", inspect_entry, name="inspect_entry"),
     path("context/<uuid:artifact_id>/", context_view, name="context_view"),
+    path(
+        "evidence/<uuid:artifact_id>/graph/",
+        public_graph_presentation_view,
+        name="public_graph_presentation",
+    ),
     path("profile/", profile, name="profile"),
     path("", include("apps.profiles.urls")),
     path("accounts/", include("allauth.urls")),
