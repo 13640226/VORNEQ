@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.db import models
 from django.test import TestCase
 
 from apps.evidence.models import Claim, Evidence, EvidenceRelation
@@ -48,6 +49,14 @@ class VerificationModelTests(TestCase):
             method=self.method,
             requested_by=self.user,
         )
+
+    def test_canonical_artifact_field_is_nullable_protected_storage(self):
+        field = VerificationRequest._meta.get_field("canonical_artifact")
+
+        self.assertTrue(field.null)
+        self.assertTrue(field.blank)
+        self.assertIs(field.remote_field.on_delete, models.PROTECT)
+        self.assertEqual(field.remote_field.model._meta.label, "core.Artifact")
 
     def test_product_is_allowed_artifact(self):
         request = self.make_request()

@@ -10,6 +10,8 @@ from .critique import Critique
 from .evidence_state import EvidenceState
 from .content_version import ContentVersion
 from .prediction import Prediction, PredictionResolution
+from .signature import SignatureEnvelope
+from .dispute import Dispute
 
 
 __all__ = [
@@ -28,4 +30,6 @@ __all__ = [
     "ContentVersion",
     "Prediction",
     "PredictionResolution",
+    "SignatureEnvelope",
+    "Dispute",
 ]

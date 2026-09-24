@@ -7,19 +7,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#fafafa">
+    <script src="{% static 'js/theme-bootstrap.js' %}"></script>
 
     {% block meta %}
     <meta
         name="description"
-        content="{% trans 'VORNEQ — Knowledge Discovery Platform' %}"
+        content="{% trans 'VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust.' %}"
     >
     {% endblock %}
 
-    <title>{% block title %}{% trans "VORNEQ — Knowledge Discovery Platform" %}{% endblock %}</title>
+    <title>{% block title %}{% trans "VORNEQ — Precision Digital Infrastructure" %}{% endblock %}</title>
 
-    <!-- Core VORNEQ Styles (Global) -->
     <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme-palettes.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme-selector.css' %}">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/global-experience.css' %}">
     <link rel="stylesheet" href="{% static 'css/standalone-nav.css' %}">
@@ -30,27 +32,46 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <!-- Skip to main content (accessibility) -->
     <a href="#main-content" class="skip-link">
         {% trans "Skip to main content" %}
     </a>
 
-    <!-- Global Header (VORNEQ) -->
     {% include "partials/_standalone_nav.html" %}
+
+    {% if request.resolver_match.url_name != 'home' %}
+    <nav class="global-back" aria-label="{% trans 'Page navigation' %}">
+        <div class="global-back__inner">
+            <button
+                type="button"
+                class="global-back__button"
+                data-global-back
+                data-home-url="{% url 'home' %}"
+                aria-label="{% trans 'Go back to the previous page' %}"
+            >
+                <span class="global-back__icon" aria-hidden="true">←</span>
+                <span>{% trans "Back" %}</span>
+            </button>
+        </div>
+    </nav>
+    {% endif %}
 
     <main id="main-content" class="main-content" role="main">
         {% block content %}{% endblock %}
     </main>
 
+    {% if request.resolver_match.url_name != 'home' %}
     <footer class="site-footer" role="contentinfo">
         <div class="container site-footer__inner">
             <span class="site-footer__brand">VORNEQ</span>
             <span class="site-footer__copy">
-                &copy; {% now "Y" %} — {% trans "Knowledge, discovered." %}
+                &copy; {% now "Y" %} — {% trans "Precision infrastructure for a trusted digital future." %}
             </span>
         </div>
     </footer>
+    {% endif %}
 
+    <script src="{% static 'js/theme-preference.js' %}" defer></script>
+    <script src="{% static 'js/global-back.js' %}" defer></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

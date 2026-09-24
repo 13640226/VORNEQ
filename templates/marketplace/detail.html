@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n entitlements verification_public reputation_public %}
+{% load static i18n entitlements verification_public reputation_public identity_tags %}
 
 {% block title %}{{ product.title }} — VORNEQ {% trans "Marketplace" %}{% endblock %}
 
@@ -32,6 +32,14 @@
 
         <h1 class="marketplace-detail__title">{{ product.title }}</h1>
         <p class="marketplace-detail__seller">{% trans "By" %} {{ product.seller.get_username }}</p>
+        {% canonical_identity product.seller as seller_identity %}
+        {% if seller_identity %}
+          <p class="marketplace-detail__identity-badge">
+            <strong>{% trans "Canonical identity" %}:</strong>
+            <span>{{ seller_identity.id }}</span>
+            <span> · {% trans "Kind" %}: {{ seller_identity.kind|title }}</span>
+          </p>
+        {% endif %}
 
         {% if product.short_description %}
           <p class="marketplace-detail__description">{{ product.short_description }}</p>
@@ -55,6 +63,20 @@
     {% endif %}
 
     {% public_verification_summary product as verification_summary %}
+    <section class="marketplace-detail__section" aria-labelledby="product-latest-verification-title">
+      <h2 id="product-latest-verification-title" class="marketplace-detail__section-title">{% trans "Latest verification" %}</h2>
+      {% if verification_summary.latest_verification %}
+        <p class="marketplace-detail__verification-badge">
+          <strong>{% trans "Latest verification" %}: {{ verification_summary.latest_verification.outcome|title }}</strong>
+          <span> · {% trans "Reported confidence" %}: {{ verification_summary.latest_verification.reported_confidence }}%</span>
+          <span> · {{ verification_summary.latest_verification.method.name }}</span>
+          <span> · <time datetime="{{ verification_summary.latest_verification.recorded_at|date:'c' }}">{{ verification_summary.latest_verification.recorded_at|date:"DATETIME_FORMAT" }}</time></span>
+        </p>
+      {% else %}
+        <p>{% trans "No completed verification yet" %}</p>
+      {% endif %}
+    </section>
+
     {% if verification_summary.total_verifications %}
       <section class="marketplace-detail__section" aria-labelledby="product-verification-title">
         <h2 id="product-verification-title" class="marketplace-detail__section-title">{% trans "Verification summary" %}</h2>
@@ -70,6 +92,30 @@
         <p>{% trans "Public evidence references" %}: {{ verification_summary.public_evidence_count }}</p>
       </section>
     {% endif %}
+
+    {% public_evidence_projection product "product" as evidence_data %}
+    <section class="marketplace-detail__section" aria-labelledby="product-evidence-title">
+      <h2 id="product-evidence-title" class="marketplace-detail__section-title">{% trans "Public Evidence" %}</h2>
+      {% if evidence_data.claims %}
+        {% for claim in evidence_data.claims %}
+          <div class="marketplace-detail__evidence-claim">
+            <h3>{% trans "Claim ID" %}: {{ claim.claim_id }}</h3>
+            <ul>
+              {% for evidence in claim.evidences %}
+                <li>
+                  <span class="marketplace-detail__evidence-relation">{{ evidence.relation|title }}</span>
+                  <span class="marketplace-detail__evidence-id">{{ evidence.evidence_id }}</span>
+                  <time datetime="{{ evidence.linked_at|date:'c' }}">{{ evidence.linked_at|date:"DATETIME_FORMAT" }}</time>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+        <p>{% trans "Total public evidence" %}: {{ evidence_data.total_public_evidence_count }}</p>
+      {% else %}
+        <p>{% trans "No public evidence available" %}</p>
+      {% endif %}
+    </section>
 
     {% public_contextual_reputation_widget product.seller %}
 

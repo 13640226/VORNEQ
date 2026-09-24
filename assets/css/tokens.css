@@ -155,3 +155,51 @@
   --z-modal: 300;
   --z-toast: 400;
 }
+
+/* ==========================================================
+   COLOR — VORNEQ DARK
+   ========================================================== */
+[data-theme="dark"] {
+  --color-bg-page: #0b1120;
+  --color-bg-surface: #111827;
+  --color-bg-elevated: #131c2e;
+
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  --color-text-disabled: #64748b;
+
+  --color-border: #273449;
+  --color-border-strong: #3a4a62;
+
+  --color-accent: #6b8cff;
+  --color-accent-hover: #83a0ff;
+  --color-accent-muted: #8295df;
+
+  --color-accent-subtle: #172554;
+  --color-accent-border: rgba(107, 140, 255, 0.38);
+
+  --color-text-on-accent: #ffffff;
+
+  --color-focus: #83a0ff;
+  --color-focus-ring: rgba(131, 160, 255, 0.28);
+
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+
+  --color-editorial: #f0b66b;
+  --color-editorial-subtle: #2b2116;
+
+  --color-overlay: rgba(2, 6, 23, 0.72);
+  --color-bg-hover: rgba(248, 250, 252, 0.07);
+
+  --shadow-low:
+    0 1px 2px rgba(0, 0, 0, 0.24);
+
+  --shadow-medium:
+    0 8px 24px rgba(0, 0, 0, 0.28);
+
+  --shadow-high:
+    0 20px 48px rgba(0, 0, 0, 0.34);
+}

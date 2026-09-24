@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Documents — VORNEQ" %}{% endblock %}
+
+{% block extra_head %}<link rel="stylesheet" href="{% static 'documents/documents.css' %}">{% endblock %}
+
+{% block content %}
+<section class="documents" aria-labelledby="documents-title">
+    <header class="documents__header">
+        <div>
+            <p class="documents__eyebrow">{% trans "Workspace" %}</p>
+            <h1 id="documents-title">{% trans "Documents" %}</h1>
+            <p>{% trans "Create, organize, and collaborate on your private documents." %}</p>
+        </div>
+        <a class="documents-button" href="{% url 'documents:create' %}">{% trans "New Document" %}</a>
+    </header>
+
+    <div class="documents-list">
+        {% for document in documents %}
+        <article class="document-card">
+            <h2><a href="{% url 'documents:detail' document_id=document.pk %}">{{ document.title }}</a></h2>
+            <p>{{ document.updated_at|date:"Y-m-d H:i" }}</p>
+            {% if document.tags %}<p>{{ document.tags|join:", " }}</p>{% endif %}
+        </article>
+        {% empty %}
+        <p>{% trans "No documents yet." %}</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -9,6 +9,7 @@ from PIL import Image
 
 from apps.core.models import Identity, UserIdentity
 
+from .forms import ProfileEditForm
 from .models import UserProfile
 
 
@@ -19,6 +20,14 @@ def make_png(name="avatar.png", size=(64, 64)):
     buffer = BytesIO()
     Image.new("RGB", size, color=(30, 90, 180)).save(buffer, format="PNG")
     return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/png")
+
+
+def make_padded_png(size_bytes, name="avatar.png"):
+    base = make_png(name=name)
+    payload = base.read()
+    if len(payload) < size_bytes:
+        payload += b"\0" * (size_bytes - len(payload))
+    return SimpleUploadedFile(name, payload, content_type="image/png")
 
 
 class EditableProfileTest(TestCase):
@@ -82,6 +91,34 @@ class EditableProfileTest(TestCase):
         self.assertEqual(avatar_response.status_code, 200)
         self.assertEqual(avatar_response["Content-Type"], "image/png")
         self.assertIn("private", avatar_response["Cache-Control"])
+
+    def test_avatar_accepts_valid_image_between_two_and_five_mb(self):
+        form = ProfileEditForm(
+            data={
+                "first_name": "",
+                "last_name": "",
+                "bio": "",
+                "website": "",
+            },
+            files={"avatar": make_padded_png(3 * 1024 * 1024)},
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_avatar_rejects_valid_image_over_five_mb(self):
+        form = ProfileEditForm(
+            data={
+                "first_name": "",
+                "last_name": "",
+                "bio": "",
+                "website": "",
+            },
+            files={"avatar": make_padded_png((5 * 1024 * 1024) + 1)},
+            user=self.user,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("avatar", form.errors)
+        self.assertIn("5 MB", str(form.errors["avatar"]))
 
     def test_avatar_rejects_non_image_upload(self):
         self.client.force_login(self.user)

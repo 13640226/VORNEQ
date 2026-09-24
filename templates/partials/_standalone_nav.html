@@ -1,40 +1,58 @@
 {% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_available_languages as LANGUAGES %}
 
 <header class="standalone-nav" role="banner" aria-label="{% trans 'Site header' %}">
   <div class="standalone-nav__inner">
-    <div class="standalone-nav__brand">
-      <a href="{% url 'home' %}" class="standalone-nav__wordmark" aria-label="{% trans 'VORNEQ — Knowledge Discovery Platform' %}">
-        VORNEQ
-      </a>
-    </div>
+    <a href="{% url 'home' %}"
+       class="standalone-nav__brand"
+       data-vorneq-brand
+       data-home-url="{% url 'home' %}"
+       data-is-home="{% if request.resolver_match.url_name == 'home' %}true{% else %}false{% endif %}"
+       aria-label="{% trans 'VORNEQ — Precision Digital Infrastructure' %}">
+      <span class="standalone-nav__wordmark">VORNEQ</span>
+    </a>
 
     <nav class="standalone-nav__menu" aria-label="{% trans 'Primary' %}">
       <ul class="standalone-nav__list">
+        {% for item in platform_navigation %}
         <li class="standalone-nav__item">
-          <a href="{% url 'home' %}"
-             class="standalone-nav__link {% if request.resolver_match.url_name == 'home' %}is-active{% endif %}"
-             {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>
-            {% trans "Home" %}
+          <a href="{{ item.url }}"
+             class="standalone-nav__link {% if item.active %}is-active{% endif %}"
+             {% if item.active %}aria-current="page"{% endif %}>
+            {{ item.manifest.label }}
           </a>
         </li>
-        <li class="standalone-nav__item">
-          <a href="{% url 'library:index' %}"
-             class="standalone-nav__link {% if request.resolver_match.namespace == 'library' %}is-active{% endif %}"
-             {% if request.resolver_match.namespace == 'library' %}aria-current="page"{% endif %}>
-            {% trans "Library" %}
-          </a>
-        </li>
-        <li class="standalone-nav__item">
-          <a href="{% url 'marketplace:index' %}"
-             class="standalone-nav__link {% if request.resolver_match.namespace == 'marketplace' %}is-active{% endif %}"
-             {% if request.resolver_match.namespace == 'marketplace' %}aria-current="page"{% endif %}>
-            {% trans "Marketplace" %}
-          </a>
-        </li>
+        {% endfor %}
       </ul>
     </nav>
 
     <div class="standalone-nav__actions">
+      <details class="standalone-nav__language">
+        <summary class="standalone-nav__language-trigger" aria-label="{% trans 'Choose language' %}">
+          <span aria-hidden="true">🌐</span>
+          <span>{{ LANGUAGE_CODE|upper }}</span>
+          <span class="standalone-nav__language-chevron" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="standalone-nav__language-menu" role="group" aria-label="{% trans 'Language' %}">
+          {% for language_code, language_name in LANGUAGES %}
+          <form action="{% url 'set_language' %}" method="post" class="standalone-nav__language-form">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <input type="hidden" name="language" value="{{ language_code }}">
+            <button
+              type="submit"
+              class="standalone-nav__language-option {% if language_code == LANGUAGE_CODE %}is-active{% endif %}"
+              {% if language_code == LANGUAGE_CODE %}aria-current="true"{% endif %}
+            >
+              <span>{{ language_code|upper }}</span>
+              <span class="standalone-nav__language-name">{{ language_name }}</span>
+            </button>
+          </form>
+          {% endfor %}
+        </div>
+      </details>
+
       {% if user.is_authenticated %}
         <a href="{% url 'profile' %}"
            class="standalone-nav__user"

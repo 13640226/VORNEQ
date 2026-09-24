@@ -1,0 +1,131 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: VORNEQ\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Knowledge without borders"
+msgstr "دانش بدون مرز"
+
+msgid "Discover across"
+msgstr "کشف در"
+
+msgid "Search knowledge, products, media, documents, and audio from one connected discovery surface."
+msgstr "دانش، محصولات، رسانه، اسناد و صوت را از یک سطح کشف یکپارچه جستجو کنید."
+
+msgid "Search knowledge, products, media, documents, and audio…"
+msgstr "جستجوی دانش، محصولات، رسانه، اسناد و صوت…"
+
+msgid "Advanced filters"
+msgstr "فیلترهای پیشرفته"
+
+msgid "Other library items"
+msgstr "سایر موارد کتابخانه"
+
+msgid "Library item type"
+msgstr "نوع مورد کتابخانه"
+
+msgid "Any library type"
+msgstr "هر نوع کتابخانه"
+
+msgid "Media type"
+msgstr "نوع رسانه"
+
+msgid "Any media type"
+msgstr "هر نوع رسانه"
+
+msgid "Min price"
+msgstr "حداقل قیمت"
+
+msgid "Minimum price"
+msgstr "حداقل قیمت"
+
+msgid "Max price"
+msgstr "حداکثر قیمت"
+
+msgid "Maximum price"
+msgstr "حداکثر قیمت"
+
+msgid "Quick content filters"
+msgstr "فیلترهای سریع محتوا"
+
+msgid "Open advanced search"
+msgstr "باز کردن جستجوی پیشرفته"
+
+msgid "Search results"
+msgstr "نتایج جستجو"
+
+msgid "Featured discovery"
+msgstr "کشف برجسته"
+
+msgid "No matches"
+msgstr "بدون تطابق"
+
+msgid "Try adjusting your keywords or content type."
+msgstr "کلیدواژه‌ها یا نوع محتوا را تغییر دهید."
+
+msgid "Discovery"
+msgstr "کشف"
+
+msgid "No public discoveries are available yet."
+msgstr "هنوز کشف عمومی در دسترس نیست."
+
+msgid "Use search or explore installed VORNEQ apps while the public discovery feed grows."
+msgstr "تا زمانی که جریان کشف عمومی گسترش می‌یابد، از جستجو استفاده کنید یا برنامه‌های نصب‌شده VORNEQ را کاوش کنید."
+
+msgid "VORNEQ context and shortcuts"
+msgstr "زمینه و میانبرهای VORNEQ"
+
+msgid "Trust context"
+msgstr "زمینه اعتماد"
+
+msgid "Inspect claims in context."
+msgstr "ادعاها را در زمینه بررسی کنید."
+
+msgid "Verification is evidence about an assertion; it is not truth itself."
+msgstr "راستی‌آزمایی شواهدی درباره یک ادعاست؛ خودِ حقیقت نیست."
+
+msgid "Reputation is contextual to method, role, and domain — never a universal score."
+msgstr "اعتبار به روش، نقش و دامنه وابسته است — و هرگز یک امتیاز جهانی نیست."
+
+msgid "No global trust score"
+msgstr "بدون امتیاز اعتماد جهانی"
+
+msgid "Homepage discovery remains independent from Trust-layer ranking."
+msgstr "کشف در صفحه اصلی مستقل از رتبه‌بندی لایه اعتماد باقی می‌ماند."
+
+msgid "Apps shortcuts"
+msgstr "میانبرهای برنامه‌ها"
+
+msgid "Move from discovery to work."
+msgstr "از کشف به فضای کار بروید."
+
+msgid "VORNEQ apps"
+msgstr "برنامه‌های VORNEQ"
+
+msgid "Open Launcher"
+msgstr "باز کردن راه‌انداز"
+
+msgid "Platform status"
+msgstr "وضعیت پلتفرم"
+
+msgid "Explicit boundaries, visible status."
+msgstr "مرزهای صریح، وضعیت قابل مشاهده."
+
+msgid "Homepage sections"
+msgstr "بخش‌های صفحه اصلی"
+
+msgid "Intro"
+msgstr "معرفی"
+
+msgid "Trust"
+msgstr "اعتماد"
+
+msgid "Apps"
+msgstr "برنامه‌ها"
+
+msgid "Platform"
+msgstr "پلتفرم"

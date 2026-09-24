@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% if mode == "update" %}{% trans "Edit Note" %}{% else %}{% trans "New Note" %}{% endif %} — VORNEQ{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'notes/notes.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="notes notes--form" aria-labelledby="note-form-title">
+    <a class="notes__back" href="{% url 'notes:list' %}">← {% trans "Back to Notes" %}</a>
+    <header class="notes__header">
+        <div>
+            <p class="notes__eyebrow">{% trans "Notes" %}</p>
+            <h1 id="note-form-title">{% if mode == "update" %}{% trans "Edit Note" %}{% else %}{% trans "New Note" %}{% endif %}</h1>
+        </div>
+    </header>
+
+    <form method="post" class="notes-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <label for="{{ form.title.id_for_label }}">{% trans "Title" %}</label>
+        {{ form.title.errors }}
+        {{ form.title }}
+        <label for="{{ form.content.id_for_label }}">{% trans "Content" %}</label>
+        {{ form.content.errors }}
+        {{ form.content }}
+        <button class="notes-button" type="submit">{% trans "Save Note" %}</button>
+    </form>
+</section>
+{% endblock %}

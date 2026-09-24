@@ -8,6 +8,17 @@
   navigation: auto;
 }
 
+/* Chromium can briefly expose the default white canvas between old/new
+   document snapshots. Pin every root transition surface to the active VORNEQ
+   page background so dark-mode navigation never flashes white. */
+::view-transition,
+::view-transition-group(root),
+::view-transition-image-pair(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+  background: var(--color-bg-page);
+}
+
 .standalone-nav {
   view-transition-name: vorneq-nav;
 }

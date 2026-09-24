@@ -5,6 +5,8 @@ from .snapshot import SnapshotService
 from .decision import DecisionPackageService
 from .versioning import ContentVersionService
 from .prediction import PredictionLedgerService
+from .signature import canonical_payload, get_public_key, sign_object, verify_signature
+from .dispute import DisputeService
 
 
 __all__ = [
@@ -15,4 +17,9 @@ __all__ = [
     "DecisionPackageService",
     "ContentVersionService",
     "PredictionLedgerService",
+    "canonical_payload",
+    "get_public_key",
+    "sign_object",
+    "verify_signature",
+    "DisputeService",
 ]

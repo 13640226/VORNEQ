@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Inspect information" %} — VORNEQ{% endblock %}
+
+{% block meta %}
+<meta name="description" content="{% trans 'Inspect the public context already recorded for a VORNEQ artifact.' %}">
+{% endblock %}
+
+{% block content %}
+<main class="container" aria-labelledby="inspect-title">
+  <section>
+    <p>{% trans "Context, not Score" %}</p>
+    <h1 id="inspect-title">{% trans "Inspect information" %}</h1>
+    <p>{% trans "Enter a VORNEQ URL, artifact ID, or title to inspect existing public context. This does not create new claims, evidence, or artifacts." %}</p>
+
+    <form method="post" role="search" aria-label="{% trans 'Inspect information' %}">
+      {% csrf_token %}
+      <label for="inspect-input">{% trans "URL, artifact ID, or title" %}</label>
+      <input
+        id="inspect-input"
+        type="text"
+        name="input"
+        value="{{ inspect_input|default:'' }}"
+        maxlength="2000"
+        required
+        autocomplete="off"
+        placeholder="{% trans 'Paste a VORNEQ URL or enter a title' %}"
+      >
+      <button type="submit">{% trans "Inspect" %}</button>
+    </form>
+
+    {% if inspect_error %}
+      <p role="status">{{ inspect_error }}</p>
+    {% endif %}
+
+    <p>{% trans "Inspect Context V1 currently supports public Products and Library items only." %}</p>
+  </section>
+</main>
+{% endblock %}

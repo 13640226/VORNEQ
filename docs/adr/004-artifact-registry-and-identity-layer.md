@@ -135,6 +135,19 @@ Existing vertical fields remain authoritative during migration:
 - `LibraryItem.author` remains unchanged;
 - new Core role records are bridges/projections until a later migration explicitly changes vertical ownership.
 
+#### Semantics of `is_primary`
+
+- `is_primary` is a **presentation/selection hint** for UI/API consumers. It does **not** imply ownership, legal authority, verification, trustworthiness, or any canonical status beyond the scope of the role.
+- This field is **only meaningful within a specific `role`**. For example, `author` and `seller` are separate roles; `is_primary` is evaluated independently per role.
+- `is_primary` must **not** be interpreted as a single authoritative actor or primary representative at the Artifact level. An Artifact may have multiple primary roles (e.g., a primary author and a primary seller).
+- `is_primary` should be interpreted **together with `valid_from`/`valid_until`**. The temporal boundaries model the history of roles; `is_primary` is only a hint associated with that interval.
+- In **V1**, `is_primary` **has no database-level uniqueness guarantee**. Multiple identities for the same `(artifact, role)` may have `is_primary=True`. This is intentional to:
+  - Remain compatible with `valid_from`/`valid_until` and support role history (e.g., primary changes over time) without artificial constraints.
+  - Avoid enforcing a business rule that may conflict with real-world requirements (e.g., multiple co-authors considered primary).
+- Any workflow or service that requires **exactly one active actor** for a given `(artifact, role)` must enforce that invariant in its own policy or service logic. **It must not be locked at the database level.**
+
+**Note:** This ADR does **not** introduce any database constraint on `is_primary` in V1. Any future requirement for hard cardinality (e.g., exactly one primary per `(artifact, role)`) must be handled as a separate architectural change, with clear temporal semantics and overlap management.
+
 ### 2.4 Identity is not reputation
 
 Identity answers **who or what is participating**.

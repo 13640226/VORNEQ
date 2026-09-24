@@ -1,0 +1,68 @@
+name: Backup Restore Rehearsal
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "23 3 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-backup-restore:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: vorneq
+          POSTGRES_PASSWORD: vorneq
+          POSTGRES_DB: source_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U vorneq -d source_db"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      PGPASSWORD: vorneq
+      DATABASE_URL: postgresql://vorneq:vorneq@127.0.0.1:5432/source_db
+      RESTORE_DATABASE_URL: postgresql://vorneq:vorneq@127.0.0.1:5432/restore_db
+      BACKUP_DIR: /tmp/vorneq-backups
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Seed source database
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE TABLE restore_probe (
+              id integer PRIMARY KEY,
+              payload text NOT NULL
+          );
+          INSERT INTO restore_probe (id, payload) VALUES (1, 'vorneq-backup-rehearsal');
+          SQL
+          createdb -h 127.0.0.1 -U vorneq restore_db
+
+      - name: Create backup
+        run: bash scripts/postgres_backup.sh backup
+
+      - name: Restore backup into isolated target
+        run: |
+          backup_file="$(find "$BACKUP_DIR" -type f -name 'vorneq_*.dump' | head -n 1)"
+          test -n "$backup_file"
+          bash scripts/postgres_backup.sh --restore "$backup_file" --confirm-restore
+
+      - name: Verify restored data
+        run: |
+          restored="$(psql "$RESTORE_DATABASE_URL" -Atc "SELECT payload FROM restore_probe WHERE id = 1")"
+          test "$restored" = "vorneq-backup-rehearsal"

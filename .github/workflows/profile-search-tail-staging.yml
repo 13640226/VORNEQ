@@ -1,0 +1,88 @@
+name: Profile Staging Search Tail
+
+on:
+  workflow_dispatch:
+    inputs:
+      repeat:
+        description: Number of repetitions for empty-query diagnostics
+        required: false
+        default: "100"
+
+permissions:
+  contents: read
+
+jobs:
+  profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify staging database secret
+        env:
+          STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+        run: |
+          if [ -z "$STAGING_DATABASE_URL" ]; then
+            echo "STAGING_DATABASE_URL is not configured in GitHub Actions secrets." >&2
+            exit 1
+          fi
+
+      - name: Check migration status
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DJANGO_SETTINGS_MODULE: config.settings_render
+        run: |
+          python manage.py showmigrations --plan
+
+      - name: Profile empty-query tail latency
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DJANGO_SETTINGS_MODULE: config.settings_render
+        run: |
+          set -euo pipefail
+          python manage.py profile_search_tail \
+            --repeat "${{ inputs.repeat }}" \
+            --page-size 12 \
+            --include-explain \
+            --json | tee search_tail_profile.json
+
+      - name: Validate diagnostic JSON
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(Path("search_tail_profile.json").read_text())
+          required = {"production", "adapters", "avg_db_queries", "explain", "total_results"}
+          missing = required - payload.keys()
+          if missing:
+              raise SystemExit(f"Diagnostic output missing fields: {sorted(missing)}")
+          if payload["query"] != "":
+              raise SystemExit("Tail diagnostic must profile the empty query")
+          if len(payload["adapters"]) != 5:
+              raise SystemExit(f"Expected 5 adapter diagnostics, found {len(payload['adapters'])}")
+          if len(payload["explain"]) != 5:
+              raise SystemExit(f"Expected 5 EXPLAIN plans, found {len(payload['explain'])}")
+          print("Validated empty-query tail diagnostic output.")
+          PY
+
+      - name: Upload diagnostic results
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-search-tail-profile-${{ github.run_id }}
+          path: search_tail_profile.json
+          retention-days: 7
+          if-no-files-found: error

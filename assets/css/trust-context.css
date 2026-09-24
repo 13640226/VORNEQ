@@ -1,0 +1,55 @@
+/* VORNEQ Trust Context — public descriptive discovery metadata only. */
+
+.trust-context {
+  display: grid;
+  gap: var(--space-2);
+  margin-block-start: var(--space-3);
+  padding-block-start: var(--space-3);
+  border-block-start: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+}
+
+.trust-context__item {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, auto) minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: baseline;
+}
+
+.trust-context__label {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.trust-context__value {
+  min-inline-size: 0;
+  color: var(--color-text-primary);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.trust-context__separator {
+  margin-inline: 0.2em;
+  color: var(--color-text-muted);
+}
+
+.trust-context__item--muted .trust-context__value {
+  color: var(--color-text-secondary);
+}
+
+.trust-context__note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .trust-context__item {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+}

@@ -1,0 +1,97 @@
+name: PRODUCTION — Read-only DB Identity Probe
+run-name: 'PRODUCTION read-only DB identity probe · ${{ github.ref_name }} · ${{ github.actor }}'
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "yes" to run the READ-ONLY database identity probe against Production'
+        required: true
+        default: 'no'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-db-identity-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
+      DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
+      DJANGO_SETTINGS_MODULE: config.settings_render
+      VORNEQ_ENV: production
+      DJANGO_DEBUG: 'False'
+      DJANGO_SECRET_KEY: ${{ secrets.PRODUCTION_DJANGO_SECRET_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Require explicit confirmation
+        if: ${{ inputs.confirm != 'yes' }}
+        run: |
+          echo 'Production DB identity probe was not run. Re-run with confirm exactly "yes".' >&2
+          exit 1
+
+      - name: Verify production database secret
+        run: |
+          if [ -z "$PRODUCTION_DATABASE_URL" ]; then
+            echo "PRODUCTION_SOURCE_DATABASE_URL is not configured in GitHub Actions secrets." >&2
+            exit 1
+          fi
+
+      - name: Confirm read-only mode
+        run: |
+          echo 'TARGET ENVIRONMENT: PRODUCTION'
+          echo 'MODE: READ-ONLY DB IDENTITY PROBE — NO MIGRATE / NO RESTORE'
+
+      - name: Read-only database identity probe
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          import django
+
+          os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings_render")
+          django.setup()
+
+          from django.db import connection
+
+          sql = """
+          SELECT
+              current_database(),
+              inet_server_addr()::text,
+              inet_server_port(),
+              current_setting('server_version')
+          """
+
+          with connection.cursor() as cursor:
+              cursor.execute(sql)
+              database_name, server_address, server_port, server_version = cursor.fetchone()
+
+          print(f"database_name={database_name}")
+          print(f"server_address={server_address}")
+          print(f"server_port={server_port}")
+          print(f"server_version={server_version}")
+          PY
+
+      - name: Confirm read-only completion
+        run: |
+          echo 'Production DB identity probe completed. No migrate or restore command was executed.'

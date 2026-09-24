@@ -3,7 +3,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from apps.core.models import ContextualReputationEvent
+from apps.core.models import (
+    ContextualReputation,
+    ContextualReputationEvent,
+    Identity,
+    UserIdentity,
+)
 from apps.core.services.contextual_reputation import record_verification_activity
 from apps.evidence.models import Claim
 from apps.verification.models import (
@@ -54,6 +59,14 @@ class ContextualReputationTests(TestCase):
             reported_confidence=95,
         )
 
+    def _bind_identity(self, display_name="Context Verifier"):
+        identity = Identity.objects.create(
+            kind=Identity.Kind.HUMAN,
+            display_name=display_name,
+        )
+        binding = UserIdentity.objects.create(user=self.user, identity=identity)
+        return identity, binding
+
     def test_activity_creates_context_without_changing_score(self):
         reputation, event, created = record_verification_activity(
             verification_result=self.result,
@@ -65,9 +78,43 @@ class ContextualReputationTests(TestCase):
         self.assertEqual(reputation.verification_method, self.method)
         self.assertEqual(reputation.score, 0.0)
         self.assertEqual(reputation.sample_count, 1)
+        self.assertIsNone(reputation.identity)
+        self.assertEqual(
+            reputation.actor_role,
+            ContextualReputation.ActorRole.VERIFIER,
+        )
         self.assertEqual(event.verification_result, self.result)
 
+    def test_activity_dual_writes_existing_user_identity(self):
+        identity, _ = self._bind_identity()
+
+        reputation, _, created = record_verification_activity(
+            verification_result=self.result,
+            domain="security",
+        )
+
+        self.assertTrue(created)
+        self.assertEqual(reputation.user, self.user)
+        self.assertEqual(reputation.identity, identity)
+        self.assertEqual(
+            reputation.actor_role,
+            ContextualReputation.ActorRole.VERIFIER,
+        )
+
+    def test_activity_does_not_create_identity_when_binding_is_missing(self):
+        self.assertEqual(Identity.objects.count(), 0)
+
+        reputation, _, _ = record_verification_activity(
+            verification_result=self.result,
+            domain="security",
+        )
+
+        self.assertIsNone(reputation.identity)
+        self.assertEqual(Identity.objects.count(), 0)
+
     def test_activity_is_idempotent_within_same_context(self):
+        identity, _ = self._bind_identity()
+
         first_rep, first_event, first_created = record_verification_activity(
             verification_result=self.result,
             domain="security",
@@ -84,6 +131,31 @@ class ContextualReputationTests(TestCase):
         second_rep.refresh_from_db()
         self.assertEqual(second_rep.sample_count, 1)
         self.assertEqual(second_rep.score, 0.0)
+        self.assertEqual(second_rep.identity, identity)
+
+    def test_conflicting_identity_binding_is_not_overwritten(self):
+        original_identity, binding = self._bind_identity("Original Identity")
+        reputation, _, _ = record_verification_activity(
+            verification_result=self.result,
+            domain="security",
+        )
+
+        replacement_identity = Identity.objects.create(
+            kind=Identity.Kind.HUMAN,
+            display_name="Replacement Identity",
+        )
+        binding.identity = replacement_identity
+        binding.save(update_fields=["identity"])
+
+        with self.assertRaises(ValidationError):
+            record_verification_activity(
+                verification_result=self.result,
+                domain="security",
+            )
+
+        reputation.refresh_from_db()
+        self.assertEqual(reputation.identity, original_identity)
+        self.assertEqual(reputation.sample_count, 1)
 
     def test_domains_are_isolated(self):
         security, _, _ = record_verification_activity(

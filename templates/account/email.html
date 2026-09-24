@@ -5,77 +5,93 @@
 
 {% block extra_head %}
 {{ block.super }}
-<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/account-system.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="account-shell account-shell--wide">
-  <div class="account-card account-card--wide">
-    <p class="account-card__eyebrow">VORNEQ / {% trans "Account" %}</p>
-    <h1 class="account-card__title">{% trans "Email Addresses" %}</h1>
-    <p class="account-card__subtitle">{% trans "Manage the email addresses connected to your account." %}</p>
+<div class="account-experience">
+  <header class="account-experience__header">
+    <p class="account-experience__eyebrow">VORNEQ / {% trans "Account" %}</p>
+    <h1 class="account-experience__title">{% trans "Email Addresses" %}</h1>
+    <p class="account-experience__subtitle">{% trans "Manage the email addresses connected to your account." %}</p>
+  </header>
+
+  <section class="account-panel" aria-labelledby="current-emails-heading">
+    <h2 id="current-emails-heading" class="account-panel__title">{% trans "Current email addresses" %}</h2>
+    <p class="account-panel__description">{% trans "Choose an address to manage its primary, verification, or removal actions." %}</p>
 
     {% if emailaddresses %}
-      <form method="post" action="{% url 'account_email' %}" class="account-form">
+      <form method="post" action="{% url 'account_email' %}" class="account-system-form">
         {% csrf_token %}
-        <fieldset class="account-choice-list">
-          <legend class="account-section-title">{% trans "Current email addresses" %}</legend>
+        <fieldset class="account-email-list">
+          <legend class="visually-hidden">{% trans "Email addresses" %}</legend>
           {% for emailaddress in emailaddresses %}
-            <label class="account-choice-row">
+            <label class="account-email-row">
               <input type="radio" name="email" value="{{ emailaddress.email }}" {% if emailaddress.primary %}checked{% endif %}>
-              <span class="account-choice-row__content">
-                <span class="account-choice-row__label">{{ emailaddress.email }}</span>
-                <span class="account-choice-row__meta">
+              <span class="account-email-row__body">
+                <span class="account-email-row__address">{{ emailaddress.email }}</span>
+                <span class="account-email-row__meta">
                   {% if emailaddress.verified %}
-                    <span class="account-status account-status--success">{% trans "Verified" %}</span>
+                    <span class="account-email-badge account-email-badge--verified">{% trans "Verified" %}</span>
                   {% else %}
-                    <span class="account-status account-status--muted">{% trans "Unverified" %}</span>
+                    <span class="account-email-badge account-email-badge--unverified">{% trans "Unverified" %}</span>
                   {% endif %}
-                  {% if emailaddress.primary %}<span class="account-status">{% trans "Primary" %}</span>{% endif %}
+                  {% if emailaddress.primary %}
+                    <span class="account-email-badge account-email-badge--primary">{% trans "Primary" %}</span>
+                  {% endif %}
                 </span>
               </span>
             </label>
           {% endfor %}
         </fieldset>
 
-        <div class="account-form__actions account-form__actions--wrap">
-          <button type="submit" name="action_primary" class="account-form__button account-form__button--secondary">{% trans "Make Primary" %}</button>
-          <button type="submit" name="action_send" class="account-form__button account-form__button--secondary">{% trans "Re-send Verification" %}</button>
-          <button type="submit" name="action_remove" class="account-form__button account-form__button--danger">{% trans "Remove" %}</button>
+        <div class="account-system-actions">
+          <button type="submit" name="action_primary" class="account-system-button account-system-button--secondary account-system-button--small">{% trans "Make Primary" %}</button>
+          <button type="submit" name="action_send" class="account-system-button account-system-button--secondary account-system-button--small">{% trans "Re-send Verification" %}</button>
+          <button type="submit" name="action_remove" class="account-system-button account-system-button--danger account-system-button--small">{% trans "Remove" %}</button>
         </div>
       </form>
     {% else %}
-      <p class="account-empty">{% trans "No email address is currently registered for this account." %}</p>
+      <p class="account-system-empty">{% trans "No email address is currently registered for this account." %}</p>
     {% endif %}
+  </section>
 
-    <div class="account-divider" aria-hidden="true"></div>
+  <section class="account-panel" aria-labelledby="add-email-heading">
+    <h2 id="add-email-heading" class="account-panel__title">{% trans "Add Email Address" %}</h2>
+    <p class="account-panel__description">{% trans "Add another address and verify it before using it for account recovery." %}</p>
 
-    <h2 class="account-section-title">{% trans "Add Email Address" %}</h2>
-    <form method="post" action="{% url 'account_email' %}" class="account-form">
+    <form method="post" action="{% url 'account_email' %}" class="account-system-form">
       {% csrf_token %}
       {% if form.non_field_errors %}
-        <div class="account-form__errors" role="alert">
-          {% for error in form.non_field_errors %}<p class="account-form__error">{{ error }}</p>{% endfor %}
+        <div class="account-system-errors" role="alert">
+          {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
         </div>
       {% endif %}
-      <div class="account-form__fields">
+
+      <div class="account-system-form__fields">
         {% for field in form %}
           {% if field.is_hidden %}
             {{ field }}
           {% else %}
-            <div class="account-form__field">
+            <div class="account-system-field">
               {{ field.label_tag }}
               {{ field }}
-              {% for error in field.errors %}<span class="account-form__field-error">{{ error }}</span>{% endfor %}
-              {% if field.help_text %}<span class="account-form__help">{{ field.help_text|safe }}</span>{% endif %}
+              <div class="account-system-message">
+                {% if field.errors %}
+                  <span class="account-system-message--error" role="alert">{{ field.errors|join:", " }}</span>
+                {% elif field.help_text %}
+                  <span class="account-system-help">{{ field.help_text|safe }}</span>
+                {% endif %}
+              </div>
             </div>
           {% endif %}
         {% endfor %}
       </div>
-      <div class="account-form__actions">
-        <button type="submit" name="action_add" class="account-form__button account-form__button--primary">{% trans "Add Email" %}</button>
+
+      <div class="account-system-actions">
+        <button type="submit" name="action_add" class="account-system-button account-system-button--primary">{% trans "Add Email" %}</button>
       </div>
     </form>
-  </div>
+  </section>
 </div>
 {% endblock %}

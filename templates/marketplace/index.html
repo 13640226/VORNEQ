@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n %}
+{% load static i18n trust_context %}
 
 {% block title %}{% trans "Marketplace" %} — VORNEQ{% endblock %}
 
@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="{% static 'css/marketplace.css' %}">
 <link rel="stylesheet" href="{% static 'css/marketplace-stability.css' %}">
 <link rel="stylesheet" href="{% static 'css/marketplace-index-system.css' %}">
+<link rel="stylesheet" href="{% static 'css/trust-context.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -94,6 +95,8 @@
                 {% if product.short_description %}
                   <p class="marketplace-card__description">{{ product.short_description|striptags|truncatechars:140 }}</p>
                 {% endif %}
+
+                {% public_trust_context product %}
 
                 <div class="marketplace-card__footer">
                   <div class="marketplace-card__price">

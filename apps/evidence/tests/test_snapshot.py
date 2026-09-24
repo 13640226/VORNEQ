@@ -304,7 +304,7 @@ class SnapshotServiceTests(TestCase):
         AssessmentSnapshot.objects.filter(
             pk=snapshot.pk
         ).update(
-            digest_version="invalid-version"
+            digest_version="invalid"
         )
 
         self.assertFalse(

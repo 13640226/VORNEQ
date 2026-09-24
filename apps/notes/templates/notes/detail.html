@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{{ note.title }} — VORNEQ{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'notes/notes.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="notes notes--detail" aria-labelledby="note-title">
+    <a class="notes__back" href="{% url 'notes:list' %}">← {% trans "Back to Notes" %}</a>
+    <header class="notes__header">
+        <div>
+            <p class="notes__eyebrow">{% trans "Note" %}</p>
+            <h1 id="note-title">{{ note.title }}</h1>
+            <p class="notes__subtitle">{% blocktrans with date=note.updated_at|date:"Y-m-d" %}Updated {{ date }}{% endblocktrans %}</p>
+        </div>
+        <a class="notes-button notes-button--secondary" href="{% url 'notes:update' note_id=note.pk %}">{% trans "Edit" %}</a>
+    </header>
+
+    <article class="note-content">{{ note.content|linebreaks }}</article>
+
+    <form method="post" action="{% url 'notes:delete' note_id=note.pk %}" class="notes-delete-form">
+        {% csrf_token %}
+        <button class="notes-button notes-button--danger" type="submit">{% trans "Delete Note" %}</button>
+    </form>
+</section>
+{% endblock %}

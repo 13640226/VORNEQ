@@ -27,6 +27,55 @@ html {
   text-size-adjust: 100%;
 }
 
+/* Global back navigation */
+.global-back {
+  width: 100%;
+  background: var(--surface-page);
+}
+
+.global-back__inner {
+  width: 100%;
+  max-width: var(--container-width);
+  margin-inline: auto;
+  padding: var(--space-3) var(--page-inline-padding) 0;
+}
+
+.global-back__button {
+  min-height: var(--touch-target);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--control-radius);
+  background: var(--surface-raised);
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.global-back__button:hover {
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
+  background: var(--surface-subtle);
+}
+
+.global-back__button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.global-back__icon {
+  display: inline-block;
+  line-height: 1;
+}
+
+[dir="rtl"] .global-back__icon {
+  transform: rotate(180deg);
+}
+
 /* Typography rhythm */
 :is(h1, h2, h3, .library-header__title, .marketplace-header__title, .discovery-hero__title, .profile-title) {
   text-wrap: balance;
@@ -167,6 +216,10 @@ html {
   :root {
     --page-inline-padding: 1rem;
     --section-gap: 2.5rem;
+  }
+
+  .global-back__inner {
+    padding-block-start: var(--space-2);
   }
 
   :is(.library-filters, .marketplace-filters, .discovery-filters) {

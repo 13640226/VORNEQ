@@ -1,0 +1,42 @@
+{% load i18n %}
+
+{% if trust_context.has_verification %}
+<div class="trust-context" aria-label="{% trans 'Trust context' %}">
+  <div class="trust-context__item">
+    <span class="trust-context__label">{% trans "Verification" %}</span>
+    <span class="trust-context__value">
+      {% blocktrans count total=trust_context.verification_count %}{{ total }} completed verification{% plural %}{{ total }} completed verifications{% endblocktrans %}
+      {% if trust_context.verification_methods %}
+        <span class="trust-context__separator" aria-hidden="true">·</span>
+        {% if trust_context.verification_methods|length == 1 %}
+          {{ trust_context.verification_methods.0 }}
+        {% else %}
+          {% blocktrans count total=trust_context.verification_methods|length %}{{ total }} method{% plural %}{{ total }} methods{% endblocktrans %}
+        {% endif %}
+      {% endif %}
+    </span>
+  </div>
+
+  {% if trust_context.public_evidence_count %}
+  <div class="trust-context__item">
+    <span class="trust-context__label">{% trans "Public evidence" %}</span>
+    <span class="trust-context__value">
+      {% blocktrans count total=trust_context.public_evidence_count %}{{ total }} public link{% plural %}{{ total }} public links{% endblocktrans %}
+    </span>
+  </div>
+  {% endif %}
+
+  {% if trust_context.last_verified_at %}
+  <div class="trust-context__item trust-context__item--muted">
+    <span class="trust-context__label">{% trans "Last verification" %}</span>
+    <span class="trust-context__value">
+      {% blocktrans with age=trust_context.last_verified_at|timesince %}{{ age }} ago{% endblocktrans %}
+    </span>
+  </div>
+  {% endif %}
+
+  <p class="trust-context__note">
+    {% trans "Descriptive verification context only; not a trust score or truth claim." %}
+  </p>
+</div>
+{% endif %}

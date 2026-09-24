@@ -27,6 +27,8 @@ def _serialize_reputation(rep):
             "code": rep.verification_method.code,
             "name": rep.verification_method.name,
         },
+        "actor_role": rep.actor_role,
+        "actor_role_label": rep.get_actor_role_display(),
         "score": rep.score,
         "sample_count": rep.sample_count,
         "last_event_at": rep.last_event_at.isoformat() if rep.last_event_at else None,
@@ -62,5 +64,7 @@ def get_public_reputation(user, *, domain=None, method_code=None):
         qs = qs.filter(domain=domain)
     if method_code:
         qs = qs.filter(verification_method__code=method_code)
+
+    qs = qs.order_by("domain", "verification_method__code", "actor_role", "id")
 
     return [_serialize_reputation(rep) for rep in qs]
