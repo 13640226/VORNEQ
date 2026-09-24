@@ -18,6 +18,11 @@ class ReputationTests(TestCase):
             email="forecaster@example.com",
             password="test-pass-123",
         )
+        self.user_b = get_user_model().objects.create_user(
+            username="other-forecaster",
+            email="other-forecaster@example.com",
+            password="test-pass-456",
+        )
         self.claim = Claim.objects.create(
             claim_text="Pilot revenue will exceed the target by year end",
             scope="pilot",
@@ -111,11 +116,21 @@ class ReputationTests(TestCase):
         payload = response.json()
         self.assertEqual(payload["user_id"], self.user.pk)
         self.assertEqual(payload["scores"]["source_quality"], 1.0)
+        self.assertNotIn("overall", payload["scores"])
         self.assertIn("methodology", payload)
         self.assertEqual(
             ReputationHistory.objects.filter(user=self.user).count(),
             history_count,
         )
+
+    def test_cross_user_reputation_detail_denied(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(
+            reverse("core:reputation-detail", kwargs={"user_id": self.user_b.pk})
+        )
+
+        self.assertEqual(response.status_code, 403)
 
     def test_reputation_endpoint_without_cache_row_does_not_write(self):
         self.assertFalse(Reputation.objects.filter(user=self.user).exists())
@@ -131,6 +146,7 @@ class ReputationTests(TestCase):
         payload = response.json()
         self.assertFalse(payload["persisted"])
         self.assertIsNone(payload["last_updated"])
+        self.assertNotIn("overall", payload["scores"])
         self.assertEqual(Reputation.objects.count(), reputation_count)
         self.assertEqual(ReputationHistory.objects.count(), history_count)
 
@@ -145,5 +161,6 @@ class ReputationTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Overall")
         self.assertEqual(Reputation.objects.count(), reputation_count)
         self.assertEqual(ReputationHistory.objects.count(), history_count)

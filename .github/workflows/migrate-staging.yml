@@ -12,6 +12,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: migrate-staging-database
+  cancel-in-progress: false
+
 jobs:
   migrate:
     runs-on: ubuntu-latest
@@ -41,17 +45,31 @@ jobs:
             exit 1
           fi
 
+      - name: Require explicit migration confirmation
+        if: ${{ github.event.inputs.confirm_migration != 'yes' }}
+        run: |
+          echo 'Migration was not applied because confirm_migration was not exactly "yes".' >&2
+          echo 'Re-run this workflow and type "yes" only after reviewing the DR rehearsal and preflight results.' >&2
+          exit 1
+
       - name: Show migration status
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
           DJANGO_SETTINGS_MODULE: config.settings_render
         run: python manage.py showmigrations --plan
 
-      - name: Migration preflight
+      - name: Migration graph preflight
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
           DJANGO_SETTINGS_MODULE: config.settings_render
         run: python manage.py migration_preflight
+
+      - name: Migration data preflight
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DJANGO_SETTINGS_MODULE: config.settings_render
+          VORNEQ_ALLOW_INSPECT_MIGRATION_PREFLIGHT: 'yes'
+        run: python manage.py inspect_migration_preflight
 
       - name: Migration plan
         env:
@@ -59,21 +77,13 @@ jobs:
           DJANGO_SETTINGS_MODULE: config.settings_render
         run: python manage.py migrate --plan
 
-      - name: Require explicit migration confirmation
-        if: ${{ github.event.inputs.confirm_migration != 'yes' }}
-        run: |
-          echo 'Migration was not applied because confirm_migration was not exactly "yes".'
-          echo 'Re-run this workflow and type "yes" only after reviewing the preflight and migration plan.'
-
       - name: Apply migrations
-        if: ${{ github.event.inputs.confirm_migration == 'yes' }}
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
           DJANGO_SETTINGS_MODULE: config.settings_render
         run: python manage.py migrate --noinput
 
       - name: Verify migration status after apply
-        if: ${{ github.event.inputs.confirm_migration == 'yes' }}
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
           DJANGO_SETTINGS_MODULE: config.settings_render

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Your Home" %} — VORNEQ{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'platform_shell/personal-home.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="personal-home container" aria-labelledby="personal-home-title">
+    <header class="personal-home__header">
+        <p class="personal-home__eyebrow">{% trans "Personal Home" %}</p>
+        <h1 id="personal-home-title">{% trans "Continue your knowledge work" %}</h1>
+        <p>{% trans "Pick up recent documents or return to something you viewed." %}</p>
+    </header>
+
+    <div class="personal-home__sections">
+        <section class="personal-home__section" aria-labelledby="recent-documents-title">
+            <div class="personal-home__section-heading">
+                <h2 id="recent-documents-title">{% trans "Recent Documents" %}</h2>
+                <a href="{% url 'documents:list' %}">{% trans "All Documents" %}</a>
+            </div>
+            {% if recent_documents %}
+                <ul class="personal-home__cards">
+                    {% for document in recent_documents %}
+                        <li>
+                            <a class="personal-home__card" href="{% url 'documents:detail' document_id=document.pk %}">
+                                <strong>{{ document.title }}</strong>
+                                <span>{% blocktrans with created=document.created_at|date:"SHORT_DATETIME_FORMAT" %}Created {{ created }}{% endblocktrans %}</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="personal-home__empty">{% trans "No readable documents yet." %}</p>
+            {% endif %}
+        </section>
+
+        <section class="personal-home__section" aria-labelledby="recently-viewed-title">
+            <div class="personal-home__section-heading">
+                <h2 id="recently-viewed-title">{% trans "Recently Viewed" %}</h2>
+            </div>
+            {% if recently_viewed_documents %}
+                <ul class="personal-home__cards">
+                    {% for document in recently_viewed_documents %}
+                        <li>
+                            <a class="personal-home__card" href="{% url 'documents:detail' document_id=document.pk %}">
+                                <strong>{{ document.title }}</strong>
+                                <span>{% trans "Open document" %}</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="personal-home__empty">{% trans "Documents you view will appear here." %}</p>
+            {% endif %}
+        </section>
+    </div>
+</section>
+{% endblock %}

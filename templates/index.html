@@ -1,170 +1,200 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}{% trans "Discover" %} — VORNEQ{% endblock %}
+{% block title %}VORNEQ — {% trans "Precision Digital Infrastructure" %}{% endblock %}
 
 {% block meta %}
-<meta name="description" content="{% trans 'Discover books, articles, audio, documents, and digital products with VORNEQ.' %}">
-<meta property="og:title" content="VORNEQ — {% trans 'Knowledge Discovery Platform' %}">
-<meta property="og:description" content="{% trans 'Search, explore, and connect knowledge across formats.' %}">
+<meta name="description" content="{% trans 'VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust.' %}">
+<meta property="og:title" content="VORNEQ — {% trans 'Precision Digital Infrastructure' %}">
+<meta property="og:description" content="{% trans 'Dependable digital infrastructure for clarity, resilience, and long-term trust.' %}">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 {% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/home.css' %}">
-<link rel="stylesheet" href="{% static 'css/home-hero.css' %}">
+<link rel="stylesheet" href="{% static 'css/homepage.css' %}">
+<link rel="stylesheet" href="{% static 'css/homepage-redesign.css' %}">
+<link rel="stylesheet" href="{% static 'css/homepage-signal-nav-v2.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="discovery-home">
-  <section class="discovery-hero" aria-labelledby="discovery-title">
-    <div class="discovery-shell discovery-hero__grid">
-      <div class="discovery-hero__content">
-        <p class="discovery-hero__eyebrow">{% trans "Knowledge without borders" %}</p>
-        <h1 id="discovery-title" class="discovery-hero__title">
-          {% trans "Discover" %} <span>{% trans "knowledge" %}</span><br>{% trans "across formats." %}
-        </h1>
-        <p class="discovery-hero__subtitle">
-          {% trans "Books, articles, documents, audio, and digital products — all in one place." %}
-        </p>
+<div class="world-home">
+  {% include "partials/_homepage_signal_nav.html" %}
 
-        <form method="get" class="discovery-search" role="search">
-          {% if current_type != "all" %}<input type="hidden" name="type" value="{{ current_type }}">{% endif %}
-          <div class="discovery-search__wrapper">
-            <svg class="discovery-search__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <input type="search" name="q" class="discovery-search__input" placeholder="{% trans 'Search books, articles, audio, documents, and more…' %}" value="{{ search_query }}" aria-label="{% trans 'Search VORNEQ' %}" maxlength="200">
-            <button type="submit" class="discovery-search__button">{% trans "Search" %} <span aria-hidden="true">→</span></button>
-          </div>
-        </form>
-
-        <div class="discovery-topics" aria-label="{% trans 'Popular topics' %}">
-          <button type="button" data-topic="Climate change">{% trans "Climate change" %}</button>
-          <button type="button" data-topic="Artificial intelligence">{% trans "Artificial intelligence" %}</button>
-          <button type="button" data-topic="Mental health">{% trans "Mental health" %}</button>
-          <button type="button" data-topic="Sustainable cities">{% trans "Sustainable cities" %}</button>
-          <button type="button" data-topic="Productivity">{% trans "Productivity" %}</button>
+  <main class="world-home__main">
+    <section id="home" class="world-hero" data-homepage-signal-section aria-labelledby="world-home-title">
+      <div class="world-hero__copy">
+        <p class="world-eyebrow">{% trans "INFRASTRUCTURE FOR TRUSTED SYSTEMS" %}</p>
+        <h1 id="world-home-title" class="world-title">{% trans "Precision infrastructure for a trusted digital future." %}</h1>
+        <p class="world-subtitle">{% trans "VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust." %}</p>
+        <div class="world-hero__actions">
+          <a href="{% url 'discover' %}" class="world-cta">
+            {% trans "Explore Platform" %}
+          </a>
         </div>
       </div>
 
-      <div class="discovery-hero__visual" aria-hidden="true">
-        <div class="discovery-orbit discovery-orbit--one"></div>
-        <div class="discovery-orbit discovery-orbit--two"></div>
-        <div class="discovery-earth">
-          <div class="discovery-earth__glow"></div>
-          <div class="discovery-earth__lights"></div>
-        </div>
-        <div class="discovery-hero__manifesto">
-          <span>{% trans "People" %}</span>
-          <span>{% trans "Ideas" %}</span>
-          <span>{% trans "Knowledge" %}</span>
-          <span>{% trans "Opportunity" %}</span>
-        </div>
-      </div>
-    </div>
-  </section>
+      <aside class="world-hero-cover" aria-label="{% trans 'VORNEQ platform' %}">
+        <img
+          src="{% static 'images/vorneq-hero-infrastructure.webp' %}"
+          alt="{% trans 'VORNEQ digital infrastructure platform' %}"
+          class="world-hero-cover__image"
+          width="1536"
+          height="768"
+          loading="eager"
+          fetchpriority="high"
+        >
+      </aside>
+    </section>
 
-  <section class="discovery-paths" aria-label="{% trans 'Explore by format' %}">
-    <div class="discovery-shell">
-      <div class="discovery-paths__grid">
-        <a href="?type=book" class="discovery-path-card"><span class="discovery-path-card__icon">▤</span><span><strong>{% trans "Books" %}</strong><small>{% trans "Explore books and long-form knowledge" %}</small></span><b aria-hidden="true">→</b></a>
-        <a href="?type=article" class="discovery-path-card"><span class="discovery-path-card__icon">□</span><span><strong>{% trans "Articles" %}</strong><small>{% trans "Read curated articles" %}</small></span><b aria-hidden="true">→</b></a>
-        <a href="?type=audio" class="discovery-path-card"><span class="discovery-path-card__icon">⌁</span><span><strong>{% trans "Audio" %}</strong><small>{% trans "Listen and learn on the go" %}</small></span><b aria-hidden="true">→</b></a>
-        <a href="?type=document" class="discovery-path-card"><span class="discovery-path-card__icon">▱</span><span><strong>{% trans "Documents" %}</strong><small>{% trans "Access research and reports" %}</small></span><b aria-hidden="true">→</b></a>
-        <a href="?type=product" class="discovery-path-card"><span class="discovery-path-card__icon">⊞</span><span><strong>{% trans "Digital Products" %}</strong><small>{% trans "Discover tools and resources" %}</small></span><b aria-hidden="true">→</b></a>
+    <section id="start" class="world-search-section" data-homepage-signal-section aria-labelledby="world-search-title">
+      <div class="world-section-head world-section-head--interactive">
+        <span class="world-status-led" aria-hidden="true"></span>
+        <h2 id="world-search-title" class="world-section-title">{% trans "Search" %}</h2>
       </div>
+      <form method="get" action="{% url 'search_page' %}" class="world-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
+        <input type="search" name="q" maxlength="200" class="world-search__input" placeholder="{% trans 'Search across VORNEQ…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
+        <button type="submit" class="world-search__submit">{% trans "Search" %}</button>
+      </form>
+      <p class="world-search__hint">{% trans "Use a query when you know what you want to find." %}</p>
+    </section>
 
-      <div class="discovery-principles">
-        <div><span>◇</span><p><strong>{% trans "Inspectable trust" %}</strong><small>{% trans "Evidence and context, not absolute truth claims" %}</small></p></div>
-        <div><span>◌</span><p><strong>{% trans "Diverse perspectives" %}</strong><small>{% trans "Knowledge from across a global community" %}</small></p></div>
-        <div><span>↗</span><p><strong>{% trans "All in one place" %}</strong><small>{% trans "Search. Learn. Grow." %}</small></p></div>
+    <section id="capabilities" class="world-capabilities" data-homepage-signal-section aria-labelledby="world-capabilities-title">
+      <div class="world-section-head">
+        <h2 id="world-capabilities-title" class="world-section-title">{% trans "Capabilities" %}</h2>
       </div>
-    </div>
-  </section>
+      <ul class="world-capabilities__grid">
+        <li class="world-capability">
+          <a class="world-capability__surface" href="{% url 'search_page' %}">
+            <span class="world-status-led" aria-hidden="true"></span>
+            <h3>{% trans "Search" %}</h3>
+            <p>{% trans "Structured query across knowledge, software, products, and services." %}</p>
+            <span class="world-capability__link">{% trans "Open Search" %}</span>
+          </a>
+        </li>
+        <li class="world-capability">
+          <a class="world-capability__surface" href="{% url 'discover' %}">
+            <span class="world-status-led" aria-hidden="true"></span>
+            <h3>{% trans "Discover" %}</h3>
+            <p>{% trans "A canonical discovery surface within the VORNEQ ecosystem." %}</p>
+            <span class="world-capability__link">{% trans "Open Discover" %}</span>
+          </a>
+        </li>
+        <li class="world-capability">
+          <a class="world-capability__surface" href="{% url 'marketplace:index' %}">
+            <span class="world-status-led" aria-hidden="true"></span>
+            <h3>{% trans "Marketplace" %}</h3>
+            <p>{% trans "A trusted transactional surface for offerings and solutions." %}</p>
+            <span class="world-capability__link">{% trans "Open Marketplace" %}</span>
+          </a>
+        </li>
+      </ul>
+    </section>
 
-  {% if featured %}
-  <section class="discovery-featured" aria-labelledby="featured-title">
-    <div class="discovery-shell">
-      <div class="discovery-section-heading">
-        <div>
-          <p class="discovery-section-heading__kicker">{% trans "Handpicked content from across VORNEQ" %}</p>
-          <h2 id="featured-title">{% trans "Featured this week" %}</h2>
-        </div>
-        <a href="#results-title" class="discovery-section-heading__action">{% trans "View all" %} →</a>
-      </div>
+    <section id="how-it-works" class="world-flow" data-homepage-signal-section aria-labelledby="world-flow-title">
+      <header class="world-flow__header">
+        <p class="world-eyebrow">{% trans "How VORNEQ works" %}</p>
+        <h2 id="world-flow-title" class="world-title world-title--md">{% trans "From information to trusted knowledge." %}</h2>
+        <p class="world-flow__intro">{% trans "A structured path from source material to information you can inspect, connect, and explore." %}</p>
+      </header>
+      <ol class="world-flow__steps">
+        <li class="world-flow__step">
+          <span class="world-flow__num" aria-hidden="true">01</span>
+          <h3>{% trans "Collect" %}</h3>
+          <p>{% trans "Bring documents, media, and structured information into a consistent system." %}</p>
+        </li>
+        <li class="world-flow__step">
+          <span class="world-flow__num" aria-hidden="true">02</span>
+          <h3>{% trans "Structure" %}</h3>
+          <p>{% trans "Organize information into clear, addressable records." %}</p>
+        </li>
+        <li class="world-flow__step">
+          <span class="world-flow__num" aria-hidden="true">03</span>
+          <h3>{% trans "Verify" %}</h3>
+          <p>{% trans "Connect claims with evidence and preserve their context." %}</p>
+        </li>
+        <li class="world-flow__step">
+          <span class="world-flow__num" aria-hidden="true">04</span>
+          <h3>{% trans "Connect" %}</h3>
+          <p>{% trans "Build meaningful relationships across records, entities, and sources." %}</p>
+        </li>
+        <li class="world-flow__step">
+          <span class="world-flow__num" aria-hidden="true">05</span>
+          <h3>{% trans "Discover" %}</h3>
+          <p>{% trans "Explore connected information through VORNEQ's discovery surfaces." %}</p>
+        </li>
+      </ol>
+    </section>
 
-      <div class="discovery-featured__viewport" data-featured-viewport>
-        <div class="discovery-featured__grid">
-          {% for item in featured %}
-          <article class="discovery-card discovery-card--featured">
-            {% if item.image_url %}
-            <a href="{{ item.url }}" class="discovery-card__media" tabindex="-1" aria-hidden="true"><img src="{{ item.image_url }}" alt="" class="discovery-card__image" loading="lazy"></a>
-            {% else %}
-            <a href="{{ item.url }}" class="discovery-card__media discovery-card__media--placeholder" tabindex="-1" aria-hidden="true"><span>VORNEQ</span></a>
-            {% endif %}
-            <div class="discovery-card__body">
-              <p class="discovery-card__type">{% include "partials/_content_type_label.html" with type=item.type %}</p>
-              <h3 class="discovery-card__title"><a href="{{ item.url }}">{{ item.title }}</a></h3>
-              {% if item.description %}<p class="discovery-card__description">{{ item.description }}</p>{% endif %}
-              <div class="discovery-card__meta"><span>{% if item.source %}{{ item.source }}{% else %}VORNEQ{% endif %}</span><time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:"DATE_FORMAT" }}</time></div>
-            </div>
-          </article>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-  </section>
-  {% endif %}
-
-  <section class="discovery-results{% if not results %} is-empty{% endif %}" aria-labelledby="results-title">
-    <div class="discovery-shell">
-      <div class="discovery-results__header">
-        <div>
-          {% if is_filtered %}
-          <p class="discovery-section-heading__kicker">{% trans "Discovery results" %}</p>
-          <h2 id="results-title">{% if search_query %}{% blocktrans with query=search_query %}Results for “{{ query }}”{% endblocktrans %}{% else %}{% trans "Filtered discoveries" %}{% endif %}</h2>
-          <p class="discovery-results__count" aria-live="polite">{% blocktrans count counter=total_results %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}</p>
-          {% else %}
-          <p class="discovery-section-heading__kicker">{% trans "Across VORNEQ" %}</p>
-          <h2 id="results-title">{% trans "Latest discoveries" %}</h2>
-          {% endif %}
-        </div>
-      </div>
-
-      {% if results %}
-      <div class="discovery-feed">
-        {% for item in results %}
-        <article class="discovery-feed-item{% if item.image_url %} has-image{% endif %}">
-          {% if item.image_url %}<a href="{{ item.url }}" class="discovery-feed-item__media" tabindex="-1" aria-hidden="true"><img src="{{ item.image_url }}" alt="" class="discovery-feed-item__image" loading="lazy"></a>{% endif %}
-          <div class="discovery-feed-item__content">
-            <div class="discovery-feed-item__topline"><span class="discovery-feed-item__type">{% include "partials/_content_type_label.html" with type=item.type %}</span><time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:"DATE_FORMAT" }}</time></div>
-            <h3 class="discovery-feed-item__title"><a href="{{ item.url }}">{{ item.title }}</a></h3>
-            {% if item.description %}<p class="discovery-feed-item__description">{{ item.description }}</p>{% endif %}
-            <div class="discovery-feed-item__footer">{% if item.source %}<span>{{ item.source }}</span>{% endif %}{% if item.type == "product" %}{% if item.price == 0 %}<span class="discovery-card__free">{% trans "Free" %}</span>{% else %}<span class="discovery-card__price">{{ item.price }}</span>{% endif %}{% endif %}</div>
-          </div>
+    <section id="trust" class="world-trust" data-homepage-signal-section aria-labelledby="world-trust-title">
+      <header class="world-trust__header">
+        <p class="world-eyebrow">{% trans "Trust by architecture" %}</p>
+        <h2 id="world-trust-title" class="world-title world-title--md">{% trans "Infrastructure designed for clarity and accountability." %}</h2>
+        <p class="world-trust__intro">{% trans "Trust is supported by visible structure, evidence, boundaries, and traceable system behavior." %}</p>
+      </header>
+      <div class="world-trust__grid">
+        <article class="world-trust__item">
+          <span class="world-trust__index" aria-hidden="true">01</span>
+          <h3>{% trans "Privacy by architecture" %}</h3>
+          <p>{% trans "Privacy boundaries are considered as part of the system design." %}</p>
         </article>
-        {% endfor %}
+        <article class="world-trust__item">
+          <span class="world-trust__index" aria-hidden="true">02</span>
+          <h3>{% trans "Auditability" %}</h3>
+          <p>{% trans "Important actions and state changes can remain inspectable and traceable." %}</p>
+        </article>
+        <article class="world-trust__item">
+          <span class="world-trust__index" aria-hidden="true">03</span>
+          <h3>{% trans "Evidence" %}</h3>
+          <p>{% trans "Sources and supporting material stay connected to the information they support." %}</p>
+        </article>
+        <article class="world-trust__item">
+          <span class="world-trust__index" aria-hidden="true">04</span>
+          <h3>{% trans "Resilience" %}</h3>
+          <p>{% trans "Infrastructure is designed with continuity, recovery, and long-term operation in mind." %}</p>
+        </article>
       </div>
+    </section>
 
-      {% if page_obj.has_other_pages %}
-      <nav class="discovery-pagination" aria-label="{% trans 'Pagination' %}">
-        <div class="discovery-pagination__status">{% blocktrans with current=page_obj.number total=page_obj.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}</div>
-        <div class="discovery-pagination__actions">
-          {% if page_obj.has_previous %}<a class="discovery-pagination__link" href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if current_type != 'all' %}type={{ current_type }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}
-          {% if page_obj.has_next %}<a class="discovery-pagination__link" href="?{% if search_query %}q={{ search_query|urlencode }}&amp;{% endif %}{% if current_type != 'all' %}type={{ current_type }}&amp;{% endif %}page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>{% endif %}
-        </div>
-      </nav>
-      {% endif %}
-      {% else %}
-      <div class="discovery-empty"><p class="discovery-empty__eyebrow">{% trans "Nothing matched" %}</p><h2>{% trans "No results found" %}</h2><p>{% trans "Try adjusting your keywords or choosing a different content type." %}</p><a href="?type=all" class="discovery-empty__reset">{% trans "Reset discovery" %}</a></div>
-      {% endif %}
-    </div>
-  </section>
+    <section id="principles" class="world-principles" data-homepage-signal-section aria-labelledby="world-principles-title">
+      <div class="world-section-head">
+        <h2 id="world-principles-title" class="world-section-title">{% trans "Platform Principles" %}</h2>
+      </div>
+      <ul class="world-principles__grid">
+        <li class="world-principle">
+          <span class="world-item-index" aria-hidden="true">01</span>
+          <h3>{% trans "Context, not Score" %}</h3>
+          <p>{% trans "Information should be understood in context, not reduced to a single, opaque score." %}</p>
+        </li>
+        <li class="world-principle">
+          <span class="world-item-index" aria-hidden="true">02</span>
+          <h3>{% trans "Evidence, not Truth" %}</h3>
+          <p>{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}</p>
+        </li>
+        <li class="world-principle">
+          <span class="world-item-index" aria-hidden="true">03</span>
+          <h3>{% trans "Portable Identity" %}</h3>
+          <p>{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}</p>
+        </li>
+      </ul>
+    </section>
+
+    <section id="explore" class="world-final-cta" data-homepage-signal-section aria-labelledby="world-final-cta-title">
+      <div class="world-final-cta__content">
+        <p class="world-eyebrow">{% trans "Explore VORNEQ" %}</p>
+        <h2 id="world-final-cta-title" class="world-title world-title--lg">{% trans "Explore a more structured way to work with information." %}</h2>
+        <p class="world-final-cta__copy">{% trans "Search, discover, and navigate the connected surfaces of the VORNEQ platform." %}</p>
+        <a href="{% url 'discover' %}" class="world-cta">{% trans "Explore Platform" %}</a>
+      </div>
+    </section>
+
+    <section class="world-closing" aria-label="{% trans 'VORNEQ positioning' %}">
+      <p>{% trans "Precision infrastructure for a trusted digital future." %}</p>
+    </section>
+  </main>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/home.js' %}" defer></script>
+<script src="{% static 'js/homepage-signal-nav-v2.js' %}" defer></script>
 {% endblock %}

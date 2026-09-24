@@ -2,6 +2,18 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Avg, Count
 
 from .models import VerificationEvidence, VerificationRequest, VerificationResult
+from .services.target_identity import resolve_verification_request_target
+
+
+def _validate_public_result_targets(results):
+    """Fail closed before public aggregation if any contributing target conflicts."""
+    requests = (
+        VerificationRequest.objects.filter(results__in=results)
+        .select_related("artifact_content_type", "canonical_artifact")
+        .distinct()
+    )
+    for verification_request in requests:
+        resolve_verification_request_target(verification_request)
 
 
 def get_public_verification_summary(artifact):
@@ -21,6 +33,8 @@ def get_public_verification_summary(artifact):
         request__artifact_object_id=str(artifact.pk),
         request__status=VerificationRequest.Status.COMPLETED,
     ).select_related("request__method")
+
+    _validate_public_result_targets(results)
 
     outcome_counts = {
         choice: 0
@@ -47,6 +61,17 @@ def get_public_verification_summary(artifact):
     last_result = results.order_by("-created_at", "-id").first()
 
     average = aggregates["average_reported_confidence"]
+    latest_verification = None
+    if last_result is not None:
+        latest_verification = {
+            "outcome": last_result.outcome,
+            "reported_confidence": last_result.reported_confidence,
+            "method": {
+                "code": last_result.request.method.code,
+                "name": last_result.request.method.name,
+            },
+            "recorded_at": last_result.created_at,
+        }
 
     return {
         "total_verifications": aggregates["total"],
@@ -55,4 +80,70 @@ def get_public_verification_summary(artifact):
         "public_evidence_count": public_evidence_count,
         "verification_methods": verification_methods,
         "last_verified_at": last_result.created_at if last_result else None,
+        "latest_verification": latest_verification,
+    }
+
+
+def get_public_evidence_projection(artifact, artifact_type):
+    """
+    Return disclosure-safe public Evidence links for one already-resolved artifact.
+
+    The projection is intentionally narrow: Claim text, Evidence content,
+    Evidence metadata, relation_basis, and verifier identity are not exposed.
+    Only completed Verification requests and explicitly public links are included.
+    """
+    content_type = ContentType.objects.get_for_model(
+        artifact,
+        for_concrete_model=False,
+    )
+    evidence_links = (
+        VerificationEvidence.objects.filter(
+            result__request__artifact_content_type=content_type,
+            result__request__artifact_object_id=str(artifact.pk),
+            result__request__status=VerificationRequest.Status.COMPLETED,
+            visibility=VerificationEvidence.Visibility.PUBLIC,
+        )
+        .select_related(
+            "evidence_relation",
+            "result__request__artifact_content_type",
+            "result__request__canonical_artifact",
+        )
+        .order_by("evidence_relation__claim_id", "created_at", "id")
+    )
+
+    links = list(evidence_links)
+    validated_request_ids = set()
+    for link in links:
+        verification_request = link.result.request
+        if verification_request.pk not in validated_request_ids:
+            resolve_verification_request_target(verification_request)
+            validated_request_ids.add(verification_request.pk)
+
+    claims = {}
+    total_public_evidence_count = 0
+
+    for link in links:
+        relation = link.evidence_relation
+        claim_id = str(relation.claim_id)
+        claim_projection = claims.setdefault(
+            claim_id,
+            {
+                "claim_id": claim_id,
+                "evidences": [],
+            },
+        )
+        claim_projection["evidences"].append(
+            {
+                "evidence_id": str(relation.evidence_id),
+                "relation": relation.relation,
+                "linked_at": link.created_at,
+            }
+        )
+        total_public_evidence_count += 1
+
+    return {
+        "artifact_id": str(artifact.pk),
+        "artifact_type": artifact_type,
+        "claims": list(claims.values()),
+        "total_public_evidence_count": total_public_evidence_count,
     }

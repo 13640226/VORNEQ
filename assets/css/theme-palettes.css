@@ -3,6 +3,34 @@
    Palette overrides only. Structural design tokens remain in tokens.css.
    ========================================================== */
 
+:root,
+[data-theme="navy"] {
+  --color-bg-page: #071426;
+  --color-bg-surface: #0d1c32;
+  --color-bg-elevated: #132743;
+  --color-text-primary: #f5f8fc;
+  --color-text-secondary: #c3cedd;
+  --color-text-muted: #8fa1b8;
+  --color-text-disabled: #657990;
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-border-strong: rgba(255, 255, 255, 0.20);
+  --color-accent: #4f7cff;
+  --color-accent-hover: #6d94ff;
+  --color-accent-muted: #7896dc;
+  --color-accent-subtle: rgba(79, 124, 255, 0.16);
+  --color-accent-border: rgba(79, 124, 255, 0.40);
+  --color-text-on-accent: #ffffff;
+  --color-focus: #6d94ff;
+  --color-focus-ring: rgba(109, 148, 255, 0.30);
+  --color-editorial: #d5b37a;
+  --color-editorial-subtle: #211f1d;
+  --color-overlay: rgba(2, 8, 20, 0.78);
+  --color-bg-hover: rgba(245, 248, 252, 0.08);
+  --shadow-low: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-medium: 0 10px 30px rgba(0, 0, 0, 0.28);
+  --shadow-high: 0 24px 60px rgba(0, 0, 0, 0.36);
+}
+
 [data-theme="vorneq"] {
   --color-bg-page: #f7f8fa;
   --color-bg-surface: #ffffff;
@@ -13,14 +41,14 @@
   --color-text-disabled: #b0b8c4;
   --color-border: #e4e7ec;
   --color-border-strong: #d0d5dd;
-  --color-accent: #356ae6;
-  --color-accent-hover: #2a56c4;
-  --color-accent-muted: #5f7fd4;
-  --color-accent-subtle: rgba(53, 106, 230, 0.08);
-  --color-accent-border: rgba(53, 106, 230, 0.20);
-  --color-text-on-accent: #ffffff;
-  --color-focus: #356ae6;
-  --color-focus-ring: rgba(53, 106, 230, 0.25);
+  --color-accent: #1e6fff;
+  --color-accent-hover: #1a5fd4;
+  --color-accent-muted: #4a8cff;
+  --color-accent-subtle: rgba(30, 111, 255, 0.12);
+  --color-accent-border: rgba(30, 111, 255, 0.32);
+  --color-text-on-accent: #02060c;
+  --color-focus: #1e6fff;
+  --color-focus-ring: rgba(30, 111, 255, 0.25);
   --color-editorial: #8b6e3c;
   --color-editorial-subtle: #f7f2e9;
   --color-overlay: rgba(23, 32, 51, 0.52);

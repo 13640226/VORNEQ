@@ -7,50 +7,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f7f8fa">
-    <script>
-        (function () {
-            var valid = ['vorneq', 'light', 'dark', 'blue', 'gold', 'emerald', 'purple', 'system'];
-            var preference = 'vorneq';
-            try {
-                preference = localStorage.getItem('vorneq-theme') || 'vorneq';
-            } catch (error) {
-                preference = 'vorneq';
-            }
-
-            if (valid.indexOf(preference) === -1) preference = 'vorneq';
-
-            var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            var resolved = preference === 'system' ? (systemDark ? 'dark' : 'light') : preference;
-            var root = document.documentElement;
-            var nativeScheme = (resolved === 'light' || resolved === 'vorneq') ? 'light' : 'dark';
-            var themeColors = {
-                vorneq: '#f7f8fa',
-                light: '#f8f6f2',
-                dark: '#0d1117',
-                blue: '#0b1a2e',
-                gold: '#1a140e',
-                emerald: '#0d1f1a',
-                purple: '#1a0f2e'
-            };
-
-            root.dataset.theme = resolved;
-            root.dataset.themePreference = preference;
-            root.style.colorScheme = nativeScheme;
-
-            var themeColor = document.querySelector('meta[name="theme-color"]');
-            if (themeColor) themeColor.content = themeColors[resolved] || '#f7f8fa';
-        }());
-    </script>
+    <meta name="theme-color" content="#fafafa">
+    <script src="{% static 'js/theme-bootstrap.js' %}"></script>
 
     {% block meta %}
     <meta
         name="description"
-        content="{% trans 'VORNEQ — Knowledge Discovery Platform' %}"
+        content="{% trans 'VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust.' %}"
     >
     {% endblock %}
 
-    <title>{% block title %}{% trans "VORNEQ — Knowledge Discovery Platform" %}{% endblock %}</title>
+    <title>{% block title %}{% trans "VORNEQ — Precision Digital Infrastructure" %}{% endblock %}</title>
 
     <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
     <link rel="stylesheet" href="{% static 'css/theme-palettes.css' %}">
@@ -92,14 +59,16 @@
         {% block content %}{% endblock %}
     </main>
 
+    {% if request.resolver_match.url_name != 'home' %}
     <footer class="site-footer" role="contentinfo">
         <div class="container site-footer__inner">
             <span class="site-footer__brand">VORNEQ</span>
             <span class="site-footer__copy">
-                &copy; {% now "Y" %} — {% trans "Knowledge, discovered." %}
+                &copy; {% now "Y" %} — {% trans "Precision infrastructure for a trusted digital future." %}
             </span>
         </div>
     </footer>
+    {% endif %}
 
     <script src="{% static 'js/theme-preference.js' %}" defer></script>
     <script src="{% static 'js/global-back.js' %}" defer></script>

@@ -732,3 +732,855 @@ msgid "%(total)s product"
 msgid_plural "%(total)s products"
 msgstr[0] "%(total)s محصول"
 msgstr[1] "%(total)s محصول"
+
+msgid "The Global Knowledge Platform"
+msgstr "پلتفرم جهانی دانش"
+
+msgid "Discover knowledge, explore VORNEQ apps, and build on an open platform for connected knowledge."
+msgstr "دانش را کشف کنید، برنامه‌های VORNEQ را کاوش کنید و روی یک پلتفرم باز برای دانش متصل بسازید."
+
+msgid "Knowledge without borders: discover, organize, and build on one connected platform."
+msgstr "دانش بدون مرز: کشف کنید، سازمان‌دهی کنید و روی یک پلتفرم متصل بسازید."
+
+msgid "Knowledge without borders"
+msgstr "دانش بدون مرز"
+
+msgid "The Global"
+msgstr "جهانی"
+
+msgid "Knowledge"
+msgstr "دانش"
+
+msgid "Platform"
+msgstr "پلتفرم"
+
+msgid "Books, articles, documents, audio, and digital products — all in one place."
+msgstr "کتاب‌ها، مقاله‌ها، اسناد، محتوای صوتی و محصولات دیجیتال — همه در یک جا."
+
+msgid "Search books, articles, audio, documents, and more…"
+msgstr "جستجوی کتاب‌ها، مقاله‌ها، محتوای صوتی، اسناد و بیشتر…"
+
+msgid "Search across VORNEQ"
+msgstr "جستجو در سراسر VORNEQ"
+
+msgid "Suggested topics"
+msgstr "موضوعات پیشنهادی"
+
+msgid "Climate change"
+msgstr "تغییر اقلیم"
+
+msgid "Artificial intelligence"
+msgstr "هوش مصنوعی"
+
+msgid "Mental health"
+msgstr "سلامت روان"
+
+msgid "Sustainable cities"
+msgstr "شهرهای پایدار"
+
+msgid "Productivity"
+msgstr "بهره‌وری"
+
+msgid "A unified knowledge ecosystem"
+msgstr "یک اکوسیستم دانش یکپارچه"
+
+msgid "One world. One platform."
+msgstr "یک جهان. یک پلتفرم."
+
+msgid "Built for real scale"
+msgstr "ساخته‌شده برای مقیاس واقعی"
+
+msgid "Credibility comes from what exists, not invented numbers."
+msgstr "اعتبار از واقعیت‌های موجود می‌آید، نه از اعداد ساختگی."
+
+msgid "Public scale metrics and verified ecosystem partners will appear here when production data and relationships are available."
+msgstr "معیارهای عمومی مقیاس و شرکای تأییدشده‌ی اکوسیستم زمانی در اینجا نمایش داده می‌شوند که داده‌ها و روابط واقعی محیط تولید در دسترس باشند."
+
+msgid "Knowledge resources"
+msgstr "منابع دانش"
+
+msgid "Global users"
+msgstr "کاربران جهانی"
+
+msgid "Countries"
+msgstr "کشورها"
+
+msgid "Verified partners"
+msgstr "شرکای تأییدشده"
+
+msgid "Explore VORNEQ"
+msgstr "کاوش در VORNEQ"
+
+msgid "More than search. One connected application ecosystem."
+msgstr "فراتر از جستجو. یک اکوسیستم متصل از برنامه‌ها."
+
+msgid "Installed VORNEQ apps are discovered from the canonical Platform Registry rather than hard-coded into the homepage."
+msgstr "برنامه‌های نصب‌شده‌ی VORNEQ از طریق Platform Registry مرجع کشف می‌شوند، نه اینکه به‌صورت سخت‌کدشده در صفحه‌ی اصلی قرار بگیرند."
+
+msgid "Search and explore knowledge across supported formats using VORNEQ's current unified retrieval layer."
+msgstr "با استفاده از لایه‌ی بازیابی یکپارچه‌ی فعلی VORNEQ، دانش را در قالب‌های پشتیبانی‌شده جستجو و کاوش کنید."
+
+msgid "Start exploring"
+msgstr "شروع کاوش"
+
+msgid "Installed platform app · %(slug)s"
+msgstr "برنامه‌ی نصب‌شده‌ی پلتفرم · %(slug)s"
+
+msgid "Open in Workspace"
+msgstr "باز کردن در فضای کار"
+
+msgid "Apps"
+msgstr "برنامه‌ها"
+
+msgid "No installable platform apps are currently registered."
+msgstr "در حال حاضر هیچ برنامه‌ی قابل‌نصب پلتفرمی ثبت نشده است."
+
+msgid "Open Launcher"
+msgstr "باز کردن راه‌انداز"
+
+msgid "Build on VORNEQ"
+msgstr "روی VORNEQ بسازید"
+
+msgid "A platform with explicit boundaries."
+msgstr "پلتفرمی با مرزهای مشخص."
+
+msgid "The homepage reflects the current reviewed platform contract and does not present future capabilities as implemented APIs."
+msgstr "صفحهٔ اصلی، قرارداد فعلی و بررسی‌شدهٔ پلتفرم را بازتاب می‌دهد و قابلیت‌های آینده را به‌عنوان رابط‌های برنامه‌نویسیِ پیاده‌سازی‌شده معرفی نمی‌کند."
+
+msgid "Stable for current development"
+msgstr "پایدار برای توسعه‌ی فعلی"
+
+msgid "Apps, Registry, Launcher & Workspace"
+msgstr "برنامه‌ها، فهرست مرجع، راه‌انداز و فضای کار"
+
+msgid "Deploy-time app manifests, canonical registry metadata, localized route contribution, Launcher discovery, Workspace context, Identity and Artifact foundations."
+msgstr "مانیفست‌های برنامه هنگام استقرار، فراداده‌های فهرست مرجع، مسیرهای محلی‌سازی‌شده، شناسایی از طریق راه‌انداز، زمینهٔ فضای کار و زیرساخت‌های هویت و مصنوعات دیجیتال."
+
+msgid "Experimental"
+msgstr "آزمایشی"
+
+msgid "Capability discovery"
+msgstr "کشف توانمندی"
+
+msgid "Capability strings are descriptive discovery metadata only. They do not execute code, grant permissions, or authorize cross-app access."
+msgstr "رشته‌های قابلیت فقط فراداده‌های توصیفی برای کشف هستند. آن‌ها کدی اجرا نمی‌کنند، مجوزی اعطا نمی‌کنند و دسترسی میان برنامه‌ها را مجاز نمی‌سازند."
+
+msgid "Future contract"
+msgstr "قرارداد آینده"
+
+msgid "Executable providers & integrations"
+msgstr "فراهم‌کنندگان اجرایی و یکپارچه‌سازی‌ها"
+
+msgid "Executable capabilities, search providers, notifications, external integrations, and other provider contracts require separate versioned design and review."
+msgstr "قابلیت‌های اجرایی، ارائه‌دهندگان جستجو، اعلان‌ها، یکپارچه‌سازی‌های خارجی و دیگر قراردادهای ارائه‌دهنده، به طراحی و بررسی جداگانه و نسخه‌بندی‌شده نیاز دارند."
+
+msgid "Search results"
+msgstr "نتایج جستجو"
+
+msgid "No matches"
+msgstr "بدون نتیجه"
+
+msgid "Try adjusting your keywords or content type."
+msgstr "سعی کنید کلیدواژه‌ها یا نوع محتوا را تغییر دهید."
+
+msgid "The Discoverable Knowledge Platform"
+msgstr "بستر دانشِ قابل‌کشف"
+
+msgid "Discover knowledge across VORNEQ through inspectable attribution, evidence, context, and capabilities."
+msgstr "کشف دانش در سراسر VORNEQ از راه انتساب، شواهد، زمینه و توانمندی‌های قابل‌بررسی."
+
+msgid "Discovery, attribution, evidence, context, and capability on one connected platform."
+msgstr "کشف، انتساب، شواهد، زمینه و توانمندی در یک بستر پیوسته."
+
+msgid "Discover across"
+msgstr "کشف در سراسر"
+
+msgid "VORNEQ"
+msgstr "VORNEQ"
+
+msgid "Search knowledge, products, media, documents, and audio from one connected discovery surface."
+msgstr "دانش، محصولات، رسانه، اسناد و صدا را از یک سطح کشفِ پیوسته جستجو کنید."
+
+msgid "VORNEQ does not decide what is true, trustworthy, or valuable. It makes discovery, attribution, evidence, context, and capability inspectable."
+msgstr "VORNEQ تصمیم نمی‌گیرد که چه چیزی درست، قابل‌اعتماد یا ارزشمند است. این بستر، کشف، انتساب، شواهد، زمینه و توانمندی را قابل‌بررسی می‌کند."
+
+msgid "Context, not Score · Evidence, not Truth · Portable Identity"
+msgstr "زمینه، نه امتیاز · شواهد، نه حقیقت · هویتِ قابل‌حمل"
+
+msgid "Search knowledge, products, media, documents, and audio…"
+msgstr "جستجوی دانش، محصولات، رسانه، اسناد و صدا…"
+
+msgid "Other library items"
+msgstr "سایر اقلام کتابخانه"
+
+msgid "Advanced filters"
+msgstr "فیلترهای پیشرفته"
+
+msgid "Quick content filters"
+msgstr "فیلترهای سریع محتوا"
+
+msgid "Open advanced search"
+msgstr "گشودن جستجوی پیشرفته"
+
+msgid "Featured discovery"
+msgstr "کشف برجسته"
+
+msgid "Discovery"
+msgstr "کشف"
+
+msgid "No public discoveries are available yet."
+msgstr "هنوز هیچ کشف عمومی در دسترس نیست."
+
+msgid "Use search or explore installed VORNEQ apps while the public discovery feed grows."
+msgstr "تا زمانی که جریان کشف‌های عمومی رشد می‌کند، از جستجو یا برنامه‌های نصب‌شده‌ی VORNEQ بهره بگیرید."
+
+msgid "VORNEQ context and shortcuts"
+msgstr "زمینه و میانبرهای VORNEQ"
+
+msgid "Inspect claims in context."
+msgstr "ادعاها را در زمینه‌ی خودشان بررسی کنید."
+
+msgid "Verification produces inspectable findings and evidence about an assertion; it does not establish final truth."
+msgstr "راستی‌آزمایی، یافته‌ها و شواهدِ قابل‌بررسی درباره‌ی یک ادعا فراهم می‌کند؛ حقیقت نهایی را اثبات نمی‌کند."
+
+msgid "Reputation is contextual to method, role, and domain — never a universal score."
+msgstr "اعتبار وابسته به روش، نقش و حوزه است — هرگز یک امتیاز جهانی نیست."
+
+msgid "No global trust score"
+msgstr "بدون امتیاز اعتماد جهانی"
+
+msgid "Homepage discovery remains independent from Trust-layer ranking."
+msgstr "کشف صفحه‌ی اصلی، مستقل از رتبه‌بندی لایه‌ی اعتماد می‌ماند."
+
+msgid "Portable identity"
+msgstr "هویتِ قابل‌حمل"
+
+msgid "Identity across experiences, not app-local."
+msgstr "هویت در سراسر تجربه‌ها، نه وابسته به یک برنامه."
+
+msgid "Identity is designed to be portable across experiences rather than app-local."
+msgstr "هویت چنان طراحی شده است که در سراسر تجربه‌ها قابل‌حمل باشد، نه محصور در یک برنامه."
+
+msgid "Apps shortcuts"
+msgstr "میانبرهای برنامه‌ها"
+
+msgid "Move from discovery to work."
+msgstr "از کشف به کار گام بگذارید."
+
+msgid "VORNEQ apps"
+msgstr "برنامه‌های VORNEQ"
+
+msgid "Platform status"
+msgstr "وضعیت بستر"
+
+msgid "Explicit boundaries, visible status."
+msgstr "مرزهای آشکار، وضعیت روشن."
+
+msgid "Homepage sections"
+msgstr "بخش‌های صفحه‌ی اصلی"
+
+msgid "Intro"
+msgstr "معرفی"
+
+msgid "Trust"
+msgstr "اعتماد"
+
+# Homepage #162 value cards
+
+msgid "Values"
+msgstr "ارزش‌ها"
+
+msgid "VORNEQ values"
+msgstr "ارزش‌های VORNEQ"
+
+msgid "A simpler path to discover, organize, and access"
+msgstr "یک مسیر ساده‌تر برای کشف، سازماندهی و دسترسی"
+
+msgid "Easy discovery"
+msgstr "کشف آسان"
+
+msgid "Find knowledge, products, media, and documents from one place and keep the discovery path clear."
+msgstr "دانش، محصولات، رسانه‌ها و اسناد را از یک نقطه پیدا کنید و مسیر کشف را روشن نگه دارید."
+
+msgid "Smart organization"
+msgstr "سازماندهی هوشمند"
+
+msgid "Follow findings with clear context and structure so relevant information remains understandable and usable."
+msgstr "یافته‌ها را با زمینه و ساختار روشن دنبال کنید تا اطلاعات مرتبط قابل‌فهم و قابل‌استفاده بمانند."
+
+msgid "Secure access"
+msgstr "دسترسی امن"
+
+msgid "Use clear boundaries and proportionate access for a secure, controllable experience across VORNEQ."
+msgstr "با مرزهای شفاف و دسترسی متناسب، به تجربه‌ای امن و قابل‌کنترل در سراسر VORNEQ برسید."
+
+# Homepage #161 i18n copy
+
+msgid "Global Knowledge Platform"
+msgstr "پلتفرم دانش جهانی"
+
+msgid "Find and organize books, articles, documents, audio content, and digital resources from one place."
+msgstr "کتاب‌ها، مقاله‌ها، اسناد، محتوای صوتی و منابع دیجیتال را از یک نقطه پیدا و سازمان‌دهی کنید."
+
+msgid "Start searching"
+msgstr "شروع جستجو"
+
+msgid "Learn more about VORNEQ"
+msgstr "درباره VORNEQ بیشتر بدانید"
+
+# Homepage #163 user-centric feature cards
+
+msgid "Find relevant resources"
+msgstr "منابع مرتبط را پیدا کنید"
+
+msgid "Unified search across books, articles, documents, and audio content"
+msgstr "جستجوی یکپارچه در کتاب‌ها، مقاله‌ها، اسناد و محتوای صوتی"
+
+msgid "Save and organize your findings"
+msgstr "یافته‌های خود را ذخیره و سازمان‌دهی کنید"
+
+msgid "Note-taking, tagging, and quick access to information"
+msgstr "یادداشت‌برداری، برچسب‌گذاری و دسترسی سریع به اطلاعات"
+
+msgid "Go to notes"
+msgstr "رفتن به یادداشت‌ها"
+
+msgid "Discover complementary tools and capabilities"
+msgstr "ابزارها و قابلیت‌های تکمیلی را کشف کنید"
+
+msgid "Extensions, analytical tools, and specialized services"
+msgstr "افزونه‌ها، ابزارهای تحلیلی و خدمات تخصصی"
+
+msgid "View marketplace"
+msgstr "مشاهده بازارچه"
+
+# Homepage v3 restore + layer
+
+msgid "Find and organize knowledge, software, products, services, media, and digital resources from one place."
+msgstr "دانش، نرم‌افزار، محصولات، خدمات، رسانه و منابع دیجیتال را از یک نقطه پیدا و سازمان‌دهی کنید."
+
+msgid "KNOWLEDGE WITHOUT BORDERS"
+msgstr "دانش بدون مرز"
+
+msgid "Search knowledge, software, products, services, media, and more…"
+msgstr "جستجوی دانش، نرم‌افزار، محصولات، خدمات، رسانه و موارد بیشتر…"
+
+msgid "DISCOVERY SHORTCUTS"
+msgstr "میانبرهای کشف"
+
+msgid "Discovery shortcuts"
+msgstr "میانبرهای کشف"
+
+msgid "Books, articles and research"
+msgstr "کتاب‌ها، مقاله‌ها و پژوهش"
+
+msgid "Documents & Media"
+msgstr "اسناد و رسانه"
+
+msgid "Documents, audio and media"
+msgstr "اسناد، صوت و رسانه"
+
+msgid "Software & Apps"
+msgstr "نرم‌افزار و برنامه‌ها"
+
+msgid "Applications and digital tools"
+msgstr "برنامه‌ها و ابزارهای دیجیتال"
+
+msgid "Products & Commerce"
+msgstr "محصولات و تجارت"
+
+msgid "Physical and digital products"
+msgstr "محصولات فیزیکی و دیجیتال"
+
+msgid "Advanced discovery"
+msgstr "کشف پیشرفته"
+
+msgid "EXPLORE"
+msgstr "کاوش"
+
+msgid "Discover across formats"
+msgstr "کشف در قالب‌های گوناگون"
+
+msgid "Discovery formats"
+msgstr "قالب‌های کشف"
+
+msgid "Videos"
+msgstr "ویدئوها"
+
+msgid "Images"
+msgstr "تصاویر"
+
+msgid "News"
+msgstr "اخبار"
+
+msgid "Datasets"
+msgstr "مجموعه‌داده‌ها"
+
+msgid "Presentations"
+msgstr "ارائه‌ها"
+
+msgid "Additional formats"
+msgstr "قالب‌های بیشتر"
+
+msgid "GIFs"
+msgstr "GIFها"
+
+msgid "Social Media"
+msgstr "رسانه‌های اجتماعی"
+
+msgid "Explore topics"
+msgstr "کاوش موضوعات"
+
+msgid "E-commerce"
+msgstr "تجارت الکترونیکی"
+
+msgid "Business"
+msgstr "کسب‌وکار"
+
+msgid "Science"
+msgstr "علم"
+
+msgid "Technology"
+msgstr "فناوری"
+
+msgid "Education"
+msgstr "آموزش"
+
+msgid "Health"
+msgstr "سلامت"
+
+msgid "Finance"
+msgstr "مالی"
+
+msgid "Art & Design"
+msgstr "هنر و طراحی"
+
+msgid "Entertainment"
+msgstr "سرگرمی"
+
+msgid "Games"
+msgstr "بازی‌ها"
+
+msgid "Digital Collectibles"
+msgstr "کلکسیون‌های دیجیتال"
+
+msgid "Crypto & Blockchain"
+msgstr "رمزارز و بلاک‌چین"
+
+msgid "Stocks & Markets"
+msgstr "سهام و بازارها"
+
+msgid "Real Estate"
+msgstr "املاک"
+
+msgid "Travel"
+msgstr "سفر"
+
+msgid "Services"
+msgstr "خدمات"
+
+msgid "SOFTWARE & DIGITAL TOOLS"
+msgstr "نرم‌افزار و ابزارهای دیجیتال"
+
+msgid "Software categories"
+msgstr "دسته‌های نرم‌افزار"
+
+msgid "Development"
+msgstr "توسعه"
+
+msgid "Design"
+msgstr "طراحی"
+
+msgid "Communication"
+msgstr "ارتباطات"
+
+msgid "Media"
+msgstr "رسانه"
+
+msgid "Utilities"
+msgstr "ابزارهای کاربردی"
+
+msgid "Format Preview"
+msgstr "پیش‌نمایش قالب"
+
+msgid "Software preview"
+msgstr "پیش‌نمایش نرم‌افزار"
+
+msgid "COMMERCE"
+msgstr "تجارت"
+
+msgid "Commerce discovery"
+msgstr "کشف تجاری"
+
+msgid "Digital products"
+msgstr "محصولات دیجیتال"
+
+msgid "Physical products"
+msgstr "محصولات فیزیکی"
+
+msgid "Software licenses"
+msgstr "مجوزهای نرم‌افزار"
+
+msgid "Templates"
+msgstr "قالب‌ها"
+
+msgid "Digital assets"
+msgstr "دارایی‌های دیجیتال"
+
+msgid "Educational resources"
+msgstr "منابع آموزشی"
+
+msgid "Professional services"
+msgstr "خدمات حرفه‌ای"
+
+msgid "Creative services"
+msgstr "خدمات خلاقانه"
+
+msgid "Technical services"
+msgstr "خدمات فنی"
+
+msgid "Business services"
+msgstr "خدمات کسب‌وکار"
+
+msgid "Education & consulting"
+msgstr "آموزش و مشاوره"
+
+msgid "Product preview"
+msgstr "پیش‌نمایش محصول"
+
+msgid "Service preview"
+msgstr "پیش‌نمایش خدمت"
+
+msgid "Video preview"
+msgstr "پیش‌نمایش ویدئو"
+
+msgid "Video · 12:34"
+msgstr "ویدئو · ۱۲:۳۴"
+
+msgid "Image preview"
+msgstr "پیش‌نمایش تصویر"
+
+msgid "Image · Preview"
+msgstr "تصویر · پیش‌نمایش"
+
+msgid "Audio preview"
+msgstr "پیش‌نمایش صوت"
+
+msgid "Audio · 08:21"
+msgstr "صوت · ۰۸:۲۱"
+
+msgid "News preview"
+msgstr "پیش‌نمایش خبر"
+
+msgid "News · Preview"
+msgstr "خبر · پیش‌نمایش"
+
+msgid "Software · Preview"
+msgstr "نرم‌افزار · پیش‌نمایش"
+
+msgid "Product · Preview"
+msgstr "محصول · پیش‌نمایش"
+
+msgid "Service · Preview"
+msgstr "خدمت · پیش‌نمایش"
+
+msgid "Contextual Topics"
+msgstr "موضوعات زمینه‌ای"
+
+msgid "Abstract digital objects in context."
+msgstr "اشیای دیجیتال انتزاعی در زمینه‌ی خود."
+
+msgid "Connected systems and distributed records."
+msgstr "سامانه‌های متصل و سوابق توزیع‌شده."
+
+msgid "Market context without live pricing or trading."
+msgstr "زمینه‌ی بازار بدون قیمت‌گذاری زنده یا معامله."
+
+msgid "Game knowledge and discovery context."
+msgstr "دانش بازی و زمینه‌ی کشف."
+
+msgid "OUR FOUNDATION"
+msgstr "بنیاد ما"
+
+msgid "Platform Principles"
+msgstr "اصول پلتفرم"
+
+msgid "Context, not Score"
+msgstr "زمینه، نه امتیاز"
+
+msgid "Information should be understood in context rather than reduced to a single, opaque score."
+msgstr "اطلاعات باید در زمینه‌ی خود فهمیده شوند، نه اینکه به یک امتیاز واحد و مبهم فروکاسته شوند."
+
+msgid "Evidence, not Truth"
+msgstr "شواهد، نه حقیقت"
+
+msgid "Expose sources, evidence, and perspectives so you can form your own conclusions."
+msgstr "منابع، شواهد و دیدگاه‌ها را آشکار کنید تا بتوانید نتیجه‌گیری خود را شکل دهید."
+
+msgid "Portable Identity"
+msgstr "هویت قابل‌حمل"
+
+msgid "Your identity is designed to travel across experiences, not be trapped in a single app."
+msgstr "هویت شما برای حرکت میان تجربه‌ها طراحی شده است، نه برای محصور شدن در یک برنامه."
+
+msgid "Discover complementary tools and services"
+msgstr "ابزارها و خدمات تکمیلی را کشف کنید"
+
+msgid "What you can do"
+msgstr "چه کارهایی می‌توانید انجام دهید"
+
+msgid "FIND"
+msgstr "پیدا کردن"
+
+msgid "Search across knowledge, software, products, services, documents, media, and more."
+msgstr "در میان دانش، نرم‌افزار، محصولات، خدمات، اسناد، رسانه و موارد بیشتر جستجو کنید."
+
+msgid "ORGANIZE"
+msgstr "سازمان‌دهی"
+
+msgid "Save, tag, and structure your findings so they remain usable."
+msgstr "یافته‌های خود را ذخیره، برچسب‌گذاری و ساختاربندی کنید تا قابل‌استفاده بمانند."
+
+msgid "EXTEND"
+msgstr "گسترش"
+
+msgid "Discover complementary software, tools, and specialized services."
+msgstr "نرم‌افزار، ابزارها و خدمات تخصصیِ تکمیلی را کشف کنید."
+
+msgid "Explore digital and physical products and professional services."
+msgstr "محصولات دیجیتال و فیزیکی و خدمات حرفه‌ای را کاوش کنید."
+
+msgid "Explore products"
+msgstr "کاوش محصولات"
+
+msgid "Explore"
+msgstr "کاوش"
+
+msgid "Principles"
+msgstr "اصول"
+
+msgid "Capabilities"
+msgstr "توانمندی‌ها"
+
+msgid "Knowledge discovered."
+msgstr "دانش کشف‌شده."
+
+msgid "English"
+msgstr "انگلیسی"
+
+msgid "Discover connected evidence."
+msgstr "شواهدِ مرتبط را کشف کنید."
+
+msgid "Explore information through evidence, context, provenance, and relationships."
+msgstr "اطلاعات را از مسیر شواهد، زمینه، منشأ و روابط کاوش کنید."
+
+msgid "Discover public information"
+msgstr "کشف اطلاعات عمومی"
+
+msgid "Explore a topic, source, document, or entity"
+msgstr "یک موضوع، منبع، سند یا موجودیت را کاوش کنید"
+
+msgid "Explore a topic, source, document, or entity…"
+msgstr "یک موضوع، منبع، سند یا موجودیت را کاوش کنید…"
+
+msgid "Discovery filters"
+msgstr "فیلترهای کشف"
+
+msgid "STARTING POINT"
+msgstr "نقطه شروع"
+
+msgid "DISCOVERY"
+msgstr "کشف"
+
+msgid "Recently added"
+msgstr "تازه افزوده‌شده"
+
+msgid "public results"
+msgstr "نتیجه عمومی"
+
+msgid "This discovery domain is not available yet."
+msgstr "این حوزهٔ کشف هنوز در دسترس نیست."
+
+msgid "VORNEQ will not broaden product metadata into software or service semantics without a verified contract."
+msgstr "VORNEQ بدون قرارداد تأییدشده، فرادادهٔ محصول را به معنای نرم‌افزار یا خدمات گسترش نمی‌دهد."
+
+msgid "Source"
+msgstr "منبع"
+
+msgid "Media type"
+msgstr "نوع رسانه"
+
+msgid "Open record"
+msgstr "باز کردن رکورد"
+
+msgid "Discovery pages"
+msgstr "صفحه‌های کشف"
+
+msgid "No connected results found."
+msgstr "هیچ نتیجهٔ مرتبطی پیدا نشد."
+
+msgid "Try another topic, broaden the current filters, or use Search for an exact query."
+msgstr "موضوع دیگری را امتحان کنید، فیلترهای فعلی را گسترده‌تر کنید، یا برای جستجوی دقیق از Search استفاده کنید."
+
+msgid "Open Search"
+msgstr "باز کردن جستجو"
+
+msgid "Evidence graph"
+msgstr "گراف شواهد"
+
+msgid "Artifact"
+msgstr "مصنوع"
+
+msgid "Additional public evidence is not shown in this bounded view."
+msgstr "شواهد عمومی بیشتری در این نمای محدود نمایش داده نمی‌شود."
+
+msgid "Source type"
+msgstr "نوع منبع"
+
+msgid "Additional provenance is not shown in this bounded view."
+msgstr "اطلاعات منشأ بیشتری در این نمای محدود نمایش داده نمی‌شود."
+
+msgid "Inspect context"
+msgstr "بررسی زمینه"
+
+msgid "DISCOVER"
+msgstr "کشف"
+
+msgid "Page navigation"
+msgstr "پیمایش صفحه"
+
+msgid "Evidence"
+msgstr "شواهد"
+
+msgid "Provenance"
+msgstr "منشأ"
+
+#, python-format
+msgid "Page %(page)s of %(total_pages)s"
+msgstr "صفحه %(page)s از %(total_pages)s"
+
+msgid "Inspect Context"
+msgstr "بررسی زمینه"
+
+msgid "Public attribution, verification, evidence relationships, and provenance context for this VORNEQ artifact."
+msgstr "زمینهٔ عمومیِ انتساب، راستی‌آزمایی، روابط شواهد و منشأ برای این مصنوع VORNEQ."
+
+msgid "This page presents recorded public context. It does not decide whether the artifact is true, trustworthy, or valuable."
+msgstr "این صفحه زمینهٔ عمومیِ ثبت‌شده را ارائه می‌کند و دربارهٔ درست، قابل‌اعتماد یا ارزشمند بودن مصنوع داوری نمی‌کند."
+
+msgid "Source / Artifact"
+msgstr "منبع / مصنوع"
+
+msgid "Type"
+msgstr "نوع"
+
+msgid "Artifact ID"
+msgstr "شناسهٔ مصنوع"
+
+msgid "Open source artifact"
+msgstr "باز کردن مصنوع منبع"
+
+msgid "Inspect Evidence Graph"
+msgstr "بررسی گراف شواهد"
+
+msgid "Identity / Attribution"
+msgstr "هویت / انتساب"
+
+msgid "primary"
+msgstr "اصلی"
+
+msgid "Identity"
+msgstr "هویت"
+
+msgid "No active canonical attribution is recorded for this artifact."
+msgstr "هیچ انتساب متعارف فعالی برای این مصنوع ثبت نشده است."
+
+msgid "Verification Summary"
+msgstr "خلاصهٔ راستی‌آزمایی"
+
+#, python-format
+msgid "%(count)s completed verification results are publicly summarized for this artifact."
+msgstr "%(count)s نتیجهٔ تکمیل‌شدهٔ راستی‌آزمایی برای این مصنوع به‌صورت عمومی خلاصه شده است."
+
+msgid "Latest outcome"
+msgstr "آخرین نتیجه"
+
+msgid "Method"
+msgstr "روش"
+
+msgid "Reported confidence"
+msgstr "اطمینان گزارش‌شده"
+
+msgid "Recorded"
+msgstr "ثبت‌شده"
+
+msgid "No completed verification result is available."
+msgstr "هیچ نتیجهٔ تکمیل‌شدهٔ راستی‌آزمایی در دسترس نیست."
+
+msgid "Methods"
+msgstr "روش‌ها"
+
+msgid "Evidence (Public)"
+msgstr "شواهد (عمومی)"
+
+#, python-format
+msgid "%(count)s public evidence relationships are available. Raw claim and evidence content remain undisclosed in V1."
+msgstr "%(count)s رابطهٔ عمومیِ شواهد در دسترس است. محتوای خام ادعا و شواهد در V1 افشا نمی‌شود."
+
+msgid "Claim context"
+msgstr "زمینهٔ ادعا"
+
+msgid "No public evidence relationships are available."
+msgstr "هیچ رابطهٔ عمومیِ شواهد در دسترس نیست."
+
+msgid "V1 shows only non-sensitive provenance fields for evidence already marked public."
+msgstr "V1 فقط فیلدهای غیرحساسِ منشأ را برای شواهدی نشان می‌دهد که از قبل عمومی علامت‌گذاری شده‌اند."
+
+msgid "No public provenance steps are available."
+msgstr "هیچ مرحلهٔ عمومیِ منشأ در دسترس نیست."
+
+msgid "Inspect another artifact"
+msgstr "بررسی مصنوع دیگر"
+
+# Public Evidence Orientation V1
+
+msgid "Evidence vocabulary"
+msgstr "واژگان شواهد"
+
+msgid "A short guide to the public evidence vocabulary used across VORNEQ."
+msgstr "راهنمایی کوتاه برای واژگان شواهد عمومی در VORNEQ."
+
+msgid "ORIENTATION"
+msgstr "راهنما"
+
+msgid "A short guide to the terms used across Discover, Context, and the Evidence Graph."
+msgstr "راهنمایی کوتاه برای اصطلاحات به‌کاررفته در کشف، زمینه و گراف شواهد."
+
+msgid "Core terms"
+msgstr "اصطلاحات اصلی"
+
+msgid "A public record that can be inspected through its recorded context and relationships."
+msgstr "یک رکورد عمومی که می‌توان آن را از طریق زمینه و روابط ثبت‌شده‌اش بررسی کرد."
+
+msgid "Recorded material connected to an artifact through a public evidence relationship."
+msgstr "مادهٔ ثبت‌شده‌ای که از طریق یک رابطهٔ عمومی شواهد به یک مصنوع متصل است."
+
+msgid "Recorded source and time context associated with public evidence."
+msgstr "زمینهٔ ثبت‌شدهٔ منبع و زمان که با شواهد عمومی مرتبط است."
+
+msgid "The recorded category of a source associated with public evidence."
+msgstr "دستهٔ ثبت‌شدهٔ یک منبع که با شواهد عمومی مرتبط است."
+
+msgid "A bounded view of an artifact and its public evidence and provenance relationships."
+msgstr "نمایی محدود از یک مصنوع و روابط شواهد عمومی و منشأ آن."
+
+msgid "Context"
+msgstr "زمینه"
+
+msgid "The recorded public information presented around an artifact, including attribution and evidence relationships."
+msgstr "اطلاعات عمومی ثبت‌شده پیرامون یک مصنوع، شامل انتساب و روابط شواهد."
+
+#: templates/context.html
+msgid "Public source reference"
+msgstr "ارجاع عمومی منبع"
+

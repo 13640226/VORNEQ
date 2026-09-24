@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Workspace — VORNEQ" %}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'platform_shell/workspace.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="workspace" aria-labelledby="workspace-title">
+    <header class="workspace__header">
+        <p class="workspace__eyebrow">{% trans "Platform" %}</p>
+        <h1 id="workspace-title">{% trans "Workspace" %}</h1>
+        <p class="workspace__subtitle">
+            {% trans "Open an installed app in a dedicated workspace context." %}
+        </p>
+    </header>
+
+    <div class="workspace__grid">
+        {% for app in apps %}
+        <article class="workspace-card" aria-labelledby="workspace-app-{{ app.slug }}">
+            <div class="workspace-card__monogram" aria-hidden="true">
+                {{ app.label|slice:":1"|upper }}
+            </div>
+            <div class="workspace-card__body">
+                <h2 id="workspace-app-{{ app.slug }}" class="workspace-card__label">{{ app.label }}</h2>
+                <p class="workspace-card__slug">{{ app.slug }}</p>
+            </div>
+            <div class="workspace-card__actions">
+                <a class="workspace-button" href="{% url 'platform_shell:workspace_app' slug=app.slug %}">
+                    {% trans "Open in Workspace" %}
+                </a>
+            </div>
+        </article>
+        {% empty %}
+        <p class="workspace__empty">{% trans "No apps are installed." %}</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -9,3 +9,7 @@ class CoreConfig(AppConfig):
 
     def ready(self):
         from . import signals  # noqa: F401
+        from .capabilities import ReadArtifactCapability
+        from apps.platform_shell.capabilities import executable_registry
+
+        executable_registry.register(ReadArtifactCapability)

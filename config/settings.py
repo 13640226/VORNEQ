@@ -4,13 +4,33 @@ Django settings for Saman Kherad.
 Development / Production aware configuration.
 """
 
+import logging
 import os
 from pathlib import Path
 
 from csp.constants import NONE, SELF, UNSAFE_INLINE
+import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+VORNEQ_ALLOWED_ENVS = frozenset({"development", "staging", "production"})
+VORNEQ_ENV = os.environ.get("VORNEQ_ENV")
+
+if not VORNEQ_ENV:
+    raise ImproperlyConfigured(
+        "VORNEQ_ENV is unset. "
+        "Must be one of: development, staging, production. "
+        "See .env.example for configuration guidance."
+    )
+
+if VORNEQ_ENV not in VORNEQ_ALLOWED_ENVS:
+    raise ImproperlyConfigured(
+        f"VORNEQ_ENV={VORNEQ_ENV!r} is invalid. "
+        "Must be one of: development, staging, production. "
+        "See .env.example for configuration guidance."
+    )
 
 
 def env_bool(name, default=False):
@@ -25,11 +45,32 @@ def env_list(name, default=""):
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-development-only-change-me",
-)
+DEVELOPMENT_SECRET_KEY = "django-insecure-development-only-change-me"
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or DEVELOPMENT_SECRET_KEY
+
+if VORNEQ_ENV == "production" and (
+    not os.environ.get("DJANGO_SECRET_KEY", "").strip()
+    or SECRET_KEY == DEVELOPMENT_SECRET_KEY
+):
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY must be explicitly configured with a non-development "
+        "value when VORNEQ_ENV=production."
+    )
+
 DEBUG = env_bool("DJANGO_DEBUG", True)
+
+if VORNEQ_ENV == "production" and DEBUG:
+    raise ImproperlyConfigured(
+        "VORNEQ_ENV=production and DEBUG=True. "
+        "Production MUST NOT run with DEBUG enabled. "
+        "See .env.example for configuration guidance."
+    )
+
+if VORNEQ_ENV == "staging" and DEBUG:
+    logging.getLogger(__name__).warning(
+        "VORNEQ_ENV=staging with DEBUG=True. Allowed but not recommended."
+    )
+
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost")
 CSRF_TRUSTED_ORIGINS = env_list(
     "DJANGO_CSRF_TRUSTED_ORIGINS",
@@ -51,15 +92,19 @@ INSTALLED_APPS = [
     "axes",
     "csp",
     "django_prometheus",
+    "apps.platform_shell.apps.PlatformShellConfig",
     "library",
     "marketplace",
     "apps.evidence.apps.EvidenceConfig",
     "apps.graph.apps.GraphConfig",
     "apps.core.apps.CoreConfig",
     "apps.verification.apps.VerificationConfig",
+    "apps.audit.apps.AuditConfig",
     "apps.profiles.apps.ProfilesConfig",
     "apps.content.apps.ContentConfig",
     "apps.media.apps.MediaConfig",
+    "apps.notes.apps.NotesConfig",
+    "apps.documents.apps.DocumentsConfig",
 ]
 
 
@@ -98,18 +143,23 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.i18n",
+                "apps.platform_shell.context_processors.platform_shell",
             ],
         },
     },
 ]
 
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+_DATABASE_URL = os.environ.get("DATABASE_URL")
+if _DATABASE_URL:
+    DATABASES = {"default": dj_database_url.parse(_DATABASE_URL, conn_max_age=600)}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -132,7 +182,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LANGUAGE_CODE = "fa"
+LANGUAGE_CODE = os.environ.get("VORNEQ_DEFAULT_LANGUAGE", "fa")
 LANGUAGES = [
     ("fa", "فارسی"),
     ("en", "English"),
@@ -221,6 +271,7 @@ else:
     EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
     EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
     EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+    EMAIL_TIMEOUT = 10
 
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
@@ -265,7 +316,7 @@ SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": [SELF],
-        "script-src": [SELF, UNSAFE_INLINE],
+        "script-src": [SELF],
         "style-src": [SELF, UNSAFE_INLINE],
         "img-src": [SELF, "data:", "blob:", "https:"],
         "font-src": [SELF, "data:"],
@@ -291,6 +342,7 @@ if not DEBUG:
 
 
 PROMETHEUS_EXPORT_MIGRATIONS = False
+VORNEQ_METRICS_TOKEN = os.environ.get("VORNEQ_METRICS_TOKEN")
 
 LOGGING = {
     "version": 1,

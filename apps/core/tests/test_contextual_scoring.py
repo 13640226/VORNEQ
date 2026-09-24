@@ -1,8 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from apps.core.models import (
+    ContextualReputation,
     ContextualReputationEvent,
     QualitySignal,
     ScoringPolicy,
@@ -103,6 +105,7 @@ class ContextualScoringTests(TestCase):
         self.assertTrue(outcome.applied)
         reputation.refresh_from_db()
         self.assertEqual(reputation.user, self.verifier)
+        self.assertEqual(reputation.actor_role, ContextualReputation.ActorRole.VERIFIER)
         self.assertEqual(reputation.score, 1.0)
         self.assertEqual(reputation.sample_count, 1)
         self.assertFalse(
@@ -118,6 +121,28 @@ class ContextualScoringTests(TestCase):
         self.assertTrue(outcome.applied)
         self.assertEqual(outcome.delta, -1.0)
         self.assertEqual(outcome.reputation.score, -1.0)
+        self.assertEqual(
+            outcome.reputation.actor_role,
+            ContextualReputation.ActorRole.VERIFIER,
+        )
+
+    def test_scoring_fails_closed_on_non_verifier_projection(self):
+        ContextualReputation.objects.create(
+            user=self.verifier,
+            domain="security",
+            verification_method=self.method,
+            actor_role=ContextualReputation.ActorRole.SELLER,
+        )
+        signal = self.create_signal(
+            source_ref="lab:role-mismatch",
+            direction=QualitySignal.Direction.SUPPORTS_RESULT,
+        )
+
+        with self.assertRaisesMessage(
+            ValidationError,
+            "Role mismatch: existing projection is not a verifier reputation.",
+        ):
+            apply_scoring_policy(signal=signal, policy=self.policy)
 
     def test_inconclusive_signal_does_not_create_score_event(self):
         signal = self.create_signal(

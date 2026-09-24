@@ -52,10 +52,11 @@
     },
     "/api/reputation/{id}/": {
       "get": {
-        "summary": "Authenticated reputation snapshot",
+        "summary": "Authenticated self-service reputation snapshot",
+        "description": "Returns the internal reputation snapshot, including dimension scores and up to 25 history records, only for the authenticated user. Requests for another user's id are forbidden with HTTP 403. This endpoint is intended for authenticated self-service UI use only.",
         "security": [{"sessionAuth": []}],
         "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
-        "responses": {"200": {"description": "Authenticated reputation snapshot"}, "302": {"description": "Login redirect when unauthenticated"}, "404": {"description": "User not found"}}
+        "responses": {"200": {"description": "Authenticated user's own reputation snapshot"}, "302": {"description": "Login redirect when unauthenticated"}, "403": {"description": "Forbidden when attempting to access another user's snapshot"}}
       }
     },
     "/api/media/search/text/": {

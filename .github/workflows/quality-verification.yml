@@ -1,0 +1,90 @@
+name: Global Quality Verification
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality-verification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VORNEQ_ENV: development
+      DJANGO_DEBUG: "true"
+      DJANGO_SECRET_KEY: quality-verification-only
+      DJANGO_ALLOWED_HOSTS: 127.0.0.1,localhost
+      DJANGO_CSRF_TRUSTED_ORIGINS: http://127.0.0.1:8000,http://localhost:8000
+      QUALITY_BASE_URL: http://127.0.0.1:8000
+      QUALITY_OUT_DIR: artifacts/quality
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install application dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install verification dependencies
+        working-directory: quality
+        run: npm install --no-audit --no-fund
+
+      - name: Install browser
+        working-directory: quality
+        run: npx playwright install --with-deps chromium
+
+      - name: Self-test verification contract
+        working-directory: quality
+        run: npm test
+
+      - name: Prepare application database
+        run: python manage.py migrate --noinput
+
+      - name: Start application
+        run: |
+          python manage.py runserver 127.0.0.1:8000 > /tmp/vorneq-quality-server.log 2>&1 &
+          echo $! > /tmp/vorneq-quality-server.pid
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:8000/en/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/vorneq-quality-server.log
+          exit 1
+
+      - name: Run browser, accessibility, SEO and i18n verification
+        working-directory: quality
+        run: npm run verify
+
+      - name: Run Lighthouse lab measurements
+        working-directory: quality
+        run: npm run lighthouse
+
+      - name: Upload quality evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: global-quality-verification-${{ github.run_id }}
+          path: quality/artifacts/quality/
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Show application log on infrastructure failure
+        if: failure()
+        run: cat /tmp/vorneq-quality-server.log || true

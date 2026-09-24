@@ -83,8 +83,16 @@ def apply_scoring_policy(*, signal: QualitySignal, policy: ScoringPolicy) -> Sco
         user_id=verifier_id,
         domain=normalized_domain,
         verification_method_id=signal.method_id,
-        defaults={"score": 0.0, "sample_count": 0},
+        defaults={
+            "actor_role": ContextualReputation.ActorRole.VERIFIER,
+            "score": 0.0,
+            "sample_count": 0,
+        },
     )
+    if reputation.actor_role != ContextualReputation.ActorRole.VERIFIER:
+        raise ValidationError(
+            "Role mismatch: existing projection is not a verifier reputation."
+        )
 
     existing_event = ContextualReputationEvent.objects.filter(
         contextual_reputation=reputation,

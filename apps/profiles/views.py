@@ -42,6 +42,6 @@ def profile_avatar(request):
 
     content_type = mimetypes.guess_type(profile.avatar.name)[0] or "application/octet-stream"
     response = FileResponse(handle, content_type=content_type)
-    response["Cache-Control"] = "private, max-age=300"
+    response["Cache-Control"] = "private, no-store"
     response["X-Content-Type-Options"] = "nosniff"
     return response

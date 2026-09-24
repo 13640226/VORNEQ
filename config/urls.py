@@ -9,28 +9,54 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
 
+from apps.platform_shell.registry import registry as platform_registry
 from config.health import health_check
-from config.views import home, profile
+from config.inspect_views import context_view, inspect_entry
+from config.metrics import metrics_view
+from config.public_graph_views import public_graph_view
+from config.views import discover, home, orientation, profile, search_page
 
 
 # Non-localized operational and API endpoints.
 urlpatterns = [
     path("health/", health_check, name="health"),
+    path("metrics", metrics_view, name="prometheus-django-metrics"),
     path("", include("django_prometheus.urls")),
     path("i18n/", include("django.conf.urls.i18n")),
     path("api/", include("apps.core.urls")),
     path("api/verification/", include("apps.verification.urls")),
     path("api/media/", include("apps.media.urls")),
     path("api/search/", include("apps.search.urls")),
+    path("artifacts/<uuid:artifact_id>/graph/", public_graph_view, name="public_graph"),
 ]
 
 
 urlpatterns += i18n_patterns(
     path("admin/", admin.site.urls),
     path("", home, name="home"),
+    path("discover/", discover, name="discover"),
+    path("orientation/", orientation, name="orientation"),
+    path("discover/knowledge/", discover, {"domain": "knowledge"}, name="discover_knowledge"),
+    path("discover/media/", discover, {"domain": "media"}, name="discover_media"),
+    path(
+        "discover/software-services/",
+        discover,
+        {"domain": "software-services"},
+        name="discover_software_services",
+    ),
+    path(
+        "discover/products-commerce/",
+        discover,
+        {"domain": "products-commerce"},
+        name="discover_products_commerce",
+    ),
+    path("search/", search_page, name="search_page"),
+    path("inspect/", inspect_entry, name="inspect_entry"),
+    path("context/<uuid:artifact_id>/", context_view, name="context_view"),
     path("profile/", profile, name="profile"),
     path("", include("apps.profiles.urls")),
     path("accounts/", include("allauth.urls")),
+    path("apps/", include("apps.platform_shell.urls")),
     path(
         "library/",
         RedirectView.as_view(
@@ -43,8 +69,8 @@ urlpatterns += i18n_patterns(
     # Keep legacy detail/reader routes alive until Marketplace has explicit
     # equivalents, so purchased content and historical links do not break.
     path("library/", include("library.urls")),
-    path("marketplace/", include("marketplace.urls")),
     path("graph/", include("apps.graph.urls")),
+    *platform_registry.localized_urlpatterns(),
     prefix_default_language=True,
 )
 

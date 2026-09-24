@@ -99,3 +99,123 @@ msgstr "Alle anzeigen"
 
 msgid "Try adjusting your keywords or choosing a different content type."
 msgstr "Passe deine Suchbegriffe an oder wähle einen anderen Inhaltstyp."
+
+msgid "Discover across"
+msgstr "Entdecken auf"
+
+msgid "Search knowledge, products, media, documents, and audio from one connected discovery surface."
+msgstr "Wissen, Produkte, Medien, Dokumente und Audio über eine vernetzte Entdeckungsoberfläche durchsuchen."
+
+msgid "Search knowledge, products, media, documents, and audio…"
+msgstr "Wissen, Produkte, Medien, Dokumente und Audio durchsuchen…"
+
+msgid "Advanced filters"
+msgstr "Erweiterte Filter"
+
+msgid "Other library items"
+msgstr "Andere Bibliothekseinträge"
+
+msgid "Library item type"
+msgstr "Bibliothekseintragstyp"
+
+msgid "Any library type"
+msgstr "Beliebiger Bibliothekstyp"
+
+msgid "Media type"
+msgstr "Medientyp"
+
+msgid "Any media type"
+msgstr "Beliebiger Medientyp"
+
+msgid "Min price"
+msgstr "Mindestpreis"
+
+msgid "Minimum price"
+msgstr "Mindestpreis"
+
+msgid "Max price"
+msgstr "Höchstpreis"
+
+msgid "Maximum price"
+msgstr "Höchstpreis"
+
+msgid "Quick content filters"
+msgstr "Schnellfilter für Inhalte"
+
+msgid "Open advanced search"
+msgstr "Erweiterte Suche öffnen"
+
+msgid "Search results"
+msgstr "Suchergebnisse"
+
+msgid "Featured discovery"
+msgstr "Hervorgehobene Entdeckung"
+
+msgid "No matches"
+msgstr "Keine Treffer"
+
+msgid "Try adjusting your keywords or content type."
+msgstr "Passen Sie Ihre Suchbegriffe oder den Inhaltstyp an."
+
+msgid "Discovery"
+msgstr "Entdeckung"
+
+msgid "No public discoveries are available yet."
+msgstr "Noch sind keine öffentlichen Entdeckungen verfügbar."
+
+msgid "Use search or explore installed VORNEQ apps while the public discovery feed grows."
+msgstr "Nutzen Sie die Suche oder erkunden Sie installierte VORNEQ-Apps, während der öffentliche Entdeckungsfeed wächst."
+
+msgid "VORNEQ context and shortcuts"
+msgstr "VORNEQ-Kontext und Schnellzugriffe"
+
+msgid "Trust context"
+msgstr "Vertrauenskontext"
+
+msgid "Inspect claims in context."
+msgstr "Aussagen im Kontext prüfen."
+
+msgid "Verification is evidence about an assertion; it is not truth itself."
+msgstr "Verifikation liefert Evidenz zu einer Aussage; sie ist nicht die Wahrheit selbst."
+
+msgid "Reputation is contextual to method, role, and domain — never a universal score."
+msgstr "Reputation ist an Methode, Rolle und Domäne gebunden — niemals eine universelle Bewertung."
+
+msgid "No global trust score"
+msgstr "Kein globaler Vertrauenswert"
+
+msgid "Homepage discovery remains independent from Trust-layer ranking."
+msgstr "Die Homepage-Entdeckung bleibt unabhängig von Rankings der Trust-Schicht."
+
+msgid "Apps shortcuts"
+msgstr "App-Schnellzugriffe"
+
+msgid "Move from discovery to work."
+msgstr "Von der Entdeckung direkt zur Arbeit."
+
+msgid "VORNEQ apps"
+msgstr "VORNEQ-Apps"
+
+msgid "Open Launcher"
+msgstr "Launcher öffnen"
+
+msgid "Platform status"
+msgstr "Plattformstatus"
+
+msgid "Explicit boundaries, visible status."
+msgstr "Klare Grenzen, sichtbarer Status."
+
+msgid "Homepage sections"
+msgstr "Homepage-Bereiche"
+
+msgid "Intro"
+msgstr "Intro"
+
+msgid "Trust"
+msgstr "Vertrauen"
+
+msgid "Apps"
+msgstr "Apps"
+
+msgid "Platform"
+msgstr "Plattform"

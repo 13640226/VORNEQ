@@ -82,7 +82,7 @@
     <section class="panel">
       <h2>Reputation</h2>
       {% for rep in reputations %}
-        <div class="item"><strong>{{ rep.username }}</strong><div class="score-grid"><div class="score">Prediction<b>{{ rep.scores.prediction_accuracy|floatformat:2 }}</b></div><div class="score">Source<b>{{ rep.scores.source_quality|floatformat:2 }}</b></div><div class="score">Overall<b>{{ rep.scores.overall|floatformat:2 }}</b></div><div class="score">History<b>{{ rep.history|length }}</b></div></div></div>
+        <div class="item"><strong>{{ rep.username }}</strong><div class="score-grid"><div class="score">Prediction<b>{{ rep.scores.prediction_accuracy|floatformat:2 }}</b></div><div class="score">Source<b>{{ rep.scores.source_quality|floatformat:2 }}</b></div><div class="score">History<b>{{ rep.history|length }}</b></div></div></div>
       {% endfor %}
       <p class="muted">Only defensible dimensions are scored automatically; unsupported dimensions remain unscored.</p>
     </section>

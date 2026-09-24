@@ -1,0 +1,49 @@
+﻿{% load i18n %}
+
+<nav
+    class="homepage-signal-nav"
+    aria-label="{% trans 'Section navigation' %}"
+    data-homepage-signal-nav
+>
+    <ol class="homepage-signal-nav__list">
+        <li class="homepage-signal-nav__item">
+            <a class="homepage-signal-nav__link" href="#home" data-homepage-signal-link aria-current="location">
+                {% trans "Home" %}
+            </a>
+        </li>
+        <li class="homepage-signal-nav__item">
+            <a class="homepage-signal-nav__link" href="#start" data-homepage-signal-link>
+                {% trans "Search" %}
+            </a>
+        </li>
+        <li class="homepage-signal-nav__item">
+            <a class="homepage-signal-nav__link" href="#capabilities" data-homepage-signal-link>
+                {% trans "Capabilities" %}
+            </a>
+        </li>
+        <li class="homepage-signal-nav__item">
+            <a class="homepage-signal-nav__link" href="#how-it-works" data-homepage-signal-link>
+                {% trans "How it works" %}
+            </a>
+        </li>
+        <li class="homepage-signal-nav__item">
+            <a class="homepage-signal-nav__link" href="#trust" data-homepage-signal-link>
+                {% trans "Trust" %}
+            </a>
+        </li>
+        <li class="homepage-signal-nav__item">
+            <a class="homepage-signal-nav__link" href="#principles" data-homepage-signal-link>
+                {% trans "Principles" %}
+            </a>
+        </li>
+        <li class="homepage-signal-nav__item">
+            <a class="homepage-signal-nav__link" href="#explore" data-homepage-signal-link>
+                {% trans "Explore" %}
+            </a>
+        </li>
+    </ol>
+
+    <div class="homepage-signal-nav__progress" aria-hidden="true">
+        <span class="homepage-signal-nav__progress-value" data-homepage-signal-progress></span>
+    </div>
+</nav>

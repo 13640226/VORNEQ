@@ -38,7 +38,7 @@ msgid "Allowed product formats: PDF, ZIP, MP3, WAV and EPUB."
 msgstr "Erlaubte Produktformate: PDF, ZIP, MP3, WAV und EPUB."
 
 msgid "Already have an account? Sign in"
-msgstr "Du hast bereits ein Konto? Anmelden"
+msgstr "Sie haben bereits ein Konto? Anmelden"
 
 msgid "Approve, reject, or request changes."
 msgstr "Genehmigen, ablehnen oder Änderungen anfordern."
@@ -47,7 +47,7 @@ msgid "Approved"
 msgstr "Genehmigt"
 
 msgid "Are you sure you want to sign out of your VORNEQ account?"
-msgstr "Möchtest du dich wirklich von deinem VORNEQ-Konto abmelden?"
+msgstr "Möchten Sie sich wirklich von Ihrem VORNEQ-Konto abmelden?"
 
 msgid "Article"
 msgstr "Artikel"
@@ -122,7 +122,7 @@ msgid "Check Your Email"
 msgstr "E-Mail prüfen"
 
 msgid "Choose a strong password for your VORNEQ account."
-msgstr "Wähle ein starkes Passwort für dein VORNEQ-Konto."
+msgstr "Wählen Sie ein starkes Passwort für Ihr VORNEQ-Konto."
 
 msgid "Clear filters"
 msgstr "Filter zurücksetzen"
@@ -149,10 +149,10 @@ msgid "Confirm Email Address"
 msgstr "E-Mail-Adresse bestätigen"
 
 msgid "Confirm that you want to connect this external account to your VORNEQ account."
-msgstr "Bestätige, dass du dieses externe Konto mit deinem VORNEQ-Konto verbinden möchtest."
+msgstr "Bestätigen Sie, dass Sie dieses externe Konto mit Ihrem VORNEQ-Konto verbinden möchten."
 
 msgid "Confirm to continue signing in with the selected provider."
-msgstr "Bestätige, um die Anmeldung mit dem ausgewählten Anbieter fortzusetzen."
+msgstr "Bestätigen Sie, um die Anmeldung mit dem ausgewählten Anbieter fortzusetzen."
 
 msgid "Connect Account"
 msgstr "Konto verbinden"
@@ -176,13 +176,13 @@ msgid "Create Your Account"
 msgstr "Konto erstellen"
 
 msgid "Create a password to sign in with your account credentials."
-msgstr "Erstelle ein Passwort, um dich mit deinen Kontodaten anzumelden."
+msgstr "Erstellen Sie ein Passwort, um sich mit Ihren Kontodaten anzumelden."
 
 msgid "Create new product"
 msgstr "Neues Produkt erstellen"
 
 msgid "Create your first product and submit it for review."
-msgstr "Erstelle dein erstes Produkt und reiche es zur Prüfung ein."
+msgstr "Erstellen Sie Ihr erstes Produkt und reichen Sie es zur Prüfung ein."
 
 msgid "Created at"
 msgstr "Erstellt am"
@@ -215,13 +215,13 @@ msgid "Discover"
 msgstr "Entdecken"
 
 msgid "Discover approved digital products from independent creators on VORNEQ."
-msgstr "Entdecke geprüfte digitale Produkte unabhängiger Anbieter auf VORNEQ."
+msgstr "Entdecken Sie geprüfte digitale Produkte unabhängiger Anbieter auf VORNEQ."
 
 msgid "Discover approved digital products, courses, templates, audio, software, and more from independent creators."
-msgstr "Entdecke geprüfte digitale Produkte, Kurse, Vorlagen, Audio, Software und mehr von unabhängigen Anbietern."
+msgstr "Entdecken Sie geprüfte digitale Produkte, Kurse, Vorlagen, Audio, Software und mehr von unabhängigen Anbietern."
 
 msgid "Discover books, articles, audio, documents, and digital products with VORNEQ."
-msgstr "Entdecke Bücher, Artikel, Audio, Dokumente und digitale Produkte mit VORNEQ."
+msgstr "Entdecken Sie Bücher, Artikel, Audio, Dokumente und digitale Produkte mit VORNEQ."
 
 msgid "Discover knowledge across formats."
 msgstr "Wissen in verschiedenen Formaten entdecken."
@@ -260,16 +260,16 @@ msgid "Empty"
 msgstr "Leer"
 
 msgid "Enter your current password and choose a new one."
-msgstr "Gib dein aktuelles Passwort ein und wähle ein neues."
+msgstr "Geben Sie Ihr aktuelles Passwort ein und wählen Sie ein neues."
 
 msgid "Enter your email address and we'll send you a link to reset your password."
-msgstr "Gib deine E-Mail-Adresse ein. Wir senden dir einen Link zum Zurücksetzen des Passworts."
+msgstr "Geben Sie Ihre E-Mail-Adresse ein. Wir senden Ihnen einen Link zum Zurücksetzen des Passworts."
 
 msgid "Explore books, articles, documents, and audio from the VORNEQ knowledge repository."
-msgstr "Entdecke Bücher, Artikel, Dokumente und Audio im Wissensarchiv von VORNEQ."
+msgstr "Entdecken Sie Bücher, Artikel, Dokumente und Audio im Wissensarchiv von VORNEQ."
 
 msgid "Explore books, articles, documents, and audio in the VORNEQ library."
-msgstr "Entdecke Bücher, Artikel, Dokumente und Audio in der VORNEQ-Bibliothek."
+msgstr "Entdecken Sie Bücher, Artikel, Dokumente und Audio in der VORNEQ-Bibliothek."
 
 msgid "Featured discoveries"
 msgstr "Empfohlene Entdeckungen"
@@ -296,7 +296,7 @@ msgid "Full description"
 msgstr "Vollständige Beschreibung"
 
 msgid "Have something to publish?"
-msgstr "Möchtest du etwas veröffentlichen?"
+msgstr "Möchten Sie etwas veröffentlichen?"
 
 msgid "Home"
 msgstr "Startseite"
@@ -308,7 +308,7 @@ msgid "JPG, PNG or WebP. Maximum size: 10 MB."
 msgstr "JPG, PNG oder WebP. Maximale Größe: 10 MB."
 
 msgid "Join VORNEQ to explore, curate, and share knowledge."
-msgstr "Werde Teil von VORNEQ, um Wissen zu entdecken, zu kuratieren und zu teilen."
+msgstr "Werden Sie Teil von VORNEQ, um Wissen zu entdecken, zu kuratieren und zu teilen."
 
 msgid "Knowledge Discovery Platform"
 msgstr "Plattform zur Wissensentdeckung"
@@ -341,10 +341,10 @@ msgid "Manage Email"
 msgstr "E-Mail verwalten"
 
 msgid "Manage the email addresses connected to your account."
-msgstr "Verwalte die mit deinem Konto verbundenen E-Mail-Adressen."
+msgstr "Verwalten Sie die mit Ihrem Konto verbundenen E-Mail-Adressen."
 
 msgid "Manage your products and submit new work for review."
-msgstr "Verwalte deine Produkte und reiche neue Inhalte zur Prüfung ein."
+msgstr "Verwalten Sie Ihre Produkte und reichen Sie neue Inhalte zur Prüfung ein."
 
 msgid "Marketplace"
 msgstr "Marktplatz"
@@ -422,10 +422,10 @@ msgid "Pending review"
 msgstr "Prüfung ausstehend"
 
 msgid "Please confirm that %(email)s is your email address."
-msgstr "Bitte bestätige, dass %(email)s deine E-Mail-Adresse ist."
+msgstr "Bitte bestätigen Sie, dass %(email)s Ihre E-Mail-Adresse ist."
 
 msgid "Please explain why the product was rejected or what changes are required."
-msgstr "Bitte erkläre, warum das Produkt abgelehnt wurde oder welche Änderungen erforderlich sind."
+msgstr "Bitte erklären Sie, warum das Produkt abgelehnt wurde oder welche Änderungen erforderlich sind."
 
 msgid "Previous"
 msgstr "Zurück"
@@ -509,7 +509,7 @@ msgid "Results for “%(query)s”"
 msgstr "Ergebnisse für „%(query)s“"
 
 msgid "Review and manage external services connected to your account."
-msgstr "Prüfe und verwalte externe Dienste, die mit deinem Konto verbunden sind."
+msgstr "Prüfen und verwalten Sie externe Dienste, die mit Ihrem Konto verbunden sind."
 
 msgid "Review in Django Admin"
 msgstr "In Django Admin prüfen"
@@ -521,7 +521,7 @@ msgid "Review status"
 msgstr "Prüfstatus"
 
 msgid "Review the required details to finish creating your account."
-msgstr "Prüfe die erforderlichen Angaben, um dein Konto fertig einzurichten."
+msgstr "Prüfen Sie die erforderlichen Angaben, um Ihr Konto fertig einzurichten."
 
 msgid "Reviewed at"
 msgstr "Geprüft am"
@@ -545,7 +545,7 @@ msgid "Search books, articles, documents, and audio…"
 msgstr "Bücher, Artikel, Dokumente und Audio durchsuchen…"
 
 msgid "Search books, articles, documents, audio, and digital products from one place."
-msgstr "Durchsuche Bücher, Artikel, Dokumente, Audio und digitale Produkte an einem Ort."
+msgstr "Durchsuchen Sie Bücher, Artikel, Dokumente, Audio und digitale Produkte an einem Ort."
 
 msgid "Search library"
 msgstr "Bibliothek durchsuchen"
@@ -641,13 +641,13 @@ msgid "The audio file is not available for this item."
 msgstr "Für diesen Eintrag ist keine Audiodatei verfügbar."
 
 msgid "The external sign-in flow could not be completed. You can try again or use the standard sign-in form."
-msgstr "Die externe Anmeldung konnte nicht abgeschlossen werden. Versuche es erneut oder nutze die normale Anmeldung."
+msgstr "Die externe Anmeldung konnte nicht abgeschlossen werden. Versuchen Sie es erneut oder nutzen Sie die normale Anmeldung."
 
 msgid "The full text for this library item is not available yet."
 msgstr "Der vollständige Text dieses Bibliothekseintrags ist noch nicht verfügbar."
 
 msgid "The password reset link is invalid or has expired. Please request a new one."
-msgstr "Der Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen. Bitte fordere einen neuen an."
+msgstr "Der Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen an."
 
 msgid "The product is publicly visible only when it is both approved and published."
 msgstr "Das Produkt ist nur öffentlich sichtbar, wenn es genehmigt und veröffentlicht ist."
@@ -668,7 +668,7 @@ msgid "There are no published library items yet."
 msgstr "Es gibt noch keine veröffentlichten Bibliothekseinträge."
 
 msgid "This account is currently inactive. Please contact support if you believe this is an error."
-msgstr "Dieses Konto ist derzeit inaktiv. Bitte kontaktiere den Support, wenn du einen Fehler vermutest."
+msgstr "Dieses Konto ist derzeit inaktiv. Bitte kontaktieren Sie den Support, wenn Sie einen Fehler vermuten."
 
 msgid "This email confirmation link is invalid or has expired."
 msgstr "Dieser E-Mail-Bestätigungslink ist ungültig oder abgelaufen."
@@ -683,13 +683,13 @@ msgid "Try Again"
 msgstr "Erneut versuchen"
 
 msgid "Try a different search term or category."
-msgstr "Versuche einen anderen Suchbegriff oder eine andere Kategorie."
+msgstr "Versuchen Sie einen anderen Suchbegriff oder eine andere Kategorie."
 
 msgid "Try adjusting your keywords or choosing a different content type."
-msgstr "Passe deine Suchbegriffe an oder wähle einen anderen Inhaltstyp."
+msgstr "Passen Sie Ihre Suchbegriffe an oder wählen Sie einen anderen Inhaltstyp."
 
 msgid "Try another keyword or clear the current search."
-msgstr "Versuche ein anderes Stichwort oder lösche die aktuelle Suche."
+msgstr "Versuchen Sie ein anderes Stichwort oder löschen Sie die aktuelle Suche."
 
 msgid "Unverified"
 msgstr "Nicht bestätigt"
@@ -725,42 +725,436 @@ msgid "View details"
 msgstr "Details ansehen"
 
 msgid "We're sorry, but new registrations are currently closed. Please check back later."
-msgstr "Neue Registrierungen sind derzeit geschlossen. Bitte versuche es später erneut."
+msgstr "Neue Registrierungen sind derzeit geschlossen. Bitte versuchen Sie es später erneut."
 
 msgid "We've sent a verification link to your email address. Please check your inbox and follow the link to complete your registration."
-msgstr "Wir haben einen Bestätigungslink an deine E-Mail-Adresse gesendet. Prüfe deinen Posteingang und folge dem Link, um die Registrierung abzuschließen."
+msgstr "Wir haben einen Bestätigungslink an Ihre E-Mail-Adresse gesendet. Prüfen Sie Ihren Posteingang und folgen Sie dem Link, um die Registrierung abzuschließen."
 
 msgid "We've sent you a link to reset your password. Please check your email and follow the instructions."
-msgstr "Wir haben dir einen Link zum Zurücksetzen des Passworts gesendet. Prüfe deine E-Mail und folge den Anweisungen."
+msgstr "Wir haben Ihnen einen Link zum Zurücksetzen des Passworts gesendet. Prüfen Sie Ihre E-Mail und folgen Sie den Anweisungen."
 
 msgid "Welcome back. Sign in to continue your discovery journey."
-msgstr "Willkommen zurück. Melde dich an, um deine Entdeckungsreise fortzusetzen."
+msgstr "Willkommen zurück. Melden Sie sich an, um Ihre Entdeckungsreise fortzusetzen."
 
 msgid "Write moderation notes..."
 msgstr "Prüfnotizen schreiben..."
 
 msgid "You have not submitted any products yet"
-msgstr "Du hast noch keine Produkte eingereicht"
+msgstr "Sie haben noch keine Produkte eingereicht"
 
 msgid "Your browser does not support the audio element."
-msgstr "Dein Browser unterstützt das Audioelement nicht."
+msgstr "Ihr Browser unterstützt das Audioelement nicht."
 
 msgid "Your changes were saved. The product has been returned to the review queue."
-msgstr "Deine Änderungen wurden gespeichert. Das Produkt wurde wieder in die Prüfwarteschlange gestellt."
+msgstr "Ihre Änderungen wurden gespeichert. Das Produkt wurde wieder in die Prüfwarteschlange gestellt."
 
-msgid "Your password has been changed. You can now sign in with your new password."
-msgstr "Dein Passwort wurde geändert. Du kannst dich jetzt mit dem neuen Passwort anmelden."
-
-msgid "Your product was submitted for review."
-msgstr "Dein Produkt wurde zur Prüfung eingereicht."
-
-msgid "philosophy, logic, method"
-msgstr "Philosophie, Logik, Methode"
+# Homepage + Profile additions (formal German)
 
 msgid "%(counter)s result"
 msgid_plural "%(counter)s results"
 msgstr[0] "%(counter)s Ergebnis"
 msgstr[1] "%(counter)s Ergebnisse"
+
+msgid "Knowledge without borders"
+msgstr "Wissen ohne Grenzen"
+
+msgid "The Global"
+msgstr "Global"
+
+msgid "Knowledge"
+msgstr "Wissen"
+
+msgid "Platform"
+msgstr "Plattform"
+
+msgid "Books, articles, documents, audio, and digital products — all in one place."
+msgstr "Bücher, Artikel, Dokumente, Audioinhalte und digitale Produkte — alles an einem Ort."
+
+msgid "Search books, articles, audio, documents, and more…"
+msgstr "Durchsuchen Sie Bücher, Artikel, Audioinhalte, Dokumente und mehr…"
+
+msgid "Search across VORNEQ"
+msgstr "VORNEQ durchsuchen"
+
+msgid "Suggested topics"
+msgstr "Vorgeschlagene Themen"
+
+msgid "Climate change"
+msgstr "Klimawandel"
+
+msgid "Artificial intelligence"
+msgstr "Künstliche Intelligenz"
+
+msgid "Mental health"
+msgstr "Psychische Gesundheit"
+
+msgid "Sustainable cities"
+msgstr "Nachhaltige Städte"
+
+msgid "Productivity"
+msgstr "Produktivität"
+
+msgid "A unified knowledge ecosystem"
+msgstr "Ein einheitliches Wissensökosystem"
+
+msgid "One world. One platform."
+msgstr "Eine Welt. Eine Plattform."
+
+msgid "Built for real scale"
+msgstr "Für reale Skalierung ausgelegt"
+
+msgid "Credibility comes from what exists, not invented numbers."
+msgstr "Glaubwürdigkeit entsteht durch das, was tatsächlich vorhanden ist — nicht durch erfundene Zahlen."
+
+msgid "Public scale metrics and verified ecosystem partners will appear here when production data and relationships are available."
+msgstr "Öffentliche Skalierungskennzahlen und verifizierte Ökosystempartner werden hier angezeigt, sobald reale Produktionsdaten und entsprechende Beziehungen vorliegen."
+
+msgid "Knowledge resources"
+msgstr "Wissensressourcen"
+
+msgid "Global users"
+msgstr "Nutzer weltweit"
+
+msgid "Countries"
+msgstr "Länder"
+
+msgid "Verified partners"
+msgstr "Verifizierte Partner"
+
+msgid "Explore VORNEQ"
+msgstr "VORNEQ erkunden"
+
+msgid "More than search. One connected application ecosystem."
+msgstr "Mehr als Suche. Ein vernetztes Anwendungsökosystem."
+
+msgid "Installed VORNEQ apps are discovered from the canonical Platform Registry rather than hard-coded into the homepage."
+msgstr "Installierte VORNEQ-Apps werden über die kanonische Platform Registry erkannt und nicht fest in die Startseite einprogrammiert."
+
+msgid "Search and explore knowledge across supported formats using VORNEQ's current unified retrieval layer."
+msgstr "Durchsuchen und erkunden Sie Wissen in unterstützten Formaten mit der aktuellen einheitlichen Retrieval-Schicht von VORNEQ."
+
+msgid "Start exploring"
+msgstr "Erkundung starten"
+
+msgid "Installed platform app · %(slug)s"
+msgstr "Installierte Plattform-App · %(slug)s"
+
+msgid "Open in Workspace"
+msgstr "Im Workspace öffnen"
+
+msgid "Apps"
+msgstr "Apps"
+
+msgid "No installable platform apps are currently registered."
+msgstr "Derzeit sind keine installierbaren Plattform-Apps registriert."
+
+msgid "Open Launcher"
+msgstr "Launcher öffnen"
+
+msgid "Build on VORNEQ"
+msgstr "Auf VORNEQ aufbauen"
+
+msgid "A platform with explicit boundaries."
+msgstr "Eine Plattform mit klar definierten Grenzen."
+
+msgid "The homepage reflects the current reviewed platform contract and does not present future capabilities as implemented APIs."
+msgstr "Die Startseite bildet den aktuell geprüften Plattformvertrag ab und stellt zukünftige Capabilities nicht als bereits implementierte APIs dar."
+
+msgid "Stable for current development"
+msgstr "Stabil für die aktuelle Entwicklung"
+
+msgid "Apps, Registry, Launcher & Workspace"
+msgstr "Apps, Registry, Launcher & Workspace"
+
+msgid "Deploy-time app manifests, canonical registry metadata, localized route contribution, Launcher discovery, Workspace context, Identity and Artifact foundations."
+msgstr "App-Manifeste zur Bereitstellungszeit, kanonische Registry-Metadaten, lokalisierte Routenbeiträge, Launcher-Erkennung, Workspace-Kontext sowie Identity- und Artifact-Grundlagen."
+
+msgid "Experimental"
+msgstr "Experimentell"
+
+msgid "Capability discovery"
+msgstr "Capability-Erkennung"
+
+msgid "Capability strings are descriptive discovery metadata only. They do not execute code, grant permissions, or authorize cross-app access."
+msgstr "Capability-Strings sind ausschließlich beschreibende Discovery-Metadaten. Sie führen keinen Code aus, vergeben keine Berechtigungen und autorisieren keinen appübergreifenden Zugriff."
+
+msgid "Future contract"
+msgstr "Künftiger Plattformvertrag"
+
+msgid "Executable providers & integrations"
+msgstr "Ausführbare Provider und Integrationen"
+
+msgid "Executable capabilities, search providers, notifications, external integrations, and other provider contracts require separate versioned design and review."
+msgstr "Ausführbare Capabilities, Suchanbieter, Benachrichtigungen, externe Integrationen und weitere Provider-Verträge erfordern eine separate, versionierte Ausarbeitung und Prüfung."
+
+msgid "Search results"
+msgstr "Suchergebnisse"
+
+msgid "No matches"
+msgstr "Keine Übereinstimmungen"
+
+msgid "Try adjusting your keywords or content type."
+msgstr "Passen Sie Ihre Suchbegriffe oder den Inhaltstyp an."
+
+msgid "The Global Knowledge Platform"
+msgstr "Die globale Wissensplattform"
+
+msgid "Discover knowledge, explore VORNEQ apps, and build on an open platform for connected knowledge."
+msgstr "Entdecken Sie Wissen, erkunden Sie VORNEQ-Apps und bauen Sie auf einer offenen Plattform für vernetztes Wissen auf."
+
+msgid "Knowledge without borders: discover, organize, and build on one connected platform."
+msgstr "Wissen ohne Grenzen: Entdecken, organisieren und entwickeln Sie auf einer vernetzten Plattform."
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Account workspace"
+msgstr "Konto-Workspace"
+
+msgid "My Profile"
+msgstr "Mein Profil"
+
+msgid "Manage your account, access, marketplace activity, and contextual reputation."
+msgstr "Verwalten Sie Ihr Konto, Zugriffe, Marktplatzaktivitäten und Ihre kontextuelle Reputation."
+
+msgid "Edit profile"
+msgstr "Profil bearbeiten"
+
+msgid "Profile navigation"
+msgstr "Profilnavigation"
+
+msgid "Profile sections"
+msgstr "Profilbereiche"
+
+msgid "Overview"
+msgstr "Übersicht"
+
+msgid "My library"
+msgstr "Meine Bibliothek"
+
+msgid "Reputation"
+msgstr "Reputation"
+
+msgid "Settings"
+msgstr "Einstellungen"
+
+msgid "Welcome back, %(name)s"
+msgstr "Willkommen zurück, %(name)s"
+
+msgid "Discover, organize, and build with the account context you already have in VORNEQ."
+msgstr "Entdecken, organisieren und entwickeln Sie mit dem Kontokontext, den Sie bereits in VORNEQ haben."
+
+msgid "Explore marketplace"
+msgstr "Marktplatz erkunden"
+
+msgid "Account summary"
+msgstr "Kontoübersicht"
+
+msgid "Accessible products"
+msgstr "Verfügbare Produkte"
+
+msgid "Active product access currently available to this account."
+msgstr "Derzeit für dieses Konto verfügbarer aktiver Produktzugriff."
+
+msgid "Marketplace products"
+msgstr "Marktplatzprodukte"
+
+msgid "Products created by this account in the marketplace."
+msgstr "Produkte, die von diesem Konto im Marktplatz erstellt wurden."
+
+msgid "Reputation contexts"
+msgstr "Reputationskontexte"
+
+msgid "Context-specific reputation records, never a global trust score."
+msgstr "Kontextspezifische Reputationsdaten, niemals ein globaler Vertrauenswert."
+
+msgid "Account Information"
+msgstr "Kontoinformationen"
+
+msgid "Display name"
+msgstr "Anzeigename"
+
+msgid "Username"
+msgstr "Benutzername"
+
+msgid "Member since"
+msgstr "Mitglied seit"
+
+msgid "Shortcuts"
+msgstr "Verknüpfungen"
+
+msgid "Quick Actions"
+msgstr "Schnellaktionen"
+
+msgid "Review your current product access."
+msgstr "Überprüfen Sie Ihren aktuellen Produktzugriff."
+
+msgid "Seller dashboard"
+msgstr "Verkäufer-Dashboard"
+
+msgid "Manage products you publish in the marketplace."
+msgstr "Verwalten Sie Produkte, die Sie im Marktplatz veröffentlichen."
+
+msgid "Email settings"
+msgstr "E-Mail-Einstellungen"
+
+msgid "Manage email addresses connected to your account."
+msgstr "Verwalten Sie die mit Ihrem Konto verbundenen E-Mail-Adressen."
+
+msgid "Account settings"
+msgstr "Kontoeinstellungen"
+
+msgid "Update security, language, and appearance."
+msgstr "Aktualisieren Sie Sicherheit, Sprache und Darstellung."
+
+msgid "Activity"
+msgstr "Aktivität"
+
+msgid "Recent Activity"
+msgstr "Letzte Aktivitäten"
+
+msgid "No recent activity yet."
+msgstr "Noch keine aktuellen Aktivitäten."
+
+msgid "Access"
+msgstr "Zugriff"
+
+msgid "Products this account can currently access through the existing library mechanism."
+msgstr "Produkte, auf die dieses Konto derzeit über den bestehenden Bibliotheksmechanismus zugreifen kann."
+
+msgid "Browse marketplace"
+msgstr "Marktplatz durchsuchen"
+
+msgid "Access until %(date)s"
+msgstr "Zugriff bis %(date)s"
+
+msgid "Active access"
+msgstr "Aktiver Zugriff"
+
+msgid "Download"
+msgstr "Herunterladen"
+
+msgid "You do not have any active product access yet."
+msgstr "Sie haben noch keinen aktiven Produktzugriff."
+
+msgid "Products created by this account in the VORNEQ marketplace."
+msgstr "Produkte, die von diesem Konto im VORNEQ-Marktplatz erstellt wurden."
+
+msgid "You have not created any marketplace products yet."
+msgstr "Sie haben noch keine Marktplatzprodukte erstellt."
+
+msgid "Contextual reputation"
+msgstr "Kontextuelle Reputation"
+
+msgid "These scores are context-specific projections. They are not a global trust score and do not represent truth."
+msgstr "Diese Bewertungen sind kontextspezifische Projektionen. Sie sind kein globaler Vertrauenswert und stellen keine Wahrheit dar."
+
+msgid "Domain"
+msgstr "Domäne"
+
+msgid "Role"
+msgstr "Rolle"
+
+msgid "Method"
+msgstr "Methode"
+
+msgid "Score"
+msgstr "Bewertung"
+
+msgid "Samples"
+msgstr "Stichproben"
+
+msgid "Last activity"
+msgstr "Letzte Aktivität"
+
+msgid "No contextual reputation has been recorded yet."
+msgstr "Es wurde noch keine kontextuelle Reputation erfasst."
+
+msgid "Account controls"
+msgstr "Kontosteuerung"
+
+msgid "Manage how your profile appears and keep your account access up to date."
+msgstr "Verwalten Sie die Darstellung Ihres Profils und halten Sie Ihren Kontozugriff aktuell."
+
+msgid "Public profile"
+msgstr "Öffentliches Profil"
+
+msgid "Update your name, biography, website, and profile photo."
+msgstr "Aktualisieren Sie Ihren Namen, Ihre Biografie, Ihre Website und Ihr Profilfoto."
+
+msgid "Email addresses"
+msgstr "E-Mail-Adressen"
+
+msgid "Manage verified email addresses for your account."
+msgstr "Verwalten Sie die verifizierten E-Mail-Adressen Ihres Kontos."
+
+msgid "Password & security"
+msgstr "Passwort & Sicherheit"
+
+msgid "Update your account password."
+msgstr "Aktualisieren Sie Ihr Kontopasswort."
+
+msgid "End the current authenticated session."
+msgstr "Beenden Sie die aktuelle authentifizierte Sitzung."
+
+msgid "Experience"
+msgstr "Nutzungserlebnis"
+
+msgid "Language and appearance"
+msgstr "Sprache und Darstellung"
+
+msgid "Choose how VORNEQ is displayed on this device."
+msgstr "Wählen Sie, wie VORNEQ auf diesem Gerät dargestellt wird."
+
+msgid "Language"
+msgstr "Sprache"
+
+msgid "Choose the interface language."
+msgstr "Wählen Sie die Oberflächensprache."
+
+msgid "Theme"
+msgstr "Farbschema"
+
+msgid "Choose a color system for this device, or follow your operating system."
+msgstr "Wählen Sie ein Farbschema für dieses Gerät oder übernehmen Sie die Einstellung Ihres Betriebssystems."
+
+msgid "Theme preference"
+msgstr "Farbschema-Einstellung"
+
+msgid "VORNEQ"
+msgstr "VORNEQ"
+
+msgid "Dark"
+msgstr "Dunkel"
+
+msgid "Light"
+msgstr "Hell"
+
+msgid "Blue"
+msgstr "Blau"
+
+msgid "Gold"
+msgstr "Gold"
+
+msgid "Emerald"
+msgstr "Smaragd"
+
+msgid "Purple"
+msgstr "Lila"
+
+msgid "System"
+msgstr "System"
+
+# Preserved pre-existing catalog entries
+
+msgid "Your password has been changed. You can now sign in with your new password."
+msgstr "Ihr Passwort wurde geändert. Sie können sich jetzt mit dem neuen Passwort anmelden."
+
+msgid "Your product was submitted for review."
+msgstr "Ihr Produkt wurde zur Prüfung eingereicht."
+
+msgid "philosophy, logic, method"
+msgstr "Philosophie, Logik, Methode"
 
 msgid "%(total)s library result"
 msgid_plural "%(total)s library results"
@@ -771,3 +1165,600 @@ msgid "%(total)s product"
 msgid_plural "%(total)s products"
 msgstr[0] "%(total)s Produkt"
 msgstr[1] "%(total)s Produkte"
+
+# Homepage #162 value cards
+
+msgid "Values"
+msgstr "Werte"
+
+msgid "VORNEQ values"
+msgstr "VORNEQ-Werte"
+
+msgid "A simpler path to discover, organize, and access"
+msgstr "Ein einfacherer Weg zum Entdecken, Organisieren und Zugreifen"
+
+msgid "Easy discovery"
+msgstr "Einfaches Entdecken"
+
+msgid "Find knowledge, products, media, and documents from one place and keep the discovery path clear."
+msgstr "Finden Sie Wissen, Produkte, Medien und Dokumente an einem Ort und halten Sie den Weg der Entdeckung übersichtlich."
+
+msgid "Smart organization"
+msgstr "Intelligente Organisation"
+
+msgid "Follow findings with clear context and structure so relevant information remains understandable and usable."
+msgstr "Verfolgen Sie Funde mit klarem Kontext und klarer Struktur, damit relevante Informationen verständlich und nutzbar bleiben."
+
+msgid "Secure access"
+msgstr "Sicherer Zugriff"
+
+msgid "Use clear boundaries and proportionate access for a secure, controllable experience across VORNEQ."
+msgstr "Nutzen Sie klare Grenzen und angemessene Zugriffsrechte für eine sichere, kontrollierbare Erfahrung in ganz VORNEQ."
+
+# Homepage #161 i18n copy
+
+msgid "Global Knowledge Platform"
+msgstr "Globale Wissensplattform"
+
+msgid "Find and organize books, articles, documents, audio content, and digital resources from one place."
+msgstr "Finden und organisieren Sie Bücher, Artikel, Dokumente, Audioinhalte und digitale Ressourcen an einem Ort."
+
+msgid "Start searching"
+msgstr "Suche starten"
+
+msgid "Learn more about VORNEQ"
+msgstr "Mehr über VORNEQ erfahren"
+
+# Homepage #163 user-centric feature cards
+
+msgid "Find relevant resources"
+msgstr "Relevante Ressourcen finden"
+
+msgid "Unified search across books, articles, documents, and audio content"
+msgstr "Einheitliche Suche in Büchern, Artikeln, Dokumenten und Audioinhalten"
+
+msgid "Save and organize your findings"
+msgstr "Funde speichern und organisieren"
+
+msgid "Note-taking, tagging, and quick access to information"
+msgstr "Notizen, Schlagwörter und schneller Zugriff auf Informationen"
+
+msgid "Go to notes"
+msgstr "Zu den Notizen"
+
+msgid "Discover complementary tools and capabilities"
+msgstr "Ergänzende Werkzeuge und Funktionen entdecken"
+
+msgid "Extensions, analytical tools, and specialized services"
+msgstr "Erweiterungen, Analysewerkzeuge und spezialisierte Dienste"
+
+msgid "View marketplace"
+msgstr "Marktplatz ansehen"
+
+# Homepage v3 restore + layer
+
+msgid "Find and organize knowledge, software, products, services, media, and digital resources from one place."
+msgstr "Finden und organisieren Sie Wissen, Software, Produkte, Dienstleistungen, Medien und digitale Ressourcen an einem Ort."
+
+msgid "KNOWLEDGE WITHOUT BORDERS"
+msgstr "WISSEN OHNE GRENZEN"
+
+msgid "Search knowledge, software, products, services, media, and more…"
+msgstr "Wissen, Software, Produkte, Dienstleistungen, Medien und mehr durchsuchen…"
+
+msgid "DISCOVERY SHORTCUTS"
+msgstr "ENTDECKUNGS-SCHNELLZUGRIFFE"
+
+msgid "Discovery shortcuts"
+msgstr "Schnellzugriffe für Entdeckungen"
+
+msgid "Books, articles and research"
+msgstr "Bücher, Artikel und Forschung"
+
+msgid "Documents & Media"
+msgstr "Dokumente & Medien"
+
+msgid "Documents, audio and media"
+msgstr "Dokumente, Audio und Medien"
+
+msgid "Software & Apps"
+msgstr "Software & Apps"
+
+msgid "Applications and digital tools"
+msgstr "Anwendungen und digitale Werkzeuge"
+
+msgid "Products & Commerce"
+msgstr "Produkte & Handel"
+
+msgid "Physical and digital products"
+msgstr "Physische und digitale Produkte"
+
+msgid "Advanced discovery"
+msgstr "Erweiterte Entdeckung"
+
+msgid "EXPLORE"
+msgstr "ERKUNDEN"
+
+msgid "Discover across formats"
+msgstr "Formatübergreifend entdecken"
+
+msgid "Discovery formats"
+msgstr "Entdeckungsformate"
+
+msgid "Videos"
+msgstr "Videos"
+
+msgid "Images"
+msgstr "Bilder"
+
+msgid "News"
+msgstr "Nachrichten"
+
+msgid "Datasets"
+msgstr "Datensätze"
+
+msgid "Presentations"
+msgstr "Präsentationen"
+
+msgid "Additional formats"
+msgstr "Weitere Formate"
+
+msgid "GIFs"
+msgstr "GIFs"
+
+msgid "Social Media"
+msgstr "Soziale Medien"
+
+msgid "Explore topics"
+msgstr "Themen erkunden"
+
+msgid "E-commerce"
+msgstr "E-Commerce"
+
+msgid "Business"
+msgstr "Wirtschaft"
+
+msgid "Science"
+msgstr "Wissenschaft"
+
+msgid "Technology"
+msgstr "Technologie"
+
+msgid "Education"
+msgstr "Bildung"
+
+msgid "Health"
+msgstr "Gesundheit"
+
+msgid "Finance"
+msgstr "Finanzen"
+
+msgid "Art & Design"
+msgstr "Kunst & Design"
+
+msgid "Entertainment"
+msgstr "Unterhaltung"
+
+msgid "Games"
+msgstr "Spiele"
+
+msgid "Digital Collectibles"
+msgstr "Digitale Sammlerstücke"
+
+msgid "Crypto & Blockchain"
+msgstr "Krypto & Blockchain"
+
+msgid "Stocks & Markets"
+msgstr "Aktien & Märkte"
+
+msgid "Real Estate"
+msgstr "Immobilien"
+
+msgid "Travel"
+msgstr "Reisen"
+
+msgid "Services"
+msgstr "Dienstleistungen"
+
+msgid "SOFTWARE & DIGITAL TOOLS"
+msgstr "SOFTWARE & DIGITALE WERKZEUGE"
+
+msgid "Software categories"
+msgstr "Softwarekategorien"
+
+msgid "Development"
+msgstr "Entwicklung"
+
+msgid "Design"
+msgstr "Design"
+
+msgid "Communication"
+msgstr "Kommunikation"
+
+msgid "Media"
+msgstr "Medien"
+
+msgid "Utilities"
+msgstr "Dienstprogramme"
+
+msgid "Format Preview"
+msgstr "Formatvorschau"
+
+msgid "Software preview"
+msgstr "Softwarevorschau"
+
+msgid "COMMERCE"
+msgstr "HANDEL"
+
+msgid "Commerce discovery"
+msgstr "Handel entdecken"
+
+msgid "Digital products"
+msgstr "Digitale Produkte"
+
+msgid "Physical products"
+msgstr "Physische Produkte"
+
+msgid "Software licenses"
+msgstr "Softwarelizenzen"
+
+msgid "Templates"
+msgstr "Vorlagen"
+
+msgid "Digital assets"
+msgstr "Digitale Assets"
+
+msgid "Educational resources"
+msgstr "Bildungsressourcen"
+
+msgid "Professional services"
+msgstr "Professionelle Dienstleistungen"
+
+msgid "Creative services"
+msgstr "Kreative Dienstleistungen"
+
+msgid "Technical services"
+msgstr "Technische Dienstleistungen"
+
+msgid "Business services"
+msgstr "Unternehmensdienstleistungen"
+
+msgid "Education & consulting"
+msgstr "Bildung & Beratung"
+
+msgid "Product preview"
+msgstr "Produktvorschau"
+
+msgid "Service preview"
+msgstr "Dienstleistungsvorschau"
+
+msgid "Video preview"
+msgstr "Videovorschau"
+
+msgid "Video · 12:34"
+msgstr "Video · 12:34"
+
+msgid "Image preview"
+msgstr "Bildvorschau"
+
+msgid "Image · Preview"
+msgstr "Bild · Vorschau"
+
+msgid "Audio preview"
+msgstr "Audiovorschau"
+
+msgid "Audio · 08:21"
+msgstr "Audio · 08:21"
+
+msgid "News preview"
+msgstr "Nachrichtenvorschau"
+
+msgid "News · Preview"
+msgstr "Nachrichten · Vorschau"
+
+msgid "Software · Preview"
+msgstr "Software · Vorschau"
+
+msgid "Product · Preview"
+msgstr "Produkt · Vorschau"
+
+msgid "Service · Preview"
+msgstr "Dienstleistung · Vorschau"
+
+msgid "Contextual Topics"
+msgstr "Kontextuelle Themen"
+
+msgid "Abstract digital objects in context."
+msgstr "Abstrakte digitale Objekte im Kontext."
+
+msgid "Connected systems and distributed records."
+msgstr "Vernetzte Systeme und verteilte Aufzeichnungen."
+
+msgid "Market context without live pricing or trading."
+msgstr "Marktkontext ohne Live-Preise oder Handel."
+
+msgid "Game knowledge and discovery context."
+msgstr "Spielwissen und Entdeckungskontext."
+
+msgid "OUR FOUNDATION"
+msgstr "UNSER FUNDAMENT"
+
+msgid "Platform Principles"
+msgstr "Plattformprinzipien"
+
+msgid "Context, not Score"
+msgstr "Kontext statt Bewertung"
+
+msgid "Information should be understood in context rather than reduced to a single, opaque score."
+msgstr "Informationen sollen im Kontext verstanden und nicht auf eine einzelne undurchsichtige Bewertung reduziert werden."
+
+msgid "Evidence, not Truth"
+msgstr "Evidenz statt Wahrheit"
+
+msgid "Expose sources, evidence, and perspectives so you can form your own conclusions."
+msgstr "Quellen, Belege und Perspektiven werden sichtbar gemacht, damit Sie eigene Schlussfolgerungen ziehen können."
+
+msgid "Portable Identity"
+msgstr "Portable Identität"
+
+msgid "Your identity is designed to travel across experiences, not be trapped in a single app."
+msgstr "Ihre Identität ist dafür ausgelegt, über verschiedene Erlebnisse hinweg mitzuwandern und nicht in einer einzelnen App gebunden zu sein."
+
+msgid "Discover complementary tools and services"
+msgstr "Ergänzende Werkzeuge und Dienste entdecken"
+
+msgid "What you can do"
+msgstr "Was Sie tun können"
+
+msgid "FIND"
+msgstr "FINDEN"
+
+msgid "Search across knowledge, software, products, services, documents, media, and more."
+msgstr "Durchsuchen Sie Wissen, Software, Produkte, Dienstleistungen, Dokumente, Medien und mehr."
+
+msgid "ORGANIZE"
+msgstr "ORGANISIEREN"
+
+msgid "Save, tag, and structure your findings so they remain usable."
+msgstr "Speichern, verschlagworten und strukturieren Sie Ihre Funde, damit sie nutzbar bleiben."
+
+msgid "EXTEND"
+msgstr "ERWEITERN"
+
+msgid "Discover complementary software, tools, and specialized services."
+msgstr "Entdecken Sie ergänzende Software, Werkzeuge und spezialisierte Dienstleistungen."
+
+msgid "Explore digital and physical products and professional services."
+msgstr "Erkunden Sie digitale und physische Produkte sowie professionelle Dienstleistungen."
+
+msgid "Explore products"
+msgstr "Produkte erkunden"
+
+msgid "Explore"
+msgstr "Erkunden"
+
+msgid "Principles"
+msgstr "Prinzipien"
+
+msgid "Capabilities"
+msgstr "Funktionen"
+
+msgid "Knowledge discovered."
+msgstr "Wissen entdeckt."
+
+msgid "English"
+msgstr "Englisch"
+
+msgid "Discover connected evidence."
+msgstr "Vernetzte Evidenz entdecken."
+
+msgid "Explore information through evidence, context, provenance, and relationships."
+msgstr "Informationen anhand von Evidenz, Kontext, Provenienz und Beziehungen erkunden."
+
+msgid "Discover public information"
+msgstr "Öffentliche Informationen entdecken"
+
+msgid "Explore a topic, source, document, or entity"
+msgstr "Thema, Quelle, Dokument oder Entität erkunden"
+
+msgid "Explore a topic, source, document, or entity…"
+msgstr "Thema, Quelle, Dokument oder Entität erkunden…"
+
+msgid "Discovery filters"
+msgstr "Entdeckungsfilter"
+
+msgid "STARTING POINT"
+msgstr "EINSTIEG"
+
+msgid "DISCOVERY"
+msgstr "ENTDECKEN"
+
+msgid "Recently added"
+msgstr "Kürzlich hinzugefügt"
+
+msgid "public results"
+msgstr "öffentliche Ergebnisse"
+
+msgid "This discovery domain is not available yet."
+msgstr "Dieser Entdeckungsbereich ist noch nicht verfügbar."
+
+msgid "VORNEQ will not broaden product metadata into software or service semantics without a verified contract."
+msgstr "VORNEQ erweitert Produktmetadaten nicht ohne verifizierten Vertrag um Software- oder Dienstleistungssemantik."
+
+msgid "Source"
+msgstr "Quelle"
+
+msgid "Media type"
+msgstr "Medientyp"
+
+msgid "Open record"
+msgstr "Datensatz öffnen"
+
+msgid "Discovery pages"
+msgstr "Entdeckungsseiten"
+
+msgid "No connected results found."
+msgstr "Keine verbundenen Ergebnisse gefunden."
+
+msgid "Try another topic, broaden the current filters, or use Search for an exact query."
+msgstr "Versuchen Sie ein anderes Thema, erweitern Sie die aktuellen Filter oder verwenden Sie die Suche für eine genaue Anfrage."
+
+msgid "Open Search"
+msgstr "Suche öffnen"
+
+msgid "Evidence graph"
+msgstr "Evidenzgraph"
+
+msgid "Artifact"
+msgstr "Artefakt"
+
+msgid "Additional public evidence is not shown in this bounded view."
+msgstr "Weitere öffentliche Evidenz wird in dieser begrenzten Ansicht nicht angezeigt."
+
+msgid "Source type"
+msgstr "Quellentyp"
+
+msgid "Additional provenance is not shown in this bounded view."
+msgstr "Weitere Provenienz wird in dieser begrenzten Ansicht nicht angezeigt."
+
+msgid "Inspect context"
+msgstr "Kontext prüfen"
+
+msgid "DISCOVER"
+msgstr "ENTDECKEN"
+
+msgid "Page navigation"
+msgstr "Seitennavigation"
+
+msgid "Evidence"
+msgstr "Evidenz"
+
+msgid "Provenance"
+msgstr "Provenienz"
+
+#, python-format
+msgid "Page %(page)s of %(total_pages)s"
+msgstr "Seite %(page)s von %(total_pages)s"
+
+msgid "Inspect Context"
+msgstr "Kontext prüfen"
+
+msgid "Public attribution, verification, evidence relationships, and provenance context for this VORNEQ artifact."
+msgstr "Öffentliche Zuordnung, Verifizierung, Evidenzbeziehungen und Provenienzkontext für dieses VORNEQ-Artefakt."
+
+msgid "This page presents recorded public context. It does not decide whether the artifact is true, trustworthy, or valuable."
+msgstr "Diese Seite zeigt aufgezeichneten öffentlichen Kontext. Sie entscheidet nicht, ob das Artefakt wahr, vertrauenswürdig oder wertvoll ist."
+
+msgid "Source / Artifact"
+msgstr "Quelle / Artefakt"
+
+msgid "Type"
+msgstr "Typ"
+
+msgid "Artifact ID"
+msgstr "Artefakt-ID"
+
+msgid "Open source artifact"
+msgstr "Quellartefakt öffnen"
+
+msgid "Inspect Evidence Graph"
+msgstr "Evidenzgraph prüfen"
+
+msgid "Identity / Attribution"
+msgstr "Identität / Zuordnung"
+
+msgid "primary"
+msgstr "primär"
+
+msgid "Identity"
+msgstr "Identität"
+
+msgid "No active canonical attribution is recorded for this artifact."
+msgstr "Für dieses Artefakt ist keine aktive kanonische Zuordnung erfasst."
+
+msgid "Verification Summary"
+msgstr "Verifizierungsübersicht"
+
+#, python-format
+msgid "%(count)s completed verification results are publicly summarized for this artifact."
+msgstr "%(count)s abgeschlossene Verifizierungsergebnisse werden für dieses Artefakt öffentlich zusammengefasst."
+
+msgid "Latest outcome"
+msgstr "Letztes Ergebnis"
+
+msgid "Reported confidence"
+msgstr "Gemeldete Konfidenz"
+
+msgid "Recorded"
+msgstr "Erfasst"
+
+msgid "No completed verification result is available."
+msgstr "Kein abgeschlossenes Verifizierungsergebnis ist verfügbar."
+
+msgid "Methods"
+msgstr "Methoden"
+
+msgid "Evidence (Public)"
+msgstr "Evidenz (öffentlich)"
+
+#, python-format
+msgid "%(count)s public evidence relationships are available. Raw claim and evidence content remain undisclosed in V1."
+msgstr "%(count)s öffentliche Evidenzbeziehungen sind verfügbar. Rohe Behauptungs- und Evidenzinhalte bleiben in V1 unveröffentlicht."
+
+msgid "Claim context"
+msgstr "Behauptungskontext"
+
+msgid "No public evidence relationships are available."
+msgstr "Keine öffentlichen Evidenzbeziehungen sind verfügbar."
+
+msgid "V1 shows only non-sensitive provenance fields for evidence already marked public."
+msgstr "V1 zeigt nur nicht sensible Provenienzfelder für Evidenz, die bereits als öffentlich markiert ist."
+
+msgid "No public provenance steps are available."
+msgstr "Keine öffentlichen Provenienzschritte sind verfügbar."
+
+msgid "Inspect another artifact"
+msgstr "Weiteres Artefakt prüfen"
+
+# Public Evidence Orientation V1
+
+msgid "Evidence vocabulary"
+msgstr "Evidenzvokabular"
+
+msgid "A short guide to the public evidence vocabulary used across VORNEQ."
+msgstr "Ein kurzer Leitfaden zum öffentlichen Evidenzvokabular in VORNEQ."
+
+msgid "ORIENTATION"
+msgstr "ORIENTIERUNG"
+
+msgid "A short guide to the terms used across Discover, Context, and the Evidence Graph."
+msgstr "Ein kurzer Leitfaden zu den Begriffen in Discover, Kontext und Evidenzgraph."
+
+msgid "Core terms"
+msgstr "Kernbegriffe"
+
+msgid "A public record that can be inspected through its recorded context and relationships."
+msgstr "Ein öffentlicher Datensatz, der anhand seines aufgezeichneten Kontexts und seiner Beziehungen betrachtet werden kann."
+
+msgid "Recorded material connected to an artifact through a public evidence relationship."
+msgstr "Aufgezeichnetes Material, das über eine öffentliche Evidenzbeziehung mit einem Artefakt verbunden ist."
+
+msgid "Recorded source and time context associated with public evidence."
+msgstr "Aufgezeichneter Quellen- und Zeitkontext, der mit öffentlicher Evidenz verbunden ist."
+
+msgid "The recorded category of a source associated with public evidence."
+msgstr "Die aufgezeichnete Kategorie einer Quelle, die mit öffentlicher Evidenz verbunden ist."
+
+msgid "A bounded view of an artifact and its public evidence and provenance relationships."
+msgstr "Eine begrenzte Ansicht eines Artefakts und seiner öffentlichen Evidenz- und Provenienzbeziehungen."
+
+msgid "Context"
+msgstr "Kontext"
+
+msgid "The recorded public information presented around an artifact, including attribution and evidence relationships."
+msgstr "Die aufgezeichneten öffentlichen Informationen zu einem Artefakt, einschließlich Zuordnung und Evidenzbeziehungen."
+
+#: templates/context.html
+msgid "Public source reference"
+msgstr "Öffentliche Quellenangabe"
+
