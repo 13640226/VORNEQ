@@ -30,6 +30,7 @@
 
   <nav class="context-actions" aria-labelledby="context-title">
     <a href="{% url 'discover' %}"><span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}→{% else %}←{% endif %}</span> {% trans "Discover" %}</a>
+    <a href="{% url 'orientation' %}">{% trans "Evidence vocabulary" %} <span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}←{% else %}→{% endif %}</span></a>
     {% if public_graph_url %}<a href="{% url 'public_graph_presentation' artifact_id=artifact.id %}">{% trans "Inspect Evidence Graph" %} <span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}←{% else %}→{% endif %}</span></a>{% endif %}
   </nav>
 
@@ -74,14 +75,14 @@
         <ul>
           {% for item in claim.evidences %}
             <li>
-              <code>{{ item.evidence_id }}</code> — {{ item.relation }}
+              <code id="evidence-{{ item.evidence_id }}">{{ item.evidence_id }}</code> — {{ item.relation }}
               {% if item.linked_at %}<small>({{ item.linked_at }})</small>{% endif %}
             </li>
           {% endfor %}
         </ul>
       </article>
     {% empty %}
-      <p>{% trans "No public evidence relationships are available." %}</p>
+      <p>{% trans "No public evidence relationships are available for this artifact." %}</p>
     {% endfor %}
   </section>
 
@@ -92,7 +93,10 @@
       {% for step in provenance %}
         <li>
           {{ step.timestamp }} — {{ step.source_type_label }}
-          <small>({% trans "Evidence" %} <code>{{ step.evidence_id }}</code>)</small>
+          <small>(<a href="#evidence-{{ step.evidence_id }}">{% trans "Evidence" %} <code>{{ step.evidence_id }}</code></a>)</small>
+          {% if step.public_source_ref %}
+            <small class="context-provenance__source-ref">{% trans "Public source reference" %}: {{ step.public_source_ref }}</small>
+          {% endif %}
         </li>
       {% empty %}
         <li>{% trans "No public provenance steps are available." %}</li>
