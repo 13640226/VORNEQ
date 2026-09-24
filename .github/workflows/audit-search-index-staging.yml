@@ -44,6 +44,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
           DJANGO_SETTINGS_MODULE: config.settings_render
+          VORNEQ_ENV: staging
         run: |
           python manage.py showmigrations --plan
 
@@ -51,6 +52,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
           DJANGO_SETTINGS_MODULE: config.settings_render
+          VORNEQ_ENV: staging
         run: |
           set -euo pipefail
           python manage.py audit_search_index \
