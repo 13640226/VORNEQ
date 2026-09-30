@@ -1910,3 +1910,13 @@ msgstr "So funktioniert es"
 
 msgid "Trust"
 msgstr "Vertrauen"
+
+# Notes navigation
+msgid "Notes"
+msgstr "Notizen"
+
+msgid "Notes — VORNEQ"
+msgstr "Notizen — VORNEQ"
+
+msgid "My Notes"
+msgstr "Meine Notizen"
