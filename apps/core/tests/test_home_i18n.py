@@ -10,7 +10,7 @@ class HomeTranslationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'lang="de"')
-        self.assertContains(response, 'class="world-home"')
+        self.assertContains(response, 'class="world-home ')
         self.assertContains(response, 'id="start"')
         self.assertContains(response, 'id="principles"')
         self.assertContains(response, 'id="capabilities"')
@@ -28,7 +28,7 @@ class HomeTranslationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'lang="fa"')
         self.assertContains(response, 'dir="rtl"')
-        self.assertContains(response, 'class="world-home"')
+        self.assertContains(response, 'class="world-home ')
         self.assertContains(response, 'id="start"')
         self.assertContains(response, 'id="principles"')
         self.assertContains(response, 'id="capabilities"')

@@ -24,7 +24,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="world-home">
+<div class="world-home world-home--layout-v3">
   <svg class="world-icon-sprite" aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
     <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></symbol>
     <symbol id="icon-graph" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><circle cx="18" cy="18" r="2.5"></circle><path d="m7.3 10.9 8.4-3.8M7.3 13.1l8.4 3.8"></path></symbol>
@@ -37,6 +37,7 @@
 
   <main class="world-home__main">
     <section id="home" class="world-hero" data-homepage-signal-section aria-labelledby="world-home-title">
+      <div class="world-hero__layout">
       <div class="world-hero__copy">
         <p class="world-eyebrow">{% trans "INFRASTRUCTURE FOR TRUSTED SYSTEMS" %}</p>
         <h1 id="world-home-title" class="world-title">{% trans "Evidence-aware infrastructure for connected knowledge." %}</h1>
@@ -75,9 +76,10 @@
           </div>
         </div>
       </aside>
+      </div>
     </section>
 
-    <section id="start" class="world-search-section" data-homepage-signal-section aria-labelledby="world-search-title">
+    <section id="start" class="world-search-section world-home-band world-home-band--search" data-homepage-signal-section aria-labelledby="world-search-title">
       <div class="world-section-head world-section-head--interactive">
         <span class="world-status-led" aria-hidden="true"></span>
         <h2 id="world-search-title" class="world-section-title">{% trans "Search" %}</h2>
@@ -90,7 +92,7 @@
       <p class="world-search__hint">{% trans "Search directly across VORNEQ when you know the topic, record, product, or source you need." %}</p>
     </section>
 
-    <section id="capabilities" class="world-capabilities" data-homepage-signal-section aria-labelledby="world-capabilities-title">
+    <section id="capabilities" class="world-capabilities world-home-band" data-homepage-signal-section aria-labelledby="world-capabilities-title">
       <div class="world-section-head">
         <h2 id="world-capabilities-title" class="world-section-title">{% trans "Capabilities" %}</h2>
       </div>
@@ -122,7 +124,7 @@
       </ul>
     </section>
 
-    <section id="how-it-works" class="world-flow" data-homepage-signal-section aria-labelledby="world-flow-title">
+    <section id="how-it-works" class="world-flow world-home-band" data-homepage-signal-section aria-labelledby="world-flow-title">
       <header class="world-flow__header">
         <p class="world-eyebrow">{% trans "How VORNEQ works" %}</p>
         <h2 id="world-flow-title" class="world-title world-title--md">{% trans "From source material to inspectable context." %}</h2>
@@ -157,7 +159,7 @@
       </ol>
     </section>
 
-    <section id="trust" class="world-trust" data-homepage-signal-section aria-labelledby="world-trust-title">
+    <section id="trust" class="world-trust world-home-band world-home-band--soft" data-homepage-signal-section aria-labelledby="world-trust-title">
       <header class="world-trust__header">
         <p class="world-eyebrow">{% trans "Trust by architecture" %}</p>
         <h2 id="world-trust-title" class="world-title world-title--md">{% trans "Context, evidence, and provenance remain visible." %}</h2>
@@ -187,7 +189,7 @@
       </div>
     </section>
 
-    <section id="principles" class="world-principles" data-homepage-signal-section aria-labelledby="world-principles-title">
+    <section id="principles" class="world-principles world-home-band" data-homepage-signal-section aria-labelledby="world-principles-title">
       <div class="world-section-head">
         <h2 id="world-principles-title" class="world-section-title">{% trans "Platform Principles" %}</h2>
       </div>
@@ -210,7 +212,7 @@
       </ul>
     </section>
 
-    <section id="explore" class="world-final-cta" data-homepage-signal-section aria-labelledby="world-final-cta-title">
+    <section id="explore" class="world-final-cta world-home-band" data-homepage-signal-section aria-labelledby="world-final-cta-title">
       <div class="world-final-cta__content">
         <p class="world-eyebrow">{% trans "Explore VORNEQ" %}</p>
         <h2 id="world-final-cta-title" class="world-title world-title--lg">{% trans "Explore information with its context still attached." %}</h2>
