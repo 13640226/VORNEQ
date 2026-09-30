@@ -1929,9 +1929,6 @@ msgstr "Evidenzbewusste Infrastruktur für vernetztes Wissen."
 msgid "VORNEQ connects discovery, evidence, provenance, and structured records so information can be inspected in context."
 msgstr "VORNEQ verbindet Entdeckung, Evidenz, Provenienz und strukturierte Datensätze, damit Informationen im Kontext geprüft werden können."
 
-msgid "Explore VORNEQ"
-msgstr "VORNEQ erkunden"
-
 msgid "Inspect Evidence"
 msgstr "Evidenz prüfen"
 
