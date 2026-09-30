@@ -15,10 +15,19 @@
 <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
 <link rel="stylesheet" href="{% static 'css/homepage-redesign.css' %}">
 <link rel="stylesheet" href="{% static 'css/homepage-signal-nav-v2.css' %}">
+<link rel="stylesheet" href="{% static 'css/homepage-modern-v2.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="world-home">
+  <svg class="world-icon-sprite" aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></symbol>
+    <symbol id="icon-graph" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><circle cx="18" cy="18" r="2.5"></circle><path d="m7.3 10.9 8.4-3.8M7.3 13.1l8.4 3.8"></path></symbol>
+    <symbol id="icon-evidence" viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z"></path><path d="M15 3v5h5M10 13l2 2 4-4"></path></symbol>
+    <symbol id="icon-market" viewBox="0 0 24 24"><path d="M4 9h16l-1-5H5zM5 9v11h14V9M9 20v-6h6v6"></path></symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"></path></symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.8 2.9 8.2 7 10 4.1-1.8 7-5.2 7-10V6z"></path><path d="m9 12 2 2 4-4"></path></symbol>
+  </svg>
   {% include "partials/_homepage_signal_nav.html" %}
 
   <main class="world-home__main">
@@ -30,20 +39,36 @@
         <div class="world-hero__actions">
           <a href="{% url 'discover' %}" class="world-cta">
             {% if LANGUAGE_CODE == 'de' %}Plattform erkunden{% else %}{% trans "Explore Platform" %}{% endif %}
+            <svg class="world-icon world-icon--sm" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+          </a>
+          <a href="#trust" class="world-cta world-cta--secondary">
+            {% if LANGUAGE_CODE == 'de' %}Evidenz ansehen{% else %}{% trans "View Evidence" %}{% endif %}
           </a>
         </div>
       </div>
 
-      <aside class="world-hero-cover" aria-label="{% if LANGUAGE_CODE == 'de' %}VORNEQ-Plattform{% else %}{% trans 'VORNEQ platform' %}{% endif %}">
-        <img
-          src="{% static 'images/vorneq-hero-infrastructure.webp' %}"
-          alt="{% if LANGUAGE_CODE == 'de' %}Digitale Infrastrukturplattform von VORNEQ{% else %}{% trans 'VORNEQ digital infrastructure platform' %}{% endif %}"
-          class="world-hero-cover__image"
-          width="1536"
-          height="768"
-          loading="eager"
-          fetchpriority="high"
-        >
+      <aside class="world-evidence-panel" aria-label="{% if LANGUAGE_CODE == 'de' %}Evidenz- und Wissensübersicht{% else %}{% trans 'Evidence and knowledge overview' %}{% endif %}">
+        <div class="world-evidence-panel__head">
+          <p class="world-evidence-panel__title">{% if LANGUAGE_CODE == 'de' %}Evidence Signal{% else %}{% trans "Evidence Signal" %}{% endif %}</p>
+          <span class="status-indicator" data-state="verified" aria-label="{% trans 'Verified' %}"><span class="status-indicator__led" aria-hidden="true"></span><span>{% if LANGUAGE_CODE == 'de' %}Verifiziert{% else %}{% trans "Verified" %}{% endif %}</span></span>
+        </div>
+        <div class="world-evidence-panel__graph" aria-hidden="true">
+          <span class="world-node world-node--a"><svg class="world-icon"><use href="#icon-evidence"></use></svg></span>
+          <span class="world-node world-node--b"><svg class="world-icon"><use href="#icon-graph"></use></svg></span>
+          <span class="world-node world-node--c"><svg class="world-icon"><use href="#icon-shield"></use></svg></span>
+        </div>
+        <div class="world-evidence-list">
+          <a class="evidence-signal" href="#trust">
+            <span class="status-indicator" data-state="verified" aria-hidden="true"><span class="status-indicator__led"></span></span>
+            <span class="evidence-signal__body"><span class="evidence-signal__label">{% if LANGUAGE_CODE == 'de' %}Quelle verbunden{% else %}{% trans "Source connected" %}{% endif %}</span><span class="evidence-signal__meta">{% if LANGUAGE_CODE == 'de' %}Beleg → Kontext → Wissensknoten{% else %}{% trans "Evidence → context → knowledge node" %}{% endif %}</span></span>
+            <svg class="world-icon world-icon--sm" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+          </a>
+          <div class="evidence-signal">
+            <span class="status-indicator" data-state="active" aria-hidden="true"><span class="status-indicator__led"></span></span>
+            <span class="evidence-signal__body"><span class="evidence-signal__label">{% if LANGUAGE_CODE == 'de' %}Provenienz aktiv{% else %}{% trans "Provenance active" %}{% endif %}</span><span class="evidence-signal__meta">{% if LANGUAGE_CODE == 'de' %}Nachvollziehbare Beziehung{% else %}{% trans "Traceable relationship" %}{% endif %}</span></span>
+            <svg class="world-icon world-icon--sm" aria-hidden="true"><use href="#icon-graph"></use></svg>
+          </div>
+        </div>
       </aside>
     </section>
 
@@ -53,6 +78,7 @@
         <h2 id="world-search-title" class="world-section-title">{% if LANGUAGE_CODE == 'de' %}Suchen{% else %}{% trans "Search" %}{% endif %}</h2>
       </div>
       <form method="get" action="{% url 'search_page' %}" class="world-search" role="search" aria-label="{% if LANGUAGE_CODE == 'de' %}VORNEQ durchsuchen{% else %}{% trans 'Search VORNEQ' %}{% endif %}">
+        <svg class="world-icon world-search__icon" aria-hidden="true"><use href="#icon-search"></use></svg>
         <input type="search" name="q" maxlength="200" class="world-search__input" placeholder="{% if LANGUAGE_CODE == 'de' %}VORNEQ durchsuchen…{% else %}{% trans 'Search across VORNEQ…' %}{% endif %}" aria-label="{% if LANGUAGE_CODE == 'de' %}VORNEQ durchsuchen{% else %}{% trans 'Search across VORNEQ' %}{% endif %}">
         <button type="submit" class="world-search__submit">{% if LANGUAGE_CODE == 'de' %}Suchen{% else %}{% trans "Search" %}{% endif %}</button>
       </form>
@@ -66,7 +92,7 @@
       <ul class="world-capabilities__grid">
         <li class="world-capability">
           <a class="world-capability__surface" href="{% url 'search_page' %}">
-            <span class="world-status-led" aria-hidden="true"></span>
+            <span class="world-capability__icon" aria-hidden="true"><svg class="world-icon"><use href="#icon-search"></use></svg></span>
             <h3>{% if LANGUAGE_CODE == 'de' %}Suchen{% else %}{% trans "Search" %}{% endif %}</h3>
             <p>{% if LANGUAGE_CODE == 'de' %}Strukturierte Suche nach Wissen, Software, Produkten und Dienstleistungen.{% else %}{% trans "Structured query across knowledge, software, products, and services." %}{% endif %}</p>
             <span class="world-capability__link">{% if LANGUAGE_CODE == 'de' %}Suche öffnen{% else %}{% trans "Open Search" %}{% endif %}</span>
@@ -74,7 +100,7 @@
         </li>
         <li class="world-capability">
           <a class="world-capability__surface" href="{% url 'discover' %}">
-            <span class="world-status-led" aria-hidden="true"></span>
+            <span class="world-capability__icon" aria-hidden="true"><svg class="world-icon"><use href="#icon-graph"></use></svg></span>
             <h3>{% if LANGUAGE_CODE == 'de' %}Entdecken{% else %}{% trans "Discover" %}{% endif %}</h3>
             <p>{% if LANGUAGE_CODE == 'de' %}Eine kanonische Entdeckungsoberfläche innerhalb des VORNEQ-Ökosystems.{% else %}{% trans "A canonical discovery surface within the VORNEQ ecosystem." %}{% endif %}</p>
             <span class="world-capability__link">{% if LANGUAGE_CODE == 'de' %}Entdecken öffnen{% else %}{% trans "Open Discover" %}{% endif %}</span>
@@ -82,7 +108,7 @@
         </li>
         <li class="world-capability">
           <a class="world-capability__surface" href="{% url 'marketplace:index' %}">
-            <span class="world-status-led" aria-hidden="true"></span>
+            <span class="world-capability__icon" aria-hidden="true"><svg class="world-icon"><use href="#icon-market"></use></svg></span>
             <h3>{% if LANGUAGE_CODE == 'de' %}Marktplatz{% else %}{% trans "Marketplace" %}{% endif %}</h3>
             <p>{% if LANGUAGE_CODE == 'de' %}Eine vertrauenswürdige Transaktionsoberfläche für Angebote und Lösungen.{% else %}{% trans "A trusted transactional surface for offerings and solutions." %}{% endif %}</p>
             <span class="world-capability__link">{% if LANGUAGE_CODE == 'de' %}Marktplatz öffnen{% else %}{% trans "Open Marketplace" %}{% endif %}</span>
