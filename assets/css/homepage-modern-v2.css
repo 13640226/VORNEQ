@@ -1,4 +1,8 @@
 /* VORNEQ Homepage Modern UI v2 — semantic presentation layer */
+/* Homepage shell: use the existing higher-contrast accent role for textual accent usage. */
+html:has(.world-home) {
+  --color-accent: var(--color-accent-hover);
+}
 .world-home {
   --home-surface: var(--color-bg-page);
   --home-surface-raised: var(--color-bg-elevated);
