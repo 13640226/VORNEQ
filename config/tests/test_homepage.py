@@ -138,7 +138,7 @@ class HomepageSimplificationTests(TestCase):
 
         self.assertContains(
             response,
-            "Precision infrastructure for a trusted digital future.",
+            "Evidence-aware infrastructure for connected knowledge.",
         )
         self.assertContains(response, "Context, not Score")
         self.assertContains(response, "Evidence, not Truth")

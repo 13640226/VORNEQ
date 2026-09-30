@@ -3,6 +3,7 @@
 from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import get_language
@@ -62,6 +63,21 @@ def _standalone_search_filters(request):
     if price_max is not None:
         filters["price_max"] = price_max
     return filters
+
+
+def robots_txt(request):
+    """Expose a minimal crawl policy for public surfaces."""
+    sitemap_url = request.build_absolute_uri("/sitemap.xml")
+    return HttpResponse(f"User-agent: *\\nAllow: /\\nSitemap: {sitemap_url}\\n", content_type="text/plain")
+
+
+def sitemap_xml(request):
+    """Expose localized homepage URLs without adding a sitemap dependency."""
+    locations = [request.build_absolute_uri(f"/{language}/") for language in ("fa", "en", "de")]
+    body = '<?xml version="1.0" encoding="UTF-8"?>\\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\\n' + "".join(
+        f"  <url><loc>{location}</loc></url>\\n" for location in locations
+    ) + "</urlset>\\n"
+    return HttpResponse(body, content_type="application/xml")
 
 
 def home(request):

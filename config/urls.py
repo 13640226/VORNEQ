@@ -14,12 +14,14 @@ from config.health import health_check
 from config.inspect_views import context_view, inspect_entry
 from config.metrics import metrics_view
 from config.public_graph_views import public_graph_presentation_view, public_graph_view
-from config.views import discover, home, orientation, profile, search_page
+from config.views import discover, home, orientation, profile, robots_txt, search_page, sitemap_xml
 
 
 # Non-localized operational and API endpoints.
 urlpatterns = [
     path("health/", health_check, name="health"),
+    path("robots.txt", robots_txt, name="robots_txt"),
+    path("sitemap.xml", sitemap_xml, name="sitemap_xml"),
     path("metrics", metrics_view, name="prometheus-django-metrics"),
     path("", include("django_prometheus.urls")),
     path("i18n/", include("django.conf.urls.i18n")),

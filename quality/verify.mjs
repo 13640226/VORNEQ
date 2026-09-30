@@ -38,7 +38,19 @@ try {
       for (const violation of axe.violations) {
         const impact = violation.impact || 'unknown';
         if (['serious', 'critical'].includes(impact)) {
-          record(surface, locale, 'accessibility', violation.id, 'fail', { impact, help: violation.help, nodes: violation.nodes.length });
+          record(surface, locale, 'accessibility', violation.id, 'fail', {
+            impact,
+            help: violation.help,
+            nodes: violation.nodes.length,
+            nodeDetails: violation.nodes.map(node => ({
+              target: node.target,
+              html: node.html,
+              failureSummary: node.failureSummary,
+              any: node.any.map(check => ({ id: check.id, message: check.message, data: check.data })),
+              all: node.all.map(check => ({ id: check.id, message: check.message, data: check.data })),
+              none: node.none.map(check => ({ id: check.id, message: check.message, data: check.data })),
+            })),
+          });
         }
       }
       if (!axe.violations.some(v => ['serious', 'critical'].includes(v.impact || ''))) {

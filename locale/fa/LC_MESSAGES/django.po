@@ -1749,3 +1749,83 @@ msgstr "در سطوح متصل پلتفرم VORNEQ جستجو، کشف و پیم
 
 msgid "VORNEQ positioning"
 msgstr "جایگاه VORNEQ"
+
+# Homepage content upgrade
+
+msgid "Evidence-aware infrastructure for connected knowledge."
+msgstr "زیرساخت مبتنی بر شواهد برای دانشِ متصل."
+
+msgid "VORNEQ connects discovery, evidence, provenance, and structured records so information can be inspected in context."
+msgstr "VORNEQ کشف، شواهد، منشأ و رکوردهای ساختاریافته را به هم متصل می‌کند تا اطلاعات در زمینهٔ خود قابل بررسی باشند."
+
+msgid "Inspect Evidence"
+msgstr "بررسی شواهد"
+
+msgid "Evidence connected"
+msgstr "شواهد متصل"
+
+msgid "Source → evidence → context"
+msgstr "منبع ← شواهد ← زمینه"
+
+msgid "Provenance recorded"
+msgstr "منشأ ثبت‌شده"
+
+msgid "Inspectable relationship"
+msgstr "رابطهٔ قابل بررسی"
+
+msgid "Search directly across VORNEQ when you know the topic, record, product, or source you need."
+msgstr "وقتی موضوع، رکورد، محصول یا منبع موردنیاز را می‌دانید، مستقیماً در VORNEQ جستجو کنید."
+
+msgid "Find records across VORNEQ through a focused search surface."
+msgstr "رکوردها را از طریق سطح جستجوی متمرکز VORNEQ پیدا کنید."
+
+msgid "Explore public information through connected context, evidence, and relationships."
+msgstr "اطلاعات عمومی را از مسیر زمینه، شواهد و روابط متصل کاوش کنید."
+
+msgid "Browse published offerings through VORNEQ's marketplace surface."
+msgstr "ارائه‌های منتشرشده را از طریق سطح بازارچهٔ VORNEQ مرور کنید."
+
+msgid "From source material to inspectable context."
+msgstr "از محتوای منبع تا زمینهٔ قابل بررسی."
+
+msgid "VORNEQ keeps records, evidence, provenance, and relationships connected so context remains visible as information moves through the platform."
+msgstr "VORNEQ رکوردها، شواهد، منشأ و روابط را متصل نگه می‌دارد تا هنگام حرکت اطلاعات در پلتفرم، زمینهٔ آن قابل مشاهده بماند."
+
+msgid "Bring supported records and source material into structured VORNEQ surfaces."
+msgstr "رکوردهای پشتیبانی‌شده و محتوای منبع را وارد سطوح ساختاریافتهٔ VORNEQ کنید."
+
+msgid "Represent information as clear records that can be referenced and inspected."
+msgstr "اطلاعات را به‌صورت رکوردهای روشن و قابل ارجاع و بررسی نمایش دهید."
+
+msgid "Associate claims with recorded evidence while preserving public context."
+msgstr "ادعاها را به شواهد ثبت‌شده مرتبط کنید و زمینهٔ عمومی را حفظ کنید."
+
+msgid "Connect records, entities, sources, and evidence through explicit relationships."
+msgstr "رکوردها، موجودیت‌ها، منابع و شواهد را از طریق روابط صریح به هم متصل کنید."
+
+msgid "Navigate connected public information through Search, Discover, Context, and Evidence Graph surfaces."
+msgstr "اطلاعات عمومی متصل را از طریق جستجو، کشف، زمینه و گراف شواهد پیمایش کنید."
+
+msgid "Context, evidence, and provenance remain visible."
+msgstr "زمینه، شواهد و منشأ قابل مشاهده می‌مانند."
+
+msgid "VORNEQ presents recorded context and relationships without turning them into a hidden trust score or a claim of truth."
+msgstr "VORNEQ زمینه و روابط ثبت‌شده را نمایش می‌دهد، بدون اینکه آن‌ها را به امتیاز پنهان اعتماد یا ادعای حقیقت تبدیل کند."
+
+msgid "Public views are bounded to information intended for disclosure; private data remains outside those public evidence surfaces."
+msgstr "نماهای عمومی به اطلاعاتی محدود هستند که برای انتشار در نظر گرفته شده‌اند؛ داده‌های خصوصی خارج از این سطوح عمومی شواهد باقی می‌مانند."
+
+msgid "Recorded attribution, verification, and provenance provide inspectable context where those records are available."
+msgstr "انتساب، راستی‌آزمایی و منشأ ثبت‌شده، در صورت وجود رکوردها، زمینه‌ای قابل بررسی فراهم می‌کنند."
+
+msgid "Public evidence relationships keep supporting material connected to the records and claims they contextualize."
+msgstr "روابط عمومی شواهد، محتوای پشتیبان را به رکوردها و ادعاهایی که برایشان زمینه فراهم می‌کنند متصل نگه می‌دارند."
+
+msgid "Platform infrastructure is organized around explicit records, boundaries, and operational continuity."
+msgstr "زیرساخت پلتفرم پیرامون رکوردهای صریح، مرزهای مشخص و تداوم عملیاتی سازمان‌دهی شده است."
+
+msgid "Explore information with its context still attached."
+msgstr "اطلاعات را همراه با زمینهٔ آن کاوش کنید."
+
+msgid "Move from search and discovery into recorded context, evidence relationships, provenance, documents, and marketplace surfaces."
+msgstr "از جستجو و کشف به زمینهٔ ثبت‌شده، روابط شواهد، منشأ، اسناد و سطوح بازارچه حرکت کنید."
