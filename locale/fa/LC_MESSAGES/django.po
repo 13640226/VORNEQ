@@ -1758,9 +1758,6 @@ msgstr "زیرساخت مبتنی بر شواهد برای دانشِ متصل."
 msgid "VORNEQ connects discovery, evidence, provenance, and structured records so information can be inspected in context."
 msgstr "VORNEQ کشف، شواهد، منشأ و رکوردهای ساختاریافته را به هم متصل می‌کند تا اطلاعات در زمینهٔ خود قابل بررسی باشند."
 
-msgid "Explore VORNEQ"
-msgstr "کاوش VORNEQ"
-
 msgid "Inspect Evidence"
 msgstr "بررسی شواهد"
 
