@@ -1,11 +1,16 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}VORNEQ — {% if LANGUAGE_CODE == 'de' %}Präzise digitale Infrastruktur{% else %}{% trans "Precision Digital Infrastructure" %}{% endif %}{% endblock %}
+{% block title %}VORNEQ — {% trans "Precision Digital Infrastructure" %}{% endblock %}
 
 {% block meta %}
-<meta name="description" content="{% if LANGUAGE_CODE == 'de' %}VORNEQ entwickelt zuverlässige digitale Infrastruktur für Systeme, Produkte und Organisationen, die Klarheit, Resilienz und langfristiges Vertrauen erfordern.{% else %}{% trans 'VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust.' %}{% endif %}">
-<meta property="og:title" content="VORNEQ — {% if LANGUAGE_CODE == 'de' %}Präzise digitale Infrastruktur{% else %}{% trans 'Precision Digital Infrastructure' %}{% endif %}">
+<link rel="canonical" href="{% url 'home' %}">
+{% language 'fa' %}<link rel="alternate" hreflang="fa" href="{% url 'home' %}">{% endlanguage %}
+{% language 'en' %}<link rel="alternate" hreflang="en" href="{% url 'home' %}">{% endlanguage %}
+{% language 'de' %}<link rel="alternate" hreflang="de" href="{% url 'home' %}">{% endlanguage %}
+{% language 'en' %}<link rel="alternate" hreflang="x-default" href="{% url 'home' %}">{% endlanguage %}
+<meta name="description" content="{% trans 'VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust.' %}">
+<meta property="og:title" content="VORNEQ — {% trans 'Precision Digital Infrastructure' %}">
 <meta property="og:description" content="{% trans 'Dependable digital infrastructure for clarity, resilience, and long-term trust.' %}">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
@@ -33,24 +38,24 @@
   <main class="world-home__main">
     <section id="home" class="world-hero" data-homepage-signal-section aria-labelledby="world-home-title">
       <div class="world-hero__copy">
-        <p class="world-eyebrow">{% if LANGUAGE_CODE == 'de' %}INFRASTRUKTUR FÜR VERTRAUENSWÜRDIGE SYSTEME{% else %}{% trans "INFRASTRUCTURE FOR TRUSTED SYSTEMS" %}{% endif %}</p>
-        <h1 id="world-home-title" class="world-title">{% if LANGUAGE_CODE == 'de' %}Präzise Infrastruktur für eine vertrauenswürdige digitale Zukunft.{% else %}{% trans "Precision infrastructure for a trusted digital future." %}{% endif %}</h1>
-        <p class="world-subtitle">{% if LANGUAGE_CODE == 'de' %}VORNEQ entwickelt zuverlässige digitale Infrastruktur für Systeme, Produkte und Organisationen, die Klarheit, Resilienz und langfristiges Vertrauen erfordern.{% else %}{% trans "VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust." %}{% endif %}</p>
+        <p class="world-eyebrow">{% trans "INFRASTRUCTURE FOR TRUSTED SYSTEMS" %}</p>
+        <h1 id="world-home-title" class="world-title">{% trans "Precision infrastructure for a trusted digital future." %}</h1>
+        <p class="world-subtitle">{% trans "VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust." %}</p>
         <div class="world-hero__actions">
           <a href="{% url 'discover' %}" class="world-cta">
-            {% if LANGUAGE_CODE == 'de' %}Plattform erkunden{% else %}{% trans "Explore Platform" %}{% endif %}
+            {% trans "Explore Platform" %}
             <svg class="world-icon world-icon--sm" aria-hidden="true"><use href="#icon-arrow"></use></svg>
           </a>
           <a href="#trust" class="world-cta world-cta--secondary">
-            {% if LANGUAGE_CODE == 'de' %}Evidenz ansehen{% else %}{% trans "View Evidence" %}{% endif %}
+            {% trans "View Evidence" %}
           </a>
         </div>
       </div>
 
-      <aside class="world-evidence-panel" aria-label="{% if LANGUAGE_CODE == 'de' %}Evidenz- und Wissensübersicht{% else %}{% trans 'Evidence and knowledge overview' %}{% endif %}">
+      <aside class="world-evidence-panel" aria-label="{% trans 'Evidence and knowledge overview' %}">
         <div class="world-evidence-panel__head">
-          <p class="world-evidence-panel__title">{% if LANGUAGE_CODE == 'de' %}Evidence Signal{% else %}{% trans "Evidence Signal" %}{% endif %}</p>
-          <span class="status-indicator" data-state="verified" aria-label="{% trans 'Verified' %}"><span class="status-indicator__led" aria-hidden="true"></span><span>{% if LANGUAGE_CODE == 'de' %}Verifiziert{% else %}{% trans "Verified" %}{% endif %}</span></span>
+          <p class="world-evidence-panel__title">{% trans "Evidence Signal" %}</p>
+          <span class="status-indicator" data-state="verified" aria-label="{% trans 'Verified' %}"><span class="status-indicator__led" aria-hidden="true"></span><span>{% trans "Verified" %}</span></span>
         </div>
         <div class="world-evidence-panel__graph" aria-hidden="true">
           <span class="world-node world-node--a"><svg class="world-icon"><use href="#icon-evidence"></use></svg></span>
@@ -60,12 +65,12 @@
         <div class="world-evidence-list">
           <a class="evidence-signal" href="#trust">
             <span class="status-indicator" data-state="verified" aria-hidden="true"><span class="status-indicator__led"></span></span>
-            <span class="evidence-signal__body"><span class="evidence-signal__label">{% if LANGUAGE_CODE == 'de' %}Quelle verbunden{% else %}{% trans "Source connected" %}{% endif %}</span><span class="evidence-signal__meta">{% if LANGUAGE_CODE == 'de' %}Beleg → Kontext → Wissensknoten{% else %}{% trans "Evidence → context → knowledge node" %}{% endif %}</span></span>
+            <span class="evidence-signal__body"><span class="evidence-signal__label">{% trans "Source connected" %}</span><span class="evidence-signal__meta">{% trans "Evidence → context → knowledge node" %}</span></span>
             <svg class="world-icon world-icon--sm" aria-hidden="true"><use href="#icon-arrow"></use></svg>
           </a>
           <div class="evidence-signal">
             <span class="status-indicator" data-state="active" aria-hidden="true"><span class="status-indicator__led"></span></span>
-            <span class="evidence-signal__body"><span class="evidence-signal__label">{% if LANGUAGE_CODE == 'de' %}Provenienz aktiv{% else %}{% trans "Provenance active" %}{% endif %}</span><span class="evidence-signal__meta">{% if LANGUAGE_CODE == 'de' %}Nachvollziehbare Beziehung{% else %}{% trans "Traceable relationship" %}{% endif %}</span></span>
+            <span class="evidence-signal__body"><span class="evidence-signal__label">{% trans "Provenance active" %}</span><span class="evidence-signal__meta">{% trans "Traceable relationship" %}</span></span>
             <svg class="world-icon world-icon--sm" aria-hidden="true"><use href="#icon-graph"></use></svg>
           </div>
         </div>
@@ -75,43 +80,43 @@
     <section id="start" class="world-search-section" data-homepage-signal-section aria-labelledby="world-search-title">
       <div class="world-section-head world-section-head--interactive">
         <span class="world-status-led" aria-hidden="true"></span>
-        <h2 id="world-search-title" class="world-section-title">{% if LANGUAGE_CODE == 'de' %}Suchen{% else %}{% trans "Search" %}{% endif %}</h2>
+        <h2 id="world-search-title" class="world-section-title">{% trans "Search" %}</h2>
       </div>
-      <form method="get" action="{% url 'search_page' %}" class="world-search" role="search" aria-label="{% if LANGUAGE_CODE == 'de' %}VORNEQ durchsuchen{% else %}{% trans 'Search VORNEQ' %}{% endif %}">
+      <form method="get" action="{% url 'search_page' %}" class="world-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
         <svg class="world-icon world-search__icon" aria-hidden="true"><use href="#icon-search"></use></svg>
-        <input type="search" name="q" maxlength="200" class="world-search__input" placeholder="{% if LANGUAGE_CODE == 'de' %}VORNEQ durchsuchen…{% else %}{% trans 'Search across VORNEQ…' %}{% endif %}" aria-label="{% if LANGUAGE_CODE == 'de' %}VORNEQ durchsuchen{% else %}{% trans 'Search across VORNEQ' %}{% endif %}">
-        <button type="submit" class="world-search__submit">{% if LANGUAGE_CODE == 'de' %}Suchen{% else %}{% trans "Search" %}{% endif %}</button>
+        <input type="search" name="q" maxlength="200" class="world-search__input" placeholder="{% trans 'Search across VORNEQ…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
+        <button type="submit" class="world-search__submit">{% trans "Search" %}</button>
       </form>
-      <p class="world-search__hint">{% if LANGUAGE_CODE == 'de' %}Geben Sie eine Suchanfrage ein, wenn Sie wissen, wonach Sie suchen.{% else %}{% trans "Use a query when you know what you want to find." %}{% endif %}</p>
+      <p class="world-search__hint">{% trans "Use a query when you know what you want to find." %}</p>
     </section>
 
     <section id="capabilities" class="world-capabilities" data-homepage-signal-section aria-labelledby="world-capabilities-title">
       <div class="world-section-head">
-        <h2 id="world-capabilities-title" class="world-section-title">{% if LANGUAGE_CODE == 'de' %}Funktionen{% else %}{% trans "Capabilities" %}{% endif %}</h2>
+        <h2 id="world-capabilities-title" class="world-section-title">{% trans "Capabilities" %}</h2>
       </div>
       <ul class="world-capabilities__grid">
         <li class="world-capability">
           <a class="world-capability__surface" href="{% url 'search_page' %}">
             <span class="world-capability__icon" aria-hidden="true"><svg class="world-icon"><use href="#icon-search"></use></svg></span>
-            <h3>{% if LANGUAGE_CODE == 'de' %}Suchen{% else %}{% trans "Search" %}{% endif %}</h3>
-            <p>{% if LANGUAGE_CODE == 'de' %}Strukturierte Suche nach Wissen, Software, Produkten und Dienstleistungen.{% else %}{% trans "Structured query across knowledge, software, products, and services." %}{% endif %}</p>
-            <span class="world-capability__link">{% if LANGUAGE_CODE == 'de' %}Suche öffnen{% else %}{% trans "Open Search" %}{% endif %}</span>
+            <h3>{% trans "Search" %}</h3>
+            <p>{% trans "Structured query across knowledge, software, products, and services." %}</p>
+            <span class="world-capability__link">{% trans "Open Search" %}</span>
           </a>
         </li>
         <li class="world-capability">
           <a class="world-capability__surface" href="{% url 'discover' %}">
             <span class="world-capability__icon" aria-hidden="true"><svg class="world-icon"><use href="#icon-graph"></use></svg></span>
-            <h3>{% if LANGUAGE_CODE == 'de' %}Entdecken{% else %}{% trans "Discover" %}{% endif %}</h3>
-            <p>{% if LANGUAGE_CODE == 'de' %}Eine kanonische Entdeckungsoberfläche innerhalb des VORNEQ-Ökosystems.{% else %}{% trans "A canonical discovery surface within the VORNEQ ecosystem." %}{% endif %}</p>
-            <span class="world-capability__link">{% if LANGUAGE_CODE == 'de' %}Entdecken öffnen{% else %}{% trans "Open Discover" %}{% endif %}</span>
+            <h3>{% trans "Discover" %}</h3>
+            <p>{% trans "A canonical discovery surface within the VORNEQ ecosystem." %}</p>
+            <span class="world-capability__link">{% trans "Open Discover" %}</span>
           </a>
         </li>
         <li class="world-capability">
           <a class="world-capability__surface" href="{% url 'marketplace:index' %}">
             <span class="world-capability__icon" aria-hidden="true"><svg class="world-icon"><use href="#icon-market"></use></svg></span>
-            <h3>{% if LANGUAGE_CODE == 'de' %}Marktplatz{% else %}{% trans "Marketplace" %}{% endif %}</h3>
-            <p>{% if LANGUAGE_CODE == 'de' %}Eine vertrauenswürdige Transaktionsoberfläche für Angebote und Lösungen.{% else %}{% trans "A trusted transactional surface for offerings and solutions." %}{% endif %}</p>
-            <span class="world-capability__link">{% if LANGUAGE_CODE == 'de' %}Marktplatz öffnen{% else %}{% trans "Open Marketplace" %}{% endif %}</span>
+            <h3>{% trans "Marketplace" %}</h3>
+            <p>{% trans "A trusted transactional surface for offerings and solutions." %}</p>
+            <span class="world-capability__link">{% trans "Open Marketplace" %}</span>
           </a>
         </li>
       </ul>
@@ -119,103 +124,103 @@
 
     <section id="how-it-works" class="world-flow" data-homepage-signal-section aria-labelledby="world-flow-title">
       <header class="world-flow__header">
-        <p class="world-eyebrow">{% if LANGUAGE_CODE == 'de' %}So funktioniert VORNEQ{% else %}{% trans "How VORNEQ works" %}{% endif %}</p>
-        <h2 id="world-flow-title" class="world-title world-title--md">{% if LANGUAGE_CODE == 'de' %}Von Informationen zu vertrauenswürdigem Wissen.{% else %}{% trans "From information to trusted knowledge." %}{% endif %}</h2>
-        <p class="world-flow__intro">{% if LANGUAGE_CODE == 'de' %}Ein strukturierter Weg vom Ausgangsmaterial zu Informationen, die Sie prüfen, verknüpfen und erkunden können.{% else %}{% trans "A structured path from source material to information you can inspect, connect, and explore." %}{% endif %}</p>
+        <p class="world-eyebrow">{% trans "How VORNEQ works" %}</p>
+        <h2 id="world-flow-title" class="world-title world-title--md">{% trans "From information to trusted knowledge." %}</h2>
+        <p class="world-flow__intro">{% trans "A structured path from source material to information you can inspect, connect, and explore." %}</p>
       </header>
       <ol class="world-flow__steps">
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">01</span>
-          <h3>{% if LANGUAGE_CODE == 'de' %}Sammeln{% else %}{% trans "Collect" %}{% endif %}</h3>
-          <p>{% if LANGUAGE_CODE == 'de' %}Dokumente, Medien und strukturierte Informationen in ein einheitliches System überführen.{% else %}{% trans "Bring documents, media, and structured information into a consistent system." %}{% endif %}</p>
+          <h3>{% trans "Collect" %}</h3>
+          <p>{% trans "Bring documents, media, and structured information into a consistent system." %}</p>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">02</span>
-          <h3>{% if LANGUAGE_CODE == 'de' %}Strukturieren{% else %}{% trans "Structure" %}{% endif %}</h3>
-          <p>{% if LANGUAGE_CODE == 'de' %}Informationen in klaren, adressierbaren Datensätzen organisieren.{% else %}{% trans "Organize information into clear, addressable records." %}{% endif %}</p>
+          <h3>{% trans "Structure" %}</h3>
+          <p>{% trans "Organize information into clear, addressable records." %}</p>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">03</span>
-          <h3>{% if LANGUAGE_CODE == 'de' %}Verifizieren{% else %}{% trans "Verify" %}{% endif %}</h3>
-          <p>{% if LANGUAGE_CODE == 'de' %}Behauptungen mit Evidenz verknüpfen und ihren Kontext bewahren.{% else %}{% trans "Connect claims with evidence and preserve their context." %}{% endif %}</p>
+          <h3>{% trans "Verify" %}</h3>
+          <p>{% trans "Connect claims with evidence and preserve their context." %}</p>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">04</span>
-          <h3>{% if LANGUAGE_CODE == 'de' %}Verknüpfen{% else %}{% trans "Connect" %}{% endif %}</h3>
-          <p>{% if LANGUAGE_CODE == 'de' %}Aussagekräftige Beziehungen zwischen Datensätzen, Entitäten und Quellen herstellen.{% else %}{% trans "Build meaningful relationships across records, entities, and sources." %}{% endif %}</p>
+          <h3>{% trans "Connect" %}</h3>
+          <p>{% trans "Build meaningful relationships across records, entities, and sources." %}</p>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">05</span>
-          <h3>{% if LANGUAGE_CODE == 'de' %}Entdecken{% else %}{% trans "Discover" %}{% endif %}</h3>
-          <p>{% if LANGUAGE_CODE == 'de' %}Verknüpfte Informationen über die Entdeckungsoberflächen von VORNEQ erkunden.{% else %}{% trans "Explore connected information through VORNEQ's discovery surfaces." %}{% endif %}</p>
+          <h3>{% trans "Discover" %}</h3>
+          <p>{% trans "Explore connected information through VORNEQ's discovery surfaces." %}</p>
         </li>
       </ol>
     </section>
 
     <section id="trust" class="world-trust" data-homepage-signal-section aria-labelledby="world-trust-title">
       <header class="world-trust__header">
-        <p class="world-eyebrow">{% if LANGUAGE_CODE == 'de' %}Vertrauen durch Architektur{% else %}{% trans "Trust by architecture" %}{% endif %}</p>
-        <h2 id="world-trust-title" class="world-title world-title--md">{% if LANGUAGE_CODE == 'de' %}Infrastruktur, die für Klarheit und Verantwortlichkeit entwickelt wurde.{% else %}{% trans "Infrastructure designed for clarity and accountability." %}{% endif %}</h2>
-        <p class="world-trust__intro">{% if LANGUAGE_CODE == 'de' %}Vertrauen wird durch sichtbare Strukturen, Evidenz, klare Grenzen und nachvollziehbares Systemverhalten unterstützt.{% else %}{% trans "Trust is supported by visible structure, evidence, boundaries, and traceable system behavior." %}{% endif %}</p>
+        <p class="world-eyebrow">{% trans "Trust by architecture" %}</p>
+        <h2 id="world-trust-title" class="world-title world-title--md">{% trans "Infrastructure designed for clarity and accountability." %}</h2>
+        <p class="world-trust__intro">{% trans "Trust is supported by visible structure, evidence, boundaries, and traceable system behavior." %}</p>
       </header>
       <div class="world-trust__grid">
         <article class="world-trust__item">
           <span class="world-trust__index" aria-hidden="true">01</span>
-          <h3>{% if LANGUAGE_CODE == 'de' %}Datenschutz durch Architektur{% else %}{% trans "Privacy by architecture" %}{% endif %}</h3>
-          <p>{% if LANGUAGE_CODE == 'de' %}Datenschutzgrenzen werden als Bestandteil des Systemdesigns berücksichtigt.{% else %}{% trans "Privacy boundaries are considered as part of the system design." %}{% endif %}</p>
+          <h3>{% trans "Privacy by architecture" %}</h3>
+          <p>{% trans "Privacy boundaries are considered as part of the system design." %}</p>
         </article>
         <article class="world-trust__item">
           <span class="world-trust__index" aria-hidden="true">02</span>
-          <h3>{% if LANGUAGE_CODE == 'de' %}Prüfbarkeit{% else %}{% trans "Auditability" %}{% endif %}</h3>
-          <p>{% if LANGUAGE_CODE == 'de' %}Wichtige Aktionen und Zustandsänderungen können überprüfbar und nachvollziehbar bleiben.{% else %}{% trans "Important actions and state changes can remain inspectable and traceable." %}{% endif %}</p>
+          <h3>{% trans "Auditability" %}</h3>
+          <p>{% trans "Important actions and state changes can remain inspectable and traceable." %}</p>
         </article>
         <article class="world-trust__item">
           <span class="world-trust__index" aria-hidden="true">03</span>
-          <h3>{% if LANGUAGE_CODE == 'de' %}Evidenz{% else %}{% trans "Evidence" %}{% endif %}</h3>
-          <p>{% if LANGUAGE_CODE == 'de' %}Quellen und unterstützendes Material bleiben mit den Informationen verbunden, die sie stützen.{% else %}{% trans "Sources and supporting material stay connected to the information they support." %}{% endif %}</p>
+          <h3>{% trans "Evidence" %}</h3>
+          <p>{% trans "Sources and supporting material stay connected to the information they support." %}</p>
         </article>
         <article class="world-trust__item">
           <span class="world-trust__index" aria-hidden="true">04</span>
-          <h3>{% if LANGUAGE_CODE == 'de' %}Resilienz{% else %}{% trans "Resilience" %}{% endif %}</h3>
-          <p>{% if LANGUAGE_CODE == 'de' %}Die Infrastruktur wird mit Blick auf Kontinuität, Wiederherstellung und langfristigen Betrieb entwickelt.{% else %}{% trans "Infrastructure is designed with continuity, recovery, and long-term operation in mind." %}{% endif %}</p>
+          <h3>{% trans "Resilience" %}</h3>
+          <p>{% trans "Infrastructure is designed with continuity, recovery, and long-term operation in mind." %}</p>
         </article>
       </div>
     </section>
 
     <section id="principles" class="world-principles" data-homepage-signal-section aria-labelledby="world-principles-title">
       <div class="world-section-head">
-        <h2 id="world-principles-title" class="world-section-title">{% if LANGUAGE_CODE == 'de' %}Plattformprinzipien{% else %}{% trans "Platform Principles" %}{% endif %}</h2>
+        <h2 id="world-principles-title" class="world-section-title">{% trans "Platform Principles" %}</h2>
       </div>
       <ul class="world-principles__grid">
         <li class="world-principle">
           <span class="world-item-index" aria-hidden="true">01</span>
-          <h3>{% if LANGUAGE_CODE == 'de' %}Kontext statt Bewertung{% else %}{% trans "Context, not Score" %}{% endif %}</h3>
-          <p>{% if LANGUAGE_CODE == 'de' %}Informationen sollen im Kontext verstanden und nicht auf eine einzelne undurchsichtige Bewertung reduziert werden.{% else %}{% trans "Information should be understood in context, not reduced to a single, opaque score." %}{% endif %}</p>
+          <h3>{% trans "Context, not Score" %}</h3>
+          <p>{% trans "Information should be understood in context, not reduced to a single, opaque score." %}</p>
         </li>
         <li class="world-principle">
           <span class="world-item-index" aria-hidden="true">02</span>
-          <h3>{% if LANGUAGE_CODE == 'de' %}Evidenz statt Wahrheit{% else %}{% trans "Evidence, not Truth" %}{% endif %}</h3>
-          <p>{% if LANGUAGE_CODE == 'de' %}Quellen, Belege und Perspektiven werden sichtbar gemacht, damit Sie eigene Schlussfolgerungen ziehen können.{% else %}{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}{% endif %}</p>
+          <h3>{% trans "Evidence, not Truth" %}</h3>
+          <p>{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}</p>
         </li>
         <li class="world-principle">
           <span class="world-item-index" aria-hidden="true">03</span>
-          <h3>{% if LANGUAGE_CODE == 'de' %}Portable Identität{% else %}{% trans "Portable Identity" %}{% endif %}</h3>
-          <p>{% if LANGUAGE_CODE == 'de' %}Ihre Identität ist dafür ausgelegt, über verschiedene Erlebnisse hinweg mitzuwandern und nicht in einer einzelnen App gebunden zu sein.{% else %}{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}{% endif %}</p>
+          <h3>{% trans "Portable Identity" %}</h3>
+          <p>{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}</p>
         </li>
       </ul>
     </section>
 
     <section id="explore" class="world-final-cta" data-homepage-signal-section aria-labelledby="world-final-cta-title">
       <div class="world-final-cta__content">
-        <p class="world-eyebrow">{% if LANGUAGE_CODE == 'de' %}VORNEQ erkunden{% else %}{% trans "Explore VORNEQ" %}{% endif %}</p>
-        <h2 id="world-final-cta-title" class="world-title world-title--lg">{% if LANGUAGE_CODE == 'de' %}Entdecken Sie eine strukturiertere Art, mit Informationen zu arbeiten.{% else %}{% trans "Explore a more structured way to work with information." %}{% endif %}</h2>
-        <p class="world-final-cta__copy">{% if LANGUAGE_CODE == 'de' %}Durchsuchen, entdecken und navigieren Sie die verknüpften Bereiche der VORNEQ-Plattform.{% else %}{% trans "Search, discover, and navigate the connected surfaces of the VORNEQ platform." %}{% endif %}</p>
-        <a href="{% url 'discover' %}" class="world-cta">{% if LANGUAGE_CODE == 'de' %}Plattform erkunden{% else %}{% trans "Explore Platform" %}{% endif %}</a>
+        <p class="world-eyebrow">{% trans "Explore VORNEQ" %}</p>
+        <h2 id="world-final-cta-title" class="world-title world-title--lg">{% trans "Explore a more structured way to work with information." %}</h2>
+        <p class="world-final-cta__copy">{% trans "Search, discover, and navigate the connected surfaces of the VORNEQ platform." %}</p>
+        <a href="{% url 'discover' %}" class="world-cta">{% trans "Explore Platform" %}</a>
       </div>
     </section>
 
-    <section class="world-closing" aria-label="{% if LANGUAGE_CODE == 'de' %}VORNEQ-Positionierung{% else %}{% trans 'VORNEQ positioning' %}{% endif %}">
-      <p>{% if LANGUAGE_CODE == 'de' %}Präzise Infrastruktur für eine vertrauenswürdige digitale Zukunft.{% else %}{% trans "Precision infrastructure for a trusted digital future." %}{% endif %}</p>
+    <section class="world-closing" aria-label="{% trans 'VORNEQ positioning' %}">
+      <p>{% trans "Precision infrastructure for a trusted digital future." %}</p>
     </section>
   </main>
 </div>
