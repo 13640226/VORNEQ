@@ -1782,3 +1782,131 @@ msgstr "Provenienz aktiv"
 
 msgid "Traceable relationship"
 msgstr "Nachvollziehbare Beziehung"
+
+# Homepage catalog migration
+
+msgid "Precision Digital Infrastructure"
+msgstr "Präzise digitale Infrastruktur"
+
+msgid "VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust."
+msgstr "VORNEQ entwickelt zuverlässige digitale Infrastruktur für Systeme, Produkte und Organisationen, die Klarheit, Resilienz und langfristiges Vertrauen erfordern."
+
+msgid "INFRASTRUCTURE FOR TRUSTED SYSTEMS"
+msgstr "INFRASTRUKTUR FÜR VERTRAUENSWÜRDIGE SYSTEME"
+
+msgid "Precision infrastructure for a trusted digital future."
+msgstr "Präzise Infrastruktur für eine vertrauenswürdige digitale Zukunft."
+
+msgid "Explore Platform"
+msgstr "Plattform erkunden"
+
+msgid "Evidence Signal"
+msgstr "Evidence Signal"
+
+msgid "Search across VORNEQ…"
+msgstr "VORNEQ durchsuchen…"
+
+msgid "Use a query when you know what you want to find."
+msgstr "Geben Sie eine Suchanfrage ein, wenn Sie wissen, wonach Sie suchen."
+
+msgid "Structured query across knowledge, software, products, and services."
+msgstr "Strukturierte Suche nach Wissen, Software, Produkten und Dienstleistungen."
+
+msgid "A canonical discovery surface within the VORNEQ ecosystem."
+msgstr "Eine kanonische Entdeckungsoberfläche innerhalb des VORNEQ-Ökosystems."
+
+msgid "Open Discover"
+msgstr "Entdecken öffnen"
+
+msgid "A trusted transactional surface for offerings and solutions."
+msgstr "Eine vertrauenswürdige Transaktionsoberfläche für Angebote und Lösungen."
+
+msgid "Open Marketplace"
+msgstr "Marktplatz öffnen"
+
+msgid "How VORNEQ works"
+msgstr "So funktioniert VORNEQ"
+
+msgid "From information to trusted knowledge."
+msgstr "Von Informationen zu vertrauenswürdigem Wissen."
+
+msgid "A structured path from source material to information you can inspect, connect, and explore."
+msgstr "Ein strukturierter Weg vom Ausgangsmaterial zu Informationen, die Sie prüfen, verknüpfen und erkunden können."
+
+msgid "Collect"
+msgstr "Sammeln"
+
+msgid "Bring documents, media, and structured information into a consistent system."
+msgstr "Dokumente, Medien und strukturierte Informationen in ein einheitliches System überführen."
+
+msgid "Structure"
+msgstr "Strukturieren"
+
+msgid "Organize information into clear, addressable records."
+msgstr "Informationen in klaren, adressierbaren Datensätzen organisieren."
+
+msgid "Verify"
+msgstr "Verifizieren"
+
+msgid "Connect claims with evidence and preserve their context."
+msgstr "Behauptungen mit Evidenz verknüpfen und ihren Kontext bewahren."
+
+msgid "Connect"
+msgstr "Verknüpfen"
+
+msgid "Build meaningful relationships across records, entities, and sources."
+msgstr "Aussagekräftige Beziehungen zwischen Datensätzen, Entitäten und Quellen herstellen."
+
+msgid "Explore connected information through VORNEQ's discovery surfaces."
+msgstr "Verknüpfte Informationen über die Entdeckungsoberflächen von VORNEQ erkunden."
+
+msgid "Trust by architecture"
+msgstr "Vertrauen durch Architektur"
+
+msgid "Infrastructure designed for clarity and accountability."
+msgstr "Infrastruktur, die für Klarheit und Verantwortlichkeit entwickelt wurde."
+
+msgid "Trust is supported by visible structure, evidence, boundaries, and traceable system behavior."
+msgstr "Vertrauen wird durch sichtbare Strukturen, Evidenz, klare Grenzen und nachvollziehbares Systemverhalten unterstützt."
+
+msgid "Privacy by architecture"
+msgstr "Datenschutz durch Architektur"
+
+msgid "Privacy boundaries are considered as part of the system design."
+msgstr "Datenschutzgrenzen werden als Bestandteil des Systemdesigns berücksichtigt."
+
+msgid "Auditability"
+msgstr "Prüfbarkeit"
+
+msgid "Important actions and state changes can remain inspectable and traceable."
+msgstr "Wichtige Aktionen und Zustandsänderungen können überprüfbar und nachvollziehbar bleiben."
+
+msgid "Sources and supporting material stay connected to the information they support."
+msgstr "Quellen und unterstützendes Material bleiben mit den Informationen verbunden, die sie stützen."
+
+msgid "Resilience"
+msgstr "Resilienz"
+
+msgid "Infrastructure is designed with continuity, recovery, and long-term operation in mind."
+msgstr "Die Infrastruktur wird mit Blick auf Kontinuität, Wiederherstellung und langfristigen Betrieb entwickelt."
+
+msgid "Information should be understood in context, not reduced to a single, opaque score."
+msgstr "Informationen sollen im Kontext verstanden und nicht auf eine einzelne undurchsichtige Bewertung reduziert werden."
+
+msgid "Explore a more structured way to work with information."
+msgstr "Entdecken Sie eine strukturiertere Art, mit Informationen zu arbeiten."
+
+msgid "Search, discover, and navigate the connected surfaces of the VORNEQ platform."
+msgstr "Durchsuchen, entdecken und navigieren Sie die verknüpften Bereiche der VORNEQ-Plattform."
+
+msgid "VORNEQ positioning"
+msgstr "VORNEQ-Positionierung"
+
+msgid "Section navigation"
+msgstr "Abschnittsnavigation"
+
+msgid "How it works"
+msgstr "So funktioniert es"
+
+msgid "Trust"
+msgstr "Vertrauen"
