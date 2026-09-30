@@ -1762,3 +1762,23 @@ msgstr "Die aufgezeichneten öffentlichen Informationen zu einem Artefakt, einsc
 msgid "Public source reference"
 msgstr "Öffentliche Quellenangabe"
 
+
+
+# Modern homepage evidence UI
+msgid "View Evidence"
+msgstr "Evidenz ansehen"
+
+msgid "Evidence and knowledge overview"
+msgstr "Evidenz- und Wissensübersicht"
+
+msgid "Source connected"
+msgstr "Quelle verbunden"
+
+msgid "Evidence → context → knowledge node"
+msgstr "Beleg → Kontext → Wissensknoten"
+
+msgid "Provenance active"
+msgstr "Provenienz aktiv"
+
+msgid "Traceable relationship"
+msgstr "Nachvollziehbare Beziehung"
