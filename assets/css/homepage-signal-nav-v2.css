@@ -7,7 +7,8 @@
  */
 
 .homepage-signal-nav {
-    --signal-bottom-bar-size: 64px;
+    /* Compact bar can grow when translated labels wrap or browser text is enlarged. */
+    --signal-bottom-bar-size: 96px;
     --signal-scroll-offset: calc(var(--header-height) + var(--space-4));
     --signal-progress: 0;
 
@@ -155,6 +156,16 @@
      */
     .world-home {
         padding-block-end: calc(
+            var(--signal-bottom-bar-size) +
+            env(safe-area-inset-bottom, 0px) +
+            var(--space-6)
+        );
+    }
+
+    /* Keep the final section's readable content above the fixed bottom bar. */
+    .world-final-cta,
+    .world-closing {
+        scroll-margin-block-end: calc(
             var(--signal-bottom-bar-size) +
             env(safe-area-inset-bottom, 0px) +
             var(--space-4)
