@@ -2,43 +2,43 @@
 
 <nav
     class="homepage-signal-nav"
-    aria-label="{% trans 'Section navigation' %}"
+    aria-label="{% if LANGUAGE_CODE == 'de' %}Abschnittsnavigation{% else %}{% trans 'Section navigation' %}{% endif %}"
     data-homepage-signal-nav
 >
     <ol class="homepage-signal-nav__list">
         <li class="homepage-signal-nav__item">
             <a class="homepage-signal-nav__link" href="#home" data-homepage-signal-link aria-current="location">
-                {% trans "Home" %}
+                {% if LANGUAGE_CODE == 'de' %}Startseite{% else %}{% trans "Home" %}{% endif %}
             </a>
         </li>
         <li class="homepage-signal-nav__item">
             <a class="homepage-signal-nav__link" href="#start" data-homepage-signal-link>
-                {% trans "Search" %}
+                {% if LANGUAGE_CODE == 'de' %}Suchen{% else %}{% trans "Search" %}{% endif %}
             </a>
         </li>
         <li class="homepage-signal-nav__item">
             <a class="homepage-signal-nav__link" href="#capabilities" data-homepage-signal-link>
-                {% trans "Capabilities" %}
+                {% if LANGUAGE_CODE == 'de' %}Funktionen{% else %}{% trans "Capabilities" %}{% endif %}
             </a>
         </li>
         <li class="homepage-signal-nav__item">
             <a class="homepage-signal-nav__link" href="#how-it-works" data-homepage-signal-link>
-                {% trans "How it works" %}
+                {% if LANGUAGE_CODE == 'de' %}So funktioniert es{% else %}{% trans "How it works" %}{% endif %}
             </a>
         </li>
         <li class="homepage-signal-nav__item">
             <a class="homepage-signal-nav__link" href="#trust" data-homepage-signal-link>
-                {% trans "Trust" %}
+                {% if LANGUAGE_CODE == 'de' %}Vertrauen{% else %}{% trans "Trust" %}{% endif %}
             </a>
         </li>
         <li class="homepage-signal-nav__item">
             <a class="homepage-signal-nav__link" href="#principles" data-homepage-signal-link>
-                {% trans "Principles" %}
+                {% if LANGUAGE_CODE == 'de' %}Prinzipien{% else %}{% trans "Principles" %}{% endif %}
             </a>
         </li>
         <li class="homepage-signal-nav__item">
             <a class="homepage-signal-nav__link" href="#explore" data-homepage-signal-link>
-                {% trans "Explore" %}
+                {% if LANGUAGE_CODE == 'de' %}Erkunden{% else %}{% trans "Explore" %}{% endif %}
             </a>
         </li>
     </ol>
