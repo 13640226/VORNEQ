@@ -126,6 +126,7 @@ html:has(.world-home) {
   position: relative;
   z-index: 1;
   display: grid;
+  grid-column: 1 / -1;
   grid-template-columns: minmax(0, 1.12fr) minmax(19rem, .88fr);
   align-items: center;
   gap: clamp(var(--space-6), 6vw, var(--space-10));
