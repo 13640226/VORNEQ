@@ -134,6 +134,24 @@ html:has(.world-home) {
 .world-home--layout-v3 .world-hero__copy {
   max-inline-size: 44rem;
 }
+.world-home--layout-v3 {
+  text-align: start;
+}
+html[dir="ltr"] .world-home--layout-v3 .world-hero__layout {
+  direction: ltr;
+}
+html[dir="rtl"] .world-home--layout-v3 .world-hero__layout {
+  direction: rtl;
+}
+html[dir="ltr"] .world-home--layout-v3 :where(.world-hero__copy,.world-evidence-panel,.world-home-band,.world-closing) {
+  text-align: left;
+}
+html[dir="rtl"] .world-home--layout-v3 :where(.world-hero__copy,.world-evidence-panel,.world-home-band,.world-closing) {
+  text-align: right;
+}
+html[dir="rtl"] .world-home--layout-v3 .world-icon--sm {
+  transform: scaleX(-1);
+}
 .world-home--layout-v3 .world-title {
   max-inline-size: 18ch;
   text-wrap: balance;
