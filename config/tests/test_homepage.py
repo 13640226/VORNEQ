@@ -12,7 +12,7 @@ class HomepageSimplificationTests(TestCase):
         response = self.get_english_home()
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'class="world-home"')
+        self.assertContains(response, 'class="world-home ')
         self.assertContains(response, 'id="start"')
         self.assertContains(response, 'id="principles"')
         self.assertContains(response, 'id="capabilities"')
