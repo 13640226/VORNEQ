@@ -195,7 +195,7 @@ html[dir="rtl"] .world-home--layout-v3 .world-icon--sm {
   align-items: stretch;
 }
 .world-home--layout-v3 .world-search__icon {
-  inset-block-start: 50%;
+  inset-block-start: 26px;
   transform: translateY(-50%);
 }
 .world-home--layout-v3 .world-search__input {
