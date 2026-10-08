@@ -155,6 +155,7 @@
      * block-start or inline padding.
      */
     .world-home {
+        --signal-bottom-bar-size: 96px;
         padding-block-end: calc(
             var(--signal-bottom-bar-size) +
             env(safe-area-inset-bottom, 0px) +
