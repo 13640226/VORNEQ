@@ -1,4 +1,4 @@
-name: V-01 Docker Local Image Inventory One-Shot
+name: V-01 Pinned BusyBox Docker Lifecycle One-Shot
 
 on:
   push:
@@ -10,38 +10,122 @@ on:
 permissions: {}
 
 jobs:
-  runner-image-inventory:
+  pinned-busybox-lifecycle:
     if: github.event_name == 'push' && github.ref == 'refs/heads/diagnostics/v01-runner-isolation-one-shot-20261010'
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 4
     steps:
-      - name: Read existing local Docker image inventory only
+      - name: Test one bounded restricted container lifecycle
         shell: bash
         run: |
           set -euo pipefail
-          printf 'diagnostic=V-01 local Docker image inventory read-only\n'
-          printf 'run_id=%s\n' "${GITHUB_RUN_ID:-unknown}"
-          printf 'runner_os=%s\n' "${RUNNER_OS:-unknown}"
-          printf 'runner_image_os=%s\n' "${ImageOS:-unknown}"
-          printf 'runner_image_version=%s\n' "${ImageVersion:-unknown}"
-          printf 'docker_server_version='
-          docker version --format '{{.Server.Version}}'
-          printf 'image_inventory_begin\n'
-          docker image ls --no-trunc --digests --format 'repository={{.Repository}} tag={{.Tag}} id={{.ID}} digest={{.Digest}} size={{.Size}}'
-          printf 'image_inventory_end\n'
-          mapfile -t image_ids < <(docker image ls --quiet --no-trunc | sort -u)
-          printf 'unique_local_image_count=%s\n' "${#image_ids[@]}"
-          inspected=0
-          for image_id in "${image_ids[@]}"; do
-            if (( inspected >= 20 )); then
-              printf 'image_metadata_limit_reached=yes\n'
-              break
+          IMAGE='docker.io/library/busybox@sha256:dc88b80842580654294472735332ec7c7789a4010ec9a68b69f9b88c19abede6'
+          RUNID="${GITHUB_RUN_ID:?}"
+          NAME="vorneq-v01-lifecycle-${RUNID}"
+          CIDFILE="${RUNNER_TEMP:?}/${NAME}.cid"
+          CID=''
+          cleanup() {
+            initial_rc=$?
+            trap - EXIT INT TERM
+            set +e
+            failed=0
+            candidate="${CID}"
+            if [[ -s "$CIDFILE" ]]; then candidate="$(cat "$CIDFILE")"; fi
+            if [[ -z "$candidate" ]]; then
+              candidate="$(timeout -k 2s 8s docker container ls -aq --no-trunc --filter "name=^/${NAME}$" --filter "label=vorneq.v01.run=${RUNID}")"
+              if [[ $? -ne 0 ]]; then failed=1; fi
             fi
-            docker image inspect --format 'image_metadata=id={{.Id}} os={{.Os}} arch={{.Architecture}} size={{.Size}} repo_tags={{json .RepoTags}} repo_digests={{json .RepoDigests}}' "$image_id"
-            inspected=$((inspected + 1))
-          done
-          printf 'inspected_image_count=%s\n' "$inspected"
-          printf 'containers_created=no\n'
-          printf 'images_pulled=no\n'
-          printf 'images_built=no\n'
-          printf 'inventory_only_complete=yes\n'
+            if [[ -n "$candidate" ]]; then
+              if [[ "$candidate" == *$'\n'* ]]; then
+                printf 'cleanup_error=multiple_owned_containers\n'
+                failed=1
+              else
+                owned="$(timeout -k 2s 8s docker inspect --type=container --format '{{index .Config.Labels "vorneq.v01.run"}}' "$candidate" 2>&1)"
+                lookup_rc=$?
+                if (( lookup_rc == 0 )); then
+                  if [[ "$owned" == "$RUNID" ]]; then
+                    if timeout -k 2s 12s docker container rm --force "$candidate"; then
+                      printf 'cleanup_emergency_remove=success\n'
+                    else
+                      printf 'cleanup_emergency_remove=failed\n'
+                      failed=1
+                    fi
+                  else
+                    printf 'cleanup_error=ownership_label_mismatch\n'
+                    failed=1
+                  fi
+                elif [[ "$owned" == *'No such object'* || "$owned" == *'No such container'* ]]; then
+                  printf 'cleanup_emergency_remove=not_required\n'
+                else
+                  printf 'cleanup_error=container_state_unknown\n'
+                  failed=1
+                fi
+              fi
+            fi
+            if ! timeout -k 2s 8s docker version --format '{{.Server.Version}}' >/dev/null 2>&1; then
+              printf 'cleanup_error=daemon_unavailable\n'
+              failed=1
+            else
+              for ref in "$candidate" "$NAME"; do
+                if [[ -z "$ref" ]]; then continue; fi
+                absence="$(timeout -k 2s 8s docker inspect --type=container "$ref" 2>&1)"
+                inspect_rc=$?
+                if (( inspect_rc == 0 )); then
+                  printf 'cleanup_error=container_still_present ref=%s\n' "$ref"
+                  failed=1
+                elif [[ "$absence" == *'No such object'* || "$absence" == *'No such container'* ]]; then
+                  printf 'final_inspect_absent_ref=%s\n' "$ref"
+                else
+                  printf 'cleanup_error=inspect_indeterminate ref=%s\n' "$ref"
+                  failed=1
+                fi
+              done
+              remaining="$(timeout -k 2s 8s docker container ls -aq --no-trunc --filter "label=vorneq.v01.run=${RUNID}")"
+              ps_rc=$?
+              if (( ps_rc != 0 )) || [[ -n "$remaining" ]]; then
+                printf 'cleanup_error=label_inventory_not_empty_or_unverified\n'
+                failed=1
+              fi
+            fi
+            rm -f -- "$CIDFILE"
+            if (( failed == 0 )); then printf 'final_cleanup_verified=yes\n'; else printf 'final_cleanup_verified=no\n'; fi
+            if (( initial_rc != 0 )); then exit "$initial_rc"; fi
+            if (( failed != 0 )); then exit 1; fi
+            exit 0
+          }
+          trap cleanup EXIT
+          trap 'exit 130' INT
+          trap 'exit 143' TERM
+          printf 'diagnostic=V-01 pinned BusyBox Docker lifecycle\n'
+          printf 'run_id=%s\n' "$RUNID"
+          printf 'runner_image=%s\n' "${ImageOS:-unknown}"
+          printf 'runner_image_version=%s\n' "${ImageVersion:-unknown}"
+          printf 'approved_image=%s\n' "$IMAGE"
+          printf 'docker_server_version='
+          timeout -k 2s 8s docker version --format '{{.Server.Version}}'
+          printf 'image_pull_count=1\n'
+          timeout -k 5s 75s docker pull --platform linux/amd64 "$IMAGE"
+          platform="$(timeout -k 2s 8s docker image inspect --format '{{.Os}}/{{.Architecture}}' "$IMAGE")"
+          size="$(timeout -k 2s 8s docker image inspect --format '{{.Size}}' "$IMAGE")"
+          printf 'image_platform=%s\nimage_size_bytes=%s\n' "$platform" "$size"
+          [[ "$platform" == 'linux/amd64' ]] || { printf 'image_platform_mismatch=yes\n'; exit 1; }
+          [[ "$size" =~ ^[0-9]+$ ]] && (( size > 0 && size < 8000000 )) || { printf 'image_size_rejected=yes\n'; exit 1; }
+          existing="$(timeout -k 2s 8s docker container ls -aq --no-trunc --filter "name=^/${NAME}$")"
+          [[ -z "$existing" ]] || { printf 'container_name_collision=yes\n'; exit 1; }
+          printf 'container_creation_attempt=1\n'
+          CID="$(timeout -k 2s 15s docker create --platform linux/amd64 --pull never --cidfile "$CIDFILE" --name "$NAME" --label "vorneq.v01.run=${RUNID}" --network none --cap-drop ALL --security-opt no-new-privileges:true --user 65534:65534 --read-only --cpus 0.25 --memory 32m --pids-limit 16 --restart no --stop-timeout 2 "$IMAGE" sleep 30)"
+          printf 'container_id=%s\ncontainer_created=yes\n' "$CID"
+          [[ "$CID" =~ ^[0-9a-f]{64}$ ]] || { printf 'container_id_invalid=yes\n'; exit 1; }
+          owned="$(timeout -k 2s 8s docker inspect --type=container --format '{{index .Config.Labels "vorneq.v01.run"}}' "$CID")"
+          [[ "$owned" == "$RUNID" ]] || { printf 'container_ownership_unverified=yes\n'; exit 1; }
+          timeout -k 2s 12s docker start "$CID"
+          running="$(timeout -k 2s 8s docker inspect --type=container --format '{{.State.Running}}' "$CID")"
+          printf 'container_running_after_start=%s\n' "$running"
+          [[ "$running" == 'true' ]] || { printf 'container_start_unverified=yes\n'; exit 1; }
+          timeout -k 2s 12s docker stop --time 2 "$CID"
+          stop_state="$(timeout -k 2s 8s docker inspect --type=container --format '{{.State.Status}} {{.State.Running}} {{.State.Pid}}' "$CID")"
+          printf 'container_state_after_stop=%s\n' "$stop_state"
+          [[ "$stop_state" == 'exited false 0' ]] || { printf 'container_termination_unverified=yes\n'; exit 1; }
+          timeout -k 2s 12s docker rm "$CID"
+          printf 'container_removal_command=success\n'
+          printf 'container_lifecycle_observed=yes\n'
