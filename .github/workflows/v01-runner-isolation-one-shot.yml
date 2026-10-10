@@ -1,0 +1,52 @@
+name: V-01 Runner Isolation One-Shot Diagnostic
+
+on:
+  push:
+    branches:
+      - diagnostics/v01-runner-isolation-one-shot-20261010
+    paths:
+      - '.github/workflows/v01-runner-isolation-one-shot.yml'
+
+permissions: {}
+
+jobs:
+  runner-isolation-diagnostic:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/diagnostics/v01-runner-isolation-one-shot-20261010'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Inspect runner isolation capability without mutation
+        shell: bash
+        run: |
+          set -u
+          printf 'diagnostic=V-01 runner isolation read-only\n'
+          printf 'runner_os=%s\n' "${RUNNER_OS:-unknown}"
+          printf 'runner_image_os=%s\n' "${ImageOS:-unknown}"
+          printf 'runner_image_version=%s\n' "${ImageVersion:-unknown}"
+          printf 'run_id=%s\n' "${GITHUB_RUN_ID:-unknown}"
+          printf 'ref=%s\n' "${GITHUB_REF:-unknown}"
+          printf 'kernel='; uname -sr
+          printf 'identity='; id -u
+          printf 'groups='; id -Gn
+          printf 'cgroup_mount='; if command -v findmnt >/dev/null 2>&1; then findmnt -n -o FSTYPE,OPTIONS /sys/fs/cgroup || true; else echo 'findmnt_unavailable'; fi
+          printf 'cgroup_self='; if [ -r /proc/self/cgroup ]; then cat /proc/self/cgroup; else echo unavailable; fi
+          printf 'cgroup_controllers='; if [ -r /sys/fs/cgroup/cgroup.controllers ]; then cat /sys/fs/cgroup/cgroup.controllers; else echo unavailable; fi
+          printf 'cgroup_subtree_control='; if [ -r /sys/fs/cgroup/cgroup.subtree_control ]; then cat /sys/fs/cgroup/cgroup.subtree_control; else echo unavailable; fi
+          for target in /sys/fs/cgroup /sys/fs/cgroup/cgroup.procs /sys/fs/cgroup/cgroup.subtree_control /sys/fs/cgroup/cgroup.kill; do
+            if [ -e "$target" ]; then
+              if [ -w "$target" ]; then write_state=yes; else write_state=no; fi
+              printf 'path=%s exists=yes posix_writable=%s\n' "$target" "$write_state"
+            else
+              printf 'path=%s exists=no posix_writable=no\n' "$target"
+            fi
+          done
+          printf 'systemd_runtime_dir='; if [ -d /run/systemd/system ]; then echo yes; else echo no; fi
+          printf 'systemd_run_binary='; if command -v systemd-run >/dev/null 2>&1; then echo yes; else echo no; fi
+          printf 'systemctl_binary='; if command -v systemctl >/dev/null 2>&1; then echo yes; else echo no; fi
+          printf 'systemd_user_bus_status='; if command -v systemctl >/dev/null 2>&1; then systemctl --user is-system-running --no-pager 2>/dev/null || echo unavailable_or_not_running; else echo unavailable; fi
+          printf 'docker_client='; if command -v docker >/dev/null 2>&1; then echo yes; else echo no; fi
+          printf 'docker_socket='; if [ -S /var/run/docker.sock ]; then echo yes; else echo no; fi
+          printf 'docker_server_access='; if command -v docker >/dev/null 2>&1 && docker version --format '{{.Server.Version}}' >/dev/null 2>&1; then echo yes; else echo no; fi
+          printf 'podman_client='; if command -v podman >/dev/null 2>&1; then echo yes; else echo no; fi
+          printf 'runtime_objects_created=no\n'
+          printf 'capability_inference=read_only_observation_not_authorization_to_assume_cleanup\n'
