@@ -10,7 +10,7 @@ Activation requires **separate authorization** and:
 - Preserve mandatory account verification; do not enable console/dummy backends.
 - Do not change `DATABASE_URL`, Blueprint Auto Sync, or migration behavior.
 
-The backend uses HTTPS POST to Resend, one request per Django email message,
+The backend uses HTTPS POST to Resend, one request for visible recipients and one additional request per Bcc recipient,
 with a 10-second timeout and no request/response content logging.
 It supports plain text and HTML alternatives; attachments are explicitly rejected.
 No retry is performed to avoid duplicate transactional messages.
@@ -42,3 +42,19 @@ so rollback does not guarantee working email delivery.
   provider delivery remain **UNVERIFIED**.
 - Activation, merge, deployment, Render configuration changes, email sends
   and secret access are **NOT AUTHORIZED**.
+
+## C15/C16 recipient semantics and test boundaries
+- The visible API request preserves To and Cc; Reply-To is forwarded.
+- Each Bcc address receives a separate request. Hidden recipients do not
+  appear in other recipient requests.
+- Multi-request delivery is not atomic: a later failure may follow an
+  accepted request. The backend does not retry automatically and returns
+  failure rather than reporting complete success.
+- The offline test suite covers recipient isolation, partial failure,
+  silent partial failure, and absence of automatic retries.
+- Actual Allauth-generated verification and password-reset messages have
+  not been tested end-to-end with this backend. The HTML test constructs
+  a representative Django message only; do not treat it as integration proof.
+- Real Resend delivery, sender-domain verification, and staging activation
+  remain unverified and require separate approval.
+- Merge, secret configuration, Render changes, and deploy are not authorized.
