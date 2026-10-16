@@ -58,3 +58,15 @@ so rollback does not guarantee working email delivery.
 - Real Resend delivery, sender-domain verification, and staging activation
   remain unverified and require separate approval.
 - Merge, secret configuration, Render changes, and deploy are not authorized.
+
+## C17 isolated Allauth template integration
+- Two offline tests call the installed django-allauth account adapter's
+  `send_mail` with its verification and password-reset template prefixes.
+- They use a synthetic request/site, fake URLs, a fake API key and mocked
+  `urlopen`; no real provider request or staging database is involved.
+- Run with `python manage.py test config.test_email_backends` in an isolated
+  Django test environment. CI on the new commit is authoritative if local
+  dependencies are unavailable.
+- These tests exercise template rendering and the Django email backend
+  interface, **not** the complete signup/reset HTTP workflow or actual
+  provider delivery. Those remain unverified.
