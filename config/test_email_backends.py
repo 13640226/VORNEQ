@@ -174,3 +174,25 @@ class ResendBackendTests(SimpleTestCase):
         with self.assertRaises(EmailDeliveryError):
             self.backend().send_messages([msg])
         self.assertEqual(send.call_count, 2)
+
+    @patch("config.email_backends.urlopen")
+    def test_partial_failure_fail_silently_returns_zero_without_retry(self, send):
+        send.side_effect = [Response(202), HTTPError("https://api.resend.com/emails", 429, "rate limit", None, None)]
+        msg = EmailMessage("S", "B", to=["visible@example.com"], bcc=["hidden@example.com"])
+        self.assertEqual(self.backend(fail_silently=True).send_messages([msg]), 0)
+        self.assertEqual(send.call_count, 2)
+
+    @patch("config.email_backends.urlopen", return_value=Response(202))
+    def test_multiple_bcc_addresses_are_not_shared(self, send):
+        msg = EmailMessage("S", "B", to=["visible@example.com"],
+                           bcc=["hidden1@example.com", "hidden2@example.com"])
+        self.assertEqual(self.backend().send_messages([msg]), 1)
+        self.assertEqual(send.call_count, 3)
+        bodies = [json.loads(call.args[0].data) for call in send.call_args_list]
+        self.assertEqual(bodies[0]["to"], ["visible@example.com"])
+        self.assertEqual(bodies[1]["to"], ["hidden1@example.com"])
+        self.assertEqual(bodies[2]["to"], ["hidden2@example.com"])
+        for index, body in enumerate(bodies):
+            for other in range(len(bodies)):
+                if index != other:
+                    self.assertNotIn(bodies[other]["to"][0], json.dumps(body))
