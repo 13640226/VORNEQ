@@ -62,7 +62,7 @@
 .discover-graph__notice { display: block; margin-block-start: 6px; color: #475569; }
 
 .discover-state { padding: 32px; border: 1px solid var(--discover-border); border-radius: 10px; background: #f8fafc; color: var(--discover-navy); }
-.discover-state h3 { margin-top: 0; }
+.discover-state h3 { margin-top: 0; color: var(--discover-navy); }
 .discover-state p { max-width: 680px; color: #475569; line-height: 1.6; }
 .discover-state a { color: var(--discover-blue); font-weight: 650; }
 

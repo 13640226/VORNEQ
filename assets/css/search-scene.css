@@ -28,7 +28,7 @@
 .world-search__results-head p { color: var(--search-muted); }
 .world-search__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
 .world-search__card, .world-search__empty { min-width: 0; padding: 1.25rem; border: 1px solid var(--search-border); border-radius: 1rem; background: var(--search-surface); color: #0b1f3d; }
-.world-search__card h3, .world-search__empty h3 { margin: .55rem 0 .7rem; font-size: 1.2rem; }
+.world-search__card h3, .world-search__empty h3 { margin: .55rem 0 .7rem; font-size: 1.2rem; color: #0b1f3d; }
 .world-search__card p, .world-search__empty p { margin: 0; color: #475569; }
 .world-search__type { font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .world-search__meta { display: flex; flex-wrap: wrap; gap: .45rem 1rem; margin-top: 1rem; color: #475569; font-size: .86rem; }
