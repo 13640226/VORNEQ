@@ -205,20 +205,24 @@ def _public_provenance_projection(evidence_projection):
     if not evidence_ids:
         return []
 
-    # Public Evidence visibility does not yet define disclosure policy for
-    # source_ref, transformation, or note, so V1 deliberately omits them.
+    # Raw source_ref, transformation, and note remain deliberately omitted.
+    # public_source_ref is an explicit disclosure-safe representation and is
+    # projected only when it is present; raw source_ref is never a fallback.
     steps = ProvenanceStep.objects.filter(evidence_id__in=evidence_ids).order_by(
         "timestamp", "id"
     )
-    return [
-        {
+    projection = []
+    for step in steps:
+        item = {
             "evidence_id": str(step.evidence_id),
             "source_type": step.source_type,
             "source_type_label": step.get_source_type_display(),
             "timestamp": step.timestamp,
         }
-        for step in steps
-    ]
+        if step.public_source_ref:
+            item["public_source_ref"] = step.public_source_ref
+        projection.append(item)
+    return projection
 
 
 def get_context_view(artifact_id, *, language="en"):

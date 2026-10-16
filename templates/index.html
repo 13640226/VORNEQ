@@ -4,7 +4,12 @@
 {% block title %}VORNEQ — {% trans "Precision Digital Infrastructure" %}{% endblock %}
 
 {% block meta %}
-<meta name="description" content="{% trans 'VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust.' %}">
+<link rel="canonical" href="{% url 'home' %}">
+{% language 'fa' %}<link rel="alternate" hreflang="fa" href="{% url 'home' %}">{% endlanguage %}
+{% language 'en' %}<link rel="alternate" hreflang="en" href="{% url 'home' %}">{% endlanguage %}
+{% language 'de' %}<link rel="alternate" hreflang="de" href="{% url 'home' %}">{% endlanguage %}
+{% language 'en' %}<link rel="alternate" hreflang="x-default" href="{% url 'home' %}">{% endlanguage %}
+<meta name="description" content="{% trans 'VORNEQ connects discovery, evidence, provenance, and structured records so information can be inspected in context.' %}">
 <meta property="og:title" content="VORNEQ — {% trans 'Precision Digital Infrastructure' %}">
 <meta property="og:description" content="{% trans 'Dependable digital infrastructure for clarity, resilience, and long-term trust.' %}">
 <meta property="og:type" content="website">
@@ -15,148 +20,176 @@
 <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
 <link rel="stylesheet" href="{% static 'css/homepage-redesign.css' %}">
 <link rel="stylesheet" href="{% static 'css/homepage-signal-nav-v2.css' %}">
+<link rel="stylesheet" href="{% static 'css/homepage-modern-v2.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="world-home">
+<div class="world-home world-home--layout-v3">
+  <svg class="world-icon-sprite" aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></symbol>
+    <symbol id="icon-graph" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><circle cx="18" cy="18" r="2.5"></circle><path d="m7.3 10.9 8.4-3.8M7.3 13.1l8.4 3.8"></path></symbol>
+    <symbol id="icon-evidence" viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z"></path><path d="M15 3v5h5M10 13l2 2 4-4"></path></symbol>
+    <symbol id="icon-market" viewBox="0 0 24 24"><path d="M4 9h16l-1-5H5zM5 9v11h14V9M9 20v-6h6v6"></path></symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"></path></symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.8 2.9 8.2 7 10 4.1-1.8 7-5.2 7-10V6z"></path><path d="m9 12 2 2 4-4"></path></symbol>
+  </svg>
   {% include "partials/_homepage_signal_nav.html" %}
 
   <main class="world-home__main">
     <section id="home" class="world-hero" data-homepage-signal-section aria-labelledby="world-home-title">
+      <div class="world-hero__layout">
       <div class="world-hero__copy">
         <p class="world-eyebrow">{% trans "INFRASTRUCTURE FOR TRUSTED SYSTEMS" %}</p>
-        <h1 id="world-home-title" class="world-title">{% trans "Precision infrastructure for a trusted digital future." %}</h1>
-        <p class="world-subtitle">{% trans "VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust." %}</p>
+        <h1 id="world-home-title" class="world-title">{% trans "Evidence-aware infrastructure for connected knowledge." %}</h1>
+        <p class="world-subtitle">{% trans "VORNEQ connects discovery, evidence, provenance, and structured records so information can be inspected in context." %}</p>
         <div class="world-hero__actions">
           <a href="{% url 'discover' %}" class="world-cta">
-            {% trans "Explore Platform" %}
+            {% trans "Explore VORNEQ" %}
+            <svg class="world-icon world-icon--sm" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+          </a>
+          <a href="#trust" class="world-cta world-cta--secondary">
+            {% trans "Inspect Evidence" %}
           </a>
         </div>
       </div>
 
-      <aside class="world-hero-cover" aria-label="{% trans 'VORNEQ platform' %}">
-        <img
-          src="{% static 'images/vorneq-hero-infrastructure.webp' %}"
-          alt="{% trans 'VORNEQ digital infrastructure platform' %}"
-          class="world-hero-cover__image"
-          width="1536"
-          height="768"
-          loading="eager"
-          fetchpriority="high"
-        >
+      <aside class="world-evidence-panel" aria-label="{% trans 'Evidence and knowledge overview' %}">
+        <div class="world-evidence-panel__head">
+          <p class="world-evidence-panel__title">{% trans "Evidence Signal" %}</p>
+          <span class="status-indicator" data-state="verified" aria-label="{% trans 'Verified' %}"><span class="status-indicator__led" aria-hidden="true"></span><span>{% trans "Verified" %}</span></span>
+        </div>
+        <div class="world-evidence-panel__graph" aria-hidden="true">
+          <span class="world-node world-node--a"><svg class="world-icon"><use href="#icon-evidence"></use></svg></span>
+          <span class="world-node world-node--b"><svg class="world-icon"><use href="#icon-graph"></use></svg></span>
+          <span class="world-node world-node--c"><svg class="world-icon"><use href="#icon-shield"></use></svg></span>
+        </div>
+        <div class="world-evidence-list">
+          <a class="evidence-signal" href="#trust">
+            <span class="status-indicator" data-state="verified" aria-hidden="true"><span class="status-indicator__led"></span></span>
+            <span class="evidence-signal__body"><span class="evidence-signal__label">{% trans "Evidence connected" %}</span><span class="evidence-signal__meta">{% trans "Source → evidence → context" %}</span></span>
+            <svg class="world-icon world-icon--sm" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+          </a>
+          <div class="evidence-signal">
+            <span class="status-indicator" data-state="active" aria-hidden="true"><span class="status-indicator__led"></span></span>
+            <span class="evidence-signal__body"><span class="evidence-signal__label">{% trans "Provenance recorded" %}</span><span class="evidence-signal__meta">{% trans "Inspectable relationship" %}</span></span>
+            <svg class="world-icon world-icon--sm" aria-hidden="true"><use href="#icon-graph"></use></svg>
+          </div>
+        </div>
       </aside>
+      </div>
     </section>
 
-    <section id="start" class="world-search-section" data-homepage-signal-section aria-labelledby="world-search-title">
+    <section id="start" class="world-search-section world-home-band world-home-band--search" data-homepage-signal-section aria-labelledby="world-search-title">
       <div class="world-section-head world-section-head--interactive">
         <span class="world-status-led" aria-hidden="true"></span>
         <h2 id="world-search-title" class="world-section-title">{% trans "Search" %}</h2>
       </div>
       <form method="get" action="{% url 'search_page' %}" class="world-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
+        <svg class="world-icon world-search__icon" aria-hidden="true"><use href="#icon-search"></use></svg>
         <input type="search" name="q" maxlength="200" class="world-search__input" placeholder="{% trans 'Search across VORNEQ…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
         <button type="submit" class="world-search__submit">{% trans "Search" %}</button>
       </form>
-      <p class="world-search__hint">{% trans "Use a query when you know what you want to find." %}</p>
+      <p class="world-search__hint">{% trans "Search directly across VORNEQ when you know the topic, record, product, or source you need." %}</p>
     </section>
 
-    <section id="capabilities" class="world-capabilities" data-homepage-signal-section aria-labelledby="world-capabilities-title">
+    <section id="capabilities" class="world-capabilities world-home-band" data-homepage-signal-section aria-labelledby="world-capabilities-title">
       <div class="world-section-head">
         <h2 id="world-capabilities-title" class="world-section-title">{% trans "Capabilities" %}</h2>
       </div>
       <ul class="world-capabilities__grid">
         <li class="world-capability">
           <a class="world-capability__surface" href="{% url 'search_page' %}">
-            <span class="world-status-led" aria-hidden="true"></span>
+            <span class="world-capability__icon" aria-hidden="true"><svg class="world-icon"><use href="#icon-search"></use></svg></span>
             <h3>{% trans "Search" %}</h3>
-            <p>{% trans "Structured query across knowledge, software, products, and services." %}</p>
+            <p>{% trans "Find records across VORNEQ through a focused search surface." %}</p>
             <span class="world-capability__link">{% trans "Open Search" %}</span>
           </a>
         </li>
         <li class="world-capability">
           <a class="world-capability__surface" href="{% url 'discover' %}">
-            <span class="world-status-led" aria-hidden="true"></span>
+            <span class="world-capability__icon" aria-hidden="true"><svg class="world-icon"><use href="#icon-graph"></use></svg></span>
             <h3>{% trans "Discover" %}</h3>
-            <p>{% trans "A canonical discovery surface within the VORNEQ ecosystem." %}</p>
+            <p>{% trans "Explore public information through connected context, evidence, and relationships." %}</p>
             <span class="world-capability__link">{% trans "Open Discover" %}</span>
           </a>
         </li>
         <li class="world-capability">
           <a class="world-capability__surface" href="{% url 'marketplace:index' %}">
-            <span class="world-status-led" aria-hidden="true"></span>
+            <span class="world-capability__icon" aria-hidden="true"><svg class="world-icon"><use href="#icon-market"></use></svg></span>
             <h3>{% trans "Marketplace" %}</h3>
-            <p>{% trans "A trusted transactional surface for offerings and solutions." %}</p>
+            <p>{% trans "Browse published offerings through VORNEQ's marketplace surface." %}</p>
             <span class="world-capability__link">{% trans "Open Marketplace" %}</span>
           </a>
         </li>
       </ul>
     </section>
 
-    <section id="how-it-works" class="world-flow" data-homepage-signal-section aria-labelledby="world-flow-title">
+    <section id="how-it-works" class="world-flow world-home-band" data-homepage-signal-section aria-labelledby="world-flow-title">
       <header class="world-flow__header">
         <p class="world-eyebrow">{% trans "How VORNEQ works" %}</p>
-        <h2 id="world-flow-title" class="world-title world-title--md">{% trans "From information to trusted knowledge." %}</h2>
-        <p class="world-flow__intro">{% trans "A structured path from source material to information you can inspect, connect, and explore." %}</p>
+        <h2 id="world-flow-title" class="world-title world-title--md">{% trans "From source material to inspectable context." %}</h2>
+        <p class="world-flow__intro">{% trans "VORNEQ keeps records, evidence, provenance, and relationships connected so context remains visible as information moves through the platform." %}</p>
       </header>
       <ol class="world-flow__steps">
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">01</span>
           <h3>{% trans "Collect" %}</h3>
-          <p>{% trans "Bring documents, media, and structured information into a consistent system." %}</p>
+          <p>{% trans "Bring supported records and source material into structured VORNEQ surfaces." %}</p>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">02</span>
           <h3>{% trans "Structure" %}</h3>
-          <p>{% trans "Organize information into clear, addressable records." %}</p>
+          <p>{% trans "Represent information as clear records that can be referenced and inspected." %}</p>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">03</span>
           <h3>{% trans "Verify" %}</h3>
-          <p>{% trans "Connect claims with evidence and preserve their context." %}</p>
+          <p>{% trans "Associate claims with recorded evidence while preserving public context." %}</p>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">04</span>
           <h3>{% trans "Connect" %}</h3>
-          <p>{% trans "Build meaningful relationships across records, entities, and sources." %}</p>
+          <p>{% trans "Connect records, entities, sources, and evidence through explicit relationships." %}</p>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">05</span>
           <h3>{% trans "Discover" %}</h3>
-          <p>{% trans "Explore connected information through VORNEQ's discovery surfaces." %}</p>
+          <p>{% trans "Navigate connected public information through Search, Discover, Context, and Evidence Graph surfaces." %}</p>
         </li>
       </ol>
     </section>
 
-    <section id="trust" class="world-trust" data-homepage-signal-section aria-labelledby="world-trust-title">
+    <section id="trust" class="world-trust world-home-band world-home-band--soft" data-homepage-signal-section aria-labelledby="world-trust-title">
       <header class="world-trust__header">
         <p class="world-eyebrow">{% trans "Trust by architecture" %}</p>
-        <h2 id="world-trust-title" class="world-title world-title--md">{% trans "Infrastructure designed for clarity and accountability." %}</h2>
-        <p class="world-trust__intro">{% trans "Trust is supported by visible structure, evidence, boundaries, and traceable system behavior." %}</p>
+        <h2 id="world-trust-title" class="world-title world-title--md">{% trans "Context, evidence, and provenance remain visible." %}</h2>
+        <p class="world-trust__intro">{% trans "VORNEQ presents recorded context and relationships without turning them into a hidden trust score or a claim of truth." %}</p>
       </header>
       <div class="world-trust__grid">
         <article class="world-trust__item">
           <span class="world-trust__index" aria-hidden="true">01</span>
           <h3>{% trans "Privacy by architecture" %}</h3>
-          <p>{% trans "Privacy boundaries are considered as part of the system design." %}</p>
+          <p>{% trans "Public views are bounded to information intended for disclosure; private data remains outside those public evidence surfaces." %}</p>
         </article>
         <article class="world-trust__item">
           <span class="world-trust__index" aria-hidden="true">02</span>
           <h3>{% trans "Auditability" %}</h3>
-          <p>{% trans "Important actions and state changes can remain inspectable and traceable." %}</p>
+          <p>{% trans "Recorded attribution, verification, and provenance provide inspectable context where those records are available." %}</p>
         </article>
         <article class="world-trust__item">
           <span class="world-trust__index" aria-hidden="true">03</span>
           <h3>{% trans "Evidence" %}</h3>
-          <p>{% trans "Sources and supporting material stay connected to the information they support." %}</p>
+          <p>{% trans "Public evidence relationships keep supporting material connected to the records and claims they contextualize." %}</p>
         </article>
         <article class="world-trust__item">
           <span class="world-trust__index" aria-hidden="true">04</span>
           <h3>{% trans "Resilience" %}</h3>
-          <p>{% trans "Infrastructure is designed with continuity, recovery, and long-term operation in mind." %}</p>
+          <p>{% trans "Platform infrastructure is organized around explicit records, boundaries, and operational continuity." %}</p>
         </article>
       </div>
     </section>
 
-    <section id="principles" class="world-principles" data-homepage-signal-section aria-labelledby="world-principles-title">
+    <section id="principles" class="world-principles world-home-band" data-homepage-signal-section aria-labelledby="world-principles-title">
       <div class="world-section-head">
         <h2 id="world-principles-title" class="world-section-title">{% trans "Platform Principles" %}</h2>
       </div>
@@ -179,17 +212,17 @@
       </ul>
     </section>
 
-    <section id="explore" class="world-final-cta" data-homepage-signal-section aria-labelledby="world-final-cta-title">
+    <section id="explore" class="world-final-cta world-home-band" data-homepage-signal-section aria-labelledby="world-final-cta-title">
       <div class="world-final-cta__content">
         <p class="world-eyebrow">{% trans "Explore VORNEQ" %}</p>
-        <h2 id="world-final-cta-title" class="world-title world-title--lg">{% trans "Explore a more structured way to work with information." %}</h2>
-        <p class="world-final-cta__copy">{% trans "Search, discover, and navigate the connected surfaces of the VORNEQ platform." %}</p>
-        <a href="{% url 'discover' %}" class="world-cta">{% trans "Explore Platform" %}</a>
+        <h2 id="world-final-cta-title" class="world-title world-title--lg">{% trans "Explore information with its context still attached." %}</h2>
+        <p class="world-final-cta__copy">{% trans "Move from search and discovery into recorded context, evidence relationships, provenance, documents, and marketplace surfaces." %}</p>
+        <a href="{% url 'discover' %}" class="world-cta">{% trans "Explore VORNEQ" %}</a>
       </div>
     </section>
 
     <section class="world-closing" aria-label="{% trans 'VORNEQ positioning' %}">
-      <p>{% trans "Precision infrastructure for a trusted digital future." %}</p>
+      <p>{% trans "Evidence-aware infrastructure for connected knowledge." %}</p>
     </section>
   </main>
 </div>

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Evidence graph" %} — VORNEQ{% endblock %}
+
+{% block meta %}
+<meta name="description" content="{% trans 'This page presents recorded public context. It does not decide whether the artifact is true, trustworthy, or valuable.' %}">
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/public-graph.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="public-graph-page" aria-labelledby="public-graph-title">
+  <header class="public-graph-header">
+    <p class="public-graph-eyebrow">{% trans "Evidence graph" %}</p>
+    <h1 id="public-graph-title">{% trans "Evidence graph" %}</h1>
+    <p>{% trans "This page presents recorded public context. It does not decide whether the artifact is true, trustworthy, or valuable." %}</p>
+  </header>
+
+  <nav class="public-graph-actions" aria-label="{% trans 'Page navigation' %}">
+    <a href="{% url 'context_view' artifact_id=artifact_id %}">{% trans "Inspect Context" %}</a>
+    <a href="{% url 'discover' %}">{% trans "Discover" %}</a>
+  </nav>
+
+  <section class="public-graph-root" aria-labelledby="public-graph-root-title">
+    <h2 id="public-graph-root-title">{% trans "Artifact" %}</h2>
+    <p><code>{{ graph.root.ref }}</code></p>
+    {% if graph.root.truncated %}
+      <p class="public-graph-notice">{% trans "Additional public evidence is not shown in this bounded view." %}</p>
+    {% endif %}
+  </section>
+
+  <section aria-labelledby="public-graph-nodes-title">
+    <h2 id="public-graph-nodes-title">{% trans "Evidence" %} / {% trans "Provenance" %}</h2>
+    <ul class="public-graph-nodes">
+      {% for node in graph.nodes %}
+        <li>
+          <strong>{% if node.type == "evidence" %}{% trans "Evidence" %}{% elif node.type == "provenance" %}{% trans "Provenance" %}{% else %}{{ node.type }}{% endif %}</strong>
+          <code>{{ node.ref }}</code>
+          {% if node.source_type %}<span>· {% trans "Source type" %}: {{ node.source_type }}</span>{% endif %}
+          {% if node.timestamp %}<span>· <time datetime="{{ node.timestamp|date:'c' }}">{{ node.timestamp|date:"DATETIME_FORMAT" }}</time></span>{% endif %}
+          {% if node.type == "evidence" and node.truncated %}
+            <span class="public-graph-notice">{% trans "Additional provenance is not shown in this bounded view." %}</span>
+          {% endif %}
+        </li>
+      {% empty %}
+        <li>{% trans "No public evidence relationships are available." %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  {% if graph.edges %}
+  <section aria-labelledby="public-graph-relationships-title">
+    <h2 id="public-graph-relationships-title">{% trans "Evidence" %} / {% trans "Provenance" %}</h2>
+    <ol class="public-graph-edges">
+      {% for edge in graph.edges %}
+        <li>
+          <code>{{ edge.source.type }}:{{ edge.source.ref }}</code>
+          <span aria-label="{{ edge.relation }}">
+            <span aria-hidden="true">→</span>
+            <strong>{% if edge.relation == "INCLUDES_EVIDENCE" %}{% trans "Evidence" %}{% elif edge.relation == "HAS_PROVENANCE" %}{% trans "Provenance" %}{% else %}{{ edge.relation }}{% endif %}</strong>
+            <code>{{ edge.relation }}</code>
+            <span aria-hidden="true">→</span>
+          </span>
+          <code>{{ edge.target.type }}:{{ edge.target.ref }}</code>
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

@@ -74,9 +74,10 @@ def _cte_outer_bits(adapter, model) -> tuple[str, str]:
     return "", ""
 
 
-def _cte_rows(adapter, queryset: QuerySet, limit: int) -> list:
+def build_narrow_cte_sql(adapter, queryset: QuerySet, limit: int) -> tuple[str, tuple]:
+    """Build the exact narrow CTE SQL used by production without executing it."""
     if limit <= 0:
-        return []
+        raise ValueError("limit must be positive")
 
     inner = _narrow_queryset(adapter, queryset, limit)
     inner_sql, params = inner.query.sql_with_params()
@@ -98,7 +99,15 @@ def _cte_rows(adapter, queryset: QuerySet, limit: int) -> list:
         f'ORDER BY narrow."_search_published_at" DESC, '
         f'narrow."_search_pk_text" DESC'
     )
-    return list(model.objects.raw(sql, params))
+    return sql, params
+
+
+def _cte_rows(adapter, queryset: QuerySet, limit: int) -> list:
+    if limit <= 0:
+        return []
+
+    sql, params = build_narrow_cte_sql(adapter, queryset, limit)
+    return list(queryset.model.objects.raw(sql, params))
 
 
 def _serialize_cte(adapter, instance, *, language: str):

@@ -105,6 +105,7 @@ INSTALLED_APPS = [
     "apps.media.apps.MediaConfig",
     "apps.notes.apps.NotesConfig",
     "apps.documents.apps.DocumentsConfig",
+    "apps.search.apps.SearchConfig",
 ]
 
 

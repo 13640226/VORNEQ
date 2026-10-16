@@ -1,0 +1,27 @@
+.orientation-page {
+  --orientation-navy: #0B1F3D;
+  --orientation-blue: #2563EB;
+  --orientation-light: #93C5FD;
+  --orientation-border: #E5E7EB;
+  max-width: 960px;
+  margin-inline: auto;
+  padding: 64px 48px 88px;
+  color: var(--orientation-navy);
+}
+.orientation-hero { max-width: 720px; margin-block-end: 40px; }
+.orientation-eyebrow { margin: 0 0 10px; color: var(--orientation-blue); font-size: .78rem; font-weight: 700; letter-spacing: .1em; }
+.orientation-hero h1 { margin: 0; font-size: clamp(2.5rem, 5vw, 3.5rem); line-height: 1.08; }
+.orientation-hero > p:last-child { margin: 16px 0 0; max-width: 680px; line-height: 1.65; }
+.orientation-terms h2 { margin-block-end: 18px; }
+.orientation-terms dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 0; }
+.orientation-terms dl > div { padding: 22px; border: 1px solid var(--orientation-border); border-radius: 10px; background: #fff; }
+.orientation-terms dt { color: var(--orientation-blue); font-weight: 700; }
+.orientation-terms dd { margin: 8px 0 0; line-height: 1.65; }
+.orientation-actions { margin-block-start: 32px; }
+.orientation-actions a { color: var(--orientation-blue); font-weight: 650; text-underline-offset: 3px; }
+.orientation-actions a:focus-visible { outline: 3px solid var(--orientation-light); outline-offset: 3px; }
+html[dir="rtl"] .orientation-eyebrow { letter-spacing: 0; }
+@media (max-width: 720px) {
+  .orientation-page { padding: 40px 18px 56px; }
+  .orientation-terms dl { grid-template-columns: 1fr; }
+}

@@ -3,10 +3,13 @@
 from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.translation import get_language
 
-from apps.core.models import ContextualReputation, Entitlement
+from apps.core.models import Artifact, ContextualReputation, Entitlement
+from apps.core.services.public_graph import PublicGraphUnavailable, get_public_graph
 from apps.search.services import UnifiedSearch
 from apps.verification.services.activity import get_verification_activity
 from marketplace.models import Product
@@ -62,14 +65,149 @@ def _standalone_search_filters(request):
     return filters
 
 
+def robots_txt(request):
+    """Expose a minimal crawl policy for public surfaces."""
+    sitemap_url = request.build_absolute_uri("/sitemap.xml")
+    return HttpResponse(f"User-agent: *\\nAllow: /\\nSitemap: {sitemap_url}\\n", content_type="text/plain")
+
+
+def sitemap_xml(request):
+    """Expose localized homepage URLs without adding a sitemap dependency."""
+    locations = [request.build_absolute_uri(f"/{language}/") for language in ("fa", "en", "de")]
+    body = '<?xml version="1.0" encoding="UTF-8"?>\\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\\n' + "".join(
+        f"  <url><loc>{location}</loc></url>\\n" for location in locations
+    ) + "</urlset>\\n"
+    return HttpResponse(body, content_type="application/xml")
+
+
 def home(request):
     """Render Home as orientation and routing, without retrieval behavior."""
     return render(request, "index.html")
 
 
+def orientation(request):
+    """Render the public evidence vocabulary orientation surface."""
+    return render(request, "orientation.html")
+
+
+DISCOVER_TYPES = {"article", "product", "libraryitem", "mediaasset", "audio"}
+DISCOVER_DOMAIN_TYPES = {
+    "knowledge": {"article", "libraryitem", "audio"},
+    "media": {"mediaasset", "audio"},
+    "products-commerce": {"product"},
+}
+
+
+DISCOVER_GRAPH_TARGETS = {
+    "product": ("marketplace", "product"),
+    "library": ("library", "libraryitem"),
+}
+
+DISCOVER_AFFORDANCE_AVAILABLE = "AVAILABLE"
+DISCOVER_AFFORDANCE_UNAVAILABLE = "UNAVAILABLE"
+
+
+def _discover_artifact_for_result(result):
+    """Resolve the existing active Artifact for a supported Discover result."""
+    key = result.get("key", "")
+    prefix, separator, object_id = key.partition(":")
+    target = DISCOVER_GRAPH_TARGETS.get(prefix)
+    if not separator or not object_id or target is None:
+        return None
+
+    return (
+        Artifact.objects.filter(
+            binding__content_type__app_label=target[0],
+            binding__content_type__model=target[1],
+            binding__object_id=object_id,
+            is_active=True,
+        )
+        .only("id")
+        .first()
+    )
+
+
+def _discover_graph_for_artifact(artifact):
+    """Return Public Graph V1 for an already eligible Artifact, or None."""
+    if artifact is None:
+        return None
+    try:
+        return get_public_graph(artifact.pk)
+    except PublicGraphUnavailable:
+        return None
+
+
+def _attach_discover_graphs(payload):
+    """Attach bounded inspection affordances without creating canonical records."""
+    enriched = []
+    for result in payload["results"]:
+        item = dict(result)
+        artifact = _discover_artifact_for_result(item)
+        context_available = artifact is not None
+        item["context_availability"] = (
+            DISCOVER_AFFORDANCE_AVAILABLE
+            if context_available
+            else DISCOVER_AFFORDANCE_UNAVAILABLE
+        )
+        item["context_url"] = (
+            reverse("context_view", kwargs={"artifact_id": artifact.pk})
+            if context_available
+            else None
+        )
+        item["public_graph"] = _discover_graph_for_artifact(artifact)
+        item["graph_availability"] = (
+            DISCOVER_AFFORDANCE_AVAILABLE
+            if item["public_graph"] is not None
+            else DISCOVER_AFFORDANCE_UNAVAILABLE
+        )
+        enriched.append(item)
+    return {**payload, "results": enriched}
+
+
 def discover(request, domain=None):
-    """Resolve the canonical Discover route contract without defining its product surface."""
-    return render(request, "discover/placeholder.html", {"discover_domain": domain})
+    """Render public discovery using retrieval-only, disclosure-safe metadata."""
+    service = UnifiedSearch()
+    query = service.normalize_query(request.GET.get("q", ""))
+    requested_type = request.GET.get("type", "").strip().lower()
+    page = _positive_int(request.GET.get("page"), 1)
+
+    filters = {}
+    if requested_type in DISCOVER_TYPES:
+        filters["types"] = {requested_type}
+    elif domain in DISCOVER_DOMAIN_TYPES:
+        filters["types"] = DISCOVER_DOMAIN_TYPES[domain]
+
+    # software-services intentionally has no V1A retrieval mapping: Product is
+    # broader than software/services, so treating all products as software would
+    # invent semantics. Keep the canonical route but fail closed.
+    domain_supported = domain != "software-services"
+    if domain_supported:
+        payload = _attach_discover_graphs(service.search(
+            query,
+            filters=filters,
+            page=page,
+            page_size=UnifiedSearch.DEFAULT_PAGE_SIZE,
+            language=get_language() or "en",
+        ))
+    else:
+        payload = {
+            "results": [],
+            "total": 0,
+            "page": 1,
+            "total_pages": 1,
+            "has_next": False,
+            "has_previous": False,
+        }
+
+    context = {
+        **payload,
+        "discover_domain": domain,
+        "discover_query": query,
+        "current_type": requested_type if requested_type in DISCOVER_TYPES else "",
+        "domain_supported": domain_supported,
+        "is_recent": not query and not requested_type,
+    }
+    return render(request, "discover/placeholder.html", context)
 
 
 def search_page(request):

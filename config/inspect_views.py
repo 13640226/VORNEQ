@@ -2,11 +2,13 @@
 
 from django.http import Http404
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 
 from apps.core.models import Artifact, ArtifactBinding
 from apps.core.services.context import get_context_view, resolve_artifact_from_input
+from apps.core.services.public_graph import PublicGraphUnavailable, get_public_graph
 
 
 def inspect_entry(request):
@@ -40,5 +42,14 @@ def context_view(request, artifact_id):
         )
     except (Artifact.DoesNotExist, ArtifactBinding.DoesNotExist, LookupError):
         raise Http404("Inspectable artifact not found.")
+
+    try:
+        get_public_graph(artifact_id)
+    except PublicGraphUnavailable:
+        context["public_graph_url"] = None
+    else:
+        context["public_graph_url"] = reverse(
+            "public_graph", kwargs={"artifact_id": artifact_id}
+        )
 
     return render(request, "context.html", context)

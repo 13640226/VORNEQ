@@ -13,6 +13,17 @@ let infrastructureFailure = null;
 const full = SURFACES.filter(s => s.perf === 'full');
 const samples = SURFACES.filter(s => s.perf === 'sample');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const LIGHTHOUSE_ATTEMPT_TIMEOUT_MS = 120000;
+
+class LighthouseAttemptTimeoutError extends Error {
+  constructor(surface, profileName, run, series, attempt) {
+    super(
+      `Lighthouse attempt timed out after ${LIGHTHOUSE_ATTEMPT_TIMEOUT_MS}ms: ` +
+        `${surface.id}/${profileName}/run-${run}/${series}/attempt-${attempt}`
+    );
+    this.name = 'LighthouseAttemptTimeoutError';
+  }
+}
 
 async function waitForChrome(port, timeoutMs = 15000) {
   const endpoint = `http://127.0.0.1:${port}/json/version`;
@@ -59,9 +70,10 @@ async function assertTargetReachable(url, timeoutMs = 15000) {
   }
 }
 
-function isTargetClosed(error) {
+function isRecoverableLighthouseFailure(error) {
   const message = String(error?.stack || error);
-  return message.includes('Target closed') ||
+  return error instanceof LighthouseAttemptTimeoutError ||
+    message.includes('Target closed') ||
     message.includes('Page.navigate') && message.includes('Protocol error');
 }
 
@@ -92,7 +104,7 @@ async function launchChrome() {
   }
 }
 
-async function runLighthouseAttempt(surface, profileName, run, series) {
+async function runLighthouseAttempt(surface, profileName, run, series, attempt) {
   const profile = PROFILES[profileName];
   if (!profile) throw new Error(`Unknown Lighthouse profile: ${profileName}`);
 
@@ -112,7 +124,15 @@ async function runLighthouseAttempt(surface, profileName, run, series) {
       throttling: profile.throttling
     };
 
-    const runner = await lighthouse(url, options);
+    const runner = await Promise.race([
+      lighthouse(url, options),
+      new Promise((_, reject) => {
+        setTimeout(
+          () => reject(new LighthouseAttemptTimeoutError(surface, profileName, run, series, attempt)),
+          LIGHTHOUSE_ATTEMPT_TIMEOUT_MS
+        );
+      })
+    ]);
     if (!runner?.lhr) {
       throw new Error(
         `Lighthouse produced no LHR for ${surface.id}/${profileName}/run-${run}/${series}`
@@ -139,12 +159,14 @@ async function oneRun(surface, profileName, run, series = 'cold') {
     );
 
     try {
-      completed = await runLighthouseAttempt(surface, profileName, run, series);
+      completed = await runLighthouseAttempt(surface, profileName, run, series, attempt);
       break;
     } catch (error) {
-      if (attempt < maxAttempts && isTargetClosed(error)) {
+      if (attempt < maxAttempts && isRecoverableLighthouseFailure(error)) {
         console.warn(
-          `[lighthouse] transient Chrome target failure; retrying with a fresh browser: ${surface.id}/${profileName}/run-${run}/${series}`
+          `[lighthouse] recoverable Chrome/Lighthouse failure; retrying with a fresh browser: ` +
+            `${surface.id}/${profileName}/run-${run}/${series}/attempt-${attempt}\n` +
+            String(error?.stack || error)
         );
         await sleep(1000);
         continue;

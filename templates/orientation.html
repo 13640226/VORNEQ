@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Evidence vocabulary" %} — VORNEQ{% endblock %}
+{% block meta %}
+<meta name="description" content="{% trans 'A short guide to the public evidence vocabulary used across VORNEQ.' %}">
+{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/orientation.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="orientation-page" aria-labelledby="orientation-title">
+  <header class="orientation-hero">
+    <p class="orientation-eyebrow">{% trans "ORIENTATION" %}</p>
+    <h1 id="orientation-title">{% trans "Evidence vocabulary" %}</h1>
+    <p>{% trans "A short guide to the terms used across Discover, Context, and the Evidence Graph." %}</p>
+  </header>
+  <section class="orientation-terms" aria-labelledby="orientation-terms-title">
+    <h2 id="orientation-terms-title">{% trans "Core terms" %}</h2>
+    <dl>
+      <div><dt>{% trans "Artifact" %}</dt><dd>{% trans "A public record that can be inspected through its recorded context and relationships." %}</dd></div>
+      <div><dt>{% trans "Evidence" %}</dt><dd>{% trans "Recorded material connected to an artifact through a public evidence relationship." %}</dd></div>
+      <div><dt>{% trans "Provenance" %}</dt><dd>{% trans "Recorded source and time context associated with public evidence." %}</dd></div>
+      <div><dt>{% trans "Source type" %}</dt><dd>{% trans "The recorded category of a source associated with public evidence." %}</dd></div>
+      <div><dt>{% trans "Evidence graph" %}</dt><dd>{% trans "A bounded view of an artifact and its public evidence and provenance relationships." %}</dd></div>
+      <div><dt>{% trans "Context" %}</dt><dd>{% trans "The recorded public information presented around an artifact, including attribution and evidence relationships." %}</dd></div>
+    </dl>
+  </section>
+  <nav class="orientation-actions" aria-label="{% trans 'Page navigation' %}">
+    <a href="{% url 'discover' %}"><span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}→{% else %}←{% endif %}</span> {% trans "Discover" %}</a>
+  </nav>
+</div>
+{% endblock %}
