@@ -1,19 +1,22 @@
-"""Network-free tests for the Resend email backend."""
+"""Network-free Django tests for Resend HTTPS delivery."""
 import json
-from io import BytesIO
 from unittest.mock import patch
+from urllib.error import HTTPError, URLError
 
 from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.test import SimpleTestCase, override_settings
 
-from config.email_backends import ResendEmailBackend
+from config.email_backends import EmailDeliveryError, ResendEmailBackend
 
 
-class _Response:
-    status = 200
+class Response:
+    def __init__(self, status=200):
+        self.status = status
+
     def __enter__(self):
         return self
+
     def __exit__(self, *args):
         return False
 
@@ -24,44 +27,109 @@ class ResendBackendTests(SimpleTestCase):
         with patch.dict("os.environ", {"RESEND_API_KEY": "test-secret"}):
             return ResendEmailBackend(**kwargs)
 
-    def test_requires_api_key(self):
+    def message(self):
+        return EmailMessage("Verify", "verification-link-secret", to=["recipient@example.com"])
+
+    def test_missing_api_key(self):
         with patch.dict("os.environ", {"RESEND_API_KEY": ""}):
             with self.assertRaises(ImproperlyConfigured):
                 ResendEmailBackend()
 
-    @patch("config.email_backends.urlopen", return_value=_Response())
-    def test_plain_text(self, send):
-        backend = self.backend()
-        result = backend.send_messages([EmailMessage("Subject", "Body", to=["recipient@example.com"])])
-        self.assertEqual(result, 1)
+    @override_settings(RESEND_TIMEOUT_SECONDS=0)
+    def test_invalid_timeout(self):
+        with self.assertRaises(ImproperlyConfigured):
+            self.backend()
+
+    @patch("config.email_backends.urlopen", return_value=Response(202))
+    def test_plain_text_success(self, send):
+        self.assertEqual(self.backend().send_messages([self.message()]), 1)
         request = send.call_args.args[0]
         payload = json.loads(request.data)
-        self.assertEqual(payload["text"], "Body")
+        self.assertEqual(payload["text"], "verification-link-secret")
         self.assertEqual(payload["to"], ["recipient@example.com"])
+        self.assertEqual(payload["from"], "verified@example.com")
         self.assertEqual(send.call_args.kwargs["timeout"], 10)
+        self.assertEqual(request.full_url, "https://api.resend.com/emails")
 
-    @patch("config.email_backends.urlopen", return_value=_Response())
-    def test_html_alternative(self, send):
-        msg = EmailMultiAlternatives("Subject", "Plain", to=["recipient@example.com"])
-        msg.attach_alternative("<b>HTML</b>", "text/html")
+    @patch("config.email_backends.urlopen", return_value=Response(200))
+    def test_html_allauth_style(self, send):
+        msg = EmailMultiAlternatives("Verify", "Plain link", to=["recipient@example.com"])
+        msg.attach_alternative("<a href='https://example.com/verify'>Verify</a>", "text/html")
         self.assertEqual(self.backend().send_messages([msg]), 1)
-        self.assertEqual(json.loads(send.call_args.args[0].data)["html"], "<b>HTML</b>")
+        self.assertIn("Verify</a>", json.loads(send.call_args.args[0].data)["html"])
+
+    @patch("config.email_backends.urlopen")
+    def test_no_recipient_is_not_counted(self, send):
+        self.assertEqual(self.backend().send_messages([EmailMessage("S", "B", to=[])]), 0)
+        send.assert_not_called()
 
     @patch("config.email_backends.urlopen", side_effect=TimeoutError("test-secret"))
-    def test_timeout_redacts_secret(self, send):
-        with self.assertRaises(RuntimeError) as error:
-            self.backend().send_messages([EmailMessage("S", "B", to=["r@example.com"])])
-        self.assertNotIn("test-secret", str(error.exception))
+    def test_timeout_is_redacted(self, send):
+        with self.assertRaises(EmailDeliveryError) as caught:
+            self.backend().send_messages([self.message()])
+        self.assertEqual(caught.exception.category, "network")
+        self.assertNotIn("test-secret", str(caught.exception))
+        self.assertNotIn("verification-link-secret", str(caught.exception))
+
+    @patch("config.email_backends.urlopen", side_effect=URLError("test-secret"))
+    def test_network_failure(self, send):
+        with self.assertRaises(EmailDeliveryError) as caught:
+            self.backend().send_messages([self.message()])
+        self.assertEqual(caught.exception.category, "network")
+
+    @patch("config.email_backends.urlopen", side_effect=HTTPError("https://api.resend.com/emails", 400, "test-secret", None, None))
+    def test_http_400(self, send):
+        with self.assertRaises(EmailDeliveryError) as caught:
+            self.backend().send_messages([self.message()])
+        self.assertEqual(caught.exception.status, 400)
+        self.assertNotIn("test-secret", str(caught.exception))
+
+    @patch("config.email_backends.urlopen", side_effect=HTTPError("https://api.resend.com/emails", 401, "test-secret", None, None))
+    def test_http_401(self, send):
+        with self.assertRaises(EmailDeliveryError) as caught:
+            self.backend().send_messages([self.message()])
+        self.assertEqual(caught.exception.status, 401)
+
+    @patch("config.email_backends.urlopen", side_effect=HTTPError("https://api.resend.com/emails", 429, "test-secret", None, None))
+    def test_http_429(self, send):
+        with self.assertRaises(EmailDeliveryError) as caught:
+            self.backend().send_messages([self.message()])
+        self.assertEqual(caught.exception.status, 429)
+
+    @patch("config.email_backends.urlopen", side_effect=HTTPError("https://api.resend.com/emails", 500, "test-secret", None, None))
+    def test_http_500(self, send):
+        with self.assertRaises(EmailDeliveryError) as caught:
+            self.backend().send_messages([self.message()])
+        self.assertEqual(caught.exception.status, 500)
+
+    @patch("config.email_backends.urlopen", return_value=Response(503))
+    def test_non_2xx_response(self, send):
+        with self.assertRaises(EmailDeliveryError) as caught:
+            self.backend().send_messages([self.message()])
+        self.assertEqual(caught.exception.status, 503)
 
     @patch("config.email_backends.urlopen", side_effect=OSError("test-secret"))
     def test_fail_silently(self, send):
-        self.assertEqual(self.backend(fail_silently=True).send_messages(
-            [EmailMessage("S", "B", to=["r@example.com"])]), 0)
+        self.assertEqual(self.backend(fail_silently=True).send_messages([self.message()]), 0)
 
-    @patch("config.email_backends.urlopen", return_value=_Response())
-    def test_attachments_rejected(self, send):
-        msg = EmailMessage("S", "B", to=["r@example.com"])
-        msg.attach("secret.txt", b"secret", "text/plain")
-        with self.assertRaises(ValueError):
+    @patch("config.email_backends.urlopen", side_effect=OSError("test-secret"))
+    def test_fail_loudly(self, send):
+        with self.assertRaises(EmailDeliveryError):
+            self.backend(fail_silently=False).send_messages([self.message()])
+
+    @patch("config.email_backends.urlopen")
+    def test_attachment_rejected(self, send):
+        msg = self.message()
+        msg.attach("private.txt", b"secret", "text/plain")
+        with self.assertRaises(EmailDeliveryError) as caught:
+            self.backend().send_messages([msg])
+        self.assertEqual(caught.exception.category, "unsupported_message")
+        send.assert_not_called()
+
+    @patch("config.email_backends.urlopen")
+    def test_unsupported_alternative_rejected(self, send):
+        msg = EmailMultiAlternatives("S", "B", to=["recipient@example.com"])
+        msg.attach_alternative("data", "text/calendar")
+        with self.assertRaises(EmailDeliveryError):
             self.backend().send_messages([msg])
         send.assert_not_called()
