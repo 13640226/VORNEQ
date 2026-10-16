@@ -69,8 +69,10 @@ class ResendEmailBackend(BaseEmailBackend):
         return sent
 
     def _send(self, message):
-        recipients = message.recipients()
-        if not recipients:
+        to = list(message.to or [])
+        cc = list(message.cc or [])
+        bcc = list(message.bcc or [])
+        if not (to or cc or bcc):
             return False
         if message.attachments:
             raise ValueError("Attachments unsupported")
@@ -85,12 +87,26 @@ class ResendEmailBackend(BaseEmailBackend):
                     raise ValueError("Unsupported alternative")
         payload = {
             "from": message.from_email or settings.DEFAULT_FROM_EMAIL,
-            "to": recipients,
             "subject": message.subject,
             "text": message.body,
         }
         if html is not None:
             payload["html"] = html
+        if message.reply_to:
+            payload["reply_to"] = list(message.reply_to)
+
+        # Bcc recipients never share an API request with visible recipients.
+        # Partial delivery can occur if a later request fails; do not retry.
+        if to or cc:
+            visible = dict(payload, to=to or cc)
+            if to and cc:
+                visible["cc"] = cc
+            self._post(visible)
+        for recipient in bcc:
+            self._post(dict(payload, to=[recipient]))
+        return True
+
+    def _post(self, payload):
         request = Request(
             self.endpoint,
             data=json.dumps(payload).encode("utf-8"),
@@ -105,4 +121,3 @@ class ResendEmailBackend(BaseEmailBackend):
             status = response.status
             if not 200 <= status < 300:
                 raise EmailDeliveryError("http", status)
-        return True
