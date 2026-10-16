@@ -14,7 +14,9 @@ const valid = inspectLighthouseReport(lhr());
 assert.equal(valid.status, 'VALID');
 assert.deepEqual(valid.observed, { lcpMs: 1100, cls: 0.01, performanceScore: 0.98 });
 for (const missing of [null, NaN, Infinity, -Infinity, undefined]) {
-  const x = inspectLighthouseReport(lhr(missing, 0.01, 0.98));
+  const candidate = lhr();
+  candidate.audits['largest-contentful-paint'].numericValue = missing;
+  const x = inspectLighthouseReport(candidate);
   assert.equal(x.status, 'MEASUREMENT_INVALID');
   assert.equal(x.observed.lcpMs, null);
   assert.ok(x.diagnostics.reasons.includes('missing-or-nonfinite-metrics'));
