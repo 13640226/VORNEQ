@@ -5,7 +5,7 @@ from urllib.error import HTTPError, URLError
 
 from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import EmailMessage, EmailMultiAlternatives
-from django.test import SimpleTestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 
 from config.email_backends import EmailDeliveryError, ResendEmailBackend
 
@@ -197,6 +197,10 @@ class ResendBackendTests(SimpleTestCase):
                 if index != other:
                     self.assertNotIn(bodies[other]["to"][0], json.dumps(body))
 
+
+
+@override_settings(DEFAULT_FROM_EMAIL="verified@example.com")
+class AllauthResendIntegrationTests(TestCase):
     @override_settings(EMAIL_BACKEND="config.email_backends.ResendEmailBackend")
     @patch("config.email_backends.urlopen", return_value=Response(202))
     def test_allauth_confirmation_template_through_https_backend(self, send):
