@@ -5,7 +5,6 @@ Only enable this backend after the sender domain and API key are configured.
 import json
 import logging
 import os
-from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from django.conf import settings
@@ -34,7 +33,7 @@ class ResendEmailBackend(BaseEmailBackend):
         sent = 0
         for message in email_messages:
             try:
-                self._send(message)
+                delivered = self._send(message)
             except Exception as exc:
                 if self.fail_silently:
                     logger.error("Email delivery failed (details suppressed)")
@@ -42,14 +41,15 @@ class ResendEmailBackend(BaseEmailBackend):
                 if isinstance(exc, ValueError):
                     raise
                 raise RuntimeError("Email delivery failed; see secure provider diagnostics") from None
-            sent += 1
+            if delivered:
+                sent += 1
         return sent
 
     def _send(self, message):
         if message.attachments:
             raise ValueError("Email attachments are not supported by this backend")
         if not message.recipients():
-            return
+            return False
         html_parts = []
         if isinstance(message, EmailMultiAlternatives):
             for body, mimetype in message.alternatives:
@@ -78,3 +78,4 @@ class ResendEmailBackend(BaseEmailBackend):
         with urlopen(request, timeout=self.timeout) as response:
             if not 200 <= response.status < 300:
                 raise RuntimeError("Email provider returned an unsuccessful response")
+        return True
