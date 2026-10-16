@@ -210,11 +210,18 @@ class AllauthResendIntegrationTests(TestCase):
 
         request = RequestFactory().get("/")
         request.site = Site(domain="example.com", name="Example")
+        from django.contrib.auth import get_user_model
+
+        user = get_user_model().objects.create_user(
+            username="integration_test_user",
+            email="recipient@example.com",
+            password="synthetic-test-password",
+        )
         with patch.dict("os.environ", {"RESEND_API_KEY": "test-secret"}):
             get_adapter(request).send_mail(
                 "account/email/email_confirmation_signup",
                 "recipient@example.com",
-                {"user": None, "activate_url": "https://example.com/confirm/fake-token"},
+                {"user": user, "activate_url": "https://example.com/confirm/fake-token"},
             )
         self.assertTrue(send.called)
         payload = json.loads(send.call_args.args[0].data)
