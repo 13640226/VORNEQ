@@ -133,3 +133,44 @@ class ResendBackendTests(SimpleTestCase):
         with self.assertRaises(EmailDeliveryError):
             self.backend().send_messages([msg])
         send.assert_not_called()
+
+    @patch("config.email_backends.urlopen", return_value=Response(202))
+    def test_to_cc_reply_to_preserved(self, send):
+        msg = EmailMessage("S", "B", to=["to@example.com"],
+                           cc=["cc@example.com"], reply_to=["reply@example.com"])
+        self.assertEqual(self.backend().send_messages([msg]), 1)
+        payload = json.loads(send.call_args.args[0].data)
+        self.assertEqual(payload["to"], ["to@example.com"])
+        self.assertEqual(payload["cc"], ["cc@example.com"])
+        self.assertEqual(payload["reply_to"], ["reply@example.com"])
+
+    @patch("config.email_backends.urlopen", return_value=Response(202))
+    def test_bcc_is_never_visible_to_other_recipients(self, send):
+        msg = EmailMessage("S", "B", to=["to@example.com"],
+                           cc=["cc@example.com"], bcc=["hidden@example.com"])
+        self.assertEqual(self.backend().send_messages([msg]), 1)
+        self.assertEqual(send.call_count, 2)
+        visible = json.loads(send.call_args_list[0].args[0].data)
+        hidden = json.loads(send.call_args_list[1].args[0].data)
+        self.assertEqual(visible["to"], ["to@example.com"])
+        self.assertEqual(visible["cc"], ["cc@example.com"])
+        self.assertNotIn("hidden@example.com", json.dumps(visible))
+        self.assertEqual(hidden["to"], ["hidden@example.com"])
+        self.assertNotIn("cc", hidden)
+        self.assertNotIn("to@example.com", json.dumps(hidden))
+
+    @patch("config.email_backends.urlopen", return_value=Response(202))
+    def test_bcc_only_is_separate(self, send):
+        msg = EmailMessage("S", "B", bcc=["first@example.com", "second@example.com"])
+        self.assertEqual(self.backend().send_messages([msg]), 1)
+        self.assertEqual(send.call_count, 2)
+        self.assertEqual(json.loads(send.call_args_list[0].args[0].data)["to"], ["first@example.com"])
+        self.assertEqual(json.loads(send.call_args_list[1].args[0].data)["to"], ["second@example.com"])
+
+    @patch("config.email_backends.urlopen")
+    def test_bcc_partial_failure_does_not_claim_success(self, send):
+        send.side_effect = [Response(202), HTTPError("https://api.resend.com/emails", 500, "error", None, None)]
+        msg = EmailMessage("S", "B", to=["to@example.com"], bcc=["hidden@example.com"])
+        with self.assertRaises(EmailDeliveryError):
+            self.backend().send_messages([msg])
+        self.assertEqual(send.call_count, 2)
