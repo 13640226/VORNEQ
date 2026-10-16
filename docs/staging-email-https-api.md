@@ -23,3 +23,22 @@ Observe 5xx and /health/ before declaring success.
 Rollback requires separately authorized restoration of the previous deployed code
 and EMAIL_BACKEND setting. Note that the previous SMTP route was already failing,
 so rollback does not guarantee working email delivery.
+
+## C12 review and validation
+- The backend classifies HTTP failures by status code, network failures, and
+  unsupported message formats without including provider response bodies,
+  API keys, email contents, or recipient addresses in exception text.
+- Timeout must be a finite positive number not exceeding 30 seconds
+  (default 10 seconds). No automatic retry is performed.
+- Empty recipient lists return zero deliveries. Text and one HTML alternative
+  are supported; attachments and other alternatives fail closed.
+- Django unit tests use mocked `urlopen` and fabricated addresses/API keys.
+- **Local Django tests are NOT EXECUTED**: Django is absent from the temporary
+  runtime and public dependency installation failed because DNS/network access
+  was unavailable. Static Python compilation can be checked separately.
+- The previous head commit's CI, Security Audit, Global Quality Verification,
+  and Backup Restore Rehearsal succeeded. New head CI must be checked again.
+- A real Django Allauth integration test, sender-domain verification and
+  provider delivery remain **UNVERIFIED**.
+- Activation, merge, deployment, Render configuration changes, email sends
+  and secret access are **NOT AUTHORIZED**.
