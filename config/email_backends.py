@@ -1,31 +1,49 @@
-"""Django email backend using Resend's HTTPS API.
-
-Only enable this backend after the sender domain and API key are configured.
-"""
+"""Django email backend for Resend's HTTPS API (opt-in only)."""
 import json
 import logging
+import math
 import os
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail.message import EmailMultiAlternatives
-from django.core.exceptions import ImproperlyConfigured
 
 logger = logging.getLogger(__name__)
 
 
+class EmailDeliveryError(RuntimeError):
+    """Safe, classified delivery failure; never contains provider response bodies."""
+
+    def __init__(self, category, status=None):
+        self.category = category
+        self.status = status
+        label = f"Email delivery failed ({category})"
+        if status is not None:
+            label += f" [HTTP {status}]"
+        super().__init__(label)
+
+
 class ResendEmailBackend(BaseEmailBackend):
-    """Send one Django message per HTTPS request, without logging email contents."""
+    """Send Django text/HTML messages using HTTPS; no automatic retries."""
 
     endpoint = "https://api.resend.com/emails"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.api_key = os.environ.get("RESEND_API_KEY", "")
-        self.timeout = getattr(settings, "RESEND_TIMEOUT_SECONDS", 10)
         if not self.api_key:
             raise ImproperlyConfigured("RESEND_API_KEY is required for the HTTPS email backend")
+        self.timeout = getattr(settings, "RESEND_TIMEOUT_SECONDS", 10)
+        if (
+            isinstance(self.timeout, bool)
+            or not isinstance(self.timeout, (int, float))
+            or not math.isfinite(self.timeout)
+            or not 0 < self.timeout <= 30
+        ):
+            raise ImproperlyConfigured("RESEND_TIMEOUT_SECONDS must be between 0 and 30")
 
     def send_messages(self, email_messages):
         if not email_messages:
@@ -33,38 +51,46 @@ class ResendEmailBackend(BaseEmailBackend):
         sent = 0
         for message in email_messages:
             try:
-                delivered = self._send(message)
+                if self._send(message):
+                    sent += 1
             except Exception as exc:
                 if self.fail_silently:
                     logger.error("Email delivery failed (details suppressed)")
                     continue
-                if isinstance(exc, ValueError):
+                if isinstance(exc, EmailDeliveryError):
                     raise
-                raise RuntimeError("Email delivery failed; see secure provider diagnostics") from None
-            if delivered:
-                sent += 1
+                if isinstance(exc, HTTPError):
+                    raise EmailDeliveryError("http", exc.code) from None
+                if isinstance(exc, (TimeoutError, URLError, OSError)):
+                    raise EmailDeliveryError("network") from None
+                if isinstance(exc, ValueError):
+                    raise EmailDeliveryError("unsupported_message") from None
+                raise EmailDeliveryError("unexpected") from None
         return sent
 
     def _send(self, message):
-        if message.attachments:
-            raise ValueError("Email attachments are not supported by this backend")
-        if not message.recipients():
+        recipients = message.recipients()
+        if not recipients:
             return False
-        html_parts = []
+        if message.attachments:
+            raise ValueError("Attachments unsupported")
+        html = None
         if isinstance(message, EmailMultiAlternatives):
             for body, mimetype in message.alternatives:
                 if mimetype == "text/html":
-                    html_parts.append(body)
+                    if html is not None:
+                        raise ValueError("Multiple HTML alternatives unsupported")
+                    html = body
                 else:
-                    raise ValueError("Unsupported email alternative type")
+                    raise ValueError("Unsupported alternative")
         payload = {
             "from": message.from_email or settings.DEFAULT_FROM_EMAIL,
-            "to": message.recipients(),
+            "to": recipients,
             "subject": message.subject,
             "text": message.body,
         }
-        if html_parts:
-            payload["html"] = html_parts[-1]
+        if html is not None:
+            payload["html"] = html
         request = Request(
             self.endpoint,
             data=json.dumps(payload).encode("utf-8"),
@@ -74,8 +100,9 @@ class ResendEmailBackend(BaseEmailBackend):
             },
             method="POST",
         )
-        # Do not log request headers, response body, email addresses or provider errors.
+        # Never log request headers, response bodies, recipients, or email content.
         with urlopen(request, timeout=self.timeout) as response:
-            if not 200 <= response.status < 300:
-                raise RuntimeError("Email provider returned an unsuccessful response")
+            status = response.status
+            if not 200 <= status < 300:
+                raise EmailDeliveryError("http", status)
         return True
