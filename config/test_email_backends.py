@@ -196,3 +196,43 @@ class ResendBackendTests(SimpleTestCase):
             for other in range(len(bodies)):
                 if index != other:
                     self.assertNotIn(bodies[other]["to"][0], json.dumps(body))
+
+    @override_settings(EMAIL_BACKEND="config.email_backends.ResendEmailBackend")
+    @patch("config.email_backends.urlopen", return_value=Response(202))
+    def test_allauth_confirmation_template_through_https_backend(self, send):
+        from allauth.account.adapter import get_adapter
+        from django.contrib.sites.models import Site
+        from django.test import RequestFactory
+
+        request = RequestFactory().get("/")
+        request.site = Site(domain="example.com", name="Example")
+        with patch.dict("os.environ", {"RESEND_API_KEY": "test-secret"}):
+            get_adapter(request).send_mail(
+                "account/email/email_confirmation_signup",
+                "recipient@example.com",
+                {"user": None, "activate_url": "https://example.com/confirm/fake-token"},
+            )
+        self.assertTrue(send.called)
+        payload = json.loads(send.call_args.args[0].data)
+        self.assertEqual(payload["to"], ["recipient@example.com"])
+        self.assertIn("https://example.com/confirm/fake-token", payload["text"])
+
+    @override_settings(EMAIL_BACKEND="config.email_backends.ResendEmailBackend")
+    @patch("config.email_backends.urlopen", return_value=Response(202))
+    def test_allauth_password_reset_template_through_https_backend(self, send):
+        from allauth.account.adapter import get_adapter
+        from django.contrib.sites.models import Site
+        from django.test import RequestFactory
+
+        request = RequestFactory().get("/")
+        request.site = Site(domain="example.com", name="Example")
+        with patch.dict("os.environ", {"RESEND_API_KEY": "test-secret"}):
+            get_adapter(request).send_mail(
+                "account/email/password_reset_key",
+                "recipient@example.com",
+                {"user": None, "password_reset_url": "https://example.com/reset/fake-token"},
+            )
+        self.assertTrue(send.called)
+        payload = json.loads(send.call_args.args[0].data)
+        self.assertEqual(payload["to"], ["recipient@example.com"])
+        self.assertIn("https://example.com/reset/fake-token", payload["text"])
