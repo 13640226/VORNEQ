@@ -6,8 +6,7 @@ services:
     buildCommand: pip install -r requirements.txt && python manage.py compilemessages && DJANGO_SETTINGS_MODULE=config.settings_render python manage.py collectstatic --noinput
     # Keep deploys read-only with respect to schema. Staging migrations are applied
     # explicitly through the guarded "Migrate Staging Database" GitHub workflow.
-    preDeployCommand: DJANGO_SETTINGS_MODULE=config.settings_render python manage.py migration_preflight
-    startCommand: gunicorn config.wsgi:application
+    startCommand: DJANGO_SETTINGS_MODULE=config.settings_render gunicorn config.wsgi:application
     healthCheckPath: /health/
     envVars:
       - key: DJANGO_SETTINGS_MODULE
