@@ -4,6 +4,7 @@ import lighthouse from 'lighthouse';
 import * as chromeLauncher from 'chrome-launcher';
 import { chromium } from 'playwright';
 import { PERF_THRESHOLDS, PROFILES, SURFACES, localizedUrl } from './contract.mjs';
+import { runWithIntegrityRetries } from './lighthouse-integrity.mjs';
 
 const outDir = process.env.QUALITY_OUT_DIR || 'artifacts/quality';
 await fs.mkdir(outDir, { recursive: true });
@@ -223,39 +224,72 @@ async function runLighthouseAttempt(surface, profileName, run, series, attempt) 
 }
 
 async function oneRun(surface, profileName, run, series = 'cold') {
-  const maxAttempts = 2;
-  let completed = null;
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    console.log(
-      `[lighthouse] start surface=${surface.id} profile=${profileName} run=${run} series=${series} attempt=${attempt}`
-    );
-
-    try {
-      completed = await runLighthouseAttempt(surface, profileName, run, series, attempt);
-      break;
-    } catch (error) {
-      if (attempt < maxAttempts && isRecoverableLighthouseFailure(error)) {
+  let measurement;
+  try {
+    measurement = await runWithIntegrityRetries({
+      maxAttempts: 2,
+      executeAttempt: async (attempt) => {
+        console.log(
+          `[lighthouse] start surface=${surface.id} profile=${profileName} run=${run} series=${series} attempt=${attempt}`
+        );
+        // runLighthouseAttempt resolves only after its own Chrome cleanup.
+        return await runLighthouseAttempt(surface, profileName, run, series, attempt);
+      },
+      isRecoverableError: isRecoverableLighthouseFailure,
+      onRetry: async ({ attempt, kind, diagnostics }) => {
         console.warn(
-          `[lighthouse] recoverable Chrome/Lighthouse failure; retrying with a fresh browser: ` +
-            `${surface.id}/${profileName}/run-${run}/${series}/attempt-${attempt}\n` +
-            String(error?.stack || error)
+          `[lighthouse] retry with a new Chrome: surface=${surface.id} profile=${profileName} ` +
+          `run=${run} series=${series} attempt=${attempt} kind=${kind} ` +
+          JSON.stringify(diagnostics)
         );
         await sleep(1000);
-        continue;
       }
-      throw new Error(
-        `Lighthouse infrastructure failure for ${surface.id}/${profileName}/run-${run}/${series}\n` +
-        String(error?.stack || error)
-      );
-    }
+    });
+  } catch (error) {
+    throw new Error(
+      `Lighthouse infrastructure failure for ${surface.id}/${profileName}/run-${run}/${series}\n` +
+      String(error?.stack || error)
+    );
   }
 
+  const { completed, observed, history, attempts, status, diagnostics } = measurement;
   const { url, lhr } = completed;
-  const lcp = lhr.audits['largest-contentful-paint']?.numericValue ?? null;
-  const cls = lhr.audits['cumulative-layout-shift']?.numericValue ?? null;
-  const score = lhr.categories.performance?.score ?? null;
+  const validity = {
+    status,
+    attempts,
+    history,
+    diagnostics
+  };
+  if (status === 'MEASUREMENT_INVALID') {
+    // A missing metric cannot support a product performance failure or success.
+    // The report is uploaded, then the workflow fails the measurement-integrity gate.
+    results.push({
+      surface: surface.id,
+      surfaceName: surface.name,
+      locale: 'en',
+      profile: profileName,
+      run,
+      series,
+      url,
+      lighthouseVersion: lhr?.lighthouseVersion ?? null,
+      observed,
+      thresholds: PERF_THRESHOLDS,
+      measurementIntegrity: validity,
+      productConformance: {
+        lcp: 'measurement-invalid',
+        cls: 'measurement-invalid',
+        performanceScore: 'measurement-invalid',
+        inp: PERF_THRESHOLDS.inp.classification
+      }
+    });
+    console.error(
+      `[lighthouse] MEASUREMENT_INVALID surface=${surface.id} profile=${profileName} ` +
+      `run=${run} series=${series} attempts=${attempts} ` + JSON.stringify(diagnostics)
+    );
+    return;
+  }
 
+  const { lcpMs, cls, performanceScore } = observed;
   results.push({
     surface: surface.id,
     surfaceName: surface.name,
@@ -265,18 +299,19 @@ async function oneRun(surface, profileName, run, series = 'cold') {
     series,
     url,
     lighthouseVersion: lhr.lighthouseVersion,
-    observed: { lcpMs: lcp, cls, performanceScore: score },
+    observed,
     thresholds: PERF_THRESHOLDS,
+    measurementIntegrity: validity,
     productConformance: {
-      lcp: lcp !== null && lcp <= PERF_THRESHOLDS.lcpMs ? 'pass' : 'fail',
-      cls: cls !== null && cls <= PERF_THRESHOLDS.cls ? 'pass' : 'fail',
-      performanceScore: score !== null && score >= PERF_THRESHOLDS.lighthousePerformance ? 'pass' : 'fail',
+      lcp: lcpMs <= PERF_THRESHOLDS.lcpMs ? 'pass' : 'fail',
+      cls: cls <= PERF_THRESHOLDS.cls ? 'pass' : 'fail',
+      performanceScore: performanceScore >= PERF_THRESHOLDS.lighthousePerformance ? 'pass' : 'fail',
       inp: PERF_THRESHOLDS.inp.classification
     }
   });
 
   console.log(
-    `[lighthouse] complete surface=${surface.id} profile=${profileName} run=${run} series=${series}`
+    `[lighthouse] complete surface=${surface.id} profile=${profileName} run=${run} series=${series} attempts=${attempts}`
   );
 }
 
@@ -342,6 +377,12 @@ try {
   infrastructureFailure = String(error?.stack || error);
 }
 
+const integritySummary = {
+  valid: results.filter(result => result.measurementIntegrity?.status === 'VALID').length,
+  invalid: results.filter(result => result.measurementIntegrity?.status === 'MEASUREMENT_INVALID').length,
+  informational: results.filter(result => result.series === 'warm-informational').length
+};
+
 const report = {
   contract: 'Global Quality Verification Specification v1.0',
   generatedAt: new Date().toISOString(),
@@ -351,6 +392,7 @@ const report = {
     'INP remains blocked/unknown until field telemetry exists.',
   profiles: PROFILES,
   infrastructureFailure,
+  integritySummary,
   results
 };
 
@@ -365,6 +407,16 @@ if (infrastructureFailure) {
   process.exit(2);
 }
 
+if (integritySummary.invalid > 0) {
+  console.error(
+    `Lighthouse measurement-integrity gate failed: ${integritySummary.invalid} of ` +
+    `${integritySummary.valid + integritySummary.invalid} primary measurements invalid. ` +
+    'Product threshold misses remain report-only.'
+  );
+  process.exit(2);
+}
+
 console.log(
-  `Lighthouse verification complete: ${results.length} measurements; product threshold misses are report-only.`
+  `Lighthouse verification complete: ${integritySummary.valid} valid primary measurements, ` +
+  `${integritySummary.informational} warm informational; product threshold misses are report-only.`
 );

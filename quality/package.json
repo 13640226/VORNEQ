@@ -5,7 +5,7 @@
   "scripts": {
     "verify": "node verify.mjs",
     "lighthouse": "node lighthouse.mjs",
-    "test": "node test-contract.mjs"
+    "test": "node test-contract.mjs && node test-lighthouse-integrity.mjs"
   },
   "dependencies": {
     "@axe-core/playwright": "4.10.2",
