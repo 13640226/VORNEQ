@@ -14,6 +14,7 @@ const full = SURFACES.filter(s => s.perf === 'full');
 const samples = SURFACES.filter(s => s.perf === 'sample');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const LIGHTHOUSE_ATTEMPT_TIMEOUT_MS = 120000;
+const LIGHTHOUSE_SETTLEMENT_GRACE_MS = 15000;
 
 class LighthouseAttemptTimeoutError extends Error {
   constructor(surface, profileName, run, series, attempt) {
@@ -22,6 +23,27 @@ class LighthouseAttemptTimeoutError extends Error {
         `${surface.id}/${profileName}/run-${run}/${series}/attempt-${attempt}`
     );
     this.name = 'LighthouseAttemptTimeoutError';
+  }
+}
+
+class LighthouseAttemptCleanupError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'LighthouseAttemptCleanupError';
+  }
+}
+
+async function waitForLighthouseToSettle(observed) {
+  let graceTimer;
+  try {
+    return await Promise.race([
+      observed,
+      new Promise(resolve => {
+        graceTimer = setTimeout(() => resolve(null), LIGHTHOUSE_SETTLEMENT_GRACE_MS);
+      })
+    ]);
+  } finally {
+    clearTimeout(graceTimer);
   }
 }
 
@@ -71,6 +93,7 @@ async function assertTargetReachable(url, timeoutMs = 15000) {
 }
 
 function isRecoverableLighthouseFailure(error) {
+  if (error instanceof LighthouseAttemptCleanupError) return false;
   const message = String(error?.stack || error);
   return error instanceof LighthouseAttemptTimeoutError ||
     message.includes('Target closed') ||
@@ -112,6 +135,8 @@ async function runLighthouseAttempt(surface, profileName, run, series, attempt) 
   await assertTargetReachable(url);
 
   const chrome = await launchChrome();
+  let chromeStopped = false;
+  let primaryError = null;
 
   try {
     const options = {
@@ -124,15 +149,54 @@ async function runLighthouseAttempt(surface, profileName, run, series, attempt) 
       throttling: profile.throttling
     };
 
-    const runner = await Promise.race([
-      lighthouse(url, options),
-      new Promise((_, reject) => {
-        setTimeout(
-          () => reject(new LighthouseAttemptTimeoutError(surface, profileName, run, series, attempt)),
-          LIGHTHOUSE_ATTEMPT_TIMEOUT_MS
+    // Observe Lighthouse's eventual outcome before the timeout can win the race.
+    const observed = Promise.resolve()
+      .then(() => lighthouse(url, options))
+      .then(
+        value => ({ kind: 'success', value }),
+        error => ({ kind: 'failure', error })
+      );
+    let timeoutTimer;
+    let outcome;
+    try {
+      outcome = await Promise.race([
+        observed,
+        new Promise(resolve => {
+          timeoutTimer = setTimeout(
+            () => resolve({ kind: 'timeout' }),
+            LIGHTHOUSE_ATTEMPT_TIMEOUT_MS
+          );
+        })
+      ]);
+    } finally {
+      clearTimeout(timeoutTimer);
+    }
+
+    if (outcome.kind === 'timeout') {
+      // Terminate Chrome, then wait for Lighthouse to observe shutdown.
+      // Never retry with a previous Lighthouse invocation still pending.
+      try {
+        await chrome.kill();
+        chromeStopped = true;
+      } catch (error) {
+        throw new LighthouseAttemptCleanupError(
+          'Unable to terminate timed-out Chrome: ' + String(error?.stack || error)
         );
-      })
-    ]);
+      }
+      const lateOutcome = await waitForLighthouseToSettle(observed);
+      if (!lateOutcome) {
+        throw new LighthouseAttemptCleanupError(
+          'Lighthouse remains pending after Chrome termination and ' +
+            LIGHTHOUSE_SETTLEMENT_GRACE_MS + 'ms of cleanup grace'
+        );
+      }
+      if (lateOutcome.kind === 'failure') {
+        console.warn('[lighthouse] shutdown outcome:', String(lateOutcome.error?.stack || lateOutcome.error));
+      }
+      throw new LighthouseAttemptTimeoutError(surface, profileName, run, series, attempt);
+    }
+    if (outcome.kind === 'failure') throw outcome.error;
+    const runner = outcome.value;
     if (!runner?.lhr) {
       throw new Error(
         `Lighthouse produced no LHR for ${surface.id}/${profileName}/run-${run}/${series}`
@@ -140,11 +204,20 @@ async function runLighthouseAttempt(surface, profileName, run, series, attempt) 
     }
 
     return { url, lhr: runner.lhr };
+  } catch (error) {
+    primaryError = error;
+    throw error;
   } finally {
-    try {
-      await chrome.kill();
-    } catch (error) {
-      console.warn('[lighthouse] Chrome cleanup failed:', String(error?.stack || error));
+    if (!chromeStopped) {
+      try {
+        await chrome.kill();
+      } catch (error) {
+        throw new LighthouseAttemptCleanupError(
+          'Chrome cleanup failed; retry is unsafe. ' +
+            (primaryError ? 'Original attempt: ' + String(primaryError?.stack || primaryError) + '\n' : '') +
+            String(error?.stack || error)
+        );
+      }
     }
   }
 }
