@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import os from 'node:os';
 import lighthouse from 'lighthouse';
 import * as chromeLauncher from 'chrome-launcher';
 import { chromium } from 'playwright';
@@ -16,6 +17,17 @@ const samples = SURFACES.filter(s => s.perf === 'sample');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const LIGHTHOUSE_ATTEMPT_TIMEOUT_MS = 120000;
 const LIGHTHOUSE_SETTLEMENT_GRACE_MS = 15000;
+
+// Numeric-only process/runner snapshots; never log environment variables or URLs.
+function runnerSnapshot() {
+  const memory = process.memoryUsage();
+  return {
+    rssMiB: memory.rss / (1024 * 1024),
+    heapUsedMiB: memory.heapUsed / (1024 * 1024),
+    freeSystemMiB: os.freemem() / (1024 * 1024),
+    loadAverage1m: os.loadavg()[0]
+  };
+}
 
 class LighthouseAttemptTimeoutError extends Error {
   constructor(surface, profileName, run, series, attempt) {
@@ -57,7 +69,13 @@ async function waitForChrome(port, timeoutMs = 15000) {
       const response = await fetch(endpoint);
       if (response.ok) {
         const data = await response.json();
-        if (data?.webSocketDebuggerUrl) return;
+        if (data?.webSocketDebuggerUrl) {
+          return {
+            browserVersion: typeof data.Browser === 'string' ? data.Browser : null,
+            devtoolsProtocolVersion: typeof data['Protocol-Version'] === 'string'
+              ? data['Protocol-Version'] : null
+          };
+        }
       }
     } catch {
       // Chrome may still be starting.
@@ -102,6 +120,7 @@ function isRecoverableLighthouseFailure(error) {
 }
 
 async function launchChrome() {
+  const start = performance.now();
   const chrome = await chromeLauncher.launch({
     chromePath: chromium.executablePath(),
     chromeFlags: [
@@ -114,16 +133,20 @@ async function launchChrome() {
       '--no-default-browser-check'
     ]
   });
-
+  const launchMs = performance.now() - start;
   try {
-    await waitForChrome(chrome.port);
-    return chrome;
+    const readyStart = performance.now();
+    // Read only safe browser/version fields; never retain DevTools websocket URLs.
+    const ready = await waitForChrome(chrome.port);
+    return {
+      chrome,
+      launchMs,
+      devtoolsReadyMs: performance.now() - readyStart,
+      browserVersion: ready.browserVersion,
+      devtoolsProtocolVersion: ready.devtoolsProtocolVersion
+    };
   } catch (error) {
-    try {
-      await chrome.kill();
-    } catch {
-      // Preserve the startup error.
-    }
+    try { await chrome.kill(); } catch { /* Preserve original startup error. */ }
     throw error;
   }
 }
@@ -131,15 +154,46 @@ async function launchChrome() {
 async function runLighthouseAttempt(surface, profileName, run, series, attempt) {
   const profile = PROFILES[profileName];
   if (!profile) throw new Error(`Unknown Lighthouse profile: ${profileName}`);
-
+  const started = performance.now();
+  const evidence = {
+    nodeVersion: process.versions.node,
+    browserVersion: null,
+    devtoolsProtocolVersion: null,
+    timingsMs: {},
+    stages: {
+      target: 'pending', chrome: 'not-started', devtools: 'not-started',
+      lighthouse: 'not-started', cleanup: 'not-started'
+    },
+    traceNavigation: 'not-directly-observed',
+    runnerBefore: runnerSnapshot(),
+    runnerAfter: null
+  };
   const url = localizedUrl('en', surface.path);
-  await assertTargetReachable(url);
-
-  const chrome = await launchChrome();
+  let chrome = null;
   let chromeStopped = false;
   let primaryError = null;
 
   try {
+    const reachabilityStarted = performance.now();
+    try {
+      await assertTargetReachable(url);
+      evidence.stages.target = 'complete';
+    } finally {
+      evidence.timingsMs.targetReachabilityMs = performance.now() - reachabilityStarted;
+      if (evidence.stages.target !== 'complete') evidence.stages.target = 'failed';
+    }
+
+    evidence.stages.chrome = 'pending';
+    evidence.stages.devtools = 'pending';
+    const launched = await launchChrome();
+    chrome = launched.chrome;
+    evidence.timingsMs.chromeLaunchMs = launched.launchMs;
+    evidence.timingsMs.devtoolsReadyMs = launched.devtoolsReadyMs;
+    evidence.browserVersion = launched.browserVersion;
+    evidence.devtoolsProtocolVersion = launched.devtoolsProtocolVersion;
+    evidence.stages.chrome = 'complete';
+    evidence.stages.devtools = 'complete';
+
     const options = {
       port: chrome.port,
       output: 'json',
@@ -149,8 +203,10 @@ async function runLighthouseAttempt(surface, profileName, run, series, attempt) 
       screenEmulation: profile.screenEmulation,
       throttling: profile.throttling
     };
-
-    // Observe Lighthouse's eventual outcome before the timeout can win the race.
+    // A non-invasive timing measurement: no extra CDP client or trace session
+    // is created, so Lighthouse alone controls navigation and trace recording.
+    evidence.stages.lighthouse = 'pending';
+    const invocationStarted = performance.now();
     const observed = Promise.resolve()
       .then(() => lighthouse(url, options))
       .then(
@@ -171,18 +227,25 @@ async function runLighthouseAttempt(surface, profileName, run, series, attempt) 
       ]);
     } finally {
       clearTimeout(timeoutTimer);
+      evidence.timingsMs.lighthouseInvocationMs = performance.now() - invocationStarted;
     }
 
     if (outcome.kind === 'timeout') {
-      // Terminate Chrome, then wait for Lighthouse to observe shutdown.
-      // Never retry with a previous Lighthouse invocation still pending.
+      // Existing timeout/cleanup grace and sequential retry invariant retained.
+      evidence.stages.lighthouse = 'failed';
+      evidence.stages.cleanup = 'pending';
+      const killStart = performance.now();
       try {
         await chrome.kill();
         chromeStopped = true;
+        evidence.stages.cleanup = 'complete';
       } catch (error) {
+        evidence.stages.cleanup = 'failed';
         throw new LighthouseAttemptCleanupError(
           'Unable to terminate timed-out Chrome: ' + String(error?.stack || error)
         );
+      } finally {
+        evidence.timingsMs.chromeCleanupMs = performance.now() - killStart;
       }
       const lateOutcome = await waitForLighthouseToSettle(observed);
       if (!lateOutcome) {
@@ -192,33 +255,55 @@ async function runLighthouseAttempt(surface, profileName, run, series, attempt) 
         );
       }
       if (lateOutcome.kind === 'failure') {
-        console.warn('[lighthouse] shutdown outcome:', String(lateOutcome.error?.stack || lateOutcome.error));
+        console.warn('[lighthouse] post-shutdown outcome: ' +
+          (lateOutcome.error?.name || 'Error'));
       }
       throw new LighthouseAttemptTimeoutError(surface, profileName, run, series, attempt);
     }
-    if (outcome.kind === 'failure') throw outcome.error;
+
+    if (outcome.kind === 'failure') {
+      evidence.stages.lighthouse = 'failed';
+      throw outcome.error;
+    }
     const runner = outcome.value;
     if (!runner?.lhr) {
-      throw new Error(
-        `Lighthouse produced no LHR for ${surface.id}/${profileName}/run-${run}/${series}`
-      );
+      evidence.stages.lighthouse = 'failed';
+      throw new Error('Lighthouse produced no LHR for a completed attempt');
     }
-
-    return { url, lhr: runner.lhr };
+    evidence.stages.lighthouse = 'complete';
+    // Direct trace-start timestamps are not exposed by this LHR: avoid claiming
+    // that Lighthouse's internal navigation/trace stages were independently seen.
+    evidence.traceNavigation = runner.lhr.runtimeError?.code === 'NO_NAVSTART'
+      ? 'missing-no-navstart' : 'not-directly-observed';
+    return { url, lhr: runner.lhr, attemptDiagnostics: evidence };
   } catch (error) {
     primaryError = error;
+    error.attemptDiagnostics = evidence;
     throw error;
   } finally {
-    if (!chromeStopped) {
-      try {
-        await chrome.kill();
-      } catch (error) {
-        throw new LighthouseAttemptCleanupError(
-          'Chrome cleanup failed; retry is unsafe. ' +
-            (primaryError ? 'Original attempt: ' + String(primaryError?.stack || primaryError) + '\n' : '') +
-            String(error?.stack || error)
-        );
+    try {
+      if (chrome && !chromeStopped) {
+        const killStart = performance.now();
+        evidence.stages.cleanup = 'pending';
+        try {
+          await chrome.kill();
+          evidence.stages.cleanup = 'complete';
+        } catch (error) {
+          evidence.stages.cleanup = 'failed';
+          const cleanupFailure = new LighthouseAttemptCleanupError(
+            'Chrome cleanup failed; retry is unsafe. ' +
+            (primaryError ? 'Prior attempt: ' + primaryError.name + '\\n' : '') +
+            String(error?.name || 'Error')
+          );
+          cleanupFailure.attemptDiagnostics = evidence;
+          throw cleanupFailure;
+        } finally {
+          evidence.timingsMs.chromeCleanupMs = performance.now() - killStart;
+        }
       }
+    } finally {
+      evidence.timingsMs.totalAttemptMs = performance.now() - started;
+      evidence.runnerAfter = runnerSnapshot();
     }
   }
 }
@@ -237,8 +322,9 @@ async function oneRun(surface, profileName, run, series = 'cold') {
       },
       isRecoverableError: isRecoverableLighthouseFailure,
       onRetry: async ({ attempt, kind, diagnostics }) => {
+        // Logs contain only rule codes and bounded numeric/enum telemetry.
         console.warn(
-          `[lighthouse] retry with a new Chrome: surface=${surface.id} profile=${profileName} ` +
+          `[lighthouse] retry surface=${surface.id} profile=${profileName} ` +
           `run=${run} series=${series} attempt=${attempt} kind=${kind} ` +
           JSON.stringify(diagnostics)
         );

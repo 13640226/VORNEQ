@@ -6,8 +6,68 @@ const METRICS = [
   ['performanceScore', null]
 ];
 
+// Only named diagnostic classes are surfaced: never copy arbitrary page content,
+// request URLs, authorization headers, cookie values, or hostnames to CI artifacts.
 function clipped(value) {
-  return value == null ? null : String(value).slice(0, 500);
+  if (value == null) return null;
+  const text = String(value);
+  if (text.includes('NO_NAVSTART')) return 'NO_NAVSTART';
+  if (text.includes('Target closed')) return 'TARGET_CLOSED';
+  if (text.includes('Protocol error')) return 'PROTOCOL_ERROR';
+  if (/timeout|timed out/i.test(text)) return 'TIMEOUT';
+  if (/cleanup/i.test(text)) return 'CLEANUP_FAILURE';
+  return 'MESSAGE_REDACTED';
+}
+
+function safeCode(value) {
+  const candidate = String(value ?? '');
+  return /^[A-Z][A-Z0-9_]{0,63}$/.test(candidate) ? candidate : 'UNCLASSIFIED';
+}
+
+function safeNumber(value, max) {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= max
+    ? Math.round(value * 10) / 10 : null;
+}
+
+export function sanitizeAttemptDiagnostics(data) {
+  if (!data || typeof data !== 'object') return null;
+  const timings = {};
+  for (const key of [
+    'targetReachabilityMs', 'chromeLaunchMs', 'devtoolsReadyMs',
+    'lighthouseInvocationMs', 'chromeCleanupMs', 'totalAttemptMs'
+  ]) timings[key] = safeNumber(data.timingsMs?.[key], 180000);
+  const states = {};
+  for (const key of ['target', 'chrome', 'devtools', 'lighthouse', 'cleanup']) {
+    const value = data.stages?.[key];
+    states[key] = ['pending', 'complete', 'failed', 'not-started'].includes(value)
+      ? value : 'not-started';
+  }
+  const versionMatch = String(data.browserVersion ?? '')
+    .match(/^(?:HeadlessChrome|Chrome|Chromium)\/(\d+(?:\.\d+){3})$/);
+  const protocol = String(data.devtoolsProtocolVersion ?? '');
+  const node = String(data.nodeVersion ?? '');
+  const trace = data.traceNavigation === 'missing-no-navstart'
+    ? 'missing-no-navstart' : 'not-directly-observed';
+  const sanitizeRunner = snapshot => ({
+    rssMiB: safeNumber(snapshot?.rssMiB, 100000),
+    heapUsedMiB: safeNumber(snapshot?.heapUsedMiB, 100000),
+    freeSystemMiB: safeNumber(snapshot?.freeSystemMiB, 1000000),
+    loadAverage1m: safeNumber(snapshot?.loadAverage1m, 10000)
+  });
+  return {
+    timingMs: timings,
+    stages: states,
+    versions: {
+      chromium: versionMatch?.[1] ?? null,
+      node: /^\d+\.\d+\.\d+$/.test(node) ? node : null,
+      devtoolsProtocol: /^\d+(?:\.\d+){1,2}$/.test(protocol) ? protocol : null
+    },
+    traceNavigation: trace,
+    resources: {
+      before: sanitizeRunner(data.runnerBefore),
+      after: sanitizeRunner(data.runnerAfter)
+    }
+  };
 }
 
 function auditDetails(audit) {
@@ -48,12 +108,17 @@ export function inspectLighthouseReport(lhr) {
     diagnostics: {
       reasons,
       runtimeError: lhr?.runtimeError
-        ? { code: clipped(lhr.runtimeError.code), message: clipped(lhr.runtimeError.message) }
+        ? { code: safeCode(lhr.runtimeError.code), message: clipped(lhr.runtimeError.message) }
         : null,
       runtimeWarnings: (Array.isArray(lhr?.runWarnings) ? lhr.runWarnings : []).slice(0, 10).map(clipped),
       audits: {
         'largest-contentful-paint': auditDetails(lcp),
         'cumulative-layout-shift': auditDetails(cls)
+      },
+      trace: {
+        navigationStart: safeCode(lhr?.runtimeError?.code) === 'NO_NAVSTART'
+          ? 'missing-no-navstart' : 'not-directly-observed',
+        lighthouseReportedTotalMs: safeNumber(lhr?.timing?.total, 180000)
       },
       performanceCategoryScore: observed.performanceScore
     }
@@ -61,7 +126,12 @@ export function inspectLighthouseReport(lhr) {
 }
 
 function errorDetails(error) {
-  return { name: clipped(error?.name), message: clipped(error?.message ?? error) };
+  return {
+    name: /^[A-Za-z][A-Za-z0-9]{0,63}$/.test(String(error?.name ?? ''))
+      ? String(error.name) : 'Error',
+    message: clipped(error?.message ?? error),
+    attemptDiagnostics: sanitizeAttemptDiagnostics(error?.attemptDiagnostics)
+  };
 }
 
 // executeAttempt MUST await browser shutdown/cleanup before resolving or rejecting.
@@ -88,7 +158,12 @@ export async function runWithIntegrityRetries({
       continue;
     }
     const inspected = inspectLighthouseReport(completed?.lhr);
-    history.push({ attempt, status: inspected.status, diagnostics: inspected.diagnostics });
+    history.push({
+      attempt,
+      status: inspected.status,
+      diagnostics: inspected.diagnostics,
+      instrumentation: sanitizeAttemptDiagnostics(completed?.attemptDiagnostics)
+    });
     if (inspected.status === 'VALID') {
       return { ...inspected, completed, attempts: attempt, history };
     }
