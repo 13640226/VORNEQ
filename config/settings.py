@@ -145,6 +145,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.i18n",
                 "apps.platform_shell.context_processors.platform_shell",
+                "config.seo.public_seo_context",
             ],
         },
     },

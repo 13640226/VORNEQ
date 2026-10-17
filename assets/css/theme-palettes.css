@@ -14,12 +14,12 @@
   --color-text-disabled: #657990;
   --color-border: rgba(255, 255, 255, 0.12);
   --color-border-strong: rgba(255, 255, 255, 0.20);
-  --color-accent: #4f7cff;
-  --color-accent-hover: #6d94ff;
+  --color-accent: #85a5ff;
+  --color-accent-hover: #9cb8ff;
   --color-accent-muted: #7896dc;
   --color-accent-subtle: rgba(79, 124, 255, 0.16);
   --color-accent-border: rgba(79, 124, 255, 0.40);
-  --color-text-on-accent: #ffffff;
+  --color-text-on-accent: #071426;
   --color-focus: #6d94ff;
   --color-focus-ring: rgba(109, 148, 255, 0.30);
   --color-editorial: #d5b37a;
