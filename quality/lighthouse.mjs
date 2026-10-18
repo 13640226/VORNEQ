@@ -129,6 +129,10 @@ async function launchChrome() {
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
       '--disable-gpu',
+      // Keep background scheduling stable in headless CI navigation/tracing.
+      '--disable-background-timer-throttling',
+      '--disable-renderer-backgrounding',
+      '--disable-backgrounding-occluded-windows',
       '--no-first-run',
       '--no-default-browser-check'
     ]
