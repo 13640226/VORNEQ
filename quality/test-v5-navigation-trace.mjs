@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { inspectExistingNavigationTrace as inspect } from './v5-navigation-trace.mjs';
+assert.equal(inspect(undefined).navigationStart, 'unknown');
+assert.equal(inspect({traces:{defaultPass:{traceEvents:[{name:'navigationStart',url:'secret-token'}]}}}).navigationStart,'event-name-observed');
+assert.equal(inspect({Trace:{traceEvents:[{name:'other'}]}}).navigationStart,'event-name-not-observed-in-available-trace');
+assert.equal(inspect({TraceError:{traceEvents:[{name:'navigationStart'}]}}).traceKey,'TraceError');
+assert.equal(inspect({traces:{'pageLoadError-defaultPass':{traceEvents:[{name:'navigationStart'}]}}}).traceKey,'traces.pageLoadError-defaultPass');
+const output=JSON.stringify(inspect({Trace:{traceEvents:[{name:'navigationStart',url:'secret-token',args:{cookie:'private'}}]}}));
+assert.ok(!output.includes('secret-token') && !output.includes('private'));
+const big=Array.from({length:250001},()=>({name:'other'}));
+assert.equal(inspect({Trace:{traceEvents:big}}).navigationStart,'unknown');
+assert.equal(inspect({Trace:{traceEvents:big}}).scanComplete,false);
+console.log('PASS V5 12.8.2 contract: trace variants, unknown, bounded scan, redaction');

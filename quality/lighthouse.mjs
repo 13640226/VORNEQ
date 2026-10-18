@@ -6,6 +6,8 @@ import * as chromeLauncher from 'chrome-launcher';
 import { chromium } from 'playwright';
 import { PERF_THRESHOLDS, PROFILES, SURFACES, localizedUrl } from './contract.mjs';
 import { runWithIntegrityRetries } from './lighthouse-integrity.mjs';
+import { observeAfterCleanup } from './v5-runtime-integration.mjs';
+import { safelyReadRunnerArtifacts } from './v5-safe-artifact-access.mjs';
 
 const outDir = process.env.QUALITY_OUT_DIR || 'artifacts/quality';
 await fs.mkdir(outDir, { recursive: true });
@@ -156,6 +158,10 @@ async function launchChrome() {
 }
 
 async function runLighthouseAttempt(surface, profileName, run, series, attempt) {
+  return observeAfterCleanup(() => runLighthouseAttemptCore(surface, profileName, run, series, attempt));
+}
+
+async function runLighthouseAttemptCore(surface, profileName, run, series, attempt) {
   const profile = PROFILES[profileName];
   if (!profile) throw new Error(`Unknown Lighthouse profile: ${profileName}`);
   const started = performance.now();
@@ -279,7 +285,7 @@ async function runLighthouseAttempt(surface, profileName, run, series, attempt) 
     // that Lighthouse's internal navigation/trace stages were independently seen.
     evidence.traceNavigation = runner.lhr.runtimeError?.code === 'NO_NAVSTART'
       ? 'missing-no-navstart' : 'not-directly-observed';
-    return { url, lhr: runner.lhr, attemptDiagnostics: evidence };
+    return { url, lhr: runner.lhr, attemptDiagnostics: evidence, runnerArtifacts: safelyReadRunnerArtifacts(runner) };
   } catch (error) {
     primaryError = error;
     error.attemptDiagnostics = evidence;

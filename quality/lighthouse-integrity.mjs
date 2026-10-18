@@ -29,6 +29,22 @@ function safeNumber(value, max) {
     ? Math.round(value * 10) / 10 : null;
 }
 
+function sanitizeV5Trace(data) {
+  const allowedKeys = ['Trace', 'TraceError', 'traces.defaultPass', 'traces.pageLoadError-defaultPass'];
+  const allowedStates = ['event-name-observed', 'event-name-not-observed-in-available-trace', 'unknown'];
+  const boundedCount = n => Number.isInteger(n) && n >= 0 && n <= 250000 ? n : null;
+  return {
+    source: 'lighthouse-12.8.2-runner-artifacts',
+    traceAccess: data?.traceAccess === 'available' ? 'available' : 'unavailable',
+    traceKey: allowedKeys.includes(data?.traceKey) ? data.traceKey : null,
+    navigationStart: allowedStates.includes(data?.navigationStart) ? data.navigationStart : 'unknown',
+    matchingEventCount: boundedCount(data?.matchingEventCount),
+    scannedEventCount: boundedCount(data?.scannedEventCount),
+    scanComplete: data?.scanComplete === true,
+    scanElapsedMs: safeNumber(data?.scanElapsedMs, 180000),
+    heapDeltaMiB: typeof data?.heapDeltaMiB === 'number' && Number.isFinite(data.heapDeltaMiB) && Math.abs(data.heapDeltaMiB) <= 100000 ? Math.round(data.heapDeltaMiB * 100) / 100 : null
+  };
+}
 export function sanitizeAttemptDiagnostics(data) {
   if (!data || typeof data !== 'object') return null;
   const timings = {};
@@ -63,6 +79,7 @@ export function sanitizeAttemptDiagnostics(data) {
       devtoolsProtocol: /^\d+(?:\.\d+){1,2}$/.test(protocol) ? protocol : null
     },
     traceNavigation: trace,
+    v5Trace: sanitizeV5Trace(data.v5Trace),
     resources: {
       before: sanitizeRunner(data.runnerBefore),
       after: sanitizeRunner(data.runnerAfter)
