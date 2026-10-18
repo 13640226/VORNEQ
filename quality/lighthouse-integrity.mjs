@@ -70,6 +70,28 @@ export function sanitizeAttemptDiagnostics(data) {
   };
 }
 
+/**
+ * Diagnostic-only, allowlisted LHR shape indicators. No URL, trace payload,
+ * network request content, or unbounded error text is retained.
+ * These are NOT direct observations of a navigationStart trace event.
+ */
+export function inspectLighthouseNavigationEvidence(lhr) {
+  const entries = lhr?.timing?.entries;
+  const requests = lhr?.audits?.['network-requests']?.details?.items;
+  const nav = lhr?.audits?.['navigation-timing'];
+  const safeCount = value => Array.isArray(value)
+    ? Math.min(value.length, 100000) : null;
+  return {
+    fetchTimePresent: typeof lhr?.fetchTime === 'string',
+    timingEntryCount: safeCount(entries),
+    networkRequestAuditItemCount: safeCount(requests),
+    navigationTimingAuditPresent: nav != null,
+    navigationTimingNumericMs: safeNumber(nav?.numericValue, 180000),
+    directTraceNavigationStartObserved: false,
+    evidenceScope: 'lhr-metadata-only'
+  };
+}
+
 function auditDetails(audit) {
   return {
     numericValue: typeof audit?.numericValue === 'number' && Number.isFinite(audit.numericValue)
@@ -120,6 +142,7 @@ export function inspectLighthouseReport(lhr) {
           ? 'missing-no-navstart' : 'not-directly-observed',
         lighthouseReportedTotalMs: safeNumber(lhr?.timing?.total, 180000)
       },
+      navigationEvidence: inspectLighthouseNavigationEvidence(lhr),
       performanceCategoryScore: observed.performanceScore
     }
   };
