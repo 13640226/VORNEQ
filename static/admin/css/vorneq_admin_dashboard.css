@@ -1,0 +1,33 @@
+/* Isolated to the Django admin index; never changes the shared admin theme. */
+.vorneq-dashboard{direction:rtl;max-width:1440px;margin:0 auto;padding:8px 0 32px;color:var(--body-fg)}
+.vorneq-dashboard__hero{position:relative;overflow:hidden;border-radius:22px;padding:clamp(24px,4vw,48px);background:linear-gradient(115deg,#142448 0%,#43308d 56%,#087d93 100%);color:#fff;box-shadow:0 16px 36px #16234d22}
+.vorneq-dashboard__eyebrow{font-size:12px;letter-spacing:.13em;color:#b8efff;font-weight:700}
+.vorneq-dashboard__hero h1{font-size:clamp(25px,3vw,38px);line-height:1.4;margin:12px 0;color:#fff}
+.vorneq-dashboard__hero p{margin:0;color:#e4edff;font-size:15px}
+.vorneq-dashboard__section{margin-top:30px}
+.vorneq-dashboard__section>h2{font-size:19px;font-weight:800;margin:0 0 16px;color:var(--body-fg)}
+.vorneq-dashboard__stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.vorneq-dashboard__stat{display:flex;flex-direction:column;min-height:156px;gap:10px;border-radius:18px;padding:22px;color:white!important;text-decoration:none!important;box-shadow:0 10px 26px #172b5620;transition:transform .18s ease,box-shadow .18s ease}
+.vorneq-dashboard__stat:hover,.vorneq-dashboard__stat:focus-visible{transform:translateY(-3px);box-shadow:0 14px 28px #172b5638}
+.vorneq-dashboard__stat--article{background:linear-gradient(135deg,#2359d4,#4988ef)}
+.vorneq-dashboard__stat--product{background:linear-gradient(135deg,#6339c7,#a05fe5)}
+.vorneq-dashboard__stat--media{background:linear-gradient(135deg,#007d91,#19b4bc)}
+.vorneq-dashboard__stat--verification{background:linear-gradient(135deg,#c04b78,#e07884)}
+.vorneq-dashboard__stat-title{font-size:14px;font-weight:700;line-height:1.6}
+.vorneq-dashboard__stat-value{font-size:clamp(30px,3vw,44px);line-height:1.2;font-variant-numeric:tabular-nums}
+.vorneq-dashboard__stat-link{margin-top:auto;font-size:12px;opacity:.92}
+.vorneq-dashboard__actions{display:flex;gap:10px;flex-wrap:wrap}
+.vorneq-dashboard__action{display:inline-flex;align-items:center;min-height:40px;padding:10px 18px;border-radius:12px;border:1px solid var(--hairline-color);background:var(--body-bg);color:var(--link-fg)!important;text-decoration:none!important;font-weight:700}
+.vorneq-dashboard__action:hover,.vorneq-dashboard__action:focus-visible{border-color:var(--link-fg);background:var(--darkened-bg)}
+.vorneq-dashboard__apps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.vorneq-dashboard__app{min-width:0;border:1px solid var(--hairline-color);border-radius:16px;background:var(--body-bg);overflow:hidden}
+.vorneq-dashboard__app h3{margin:0;padding:17px 20px;background:var(--darkened-bg);font-size:16px}
+.vorneq-dashboard__app h3 a{color:var(--body-fg);text-decoration:none}
+.vorneq-dashboard__app ul{list-style:none;padding:8px 20px 14px;margin:0}
+.vorneq-dashboard__app li{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--hairline-color)}
+.vorneq-dashboard__app li:last-child{border-bottom:0}
+.vorneq-dashboard__app li a{text-decoration:none}
+.vorneq-dashboard__app-add{font-size:20px;font-weight:bold;min-width:26px;text-align:center}
+@media(max-width:1100px){.vorneq-dashboard__stats{grid-template-columns:repeat(2,minmax(0,1fr))}.vorneq-dashboard__apps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.vorneq-dashboard__stats,.vorneq-dashboard__apps{grid-template-columns:minmax(0,1fr)}.vorneq-dashboard__hero{border-radius:14px}.vorneq-dashboard__stat{min-height:125px}.vorneq-dashboard__section{margin-top:24px}}
+@media(prefers-reduced-motion:reduce){.vorneq-dashboard__stat{transition:none}}
