@@ -46,7 +46,7 @@ def vorneq_dashboard(context):
                 pass
             else:
                 if filters:
-                    url += "?" + urlencode(filters, doseq=True)
+                    url += "?" + urlencode({key: ",".join(value) if isinstance(value, tuple) else value for key, value in filters.items()})
                 result["cards"].append({
                     "title": title,
                     "value": model._default_manager.filter(**filters).count(),
