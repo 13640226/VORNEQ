@@ -92,3 +92,11 @@ class AdminDashboardTests(TestCase):
 
     def test_stylesheet_is_discoverable(self):
         self.assertIsNotNone(finders.find("admin/css/vorneq_admin_dashboard.css"))
+
+    def test_stylesheet_overrides_django_fixed_dashboard_width(self):
+        # Django base.css sets `.dashboard #content { width: 600px; }`, which
+        # squeezed the redesigned index into a narrow column on desktop.
+        stylesheet = finders.find("admin/css/vorneq_admin_dashboard.css")
+        with open(stylesheet, encoding="utf-8") as handle:
+            css = handle.read()
+        self.assertIn("body.vorneq-dashboard-page #content{width:auto", css)
