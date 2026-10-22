@@ -1,7 +1,69 @@
-{% extends "admin/index.html" %}
+{% extends "admin/base_site.html" %}
+{% load i18n static vorneq_admin_dashboard %}
 
-{% block content_title %}
-  <div class="vorneq-page-heading vorneq-page-heading--dashboard">
-    {{ block.super }}
-  </div>
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/css/vorneq_admin_dashboard.css' %}">
 {% endblock %}
+{% block bodyclass %}{{ block.super }} dashboard vorneq-dashboard-page{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+{% block content_title %}{% endblock %}
+{% block content %}
+{% vorneq_dashboard as dashboard %}
+<div id="content-main" class="vorneq-dashboard" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
+  <header class="vorneq-dashboard__hero">
+    <span class="vorneq-dashboard__eyebrow">VORNEQ · ADMIN</span>
+    <h1>مرکز مدیریت VORNEQ</h1>
+    <p>نمای کلی محتوا، بازار و درخواست‌های راستی‌آزمایی</p>
+  </header>
+
+  {% if dashboard.cards %}
+  <section aria-label="آمار مدیریتی" class="vorneq-dashboard__section">
+    <h2>نمای کلی</h2>
+    <div class="vorneq-dashboard__stats">
+      {% for card in dashboard.cards %}
+      <a class="vorneq-dashboard__stat vorneq-dashboard__stat--{{ card.tone }}" href="{{ card.url }}">
+        <span class="vorneq-dashboard__stat-title">{{ card.title }}</span>
+        <strong class="vorneq-dashboard__stat-value">{{ card.value }}</strong>
+        <span class="vorneq-dashboard__stat-link">مشاهده فهرست ←</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if dashboard.actions %}
+  <section aria-label="دسترسی‌های سریع" class="vorneq-dashboard__section">
+    <h2>دسترسی سریع</h2>
+    <div class="vorneq-dashboard__actions">
+      {% for action in dashboard.actions %}
+      <a href="{{ action.url }}" class="vorneq-dashboard__action">+ افزودن {{ action.title }}</a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section aria-label="برنامه‌ها و مدل‌ها" class="vorneq-dashboard__section">
+    <h2>مدیریت بخش‌ها</h2>
+    <div class="vorneq-dashboard__apps">
+      {% for app in app_list %}
+      <section class="vorneq-dashboard__app">
+        <h3><a href="{{ app.app_url }}">{{ app.name }}</a></h3>
+        <ul>
+          {% for model in app.models %}
+          <li>
+            {% if model.admin_url %}<a href="{{ model.admin_url }}">{{ model.name }}</a>
+            {% else %}<span>{{ model.name }}</span>{% endif %}
+            {% if model.add_url and model.perms.add %}<a class="vorneq-dashboard__app-add" href="{{ model.add_url }}" aria-label="افزودن {{ model.name }}">+</a>{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% empty %}
+      <p>در حال حاضر بخشی برای مدیریت در دسترس نیست.</p>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block sidebar %}{% endblock %}
