@@ -10,7 +10,7 @@
 {% block content_title %}{% endblock %}
 {% block content %}
 {% vorneq_dashboard as dashboard %}
-<div id="content-main" class="vorneq-dashboard" dir="rtl">
+<div id="content-main" class="vorneq-dashboard" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
   <header class="vorneq-dashboard__hero">
     <span class="vorneq-dashboard__eyebrow">VORNEQ · ADMIN</span>
     <h1>مرکز مدیریت VORNEQ</h1>
