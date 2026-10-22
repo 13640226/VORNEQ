@@ -8,6 +8,14 @@ on:
         required: true
         default: 'no'
         type: string
+      allow_production_target:
+        description: 'Only if PRODUCTION is the intended target: set true. Detection uses the real database identity.'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
       articles:
         description: 'Number of synthetic articles'
         required: true
@@ -78,6 +86,14 @@ jobs:
         run: |
           echo 'Seed was not applied. Re-run with confirm_seed exactly "yes".' >&2
           exit 1
+
+      - name: Guard against unintended production target
+        env:
+          TARGET_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
+          CONFIRM: ${{ inputs.confirm_seed }}
+          ALLOW_PRODUCTION_TARGET: ${{ inputs.allow_production_target }}
+        run: python3 scripts/db_target_guard.py guard --target-env TARGET_DATABASE_URL --production-env PRODUCTION_DATABASE_URL
 
       - name: Apply synthetic staging seed
         env:
