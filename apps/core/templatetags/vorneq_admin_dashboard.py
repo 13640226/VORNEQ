@@ -9,12 +9,12 @@ from django.urls import NoReverseMatch, reverse
 register = template.Library()
 
 CARDS = (
-    ("content", "article", "مقالات", "article", {}),
-    ("marketplace", "product", "محصولات", "product", {}),
-    ("media", "mediaasset", "رسانه‌ها", "media", {}),
+    ("content", "article", "مقالات", "مقاله", "article", {}),
+    ("marketplace", "product", "محصولات", "محصول", "product", {}),
+    ("media", "mediaasset", "رسانه‌ها", "رسانه", "media", {}),
     (
         "verification", "verificationrequest",
-        "درخواست‌های در انتظار بررسی", "verification",
+        "درخواست‌های در انتظار بررسی", "درخواست راستی‌آزمایی", "verification",
         {"status__in": ("requested", "in_progress")},
     ),
 )
@@ -29,7 +29,7 @@ def vorneq_dashboard(context):
     if not user.is_authenticated or not user.is_active or not user.is_staff:
         return result
 
-    for app_label, model_name, title, tone, filters in CARDS:
+    for app_label, model_name, title, singular, tone, filters in CARDS:
         try:
             model = apps.get_model(app_label, model_name)
         except LookupError:
@@ -59,5 +59,5 @@ def vorneq_dashboard(context):
                 add_url = reverse(f"{base_name}_add", current_app=admin.site.name)
             except NoReverseMatch:
                 continue
-            result["actions"].append({"title": title, "url": add_url})
+            result["actions"].append({"title": singular, "url": add_url})
     return result
