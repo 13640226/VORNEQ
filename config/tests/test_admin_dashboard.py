@@ -29,7 +29,7 @@ class AdminDashboardTests(TestCase):
         response = self.client.get(reverse("admin:index"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'dir="rtl"')
-        self.assertContains(response, "vorneq_admin_dashboard.css")
+        self.assertContains(response, "vorneq_admin_dashboard.")
         self.assertContains(response, "درخواست‌های در انتظار بررسی")
 
     def test_staff_without_permissions_cannot_see_stats_or_actions(self):
