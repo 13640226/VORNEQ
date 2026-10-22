@@ -1,4 +1,6 @@
 /* Isolated to the Django admin index; never changes the shared admin theme. */
+/* Django base.css fixes .dashboard #content at 600px; the redesigned index needs the full content area. */
+body.vorneq-dashboard-page #content{width:auto;max-width:none}
 .vorneq-dashboard{max-width:1440px;margin:0 auto;padding:8px 0 32px;color:var(--body-fg)}
 .vorneq-dashboard__hero{position:relative;overflow:hidden;border-radius:22px;padding:clamp(24px,4vw,48px);background:linear-gradient(115deg,#142448 0%,#43308d 56%,#087d93 100%);color:#fff;box-shadow:0 16px 36px #16234d22}
 .vorneq-dashboard__eyebrow{font-size:12px;letter-spacing:.13em;color:#b8efff;font-weight:700}
