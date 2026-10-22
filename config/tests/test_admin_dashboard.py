@@ -6,7 +6,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.staticfiles import finders
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from apps.core.templatetags.vorneq_admin_dashboard import vorneq_dashboard
@@ -30,7 +30,15 @@ class AdminDashboardTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'dir="rtl"')
         self.assertContains(response, "vorneq_admin_dashboard.")
+        self.assertContains(response, "vorneq_admin.")
         self.assertContains(response, "درخواست‌های در انتظار بررسی")
+
+    @override_settings(LANGUAGE_CODE="en", LANGUAGES=[("en", "English")])
+    def test_english_admin_direction(self):
+        self.client.force_login(self.superuser)
+        response = self.client.get(reverse("admin:index"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="vorneq-dashboard" dir="ltr"')
 
     def test_staff_without_permissions_cannot_see_stats_or_actions(self):
         self.client.force_login(self.staff)
@@ -63,6 +71,8 @@ class AdminDashboardTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'vorneq-dashboard__stat--article')
         self.assertContains(response, 'class="vorneq-dashboard__action"')
+        self.assertContains(response, "افزودن مقاله")
+        self.assertNotContains(response, "افزودن مقالات")
 
     def test_pending_card_filter_and_admin_allowlist(self):
         self.client.force_login(self.superuser)
