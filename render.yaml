@@ -9,6 +9,9 @@ services:
     startCommand: DJANGO_SETTINGS_MODULE=config.settings_render gunicorn config.wsgi:application
     healthCheckPath: /health/
     envVars:
+      # ADR-018 D1: config.settings refuses to boot without a classification.
+      - key: VORNEQ_ENV
+        value: staging
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings_render
       - key: DJANGO_DEBUG
