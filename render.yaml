@@ -11,6 +11,9 @@ services:
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings_render
+      # Required by config.settings (ADR-018 D1); this blueprint describes the staging service.
+      - key: VORNEQ_ENV
+        value: staging
       - key: DJANGO_DEBUG
         value: "False"
       - key: DJANGO_SECRET_KEY
