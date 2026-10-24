@@ -3,12 +3,12 @@
 **Project:** VORNEQ  
 **Decision:** D36 — Documentation only  
 **Status:** User-declared associations; independently unverified  
-**Publication:** Public disclosure of the two email addresses expressly approved in conversation.
+**Publication:** Personal contact emails redacted in the current branch version under D40. Earlier Git commits may retain the original values.
 
 | GitHub account | Contact email | Evidence classification |
 | --- | --- | --- |
-| `13640226` | `azjensekhak7@gmail.com` | USER_DECLARED — NOT INDEPENDENTLY VERIFIED |
-| `hamidrezaasadian7-boop` | `hamidrezaasadian7@gmail.com` | USER_DECLARED — NOT INDEPENDENTLY VERIFIED |
+| `13640226` | `REDACTED` | USER_DECLARED — NOT INDEPENDENTLY VERIFIED |
+| `hamidrezaasadian7-boop` | `REDACTED` | USER_DECLARED — NOT INDEPENDENTLY VERIFIED |
 
 ## Scope and limitations
 
