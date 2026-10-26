@@ -1,0 +1,3 @@
+<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><title>درخواست‌های تأیید</title>
+<body><h1>درخواست‌های تأیید</h1><a href="{% url 'verification:create' %}">درخواست جدید</a>
+<ul>{% for item in requests %}<li><a href="{% url 'verification:detail' item.pk %}">{{ item.pk }} — {{ item.status }}</a></li>{% empty %}<li>درخواستی موجود نیست.</li>{% endfor %}</ul></body></html>
