@@ -1,0 +1,9 @@
+<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><title>جزئیات تأیید</title>
+<body><h1>درخواست {{ verification.pk }}</h1><p>وضعیت: {{ verification.status }}</p>
+<p>ادعا: {{ verification.claim }}</p><p>روش: {{ verification.method }}</p>
+{% if verification.status == 'requested' %}<form method="post" action="{% url 'verification:start' verification.pk %}">{% csrf_token %}<button>شروع</button></form>{% endif %}
+{% if verification.status == 'in_progress' %}<a href="{% url 'verification:submit' verification.pk %}">ثبت نتیجه</a>{% endif %}
+{% if verification.status == 'requested' or verification.status == 'in_progress' %}
+<form method="post" action="{% url 'verification:cancel' verification.pk %}">{% csrf_token %}<button>لغو</button></form>
+<form method="post" action="{% url 'verification:fail' verification.pk %}">{% csrf_token %}<button>ثبت شکست</button></form>{% endif %}
+<a href="{% url 'verification:list' %}">بازگشت</a></body></html>
