@@ -283,7 +283,7 @@ class InspectContextV1Tests(TestCase):
                 reverse("context_view", kwargs={"artifact_id": self.artifact.id})
             )
             expected_discover_url = reverse("discover")
-        expected_url = reverse("public_graph", kwargs={"artifact_id": self.artifact.id})
+            expected_url = reverse("public_graph_presentation", kwargs={"artifact_id": self.artifact.id})
 
         self.assertEqual(response.status_code, 200)
         graph.assert_called_once_with(self.artifact.id)

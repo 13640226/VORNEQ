@@ -8,6 +8,14 @@ on:
         required: true
         default: 'no'
         type: string
+      allow_production_target:
+        description: 'Only if PRODUCTION is the intended target: set true. Detection uses the real database identity.'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 permissions:
   contents: read
@@ -40,6 +48,14 @@ jobs:
           sudo apt-get install -y postgresql-client-18
           pg_dump --version
           pg_restore --version
+
+      - name: Guard against unintended production target
+        env:
+          TARGET_DATABASE_URL: ${{ secrets.DR_RESTORE_DATABASE_URL }}
+          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
+          CONFIRM: ${{ inputs.confirm_restore }}
+          ALLOW_PRODUCTION_TARGET: ${{ inputs.allow_production_target }}
+        run: python3 scripts/db_target_guard.py guard --target-env TARGET_DATABASE_URL --production-env PRODUCTION_DATABASE_URL
 
       - name: Run staging DR rehearsal
         env:

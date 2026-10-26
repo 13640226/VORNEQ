@@ -12,7 +12,7 @@ class HomepageSimplificationTests(TestCase):
         response = self.get_english_home()
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'class="world-home"')
+        self.assertContains(response, 'class="world-home ')
         self.assertContains(response, 'id="start"')
         self.assertContains(response, 'id="principles"')
         self.assertContains(response, 'id="capabilities"')
@@ -138,7 +138,7 @@ class HomepageSimplificationTests(TestCase):
 
         self.assertContains(
             response,
-            "Precision infrastructure for a trusted digital future.",
+            "Evidence-aware infrastructure for connected knowledge.",
         )
         self.assertContains(response, "Context, not Score")
         self.assertContains(response, "Evidence, not Truth")

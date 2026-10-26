@@ -1,0 +1,36 @@
+.public-graph-page {
+  --graph-navy: #0B1F3D;
+  --graph-blue: #2563EB;
+  --graph-light: #93C5FD;
+  --graph-border: #E5E7EB;
+  max-width: 960px;
+  margin-inline: auto;
+  padding: 56px 32px 80px;
+  color: var(--graph-navy);
+}
+
+.public-graph-header { max-width: 720px; }
+.public-graph-eyebrow { color: var(--graph-blue); font-size: .78rem; font-weight: 700; }
+.public-graph-header h1 { margin-block: 8px 12px; font-size: clamp(2.25rem, 5vw, 3.25rem); }
+.public-graph-header p:last-child { line-height: 1.65; }
+
+.public-graph-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-block: 28px 36px; }
+.public-graph-actions a { padding: 9px 13px; border: 1px solid var(--graph-border); border-radius: 7px; color: var(--graph-navy); font-weight: 650; text-decoration: none; }
+.public-graph-actions a:focus-visible { outline: 3px solid var(--graph-light); outline-offset: 3px; }
+
+.public-graph-page section { margin-block-start: 28px; padding: 22px; border: 1px solid var(--graph-border); border-radius: 10px; background: #fff; }
+.public-graph-page h2 { margin-block-start: 0; font-size: 1.2rem; }
+.public-graph-page code { overflow-wrap: anywhere; color: var(--graph-navy); }
+.public-graph-nodes, .public-graph-edges { margin-block-end: 0; padding-inline-start: 22px; }
+.public-graph-nodes li, .public-graph-edges li { margin-block-start: 10px; line-height: 1.6; overflow-wrap: anywhere; }
+.public-graph-edges li { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.public-graph-edges li > span { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.public-graph-edges strong { color: var(--graph-blue); }
+.public-graph-notice { display: block; margin-block-start: 8px; color: #475569; }
+
+html[dir="rtl"] .public-graph-eyebrow { letter-spacing: 0; }
+
+@media (max-width: 640px) {
+  .public-graph-page { padding: 36px 18px 56px; }
+  .public-graph-page section { padding: 18px; }
+}

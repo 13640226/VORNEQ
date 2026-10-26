@@ -1,7 +1,138 @@
-{% extends "admin/index.html" %}
+{% extends "admin/base_site.html" %}
+{% load i18n static log vorneq_admin_dashboard %}
 
-{% block content_title %}
-  <div class="vorneq-page-heading vorneq-page-heading--dashboard">
-    {{ block.super }}
-  </div>
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/css/vorneq_admin_dashboard.css' %}">
 {% endblock %}
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% static 'admin/js/vorneq_admin_dashboard.js' %}" defer></script>
+{% endblock %}
+{% block bodyclass %}{{ block.super }} dashboard vorneq-dashboard-page{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+{% block content_title %}{% endblock %}
+{% block content %}
+{% vorneq_dashboard as dashboard %}
+{% vorneq_environment as env %}
+<div id="content-main" class="vorneq-dashboard" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
+  <div class="vq-head">
+    <div>
+      <h1 class="vq-title">مرکز مدیریت VORNEQ</h1>
+      <p class="vq-sub"><time class="vq-today" datetime="{% now 'Y-m-d' %}">{% now "DATE_FORMAT" %}</time></p>
+    </div>
+    {% if env %}
+    <span class="vq-env vq-env--{{ env.key }}">{{ env.label }}{% if env.database %} · <span class="vq-num">{{ env.database }}</span>{% endif %}</span>
+    {% endif %}
+  </div>
+
+  <div class="vq-grid">
+    <div class="vq-col">
+      {% if dashboard.cards %}
+      <section class="vq-panel" aria-labelledby="vq-overview">
+        <header><h2 id="vq-overview">نمای کلی</h2><span class="vq-hint">تعداد رکوردها</span></header>
+        <div class="vq-stats">
+          {% for card in dashboard.cards %}
+          <a class="vq-stat vq-stat--{{ card.tone }}" href="{{ card.url }}">
+            <span class="vq-stat__label">{{ card.title }}</span>
+            <strong class="vq-stat__value vq-num">{{ card.value }}</strong>
+            <span class="vq-stat__go">مشاهده فهرست</span>
+          </a>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      {% if dashboard.verification %}
+      {% with v=dashboard.verification %}
+      <section class="vq-panel" aria-labelledby="vq-verification">
+        <header>
+          <h2 id="vq-verification">چرخهٔ راستی‌آزمایی</h2>
+          <a class="vq-hint vq-pending" href="{{ v.pending_url }}">در انتظار بررسی: <span class="vq-num">{{ v.pending }}</span></a>
+        </header>
+        <div class="vq-pipe">
+          <div class="vq-bar" role="img" aria-label="توزیع {{ v.total }} درخواست بر اساس وضعیت">
+            {% for s in v.statuses %}{% if s.count %}<span class="vq-tone--{{ s.tone }}" style="width:{{ s.percent }}%"></span>{% endif %}{% endfor %}
+          </div>
+          <div class="vq-legend">
+            {% for s in v.statuses %}
+            <a href="{{ s.url }}" class="vq-legend__item">
+              <span class="vq-legend__key"><i class="vq-tone--{{ s.tone }}"></i>{{ s.label }}</span>
+              <span class="vq-legend__value vq-num">{{ s.count }}</span>
+            </a>
+            {% endfor %}
+          </div>
+          {% if not v.total %}<p class="vq-empty">هنوز هیچ درخواست راستی‌آزمایی ثبت نشده است.</p>{% endif %}
+        </div>
+      </section>
+      {% endwith %}
+      {% endif %}
+
+      <section class="vq-panel" aria-labelledby="vq-sections">
+        <header>
+          <h2 id="vq-sections">بخش‌ها</h2>
+          {% if app_list %}
+          <label class="vq-search" for="vq-filter">
+            <span class="vq-visually-hidden">جست‌وجوی مدل</span>
+            <input id="vq-filter" type="search" placeholder="جست‌وجوی مدل…" autocomplete="off">
+          </label>
+          {% endif %}
+        </header>
+        <div class="vq-apps" data-vq-apps>
+          {% for app in app_list %}
+          <section class="vq-app" data-vq-app="{{ app.name|lower }}">
+            <h3><a href="{{ app.app_url }}">{{ app.name }}</a><span class="vq-app__count vq-num">{{ app.models|length }}</span></h3>
+            <ul>
+              {% for model in app.models %}
+              <li data-vq-model="{{ model.name|lower }}">
+                {% if model.admin_url %}<a class="vq-model" href="{{ model.admin_url }}">{{ model.name }}</a>
+                {% else %}<span class="vq-model">{{ model.name }}</span>{% endif %}
+                {% if model.add_url and model.perms.add %}<a class="vq-add" href="{{ model.add_url }}" aria-label="افزودن {{ model.name }}">+</a>{% endif %}
+              </li>
+              {% endfor %}
+            </ul>
+          </section>
+          {% empty %}
+          <p class="vq-empty">در حال حاضر بخشی برای مدیریت در دسترس نیست.</p>
+          {% endfor %}
+        </div>
+        <p class="vq-empty vq-no-match" data-vq-no-match hidden>مدلی با این نام پیدا نشد.</p>
+      </section>
+    </div>
+
+    <aside class="vq-col">
+      {% if dashboard.actions %}
+      <section class="vq-panel" aria-labelledby="vq-actions">
+        <header><h2 id="vq-actions">دسترسی سریع</h2></header>
+        <div class="vq-actions">
+          {% for action in dashboard.actions %}
+          <a class="vq-action" href="{{ action.url }}"><span class="vq-action__plus" aria-hidden="true">+</span>{{ action.title }}</a>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      <section class="vq-panel" aria-labelledby="vq-recent">
+        <header><h2 id="vq-recent">فعالیت‌های اخیر</h2><span class="vq-hint">فعالیت‌های شما</span></header>
+        {% get_admin_log 8 as admin_log for_user user %}
+        {% if admin_log %}
+        <ul class="vq-log">
+          {% for entry in admin_log %}
+          <li>
+            <span class="vq-chip {% if entry.is_addition %}vq-chip--add{% elif entry.is_change %}vq-chip--change{% else %}vq-chip--delete{% endif %}">{% if entry.is_addition %}افزودن{% elif entry.is_change %}ویرایش{% else %}حذف{% endif %}</span>
+            <span class="vq-log__what">
+              {% if entry.is_deletion or not entry.get_admin_url %}{{ entry.object_repr }}{% else %}<a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>{% endif %}
+              <span class="vq-log__meta">{% if entry.content_type %}{% filter capfirst %}{{ entry.content_type.name }}{% endfilter %} · {% endif %}<time datetime="{{ entry.action_time|date:'c' }}">{{ entry.action_time|timesince }}</time> پیش</span>
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="vq-empty vq-pad">هنوز فعالیتی ثبت نکرده‌اید.</p>
+        {% endif %}
+      </section>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+{% block sidebar %}{% endblock %}

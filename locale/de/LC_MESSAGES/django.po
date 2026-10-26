@@ -1762,3 +1762,241 @@ msgstr "Die aufgezeichneten öffentlichen Informationen zu einem Artefakt, einsc
 msgid "Public source reference"
 msgstr "Öffentliche Quellenangabe"
 
+
+
+# Modern homepage evidence UI
+msgid "View Evidence"
+msgstr "Evidenz ansehen"
+
+msgid "Evidence and knowledge overview"
+msgstr "Evidenz- und Wissensübersicht"
+
+msgid "Source connected"
+msgstr "Quelle verbunden"
+
+msgid "Evidence → context → knowledge node"
+msgstr "Beleg → Kontext → Wissensknoten"
+
+msgid "Provenance active"
+msgstr "Provenienz aktiv"
+
+msgid "Traceable relationship"
+msgstr "Nachvollziehbare Beziehung"
+
+# Homepage catalog migration
+
+msgid "Precision Digital Infrastructure"
+msgstr "Präzise digitale Infrastruktur"
+
+msgid "VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust."
+msgstr "VORNEQ entwickelt zuverlässige digitale Infrastruktur für Systeme, Produkte und Organisationen, die Klarheit, Resilienz und langfristiges Vertrauen erfordern."
+
+msgid "INFRASTRUCTURE FOR TRUSTED SYSTEMS"
+msgstr "INFRASTRUKTUR FÜR VERTRAUENSWÜRDIGE SYSTEME"
+
+msgid "Precision infrastructure for a trusted digital future."
+msgstr "Präzise Infrastruktur für eine vertrauenswürdige digitale Zukunft."
+
+msgid "Explore Platform"
+msgstr "Plattform erkunden"
+
+msgid "Evidence Signal"
+msgstr "Evidence Signal"
+
+msgid "Search across VORNEQ…"
+msgstr "VORNEQ durchsuchen…"
+
+msgid "Use a query when you know what you want to find."
+msgstr "Geben Sie eine Suchanfrage ein, wenn Sie wissen, wonach Sie suchen."
+
+msgid "Structured query across knowledge, software, products, and services."
+msgstr "Strukturierte Suche nach Wissen, Software, Produkten und Dienstleistungen."
+
+msgid "A canonical discovery surface within the VORNEQ ecosystem."
+msgstr "Eine kanonische Entdeckungsoberfläche innerhalb des VORNEQ-Ökosystems."
+
+msgid "Open Discover"
+msgstr "Entdecken öffnen"
+
+msgid "A trusted transactional surface for offerings and solutions."
+msgstr "Eine vertrauenswürdige Transaktionsoberfläche für Angebote und Lösungen."
+
+msgid "Open Marketplace"
+msgstr "Marktplatz öffnen"
+
+msgid "How VORNEQ works"
+msgstr "So funktioniert VORNEQ"
+
+msgid "From information to trusted knowledge."
+msgstr "Von Informationen zu vertrauenswürdigem Wissen."
+
+msgid "A structured path from source material to information you can inspect, connect, and explore."
+msgstr "Ein strukturierter Weg vom Ausgangsmaterial zu Informationen, die Sie prüfen, verknüpfen und erkunden können."
+
+msgid "Collect"
+msgstr "Sammeln"
+
+msgid "Bring documents, media, and structured information into a consistent system."
+msgstr "Dokumente, Medien und strukturierte Informationen in ein einheitliches System überführen."
+
+msgid "Structure"
+msgstr "Strukturieren"
+
+msgid "Organize information into clear, addressable records."
+msgstr "Informationen in klaren, adressierbaren Datensätzen organisieren."
+
+msgid "Verify"
+msgstr "Verifizieren"
+
+msgid "Connect claims with evidence and preserve their context."
+msgstr "Behauptungen mit Evidenz verknüpfen und ihren Kontext bewahren."
+
+msgid "Connect"
+msgstr "Verknüpfen"
+
+msgid "Build meaningful relationships across records, entities, and sources."
+msgstr "Aussagekräftige Beziehungen zwischen Datensätzen, Entitäten und Quellen herstellen."
+
+msgid "Explore connected information through VORNEQ's discovery surfaces."
+msgstr "Verknüpfte Informationen über die Entdeckungsoberflächen von VORNEQ erkunden."
+
+msgid "Trust by architecture"
+msgstr "Vertrauen durch Architektur"
+
+msgid "Infrastructure designed for clarity and accountability."
+msgstr "Infrastruktur, die für Klarheit und Verantwortlichkeit entwickelt wurde."
+
+msgid "Trust is supported by visible structure, evidence, boundaries, and traceable system behavior."
+msgstr "Vertrauen wird durch sichtbare Strukturen, Evidenz, klare Grenzen und nachvollziehbares Systemverhalten unterstützt."
+
+msgid "Privacy by architecture"
+msgstr "Datenschutz durch Architektur"
+
+msgid "Privacy boundaries are considered as part of the system design."
+msgstr "Datenschutzgrenzen werden als Bestandteil des Systemdesigns berücksichtigt."
+
+msgid "Auditability"
+msgstr "Prüfbarkeit"
+
+msgid "Important actions and state changes can remain inspectable and traceable."
+msgstr "Wichtige Aktionen und Zustandsänderungen können überprüfbar und nachvollziehbar bleiben."
+
+msgid "Sources and supporting material stay connected to the information they support."
+msgstr "Quellen und unterstützendes Material bleiben mit den Informationen verbunden, die sie stützen."
+
+msgid "Resilience"
+msgstr "Resilienz"
+
+msgid "Infrastructure is designed with continuity, recovery, and long-term operation in mind."
+msgstr "Die Infrastruktur wird mit Blick auf Kontinuität, Wiederherstellung und langfristigen Betrieb entwickelt."
+
+msgid "Information should be understood in context, not reduced to a single, opaque score."
+msgstr "Informationen sollen im Kontext verstanden und nicht auf eine einzelne undurchsichtige Bewertung reduziert werden."
+
+msgid "Explore a more structured way to work with information."
+msgstr "Entdecken Sie eine strukturiertere Art, mit Informationen zu arbeiten."
+
+msgid "Search, discover, and navigate the connected surfaces of the VORNEQ platform."
+msgstr "Durchsuchen, entdecken und navigieren Sie die verknüpften Bereiche der VORNEQ-Plattform."
+
+msgid "VORNEQ positioning"
+msgstr "VORNEQ-Positionierung"
+
+msgid "Section navigation"
+msgstr "Abschnittsnavigation"
+
+msgid "How it works"
+msgstr "So funktioniert es"
+
+msgid "Trust"
+msgstr "Vertrauen"
+
+# Notes navigation
+msgid "Notes"
+msgstr "Notizen"
+
+msgid "Notes — VORNEQ"
+msgstr "Notizen — VORNEQ"
+
+msgid "My Notes"
+msgstr "Meine Notizen"
+
+# Homepage content upgrade
+
+msgid "Evidence-aware infrastructure for connected knowledge."
+msgstr "Evidenzbewusste Infrastruktur für vernetztes Wissen."
+
+msgid "VORNEQ connects discovery, evidence, provenance, and structured records so information can be inspected in context."
+msgstr "VORNEQ verbindet Entdeckung, Evidenz, Provenienz und strukturierte Datensätze, damit Informationen im Kontext geprüft werden können."
+
+msgid "Inspect Evidence"
+msgstr "Evidenz prüfen"
+
+msgid "Evidence connected"
+msgstr "Evidenz verknüpft"
+
+msgid "Source → evidence → context"
+msgstr "Quelle → Evidenz → Kontext"
+
+msgid "Provenance recorded"
+msgstr "Provenienz erfasst"
+
+msgid "Inspectable relationship"
+msgstr "Prüfbare Beziehung"
+
+msgid "Search directly across VORNEQ when you know the topic, record, product, or source you need."
+msgstr "Durchsuchen Sie VORNEQ direkt, wenn Sie das benötigte Thema, den Datensatz, das Produkt oder die Quelle kennen."
+
+msgid "Find records across VORNEQ through a focused search surface."
+msgstr "Finden Sie Datensätze in VORNEQ über eine fokussierte Suchoberfläche."
+
+msgid "Explore public information through connected context, evidence, and relationships."
+msgstr "Erkunden Sie öffentliche Informationen über verknüpften Kontext, Evidenz und Beziehungen."
+
+msgid "Browse published offerings through VORNEQ's marketplace surface."
+msgstr "Durchsuchen Sie veröffentlichte Angebote über die Marktplatzoberfläche von VORNEQ."
+
+msgid "From source material to inspectable context."
+msgstr "Vom Quellenmaterial zum prüfbaren Kontext."
+
+msgid "VORNEQ keeps records, evidence, provenance, and relationships connected so context remains visible as information moves through the platform."
+msgstr "VORNEQ hält Datensätze, Evidenz, Provenienz und Beziehungen verbunden, damit der Kontext sichtbar bleibt, während Informationen die Plattform durchlaufen."
+
+msgid "Bring supported records and source material into structured VORNEQ surfaces."
+msgstr "Bringen Sie unterstützte Datensätze und Quellenmaterial in strukturierte VORNEQ-Oberflächen ein."
+
+msgid "Represent information as clear records that can be referenced and inspected."
+msgstr "Stellen Sie Informationen als klare Datensätze dar, die referenziert und geprüft werden können."
+
+msgid "Associate claims with recorded evidence while preserving public context."
+msgstr "Verknüpfen Sie Aussagen mit erfasster Evidenz und bewahren Sie dabei den öffentlichen Kontext."
+
+msgid "Connect records, entities, sources, and evidence through explicit relationships."
+msgstr "Verbinden Sie Datensätze, Entitäten, Quellen und Evidenz durch explizite Beziehungen."
+
+msgid "Navigate connected public information through Search, Discover, Context, and Evidence Graph surfaces."
+msgstr "Navigieren Sie durch verknüpfte öffentliche Informationen über Suche, Entdecken, Kontext und Evidenzgraph."
+
+msgid "Context, evidence, and provenance remain visible."
+msgstr "Kontext, Evidenz und Provenienz bleiben sichtbar."
+
+msgid "VORNEQ presents recorded context and relationships without turning them into a hidden trust score or a claim of truth."
+msgstr "VORNEQ stellt erfassten Kontext und Beziehungen dar, ohne sie in einen verborgenen Vertrauenswert oder eine Wahrheitsbehauptung umzuwandeln."
+
+msgid "Public views are bounded to information intended for disclosure; private data remains outside those public evidence surfaces."
+msgstr "Öffentliche Ansichten sind auf zur Offenlegung bestimmte Informationen begrenzt; private Daten bleiben außerhalb dieser öffentlichen Evidenzoberflächen."
+
+msgid "Recorded attribution, verification, and provenance provide inspectable context where those records are available."
+msgstr "Erfasste Zuordnung, Verifikation und Provenienz liefern prüfbaren Kontext, soweit entsprechende Datensätze verfügbar sind."
+
+msgid "Public evidence relationships keep supporting material connected to the records and claims they contextualize."
+msgstr "Öffentliche Evidenzbeziehungen halten unterstützendes Material mit den Datensätzen und Aussagen verbunden, die sie kontextualisieren."
+
+msgid "Platform infrastructure is organized around explicit records, boundaries, and operational continuity."
+msgstr "Die Plattforminfrastruktur ist auf explizite Datensätze, Grenzen und betriebliche Kontinuität ausgerichtet."
+
+msgid "Explore information with its context still attached."
+msgstr "Erkunden Sie Informationen mit ihrem erhaltenen Kontext."
+
+msgid "Move from search and discovery into recorded context, evidence relationships, provenance, documents, and marketplace surfaces."
+msgstr "Wechseln Sie von Suche und Entdeckung zu erfasstem Kontext, Evidenzbeziehungen, Provenienz, Dokumenten und Marktplatzoberflächen."

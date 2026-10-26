@@ -1,0 +1,51 @@
+name: Read-only Database Identity Probe
+run-name: 'Read-only DB identity probe · ${{ inputs.secret }} · ${{ github.actor }}'
+
+# Reports which database a GitHub Actions secret points to (database name,
+# server address, version) and whether it is the production database.
+# Read-only session; never prints credentials or full connection strings.
+on:
+  workflow_dispatch:
+    inputs:
+      secret:
+        description: 'Secret to identify'
+        required: true
+        type: choice
+        options:
+          - STAGING_DATABASE_URL
+          - PRODUCTION_TARGET_DATABASE_URL
+          - DR_RESTORE_DATABASE_URL
+          - PRODUCTION_SOURCE_DATABASE_URL
+
+permissions:
+  contents: read
+
+concurrency:
+  group: inspect-database-identity
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check PostgreSQL client
+        run: psql --version
+
+      - name: Probe identity (read-only)
+        env:
+          TARGET_DATABASE_URL: ${{ secrets[inputs.secret] }}
+          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
+          SECRET_NAME: ${{ inputs.secret }}
+        run: |
+          set -euo pipefail
+          echo "MODE: READ-ONLY IDENTITY PROBE (default_transaction_read_only=on)"
+          echo "Secret: $SECRET_NAME"
+          if [ -n "${PRODUCTION_DATABASE_URL}" ]; then
+            python3 scripts/db_target_guard.py probe --env TARGET_DATABASE_URL --compare-env PRODUCTION_DATABASE_URL
+          else
+            python3 scripts/db_target_guard.py probe --env TARGET_DATABASE_URL
+          fi

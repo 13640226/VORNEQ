@@ -5,12 +5,12 @@
   "scripts": {
     "verify": "node verify.mjs",
     "lighthouse": "node lighthouse.mjs",
-    "test": "node test-contract.mjs"
+    "test": "node test-contract.mjs && node test-lighthouse-integrity.mjs"
   },
   "dependencies": {
     "@axe-core/playwright": "4.10.2",
     "chrome-launcher": "1.0.0",
     "lighthouse": "12.8.2",
-    "playwright": "1.55.0"
+    "playwright": "1.55.1"
   }
 }
