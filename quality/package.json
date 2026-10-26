@@ -11,6 +11,6 @@
     "@axe-core/playwright": "4.10.2",
     "chrome-launcher": "1.0.0",
     "lighthouse": "12.8.2",
-    "playwright": "1.55.0"
+    "playwright": "1.55.1"
   }
 }
