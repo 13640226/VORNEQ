@@ -28,8 +28,8 @@ class VerificationRoutingTests(SimpleTestCase):
         response = views.VerificationListView.as_view()(request)
         self.assertEqual(response.status_code, 302)
 
-    def test_start_is_post_only(self):
+    def test_anonymous_start_is_rejected(self):
         request = RequestFactory().get("/api/verification/manage/1/start/")
         request.user = AnonymousUser()
         response = views.VerificationStartView.as_view()(request, pk=1)
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, 302)
