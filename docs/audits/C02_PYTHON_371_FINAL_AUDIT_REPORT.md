@@ -1,50 +1,24 @@
-# VORNEQ — C02 Python 371-file static audit: consolidated record
+# VORNEQ — C02 corrected 371-file Python audit report
+**Pinned commit:** `5446c9176e876d9a7a477b8203500a0e1d8334b1`
+**Document:** C02-PR404-CORRECTION-001
+**Verdict:** PARTIAL_CORRECTIONS_PREPARED / EVIDENCE_INCOMPLETE / SAFE_HOLD / NO_GO
 
-**Record:** C02-FINAL-GITHUB-PUBLICATION-001  
-**Pinned commit:** `5446c9176e876d9a7a477b8203500a0e1d8334b1`  
-**Scope:** Documentary-only; no runtime verification  
-**Decision:** **SAFE_HOLD / NO_GO**
+## Coverage and documentary limits
+38 batches **reported** inspection of 371/371 Python files. The historical pinned-tree inventory reported 371 Python paths and an untruncated tree. These are file-count assertions, not a proof of runtime security. The recent 21/21 SHA matching claim remains incompletely itemized: **17 historical path/SHA records** are available in the companion provenance register and **4 remain missing**. The complete historical 38-batch corpus was not independently reconstructed. The previously published PR documents are summaries; byte-for-byte fidelity to the original local package is not yet verified.
 
-## Executive summary
-38 deterministic batches reported examination of 371/371 Python files (100% reported file-count coverage). The pinned Git tree returned 371 Python entries and was not truncated. The last file, `scripts/smoke_test.py`, was independently fetched and its Git Blob SHA matched `fd6ed473898505216823e19bdbced13cbdca07de`. The historical claim of 21/21 recent SHA matches is not fully reconciled in the documentary package: 17 itemized records were available. The full 38-batch evidence corpus was not independently reconstructed. **100% file-count coverage is not a security clearance.**
+## Security gap families (all remain open)
+- SG-01 OPEN_CRITICAL: `scripts/db_target_guard.py:103-120,150-168` — Boolean classification does not establish explicit UNKNOWN -> DENY.
+- SG-02 OPEN_CRITICAL: `scripts/dr_staging_rehearsal.py:101-137,293-320` and `apps/core/management/commands/seed_staging_data.py:68-71` — destructive paths require independent target proof.
+- SG-03 OPEN_CRITICAL: `.github/workflows/migrate-production.yml:88`, `config/settings_render.py:14-24` — mandatory fail-closed migration identity enforcement unverified.
+- SG-04 OPEN: `marketplace/admin.py:280-343` and `marketplace/models.py:230-271` — bulk ORM updates may bypass save-hook invariants.
+- SG-05 OPEN: `library/views.py:43-51,342-486`, `marketplace/delivery.py:12-42` — object-level access and file delivery require independent review.
+- SG-06 OPEN: `apps/evidence/signals.py`, `apps/media/vector_index.py` — indirect ORM/storage side effects.
+- SG-07 OPEN_CRITICAL: runtime database binding and independent reviewer evidence unavailable.
 
-## Canonical risk families
-1. SG-01 — Database target identity and fail-closed guard: OPEN_CRITICAL.
-2. SG-02 — Destructive operations, schema reset, cascade and bulk deletion: OPEN_CRITICAL.
-3. SG-03 — Migration and deployment guard enforcement: OPEN_CRITICAL.
-4. SG-04 — Model-hook bypass and audit integrity: OPEN.
-5. SG-05 — Authorization and content access controls: OPEN.
-6. SG-06 — Indirect ORM, signal, storage and filesystem side effects: OPEN.
-7. SG-07 — Independent runtime evidence and security review: OPEN_CRITICAL.
+## Finding correction status
+PR404-F01 PARTIAL (17 rows itemized); F02 OPEN (4 missing); F03 OPEN (original-package comparison missing); F04 OPEN (historical manifests incomplete); F05 OPEN (runtime verification and independent reviewer pending).
 
-## Selected pinned-source evidence
-- `scripts/db_target_guard.py` Blob `375c380411c19850c12cfc03c6620c7cbde751fa`, lines 103–120: Boolean production classification and decision contract without explicit UNKNOWN -> DENY.
-- `scripts/dr_staging_rehearsal.py` Blob `db12c56d440d4ab01d67ac895d77f49cb7300789`, lines 101–137 and 293–320: source/target comparison, guarded but potentially destructive schema reset and restore capability.
-- `marketplace/admin.py` Blob `420d815efad83bc8fd6d02301d63f84fa4eb025c`, lines 280–343: queryset bulk updates bypass model save hooks.
-- `marketplace/models.py` Blob `8e3334a81ff627c614e68257ddc40b26080f00c1`, lines 230–271: Product.save publication/slug logic.
-- `library/views.py` Blob `c6de637ae185361163658bbea5aa8f4396d78949`, lines 43–51 and 342–486: reading policy and local PDF path handling.
-- `scripts/smoke_test.py` Blob `fd6ed473898505216823e19bdbced13cbdca07de`, lines 76–97 and 137–161: HTTP GET smoke checks and marker-only product-file exposure check; not executed.
+## Non-authorization
+Static source references are not proof of exploitability or runtime impact. No production database identity, migration safety, destructive-operation safety or security clearance is established. This documentation update does not authorize merge, code execution, SQL, DB connection, migration, deployment or release.
 
-## Evidence boundaries
-- Static source presence is not proof of runtime execution or impact.
-- Production database identity and binding remain UNKNOWN.
-- Runtime guard effectiveness, migration safety and complete access-control correctness remain unverified.
-- Related YAML/workflow/configuration evidence is outside the 371 Python file denominator.
-- Missing historical batch manifests remain EVIDENCE_INCOMPLETE.
-
-## Holds
-```text
-STOP_340 = ACTIVE
-HARD_STOP = ACTIVE
-C02 = OPEN_CRITICAL
-SC_07 = OPEN_CRITICAL
-R01 = OPEN_CRITICAL
-R02 = OPEN_CRITICAL
-DATABASE_GO = NO
-MIGRATION_GO = NO
-DEPLOY_GO = NO
-PRODUCTION_RELEASE = BLOCKED
-FINAL_STATE = SAFE_HOLD / NO_GO
-```
-
-**Publication of this report does not authorize a code change, database operation, migration, deployment or release.**
+`STOP_340=ACTIVE; HARD_STOP=ACTIVE; C02=OPEN_CRITICAL; SC_07=OPEN_CRITICAL; R01=OPEN_CRITICAL; R02=OPEN_CRITICAL; DATABASE_GO=NO; MIGRATION_GO=NO; DEPLOY_GO=NO; PRODUCTION_RELEASE=BLOCKED; FINAL_STATE=SAFE_HOLD / NO_GO`
