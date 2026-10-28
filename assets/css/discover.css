@@ -92,3 +92,107 @@ html[dir="rtl"] .discover-object__meta { text-transform: none; }
   .discover-object { transition: none; }
   .discover-object:hover { transform: none; }
 }
+
+
+/* P1 Discover readability/layout: explicit light-card and dark-hero palettes.
+   Scoped to Discover to avoid changing other VORNEQ surfaces. */
+.discover-page {
+  --discover-card-ink: #14263f;
+  --discover-card-muted: #40536c;
+  --discover-hero-ink: #f4f7ff;
+  --discover-hero-muted: #e3ecfa;
+}
+.discover-page .discover-hero,
+.discover-page .discover-section-heading {
+  color: var(--discover-hero-ink);
+}
+.discover-page .discover-hero h1,
+.discover-page .discover-section-heading h2 {
+  color: var(--discover-hero-ink);
+  opacity: 1;
+}
+.discover-page .discover-hero > p:last-child,
+.discover-page .discover-count {
+  color: var(--discover-hero-muted);
+  opacity: 1;
+  font-size: max(1rem, 16px);
+  line-height: 1.65;
+}
+.discover-page .discover-eyebrow {
+  color: #93c5fd;
+  font-size: max(.875rem, 14px);
+}
+.discover-page .discover-controls,
+.discover-page .discover-object,
+.discover-page .discover-state {
+  color: var(--discover-card-ink);
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+.discover-page .discover-controls h1,
+.discover-page .discover-controls h2,
+.discover-page .discover-controls h3,
+.discover-page .discover-object h3,
+.discover-page .discover-object h3 a,
+.discover-page .discover-state h3 {
+  color: var(--discover-card-ink);
+  opacity: 1;
+}
+.discover-page .discover-object {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: clamp(20px, 2.5vw, 28px);
+  box-shadow: 0 6px 20px rgba(11,31,61,.08);
+}
+.discover-page .discover-object h3 {
+  margin: 0;
+  font-size: clamp(1.25rem, 1.7vw, 1.5rem);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.discover-page .discover-object > p,
+.discover-page .discover-state p {
+  color: var(--discover-card-muted);
+  opacity: 1;
+  font-size: max(1rem, 16px);
+  line-height: 1.65;
+}
+.discover-page .discover-object__meta,
+.discover-page .discover-object dt,
+.discover-page .discover-object dd {
+  color: var(--discover-card-muted);
+  opacity: 1;
+  font-size: max(.875rem, 14px);
+  line-height: 1.5;
+}
+.discover-page .discover-object dl { margin-block: 4px 0; }
+.discover-page .discover-actions { margin-block-start: auto; padding-block-start: 12px; }
+.discover-page .discover-controls .discover-search input,
+.discover-page .discover-search input::placeholder {
+  color: var(--discover-card-ink);
+  opacity: 1;
+}
+.discover-page .discover-filters a:not([aria-current="page"]) {
+  color: var(--discover-card-ink);
+  background: #ffffff;
+  border-color: #94a3b8;
+}
+.discover-page .discover-graph__body {
+  color: var(--discover-card-ink);
+}
+.discover-page .discover-pagination {
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  padding: 12px 0;
+}
+.discover-page .discover-pagination a {
+  color: #bfdbfe;
+  font-size: max(1rem, 16px);
+  text-underline-offset: 3px;
+}
+@media (max-width: 640px) {
+  .discover-page .discover-object { gap: 8px; }
+  .discover-page .discover-object h3 { font-size: 1.25rem; }
+}
