@@ -287,11 +287,15 @@ html[dir="rtl"] .world-home--layout-v3 .world-icon--sm {
 }
 
 
-/* P1 homepage readability: scoped to the landing page's dark gradient cards.
-   Preserve brand palette while restoring accessible, full-opacity body copy. */
+/* P1 homepage readability: use foreground roles paired with the existing
+   surface tokens; do not force white text onto theme-dependent light cards. */
+.world-home--layout-v3 .world-capability__surface,
+.world-home--layout-v3 .world-principle {
+  color: var(--home-fg);
+}
 .world-home--layout-v3 .world-capability__surface p,
 .world-home--layout-v3 .world-principle p {
-  color: #f1f5fb;
+  color: var(--home-fg);
   opacity: 1;
   font-size: max(1rem, 16px);
   line-height: 1.65;
@@ -300,20 +304,20 @@ html[dir="rtl"] .world-home--layout-v3 .world-icon--sm {
 }
 .world-home--layout-v3 .world-capability__surface h3,
 .world-home--layout-v3 .world-principle h3 {
-  color: #ffffff;
+  color: var(--home-fg);
   opacity: 1;
   font-size: clamp(1.25rem, 1.5vw, 1.375rem);
   line-height: 1.35;
 }
 .world-home--layout-v3 .world-capability__link {
-  color: #ffffff;
+  color: var(--home-fg);
   opacity: 1;
   font-size: max(1rem, 16px);
   font-weight: 700;
   text-underline-offset: 0.2em;
 }
 .world-home--layout-v3 .world-capability__surface:focus-visible {
-  outline: 3px solid #ffffff;
+  outline: 3px solid var(--home-focus);
   outline-offset: 3px;
 }
 @media (max-width: 639px) {
