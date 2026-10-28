@@ -1,194 +1,175 @@
 #!/usr/bin/env python3
-"""Read-only database identity probe and fail-closed target guard.
+"""C02 V1.1: diagnostic database identity probe; fail-closed operation guard.
 
-Used by GitHub Actions workflows that write to a database (seed, migrate,
-DR restore) so they refuse to touch production unless the run explicitly
-says so. Detection always comes from the database's real identity, never
-from a flag: the flag can only *allow* a run that was already detected as
-production.
-
-Commands
-  probe --env NAME [--compare-env NAME]
-      Print a sanitized identity for the URL in env var NAME and, if given,
-      whether it is the same database as --compare-env. Never prints
-      user names, passwords or full connection strings.
-  guard --target-env NAME [--production-env NAME]
-      Exit non-zero unless the run is allowed. Reads CONFIRM and
-      ALLOW_PRODUCTION_TARGET from the environment.
-
-Standard library only; queries run through `psql` in a read-only session.
+SECURITY STATUS: REVIEW REQUIRED. No operation authorization is implemented.
+This tool cannot establish independent target authority, prevent a subsequent
+command from changing its connection, or prove a Render runtime binding.
+Accordingly, 'guard' ALWAYS denies, including when a probe succeeds.
+Do not treat 'probe' success as permission to migrate, seed, restore or delete.
 """
 from __future__ import annotations
 
 import argparse
+import json
 import os
+import re
 import subprocess
 import sys
 from dataclasses import dataclass
-from urllib.parse import urlparse
+from enum import Enum
+from urllib.parse import urlsplit
 
-DEFAULT_PROTECTED_DATABASES = ("vorneq_production_db",)
-PROTECTED_ENV = "VORNEQ_PROTECTED_DATABASES"
-
+# Names are only negative indicators. Absence from this list is NEVER proof
+# that a database is non-production.
+PROTECTED_NAMES = frozenset({"vorneq_production_db"})
 IDENTITY_SQL = (
     "SELECT current_database(), "
     "coalesce(inet_server_addr()::text, 'local'), "
     "coalesce(inet_server_port()::text, ''), "
-    "current_setting('server_version_num')"
+    "coalesce((SELECT system_identifier::text FROM pg_control_system()), '')"
 )
+SAFE_ENV_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
-@dataclass(frozen=True)
-class UrlInfo:
-    host: str
-    port: int
-    database: str
+class Classification(str, Enum):
+    PRODUCTION = "PRODUCTION"
+    NON_PRODUCTION = "NON_PRODUCTION"
+    UNKNOWN = "UNKNOWN"
 
 
 @dataclass(frozen=True)
 class Identity:
     database: str
-    server_addr: str
+    server_address: str
     server_port: str
-    server_version: str
+    system_identifier: str
 
-    def same_database_as(self, other: "Identity") -> bool:
-        return (self.database, self.server_addr, self.server_port) == (
-            other.database,
-            other.server_addr,
-            other.server_port,
+
+class IdentityError(Exception):
+    """Expected probe failure. Never include secrets in the message."""
+
+
+def get_url(name: str) -> str:
+    if not SAFE_ENV_NAME.fullmatch(name):
+        raise IdentityError("invalid environment variable name")
+    value = os.environ.get(name)
+    if not value:
+        raise IdentityError("connection environment variable missing")
+    try:
+        parsed = urlsplit(value)
+        if parsed.scheme not in {"postgres", "postgresql"}:
+            raise ValueError()
+        if not parsed.hostname or not parsed.path.strip("/"):
+            raise ValueError()
+        _ = parsed.port
+    except (ValueError, AttributeError):
+        raise IdentityError("invalid PostgreSQL connection URL") from None
+    return value
+
+
+def query_identity(url: str, timeout: int = 8) -> Identity:
+    # No URL on command line. Do not inherit libpq configuration or service
+    # files from the caller. These measures reduce accidental disclosure,
+    # but cannot guarantee secrecy against privileged process inspection.
+    env = {
+        "PATH": "/usr/bin:/bin",
+        "HOME": "/nonexistent",
+        "PGDATABASE": url,
+        "PGOPTIONS": "-c default_transaction_read_only=on "
+                     "-c statement_timeout=5000 "
+                     "-c lock_timeout=1000",
+        "PGCONNECT_TIMEOUT": "5",
+        "PGPASSFILE": "/dev/null",
+        "PGSERVICEFILE": "/dev/null",
+        "PGSYSCONFDIR": "/nonexistent",
+        "PGAPPNAME": "vorneq-c02-diagnostic",
+    }
+    try:
+        result = subprocess.run(
+            ["/usr/bin/psql", "-X", "-q", "-A", "-t",
+             "-F", "|", "-v", "ON_ERROR_STOP=1", "-c", IDENTITY_SQL],
+            env=env, capture_output=True, text=True, timeout=timeout,
+            check=False,
         )
+    except (OSError, subprocess.TimeoutExpired):
+        raise IdentityError("database identity probe unavailable") from None
+    if result.returncode != 0:
+        # Never surface stderr; libpq/psql can echo connection details.
+        raise IdentityError("database identity query failed") from None
+    lines = result.stdout.splitlines()
+    if len(lines) != 1:
+        raise IdentityError("unexpected identity response")
+    parts = lines[0].split("|")
+    if len(parts) != 4 or any(not p.strip() for p in parts):
+        raise IdentityError("incomplete identity response")
+    database, address, port, system_id = parts
+    if not system_id.isdecimal() or not port.isdecimal():
+        raise IdentityError("invalid server identity response")
+    return Identity(database, address, port, system_id)
 
 
-def parse_url(url: str) -> UrlInfo:
-    """Return only host, port and database name; credentials are dropped."""
-    parsed = urlparse(url)
-    if parsed.scheme not in {"postgres", "postgresql"}:
-        raise ValueError("not a PostgreSQL URL")
-    host = (parsed.hostname or "").lower()
-    database = parsed.path.lstrip("/")
-    if not host or not database:
-        raise ValueError("URL is missing host or database name")
-    return UrlInfo(host=host, port=parsed.port or 5432, database=database)
-
-
-def sanitized(url: str) -> str:
-    info = parse_url(url)
-    return f"host={info.host} port={info.port} database={info.database}"
-
-
-def protected_databases(environ=os.environ) -> tuple[str, ...]:
-    raw = environ.get(PROTECTED_ENV, "")
-    names = tuple(n.strip() for n in raw.split(",") if n.strip())
-    return names or DEFAULT_PROTECTED_DATABASES
-
-
-def query_identity(url: str) -> Identity:
-    env = dict(os.environ)
-    # Every statement in this session is read-only, enforced by the server.
-    env["PGOPTIONS"] = "-c default_transaction_read_only=on"
-    result = subprocess.run(
-        ["psql", url, "-X", "-A", "-t", "-F", "|", "-v", "ON_ERROR_STOP=1", "-c", IDENTITY_SQL],
-        check=True,
-        text=True,
-        capture_output=True,
-        env=env,
-    )
-    parts = result.stdout.strip().split("|")
-    if len(parts) != 4:
-        raise RuntimeError("unexpected identity response")
-    return Identity(*parts)
-
-
-def is_production(target: Identity, production: Identity | None, protected: tuple[str, ...]) -> bool:
-    if production is not None and target.same_database_as(production):
-        return True
-    return target.database in protected
-
-
-def decide(target_is_production: bool, allow_production: bool, confirmed: bool) -> tuple[bool, str]:
-    """Pure decision rule; covered by the four-case matrix in the tests."""
-    if not confirmed:
-        return False, "REFUSING: run was not confirmed (confirm must be exactly 'yes')."
-    if target_is_production and not allow_production:
-        return False, (
-            "REFUSING: target database is PRODUCTION. Re-run with "
-            "allow_production_target=true only if production is the intended target."
-        )
-    if target_is_production:
-        return True, "ALLOWED: explicit production target (allow_production_target=true)."
-    return True, "ALLOWED: target is not production."
-
-
-def _truthy(value: str | None) -> bool:
-    return (value or "").strip().lower() in {"true", "yes", "1"}
-
-
-def _require_url(name: str) -> str:
-    url = os.environ.get(name, "")
-    if not url:
-        raise SystemExit(f"{name} is empty or not configured.")
-    return url
+def classify(identity: Identity | None) -> Classification:
+    """Conservative diagnostic only, never an authorization decision."""
+    if identity is None:
+        return Classification.UNKNOWN
+    if identity.database in PROTECTED_NAMES:
+        return Classification.PRODUCTION
+    # A valid connection with an unprotected name is NOT independent
+    # evidence of a permitted non-production destination.
+    return Classification.UNKNOWN
 
 
 def cmd_probe(args: argparse.Namespace) -> int:
-    url = _require_url(args.env)
-    print(f"Secret under test: {args.env}")
-    print(f"URL (sanitized):   {sanitized(url)}")
-    identity = query_identity(url)
-    print(f"current_database:  {identity.database}")
-    print(f"server address:    {identity.server_addr}:{identity.server_port}")
-    print(f"server_version:    {identity.server_version}")
-    print(f"protected name:    {'yes' if identity.database in protected_databases() else 'no'}")
-    if args.compare_env:
-        other = query_identity(_require_url(args.compare_env))
-        same = identity.same_database_as(other)
-        print(f"same database as {args.compare_env}: {'YES' if same else 'no'}")
-    return 0
+    try:
+        identity = query_identity(get_url(args.env))
+        category = classify(identity)
+        # Avoid printing host/IP, URL, user, passwords, system identifier.
+        print(json.dumps({
+            "classification": category.value,
+            "database_name": identity.database,
+            "identity_observed": True,
+            "authorization": "DENY",
+            "note": "diagnostic observation only; not target authorization",
+        }, sort_keys=True))
+        # Probe exit 0 means diagnostic succeeded, NEVER authorization.
+        return 0
+    except IdentityError:
+        print(json.dumps({
+            "classification": Classification.UNKNOWN.value,
+            "identity_observed": False,
+            "authorization": "DENY",
+        }, sort_keys=True))
+        return 2
 
 
 def cmd_guard(args: argparse.Namespace) -> int:
-    target_url = _require_url(args.target_env)
-    target = query_identity(target_url)
-    production = None
-    if args.production_env and os.environ.get(args.production_env):
-        production = query_identity(os.environ[args.production_env])
-    target_is_prod = is_production(target, production, protected_databases())
-    allow = _truthy(os.environ.get("ALLOW_PRODUCTION_TARGET"))
-    confirmed = os.environ.get("CONFIRM", "") == "yes"
-
-    print(f"Target secret: {args.target_env} -> {sanitized(target_url)}")
-    print(f"Target identity: {target.database} @ {target.server_addr}:{target.server_port}")
-    print(f"Detected as production: {'YES' if target_is_prod else 'no'}")
-    ok, message = decide(target_is_prod, allow, confirmed)
-    if ok and target_is_prod:
-        # Prominent marker so production-targeted runs are easy to find in audits.
-        print(f"::warning title=Production target::{message}")
-    print(message)
-    return 0 if ok else 1
+    # Never query a DB in the authorization path until an independent
+    # authority and same-target enforcement contract are implemented and
+    # independently reviewed. Flags cannot override this hard stop.
+    print(
+        "DENY: C02 guard V1.1 has no verified independent identity "
+        "authority or same-target execution binding.",
+        file=sys.stderr,
+    )
+    return 3
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
-    probe = sub.add_parser("probe")
+    probe = sub.add_parser("probe", help="diagnostic only; never authorizes")
     probe.add_argument("--env", required=True)
-    probe.add_argument("--compare-env")
+    probe.add_argument("--compare-env", help="legacy option; unsupported")
     probe.set_defaults(func=cmd_probe)
-    guard = sub.add_parser("guard")
+    guard = sub.add_parser("guard", help="fail-closed; always denies")
     guard.add_argument("--target-env", required=True)
     guard.add_argument("--production-env")
     guard.set_defaults(func=cmd_guard)
     args = parser.parse_args(argv)
-    try:
-        return args.func(args)
-    except subprocess.CalledProcessError:
-        # psql's stderr may echo connection details; never forward it.
-        print("REFUSING: could not read database identity (connection or query failed).", file=sys.stderr)
-        return 2
-    except ValueError as exc:
-        print(f"REFUSING: {exc}", file=sys.stderr)
-        return 2
+    if args.command == "probe" and args.compare_env:
+        print("DENY: compare-env unsupported in C02 V1.1", file=sys.stderr)
+        return 3
+    return args.func(args)
 
 
 if __name__ == "__main__":
