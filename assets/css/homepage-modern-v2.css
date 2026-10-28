@@ -285,3 +285,41 @@ html[dir="rtl"] .world-home--layout-v3 .world-icon--sm {
     flex-wrap: wrap;
   }
 }
+
+
+/* P1 homepage readability: scoped to the landing page's dark gradient cards.
+   Preserve brand palette while restoring accessible, full-opacity body copy. */
+.world-home--layout-v3 .world-capability__surface p,
+.world-home--layout-v3 .world-principle p {
+  color: #f1f5fb;
+  opacity: 1;
+  font-size: max(1rem, 16px);
+  line-height: 1.65;
+  font-weight: 400;
+  text-shadow: none;
+}
+.world-home--layout-v3 .world-capability__surface h3,
+.world-home--layout-v3 .world-principle h3 {
+  color: #ffffff;
+  opacity: 1;
+  font-size: clamp(1.25rem, 1.5vw, 1.375rem);
+  line-height: 1.35;
+}
+.world-home--layout-v3 .world-capability__link {
+  color: #ffffff;
+  opacity: 1;
+  font-size: max(1rem, 16px);
+  font-weight: 700;
+  text-underline-offset: 0.2em;
+}
+.world-home--layout-v3 .world-capability__surface:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+@media (max-width: 639px) {
+  .world-home--layout-v3 .world-capability__surface p,
+  .world-home--layout-v3 .world-principle p {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+}
