@@ -9,7 +9,8 @@ permissions:
 
 jobs:
   quality-verification:
-    runs-on: ubuntu-latest
+    # Pinned runner: Playwright 1.55.1 cannot install Chromium on Ubuntu 26.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       VORNEQ_ENV: development
