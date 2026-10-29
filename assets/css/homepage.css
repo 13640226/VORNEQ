@@ -712,3 +712,8 @@
     max-width: 100%;
   }
 }
+
+/* Platform Principles — scoped desktop/mobile text contrast correction. */
+.world-home--layout-v3 .world-principles .world-principle p {
+    color: #e2e8f0;
+}
