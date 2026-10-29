@@ -106,7 +106,7 @@ html[dir="rtl"] .discover-object__meta { text-transform: none; }
 .discover-section-heading { margin-block-end: 24px; }
 .discover-grid { gap: 20px; }
 .discover-object { padding: clamp(20px, 2.3vw, 28px); border-radius: 14px; }
-.discover-object h3 { margin-block: 14px 10px; font-size: clamp(1.15rem, 1.7vw, 1.35rem); line-height: 1.35; overflow-wrap: anywhere; }
+.discover-object h3 { margin-block: 14px 10px; font-size: clamp(1.15rem, 1.7vw, 1.35rem); line-height: 1.35; overflow-wrap: anywhere; color: var(--discover-navy, #0B1F3D); }
 .discover-object > p { line-height: 1.7; }
 .discover-object dl { margin-block-start: 20px; }
 .discover-object dl div { flex-wrap: wrap; line-height: 1.5; }
