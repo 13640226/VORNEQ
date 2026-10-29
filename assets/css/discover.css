@@ -206,3 +206,80 @@ html[dir="rtl"] .discover-object__meta { text-transform: none; }
   color: var(--color-text-on-accent);
   border-color: var(--color-accent);
 }
+
+/* Entdecken V1.5 — Blue Glass result cards.
+   Isolated visual-only proposal; V1.4 search controls remain unchanged. */
+.discover-page .discover-object {
+  --discover-card-fg: #f8fafc;
+  --discover-card-muted: #cbd5e1;
+  --discover-card-led: #a5f3fc;
+  --discover-led-contrast: #a5f3fc;
+  --discover-led-glow: 0 0 0 3px rgba(165,243,252,.20), 0 0 16px rgba(165,243,252,.55);
+  background: linear-gradient(145deg, rgba(18,48,94,.92), rgba(10,30,65,.96));
+  border: 1px solid rgba(125,211,252,.30);
+  border-radius: 20px;
+  color: var(--discover-card-fg);
+  box-shadow: 0 12px 35px rgba(0,10,35,.20);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+.discover-page .discover-object h3,
+.discover-page .discover-object h3 a {
+  color: #fff;
+}
+.discover-page .discover-object > p,
+.discover-page .discover-object__meta,
+.discover-page .discover-object dt,
+.discover-page .discover-object dd,
+.discover-page .discover-object .discover-graph__relation,
+.discover-page .discover-object .discover-graph__relation-token,
+.discover-page .discover-object .discover-graph__notice {
+  color: var(--discover-card-muted);
+}
+.discover-page .discover-object .discover-action--context {
+  background: rgba(255,255,255,.05);
+  color: #e2e8f0;
+  border-color: rgba(125,211,252,.40);
+}
+.discover-page .discover-object .discover-action--context:hover {
+  background: rgba(255,255,255,.12);
+  border-color: rgba(165,243,252,.70);
+}
+.discover-page .discover-object .discover-graph {
+  border-top-color: rgba(125,211,252,.20);
+}
+.discover-page .discover-object .discover-graph summary {
+  color: var(--discover-card-led);
+}
+.discover-page .discover-object .discover-graph__body {
+  background: rgba(0,0,0,.25);
+  border-color: rgba(125,211,252,.20);
+}
+.discover-page .discover-object .discover-graph code,
+.discover-page .discover-object .discover-graph__edges strong {
+  color: #93c5fd;
+}
+.discover-page .discover-object .discover-graph__nodes li:hover,
+.discover-page .discover-object .discover-graph__edges li:hover {
+  background: rgba(255,255,255,.08);
+}
+.discover-page .discover-object .discover-action:focus-visible,
+.discover-page .discover-object .discover-graph summary:focus-visible,
+.discover-page .discover-object h3 a:focus-visible {
+  outline: 3px solid var(--discover-card-led);
+  outline-offset: 3px;
+}
+.discover-page .discover-object:focus-within {
+  border-color: var(--discover-led-contrast);
+  box-shadow: 0 12px 35px rgba(0,10,35,.20), var(--discover-led-glow);
+}
+@media (hover: hover) and (pointer: fine) {
+  .discover-page .discover-object:hover {
+    border-color: rgba(165,243,252,.70);
+    box-shadow: 0 16px 40px rgba(0,10,35,.28), 0 0 18px rgba(56,189,248,.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .discover-page .discover-object {
+    transition: none;
+  }
+}
