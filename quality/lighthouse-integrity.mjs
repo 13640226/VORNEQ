@@ -142,8 +142,8 @@ export async function runWithIntegrityRetries({
   onRetry = async () => {},
   maxAttempts = 2
 }) {
-  if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 2) {
-    throw new RangeError('Lighthouse attempts must be 1 or 2');
+  if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 3) {
+    throw new RangeError('Lighthouse attempts must be between 1 and 3');
   }
   const history = [];
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
@@ -153,7 +153,7 @@ export async function runWithIntegrityRetries({
     } catch (error) {
       const recoverable = isRecoverableError(error);
       history.push({ attempt, status: 'ATTEMPT_ERROR', recoverable, error: errorDetails(error) });
-      if (!recoverable || attempt === maxAttempts) throw error;
+      if (!recoverable || attempt >= Math.min(maxAttempts, 2)) throw error;
       await onRetry({ attempt, kind: 'attempt-error', diagnostics: errorDetails(error) });
       continue;
     }
@@ -167,7 +167,8 @@ export async function runWithIntegrityRetries({
     if (inspected.status === 'VALID') {
       return { ...inspected, completed, attempts: attempt, history };
     }
-    if (attempt === maxAttempts) {
+    if (attempt === maxAttempts ||
+        (attempt >= 2 && inspected.diagnostics.runtimeError?.code !== 'NO_NAVSTART')) {
       return { ...inspected, completed, attempts: attempt, history };
     }
     await onRetry({ attempt, kind: 'incomplete-report', diagnostics: inspected.diagnostics });

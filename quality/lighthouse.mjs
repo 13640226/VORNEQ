@@ -312,7 +312,7 @@ async function oneRun(surface, profileName, run, series = 'cold') {
   let measurement;
   try {
     measurement = await runWithIntegrityRetries({
-      maxAttempts: 2,
+      maxAttempts: 3,
       executeAttempt: async (attempt) => {
         console.log(
           `[lighthouse] start surface=${surface.id} profile=${profileName} run=${run} series=${series} attempt=${attempt}`
