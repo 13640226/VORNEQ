@@ -151,3 +151,58 @@ html[dir="rtl"] .discover-object__meta { text-transform: none; }
 .discover-pagination { flex-wrap: wrap; gap: 12px; }
 .discover-object__meta { flex-wrap: wrap; }
 }
+
+/* Entdecken V1.4 — isolated, review-only branded search surface.
+   Scoped to the controls panel; existing results, page background and LED
+   behavior remain untouched. No runtime/production authorization implied. */
+.discover-page .discover-controls {
+  --discover-search-foreground: #fff;
+  --discover-search-muted: rgba(255,255,255,.88);
+  --discover-search-focus: #a5f3fc;
+  --discover-led-contrast: #a5f3fc;
+  --discover-led-glow: 0 0 0 3px rgba(165,243,252,.2), 0 0 16px rgba(165,243,252,.55);
+  background:
+    radial-gradient(ellipse at 80% 80%, rgba(68,185,245,.24), transparent 65%),
+    linear-gradient(135deg, #173b83 0%, #2158a6 55%, #277bb5 100%);
+  color: var(--discover-search-foreground);
+  border: 1px solid rgba(157,224,255,.3);
+  border-radius: 24px;
+}
+.discover-page .discover-controls .discover-search input {
+  background: rgba(12,43,91,.3);
+  color: var(--discover-search-foreground);
+  border: 2px solid rgba(157,224,255,.75);
+  border-radius: 12px;
+}
+.discover-page .discover-controls .discover-search input::placeholder {
+  color: var(--discover-search-muted);
+  opacity: 1;
+}
+.discover-page .discover-controls .discover-search input:focus-visible,
+.discover-page .discover-controls .discover-search button:focus-visible,
+.discover-page .discover-controls .discover-filters a:focus-visible {
+  outline: 3px solid var(--discover-search-focus);
+  outline-offset: 3px;
+}
+.discover-page .discover-controls .discover-search input:focus-visible {
+  border-color: var(--discover-search-focus);
+}
+.discover-page .discover-controls .discover-search button {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+.discover-page .discover-controls .discover-filters a {
+  color: var(--discover-search-foreground);
+  border-color: rgba(255,255,255,.35);
+  background: rgba(8,30,72,.18);
+}
+.discover-page .discover-controls .discover-filters a:hover {
+  background: rgba(255,255,255,.16);
+  border-color: var(--discover-search-focus);
+}
+.discover-page .discover-controls .discover-filters a[aria-current="page"],
+.discover-page .discover-controls .discover-filters a[aria-current="page"]:hover {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  border-color: var(--color-accent);
+}
