@@ -717,3 +717,8 @@
 .world-home--layout-v3 .world-principles .world-principle p {
     color: #e2e8f0;
 }
+
+/* Funktionen — scoped desktop/mobile capability description contrast. */
+.world-home--layout-v3 .world-capabilities .world-capability p {
+    color: #e2e8f0;
+}
