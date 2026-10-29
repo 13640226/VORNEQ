@@ -993,3 +993,27 @@
     transition: none;
   }
 }
+
+/* MARKETPLACE BLUE GLASS V1.0-R1 — scoped trust-context contrast */
+.marketplace-page .marketplace-card .trust-context {
+  color: #cbd5e1;
+  border-block-start-color: rgba(125, 211, 252, 0.30);
+}
+.marketplace-page .marketplace-card .trust-context__label,
+.marketplace-page .marketplace-card .trust-context__note,
+.marketplace-page .marketplace-card .trust-context__separator {
+  color: #cbd5e1;
+}
+.marketplace-page .marketplace-card .trust-context__value {
+  color: #f8fafc;
+}
+.marketplace-page .marketplace-card .trust-context__item--muted .trust-context__value {
+  color: #cbd5e1;
+}
+.marketplace-page .marketplace-card .trust-context a {
+  color: #a5f3fc;
+}
+.marketplace-page .marketplace-card .trust-context a:focus-visible {
+  outline: 2px solid #a5f3fc;
+  outline-offset: 2px;
+}
