@@ -16,6 +16,12 @@
         content="{% trans 'VORNEQ builds dependable digital infrastructure for systems, products, and organizations that require clarity, resilience, and long-term trust.' %}"
     >
     {% endblock %}
+    {% if public_seo %}
+    <link rel="canonical" href="{{ public_seo.canonical }}">
+    {% for alternate in public_seo.alternates %}
+    <link rel="alternate" hreflang="{{ alternate.lang }}" href="{{ alternate.href }}">
+    {% endfor %}
+    {% endif %}
 
     <title>{% block title %}{% trans "VORNEQ — Precision Digital Infrastructure" %}{% endblock %}</title>
 
