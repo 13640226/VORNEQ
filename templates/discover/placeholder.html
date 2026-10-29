@@ -19,7 +19,7 @@
   <section class="discover-controls" aria-labelledby="discover-controls-title">
     <h2 id="discover-controls-title" class="sr-only">{% trans "Discover public information" %}</h2>
     <form class="discover-search" role="search" method="get">
-      <label class="discover-search__label" for="discover-q">{% trans "Explore a topic, source, document, or entity" %}</label>
+      <label class="sr-only" for="discover-q">{% trans "Explore a topic, source, document, or entity" %}</label>
       <input id="discover-q" name="q" value="{{ discover_query }}" maxlength="200"
              placeholder="{% trans 'Explore a topic, source, document, or entity…' %}">
       {% if current_type %}<input type="hidden" name="type" value="{{ current_type }}">{% endif %}
