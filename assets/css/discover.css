@@ -283,3 +283,11 @@ html[dir="rtl"] .discover-object__meta { text-transform: none; }
     transition: none;
   }
 }
+
+/* Entdecken pagination V1 — contrast-only, scoped to navigation links. */
+.discover-page .discover-pagination a,
+.discover-page .discover-pagination a:visited,
+.discover-page .discover-pagination a:hover,
+.discover-page .discover-pagination a:focus-visible {
+  color: #fff;
+}
