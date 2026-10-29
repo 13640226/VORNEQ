@@ -140,3 +140,14 @@ html[dir="rtl"] .discover-object__meta { text-transform: none; }
   .discover-object { transition: none; }
   .discover-object:hover { transform: none; }
 }
+
+/* Entdecken V3: keyboard and narrow-screen refinements. */
+.discover-filters a:hover { border-color: var(--discover-mid); background: #eff6ff; }
+.discover-filters a[aria-current=page]:hover { background: var(--discover-blue); color: #fff; }
+.discover-action--context:hover { border-color: var(--discover-mid); background: #eff6ff; }
+.discover-action:focus-visible { outline: 3px solid var(--discover-light); outline-offset: 3px; }
+.discover-object { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+.discover-pagination { flex-wrap: wrap; gap: 12px; }
+.discover-object__meta { flex-wrap: wrap; }
+}
