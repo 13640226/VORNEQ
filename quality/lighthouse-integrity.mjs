@@ -118,11 +118,32 @@ export function inspectLighthouseReport(lhr) {
       trace: {
         navigationStart: safeCode(lhr?.runtimeError?.code) === 'NO_NAVSTART'
           ? 'missing-no-navstart' : 'not-directly-observed',
-        lighthouseReportedTotalMs: safeNumber(lhr?.timing?.total, 180000)
+        lighthouseReportedTotalMs: safeNumber(lhr?.timing?.total, 180000),
+        phasesMs: safeLighthousePhaseTimings(lhr)
       },
       performanceCategoryScore: observed.performanceScore
     }
   };
+}
+
+// Bounded, numeric-only Lighthouse phase timings. Do not persist arbitrary
+// timing labels or trace events: they may contain sensitive navigation data.
+function safeLighthousePhaseTimings(lhr) {
+  const allowed = new Set([
+    'lh:load:waitForLoad',
+    'lh:gather:loadPage',
+    'lh:gather:run',
+    'lh:runner:runGatherers',
+    'lh:runner:runAudits'
+  ]);
+  const result = {};
+  const entries = Array.isArray(lhr?.timing?.entries) ? lhr.timing.entries : [];
+  for (const entry of entries) {
+    if (!allowed.has(entry?.name)) continue;
+    const duration = safeNumber(entry?.duration, 180000);
+    if (duration !== null) result[entry.name] = duration;
+  }
+  return result;
 }
 
 function errorDetails(error) {
