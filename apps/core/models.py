@@ -716,3 +716,7 @@ class IdentityHandle(models.Model):
         from apps.core.constants.handles import HANDLE_DISPLAY_DOMAIN
 
         return f"{self.handle}@{HANDLE_DISPLAY_DOMAIN}"
+
+
+# Isolated Batch 001 model registration; no migrations authorized.
+from apps.core.tenant_models import Membership, Organization  # noqa: E402,F401
