@@ -283,6 +283,35 @@
   .standalone-nav__link { font-size: var(--font-size-small); }
   .standalone-nav__wordmark { font-size: 1.25rem; }
   .standalone-nav__language-trigger { padding-inline: var(--space-1); }
+
+  /* Keep mobile navigation controls and language menu within the viewport. */
+  .standalone-nav__inner {
+    min-width: 0;
+    gap: 4px;
+    padding-inline: 8px;
+  }
+  .standalone-nav__brand {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .standalone-nav__actions {
+    position: relative;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+  .standalone-nav__menu { min-width: 0; }
+  .standalone-nav__language { position: static; }
+  .standalone-nav__language-menu {
+    inset-inline-end: 0;
+    min-inline-size: 0;
+    max-inline-size: calc(100vw - 16px);
+    width: min(240px, calc(100vw - 16px));
+  }
+
 }
 
 .standalone-nav__brand:focus-visible,
