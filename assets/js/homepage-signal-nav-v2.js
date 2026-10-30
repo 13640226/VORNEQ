@@ -4,6 +4,47 @@
     const nav = document.querySelector("[data-homepage-signal-nav]");
     if (!nav) return;
 
+    // Measure compact bar including safe-area padding; retain CSS fallback.
+    const home = document.querySelector(".world-home");
+    const compactBar = window.matchMedia(
+        "(max-width: 1023px), (max-height: 599px)"
+    );
+    let lastBottomBarHeight = null;
+    const measureBottomBar = () => {
+        if (!home) return;
+        if (!compactBar.matches) {
+            if (lastBottomBarHeight !== null) {
+                home.style.removeProperty("--signal-bottom-bar-height");
+                lastBottomBarHeight = null;
+            }
+            return;
+        }
+        const measuredHeight = nav.getBoundingClientRect().height;
+        if (!Number.isFinite(measuredHeight) || measuredHeight <= 0) return;
+        const height = Math.ceil(measuredHeight);
+        if (height !== lastBottomBarHeight) {
+            home.style.setProperty("--signal-bottom-bar-height", `${height}px`);
+            lastBottomBarHeight = height;
+        }
+    };
+    if (home) {
+        const barObserver = "ResizeObserver" in window
+            ? new ResizeObserver(measureBottomBar)
+            : null;
+        if (barObserver) barObserver.observe(nav);
+        window.addEventListener("resize", measureBottomBar, { passive: true });
+        if (compactBar.addEventListener) {
+            compactBar.addEventListener("change", measureBottomBar);
+        } else if (compactBar.addListener) {
+            compactBar.addListener(measureBottomBar);
+        }
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(measureBottomBar);
+        }
+        window.addEventListener("load", measureBottomBar, { once: true });
+        measureBottomBar();
+    }
+
     const links = Array.from(
         nav.querySelectorAll("[data-homepage-signal-link]")
     );
