@@ -4,6 +4,34 @@
     const nav = document.querySelector("[data-homepage-signal-nav]");
     if (!nav) return;
 
+    // Measure compact bar including safe-area padding; retain CSS fallback.
+    const home = document.querySelector(".world-home");
+    const compactBar = window.matchMedia(
+        "(max-width: 1023px), (max-height: 599px)"
+    );
+    const measureBottomBar = () => {
+        if (!home) return;
+        if (!compactBar.matches) {
+            home.style.removeProperty("--signal-bottom-bar-height");
+            return;
+        }
+        const height = Math.ceil(nav.getBoundingClientRect().height);
+        if (height > 0) {
+            home.style.setProperty("--signal-bottom-bar-height", `${height}px`);
+        }
+    };
+    if (home) {
+        const barObserver = "ResizeObserver" in window
+            ? new ResizeObserver(measureBottomBar)
+            : null;
+        if (barObserver) barObserver.observe(nav);
+        window.addEventListener("resize", measureBottomBar, { passive: true });
+        if (compactBar.addEventListener) {
+            compactBar.addEventListener("change", measureBottomBar);
+        }
+        measureBottomBar();
+    }
+
     const links = Array.from(
         nav.querySelectorAll("[data-homepage-signal-link]")
     );
