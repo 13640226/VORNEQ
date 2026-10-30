@@ -125,7 +125,7 @@ export function inspectLighthouseReport(lhr) {
         // emit arbitrary strings, URLs, or unbounded timing collections.
         phases: (Array.isArray(lhr?.timing?.entries) ? lhr.timing.entries : [])
           .filter(entry => typeof entry?.name === 'string' &&
-            /^[a-zA-Z][a-zA-Z0-9_:.-]{0,63}$/.test(entry.name) &&
+            /^(?:lh:[a-zA-Z0-9_.:-]{1,60}|[a-zA-Z][a-zA-Z0-9_-]{0,63})$/.test(entry.name) &&
             !entry.name.includes('..'))
           .slice(0, 20)
           .map(entry => ({
