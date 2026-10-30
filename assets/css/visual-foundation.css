@@ -1,0 +1,32 @@
+/* VORNEQ visual foundation — presentation-only, progressive enhancement.
+   Scoped to existing UI elements. No layout, data or behavior changes. */
+:root {
+  --visual-ring: 0 0 0 3px var(--color-focus-ring);
+  --visual-card-lift: 0 10px 30px rgba(15, 23, 42, .08);
+}
+:where(.library-card, .marketplace-card, .discovery-card, .discovery-feed-item, .profile-card) {
+  transition: box-shadow 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  :where(.library-card, .marketplace-card, .discovery-card, .discovery-feed-item, .profile-card):hover {
+    box-shadow: var(--visual-card-lift);
+    transform: translateY(-2px);
+  }
+}
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+:where(.library-card, .marketplace-card, .discovery-card, .discovery-feed-item, .profile-card) :where(h2, h3, p) {
+  overflow-wrap: anywhere;
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(.library-card, .marketplace-card, .discovery-card, .discovery-feed-item, .profile-card) {
+    transition: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    :where(.library-card, .marketplace-card, .discovery-card, .discovery-feed-item, .profile-card):hover {
+      transform: none;
+    }
+  }
+}
