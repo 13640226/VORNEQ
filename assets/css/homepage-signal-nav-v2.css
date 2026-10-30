@@ -7,8 +7,6 @@
  */
 
 .homepage-signal-nav {
-    /* Compact bar can grow when translated labels wrap or browser text is enlarged. */
-    --signal-bottom-bar-size: 96px;
     --signal-scroll-offset: calc(var(--header-height) + var(--space-4));
     --signal-progress: 0;
 
@@ -155,10 +153,9 @@
      * block-start or inline padding.
      */
     .world-home {
-        --signal-bottom-bar-size: 96px;
+        /* Measured height already includes safe-area padding. */
         padding-block-end: calc(
-            var(--signal-bottom-bar-size) +
-            env(safe-area-inset-bottom, 0px) +
+            var(--signal-bottom-bar-height, calc(96px + env(safe-area-inset-bottom, 0px))) +
             var(--space-6)
         );
     }
@@ -167,8 +164,7 @@
     .world-final-cta,
     .world-closing {
         scroll-margin-block-end: calc(
-            var(--signal-bottom-bar-size) +
-            env(safe-area-inset-bottom, 0px) +
+            var(--signal-bottom-bar-height, calc(96px + env(safe-area-inset-bottom, 0px))) +
             var(--space-4)
         );
     }
