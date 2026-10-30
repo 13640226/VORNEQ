@@ -9,15 +9,22 @@
     const compactBar = window.matchMedia(
         "(max-width: 1023px), (max-height: 599px)"
     );
+    let lastBottomBarHeight = null;
     const measureBottomBar = () => {
         if (!home) return;
         if (!compactBar.matches) {
-            home.style.removeProperty("--signal-bottom-bar-height");
+            if (lastBottomBarHeight !== null) {
+                home.style.removeProperty("--signal-bottom-bar-height");
+                lastBottomBarHeight = null;
+            }
             return;
         }
-        const height = Math.ceil(nav.getBoundingClientRect().height);
-        if (height > 0) {
+        const measuredHeight = nav.getBoundingClientRect().height;
+        if (!Number.isFinite(measuredHeight) || measuredHeight <= 0) return;
+        const height = Math.ceil(measuredHeight);
+        if (height !== lastBottomBarHeight) {
             home.style.setProperty("--signal-bottom-bar-height", `${height}px`);
+            lastBottomBarHeight = height;
         }
     };
     if (home) {
@@ -28,7 +35,13 @@
         window.addEventListener("resize", measureBottomBar, { passive: true });
         if (compactBar.addEventListener) {
             compactBar.addEventListener("change", measureBottomBar);
+        } else if (compactBar.addListener) {
+            compactBar.addListener(measureBottomBar);
         }
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(measureBottomBar);
+        }
+        window.addEventListener("load", measureBottomBar, { once: true });
         measureBottomBar();
     }
 
