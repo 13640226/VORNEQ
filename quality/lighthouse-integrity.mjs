@@ -118,7 +118,17 @@ export function inspectLighthouseReport(lhr) {
       trace: {
         navigationStart: safeCode(lhr?.runtimeError?.code) === 'NO_NAVSTART'
           ? 'missing-no-navstart' : 'not-directly-observed',
-        lighthouseReportedTotalMs: safeNumber(lhr?.timing?.total, 180000)
+        lighthouseReportedTotalMs: safeNumber(lhr?.timing?.total, 180000),
+        // Bounded, numeric-only Lighthouse phase timings help distinguish
+        // navigation/trace failures without exposing URLs or page contents.
+        phases: (Array.isArray(lhr?.timing?.entries) ? lhr.timing.entries : [])
+          .filter(entry => typeof entry?.name === 'string' &&
+            /^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/.test(entry.name))
+          .slice(0, 20)
+          .map(entry => ({
+            name: entry.name,
+            durationMs: safeNumber(entry.duration, 180000)
+          }))
       },
       performanceCategoryScore: observed.performanceScore
     }
