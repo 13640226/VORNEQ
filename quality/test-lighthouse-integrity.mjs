@@ -185,4 +185,36 @@ const persistentNav = await runWithIntegrityRetries({
 assert.equal(persistentNav.status, 'MEASUREMENT_INVALID');
 assert.equal(persistentNavTries, 3);
 
+// Timing diagnostics contract: a valid report, absent timing, and NO_NAVSTART.
+// These are synthetic fixtures; the raw Lighthouse 12.8.2 timing payload
+// was not retained in the historical CI artifact.
+const timedValid = lhr();
+timedValid.timing = {
+  total: 4200.12,
+  entries: [
+    { name: 'lh:runner:gather', duration: 120.4 },
+    { name: 'safe_phase', duration: 35.55 },
+    { name: 'unsafe/phase', duration: 10 },
+    { name: 'invalid_duration', duration: -1 }
+  ]
+};
+const timedResult = inspectLighthouseReport(timedValid);
+assert.equal(timedResult.status, 'VALID');
+assert.equal(timedResult.diagnostics.trace.lighthouseReportedTotalMs, 4200.1);
+assert.deepEqual(timedResult.diagnostics.trace.phases, [
+  { name: 'safe_phase', durationMs: 35.6 },
+  { name: 'invalid_duration', durationMs: null }
+]);
+const withoutTiming = inspectLighthouseReport(lhr());
+assert.equal(withoutTiming.status, 'VALID');
+assert.equal(withoutTiming.diagnostics.trace.lighthouseReportedTotalMs, null);
+assert.deepEqual(withoutTiming.diagnostics.trace.phases, []);
+const noNavWithTiming = lhr(null, null, null);
+noNavWithTiming.runtimeError = { code: 'NO_NAVSTART', message: 'NO_NAVSTART' };
+noNavWithTiming.timing = { total: 3100, entries: [{ name: 'safe_phase', duration: 900 }] };
+const noNavResult = inspectLighthouseReport(noNavWithTiming);
+assert.equal(noNavResult.status, 'MEASUREMENT_INVALID');
+assert.equal(noNavResult.diagnostics.trace.navigationStart, 'missing-no-navstart');
+assert.deepEqual(noNavResult.diagnostics.trace.phases, [{ name: 'safe_phase', durationMs: 900 }]);
+
 console.log('Lighthouse measurement integrity and retry self-tests passed.');
