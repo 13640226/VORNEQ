@@ -195,6 +195,7 @@ timedValid.timing = {
     { name: 'lh:runner:gather', duration: 120.4 },
     { name: 'safe_phase', duration: 35.55 },
     { name: 'unsafe/phase', duration: 10 },
+    { name: 'https:secret', duration: 12 },
     { name: 'invalid_duration', duration: -1 }
   ]
 };
@@ -202,7 +203,9 @@ const timedResult = inspectLighthouseReport(timedValid);
 assert.equal(timedResult.status, 'VALID');
 assert.equal(timedResult.diagnostics.trace.lighthouseReportedTotalMs, 4200.1);
 assert.deepEqual(timedResult.diagnostics.trace.phases, [
+  { name: 'lh:runner:gather', durationMs: 120.4 },
   { name: 'safe_phase', durationMs: 35.6 },
+  { name: 'https:secret', durationMs: 12 },
   { name: 'invalid_duration', durationMs: null }
 ]);
 const withoutTiming = inspectLighthouseReport(lhr());
