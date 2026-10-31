@@ -49,6 +49,7 @@ html:has(.world-home) {
 .world-node--a { inset:22% auto auto 14%; }.world-node--b { inset:58% 16% auto auto; }.world-node--c { inset:20% 22% auto auto; }
 .world-evidence-list { display:grid; gap:var(--space-2); }
 .evidence-signal { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:var(--space-3); min-block-size:52px; padding:var(--space-3); border:1px solid var(--home-divider); border-radius:var(--home-radius-md); background:var(--home-surface-raised); color:inherit; text-decoration:none; }
+.world-evidence-list > a.evidence-signal { grid-template-columns:minmax(0,1fr) auto; }
 .evidence-signal:hover { border-color:var(--home-accent); }
 .evidence-signal:focus-visible { outline:2px solid var(--home-focus); outline-offset:2px; }
 .evidence-signal__body { min-width:0; }.evidence-signal__label { display:block; font-size:var(--font-size-small); font-weight:var(--font-weight-h3); }.evidence-signal__meta { display:block; margin-top:2px; color:var(--home-fg-muted); font-size:var(--font-size-caption); overflow-wrap:anywhere; }
