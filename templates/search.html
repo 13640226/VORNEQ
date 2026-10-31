@@ -4,56 +4,67 @@
 {% block title %}{% trans "Search" %} — VORNEQ{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/homepage.css' %}">
 <link rel="stylesheet" href="{% static 'css/search-scene.css' %}">
 {% endblock %}
 
 {% block content %}
-<main class="world-search" aria-labelledby="search-page-title">
-  <section class="world-search__hero">
-    <div class="world-search__shell">
-      <p class="world-search__eyebrow">{% trans "Advanced search" %}</p>
+<main class="suchen-page" aria-labelledby="search-page-title">
+  <section class="suchen-page__hero">
+    <div class="suchen-page__shell">
+      <p class="suchen-page__eyebrow">{% trans "Discover knowledge" %}</p>
       <h1 id="search-page-title">{% trans "Search across VORNEQ" %}</h1>
-      <p class="world-search__intro">{% trans "Filter public knowledge and marketplace metadata across supported content types." %}</p>
+      <p class="suchen-page__intro">{% trans "Filter public knowledge and marketplace metadata across supported content types." %}</p>
 
-      <form method="get" class="world-search__form" role="search" aria-label="{% trans 'Advanced search filters' %}">
-        <div class="world-search__query">
-          <label for="world-search-query">{% trans "Search query" %}</label>
-          <input id="world-search-query" type="search" name="q" value="{{ search_query }}" maxlength="200" placeholder="{% trans 'Search VORNEQ…' %}">
+      <form method="get" id="suchen-search-form" class="suchen-page__form" role="search" aria-label="{% trans 'Advanced search filters' %}">
+        <div class="suchen-page__query">
+          <label for="suchen-page-query">{% trans "Search query" %}</label>
+          <input id="suchen-page-query" type="search" name="q" value="{{ search_query }}" maxlength="200" placeholder="{% trans 'Search VORNEQ…' %}">
           <button type="submit">{% trans "Search" %} <span aria-hidden="true">→</span></button>
         </div>
-        <div class="world-search__filters">
-          <label><span>{% trans "Content type" %}</span><select name="type"><option value="">{% trans "All types" %}</option><option value="article"{% if current_type == 'article' %} selected{% endif %}>{% trans "Article" %}</option><option value="product"{% if current_type == 'product' %} selected{% endif %}>{% trans "Product" %}</option><option value="libraryitem"{% if current_type == 'libraryitem' %} selected{% endif %}>{% trans "Library item" %}</option><option value="mediaasset"{% if current_type == 'mediaasset' %} selected{% endif %}>{% trans "Media asset" %}</option><option value="audio"{% if current_type == 'audio' %} selected{% endif %}>{% trans "Audio" %}</option></select></label>
+        <fieldset class="suchen-page__tabs" aria-label="{% trans 'Content type' %}">
+          <legend>{% trans "Browse by type" %}</legend>
+          <label><input type="radio" name="type" value=""{% if not current_type %} checked{% endif %}><span>{% trans "All types" %}</span></label>
+          <label><input type="radio" name="type" value="article"{% if current_type == 'article' %} checked{% endif %}><span>{% trans "Articles" %}</span></label>
+          <label><input type="radio" name="type" value="product"{% if current_type == 'product' %} checked{% endif %}><span>{% trans "Products" %}</span></label>
+          <label><input type="radio" name="type" value="libraryitem"{% if current_type == 'libraryitem' %} checked{% endif %}><span>{% trans "Library" %}</span></label>
+          <label><input type="radio" name="type" value="mediaasset"{% if current_type == 'mediaasset' %} checked{% endif %}><span>{% trans "Media" %}</span></label>
+          <label><input type="radio" name="type" value="audio"{% if current_type == 'audio' %} checked{% endif %}><span>{% trans "Audio" %}</span></label>
+        </fieldset>
+        <button type="button" class="suchen-page__filter-toggle" id="suchen-filter-open" aria-controls="suchen-filter-panel" aria-expanded="false">{% trans "Show filters" %}</button>
+        <div class="suchen-page__filter-backdrop" id="suchen-filter-backdrop" hidden></div>
+        <div class="suchen-page__filters" id="suchen-filter-panel" role="region" aria-label="{% trans 'Search filters' %}" tabindex="-1">
+          <button type="button" class="suchen-page__filter-close" id="suchen-filter-close">{% trans "Close filters" %}</button>
           <label><span>{% trans "Library item type" %}</span><select name="item_type"><option value="">{% trans "Any library type" %}</option><option value="book"{% if current_item_type == 'book' %} selected{% endif %}>{% trans "Book" %}</option><option value="article"{% if current_item_type == 'article' %} selected{% endif %}>{% trans "Article" %}</option><option value="document"{% if current_item_type == 'document' %} selected{% endif %}>{% trans "Document" %}</option><option value="other"{% if current_item_type == 'other' %} selected{% endif %}>{% trans "Other" %}</option></select></label>
           <label><span>{% trans "Media type" %}</span><select name="media_type"><option value="">{% trans "Any media type" %}</option><option value="image"{% if current_media_type == 'image' %} selected{% endif %}>{% trans "Image" %}</option><option value="video"{% if current_media_type == 'video' %} selected{% endif %}>{% trans "Video" %}</option></select></label>
           <label><span>{% trans "Category" %}</span><input type="text" name="category" value="{{ current_category }}" maxlength="120" placeholder="{% trans 'Category' %}"></label>
           <label><span>{% trans "Minimum price" %}</span><input type="number" name="price_min" value="{{ current_price_min }}" min="0" step="0.01" placeholder="{% trans 'Min price' %}"></label>
           <label><span>{% trans "Maximum price" %}</span><input type="number" name="price_max" value="{{ current_price_max }}" min="0" step="0.01" placeholder="{% trans 'Max price' %}"></label>
         </div>
+        <button type="submit" class="suchen-page__apply">{% trans "Apply filters" %}</button>
       </form>
     </div>
   </section>
 
-  <section class="world-search__results" aria-labelledby="world-search-results-title">
-    <div class="world-search__shell">
-      <header class="world-search__results-head">
-        <h2 id="world-search-results-title">{% trans "Results" %}</h2>
+  <section class="suchen-page__results" aria-labelledby="suchen-page-results-title">
+    <div class="suchen-page__shell">
+      <header class="suchen-page__results-head">
+        <h2 id="suchen-page-results-title">{% trans "Results" %}</h2>
         <p>{% blocktrans count counter=total %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}</p>
       </header>
-      <div class="world-search__grid">
+      <div class="suchen-page__grid">
         {% for item in results %}
-          <article class="world-search__card">
-            <span class="world-search__type">{% include "partials/_content_type_label.html" with type=item.type %}</span>
+          <article class="suchen-page__card">
+            <span class="suchen-page__type">{% include "partials/_content_type_label.html" with type=item.type %}</span>
             <h3>{% if item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}</h3>
             {% if item.description %}<p>{{ item.description }}</p>{% endif %}
-            <div class="world-search__meta">
+            <div class="suchen-page__meta">
               {% if item.category %}<span>{{ item.category }}</span>{% endif %}
               {% if item.price != None %}<span>{% trans "Price" %}: {{ item.price }}</span>{% endif %}
             </div>
           </article>
         {% empty %}
-          <article class="world-search__empty">
-            <span class="world-search__type">{% trans "No matches" %}</span>
+          <article class="suchen-page__empty">
+            <span class="suchen-page__type">{% trans "No matches" %}</span>
             <h3>{% trans "No results found" %}</h3>
             <p>{% trans "Try adjusting your keywords or filters." %}</p>
           </article>
@@ -61,9 +72,9 @@
       </div>
 
       {% if total_pages > 1 %}
-        <nav class="world-search__pagination" aria-label="{% trans 'Pagination' %}">
+        <nav class="suchen-page__pagination" aria-label="{% trans 'Pagination' %}">
           <span>{% blocktrans with current=page total=total_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}</span>
-          <span class="world-search__pagination-links">
+          <span class="suchen-page__pagination-links">
             {% if has_previous %}<a href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;media_type={{ current_media_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page|add:'-1' }}&amp;page_size={{ page_size }}">{% trans "Previous" %}</a>{% endif %}
             {% if has_next %}<a href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;media_type={{ current_media_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page|add:'1' }}&amp;page_size={{ page_size }}">{% trans "Next" %}</a>{% endif %}
           </span>
@@ -72,4 +83,48 @@
     </div>
   </section>
 </main>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const open = document.getElementById('suchen-filter-open');
+  const close = document.getElementById('suchen-filter-close');
+  const panel = document.getElementById('suchen-filter-panel');
+  const backdrop = document.getElementById('suchen-filter-backdrop');
+  const mq = window.matchMedia('(max-width: 768px)');
+  let expanded = false;
+  function focusable() {
+    return Array.from(panel.querySelectorAll('button, input, select, a[href], [tabindex]:not([tabindex="-1"])'))
+      .filter(el => !el.disabled && el.getClientRects().length);
+  }
+  function toggle(next, restore) {
+    expanded = next && mq.matches;
+    panel.classList.toggle('is-mobile-open', expanded);
+    backdrop.hidden = !expanded;
+    open.setAttribute('aria-expanded', String(expanded));
+    document.body.classList.toggle('suchen-filters-open', expanded);
+    if (expanded) {
+      const items = focusable();
+      (items[0] || panel).focus();
+    } else if (restore && mq.matches) {
+      open.focus();
+    }
+  }
+  open.addEventListener('click', () => toggle(true, false));
+  close.addEventListener('click', () => toggle(false, true));
+  backdrop.addEventListener('click', () => toggle(false, true));
+  document.addEventListener('keydown', e => {
+    if (!expanded) return;
+    if (e.key === 'Escape') { e.preventDefault(); toggle(false, true); return; }
+    if (e.key !== 'Tab') return;
+    const items = focusable();
+    if (!items.length) { e.preventDefault(); panel.focus(); return; }
+    const first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && (document.activeElement === first || document.activeElement === panel || !panel.contains(document.activeElement))) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && (document.activeElement === last || document.activeElement === panel || !panel.contains(document.activeElement))) {
+      e.preventDefault(); first.focus();
+    }
+  });
+  mq.addEventListener('change', () => toggle(false, false));
+});
+</script>
 {% endblock %}
