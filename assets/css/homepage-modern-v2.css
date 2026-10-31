@@ -309,3 +309,15 @@ html[dir="rtl"] .world-home--layout-v3 .world-icon--sm {
 .world-evidence-panel__announcement { position:absolute; inline-size:1px; block-size:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
 @media (max-width:639px) { .world-evidence-panel__steps { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (prefers-reduced-motion:reduce) { .world-evidence-step { transition:none; } }
+
+/* Evidence Signal UI Shell V1: static DEMO panels, no remote content. */
+.world-evidence-demo-panel[hidden] { display:none !important; }
+.world-evidence-panel__demo-tag { display:inline-flex; align-items:center; margin:0 0 var(--space-2); padding:.2rem .55rem; border:1px solid var(--home-divider); border-radius:var(--home-radius-sm); color:var(--home-fg); font-size:var(--font-size-caption); font-weight:700; letter-spacing:.04em; }
+.world-evidence-panel__demo-title { margin:0 0 var(--space-2); font-size:var(--font-size-small); color:var(--home-fg); }
+.world-evidence-panel__demo-list { margin:var(--space-3) 0; padding-inline-start:1.3rem; color:var(--home-fg); overflow-wrap:anywhere; }
+.world-evidence-panel__demo-list li + li { margin-block-start:var(--space-2); }
+.world-evidence-panel__demo-actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-2); margin-block-start:var(--space-3); }
+.world-evidence-panel__demo-action { display:inline-flex; align-items:center; justify-content:center; min-block-size:44px; padding:.5rem .75rem; border:1px solid var(--home-divider); border-radius:var(--home-radius-sm); background:var(--home-surface-raised); color:var(--home-fg); cursor:pointer; font:inherit; font-size:var(--font-size-caption); text-decoration:none; }
+.world-evidence-panel__demo-action:hover { border-color:var(--home-accent); background:var(--home-surface-soft); }
+.world-evidence-panel__demo-action:focus-visible { outline:2px solid var(--home-focus); outline-offset:3px; }
+.world-evidence-step[aria-expanded="true"] { border-color:var(--home-accent); background:var(--home-surface-soft); }

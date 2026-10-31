@@ -1,27 +1,57 @@
-/* Evidence Signal V2.3 — conceptual, local-only, no API or telemetry. */
+/* Evidence Signal UI Shell V1 — static, local DEMO only. No API or telemetry. */
 (() => {
   "use strict";
   const root = document.querySelector("[data-evidence-signal-v23]");
   if (!root) return;
+
   const buttons = Array.from(root.querySelectorAll("[data-evidence-step]"));
-  const descriptions = Array.from(root.querySelectorAll("[data-evidence-description]"));
+  const panels = Array.from(root.querySelectorAll("[data-evidence-demo-panel]"));
   const announcement = root.querySelector("[data-evidence-announcement]");
   const valid = new Set(["source", "evidence", "context", "verification"]);
-  let selectedKey = null;
-  const select = (key, announce = false) => {
-    if (!valid.has(key) || selectedKey === key) return;
-    selectedKey = key;
+
+  const toggle = (key, forceClose = false) => {
+    if (!valid.has(key)) return;
+    const openPanel = panels.find((panel) => !panel.hidden);
+    const shouldOpen = !forceClose && openPanel?.dataset.evidenceDemoPanel !== key;
+
     buttons.forEach((button) => {
-      button.setAttribute("aria-pressed", String(button.dataset.evidenceStep === key));
+      const active = shouldOpen && button.dataset.evidenceStep === key;
+      button.setAttribute("aria-pressed", String(active));
+      button.setAttribute("aria-expanded", String(active));
     });
-    descriptions.forEach((item) => {
-      item.hidden = item.dataset.evidenceDescription !== key;
+    panels.forEach((panel) => {
+      panel.hidden = !(shouldOpen && panel.dataset.evidenceDemoPanel === key);
     });
-    if (announce && announcement) {
-      const activeDescription = descriptions.find((item) => item.dataset.evidenceDescription === key);
-      announcement.textContent = activeDescription ? activeDescription.textContent.trim() : "";
+
+    if (announcement) {
+      const heading = shouldOpen
+        ? panels.find((panel) => panel.dataset.evidenceDemoPanel === key)?.querySelector(".world-evidence-panel__demo-title")
+        : null;
+      announcement.textContent = heading?.textContent.trim() || "";
     }
   };
-  buttons.forEach((button) => button.addEventListener("click", () => select(button.dataset.evidenceStep, true)));
-  select("source");
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => toggle(button.dataset.evidenceStep));
+  });
+
+  root.querySelectorAll("[data-evidence-close]").forEach((closeButton) => {
+    closeButton.addEventListener("click", () => {
+      const panel = closeButton.closest("[data-evidence-demo-panel]");
+      if (!panel) return;
+      const key = panel.dataset.evidenceDemoPanel;
+      toggle(key, true);
+      buttons.find((button) => button.dataset.evidenceStep === key)?.focus();
+    });
+  });
+
+  root.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    const openPanel = panels.find((panel) => !panel.hidden);
+    if (!openPanel) return;
+    const key = openPanel.dataset.evidenceDemoPanel;
+    toggle(key, true);
+    buttons.find((button) => button.dataset.evidenceStep === key)?.focus();
+    event.preventDefault();
+  });
 })();
