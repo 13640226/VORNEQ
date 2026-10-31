@@ -1861,3 +1861,55 @@ msgstr "شرایط و محدودیت‌های مرتبط را آشکار نگه 
 #: templates/index.html
 msgid "Document review steps without claiming automatic truth or approval."
 msgstr "مراحل بررسی را مستند کنید، بدون ادعای صحت یا تأیید خودکار."
+
+#: templates/index.html
+msgid "Sample source"
+msgstr "منبع نمونه"
+
+#: templates/index.html
+msgid "Fictional source reference: DEMO-SRC-001."
+msgstr "مرجع منبع ساختگی: DEMO-SRC-001."
+
+#: templates/index.html
+msgid "Sample evidence"
+msgstr "شواهد نمونه"
+
+#: templates/index.html
+msgid "Fictional supporting note: DEMO-EVD-001."
+msgstr "یادداشت پشتیبان ساختگی: DEMO-EVD-001."
+
+#: templates/index.html
+msgid "Fictional attachment: DEMO-EVD-002."
+msgstr "پیوست ساختگی: DEMO-EVD-002."
+
+#: templates/index.html
+msgid "Sample context"
+msgstr "زمینه نمونه"
+
+#: templates/index.html
+msgid "Fictional condition: DEMO-CTX-001."
+msgstr "شرط ساختگی: DEMO-CTX-001."
+
+#: templates/index.html
+msgid "Sample verification"
+msgstr "بررسی نمونه"
+
+#: templates/index.html
+msgid "No verification was performed (DEMO-REV-001)."
+msgstr "هیچ بررسی یا راستی‌آزمایی انجام نشده است (DEMO-REV-001)."
+
+#: templates/index.html
+msgid "All content in this panel is fictional."
+msgstr "تمام محتوای این پنل ساختگی است."
+
+#: templates/index.html
+msgid "Read platform principles"
+msgstr "مطالعه اصول پلتفرم"
+
+#: templates/index.html
+msgid "Read how VORNEQ works"
+msgstr "مطالعه نحوه کار VORNEQ"
+
+#: templates/index.html
+msgid "Close demo panel"
+msgstr "بستن پنل نمایشی"
