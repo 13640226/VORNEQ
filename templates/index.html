@@ -58,22 +58,29 @@
           <p class="world-evidence-panel__title">{% trans "Evidence Signal" %}</p>
           
         </div>
-        <div class="world-evidence-panel__graph" aria-hidden="true">
-          <span class="world-node world-node--a"><svg class="world-icon"><use href="#icon-evidence"></use></svg></span>
-          <span class="world-node world-node--b"><svg class="world-icon"><use href="#icon-graph"></use></svg></span>
-          <span class="world-node world-node--c"><svg class="world-icon"><use href="#icon-shield"></use></svg></span>
-        </div>
-        <div class="world-evidence-list">
-          <a class="evidence-signal" href="#trust">
-            
-            <span class="evidence-signal__body"><span class="evidence-signal__label">{% trans "Evidence connected" %}</span><span class="evidence-signal__meta">{% trans "Source → evidence → context" %}</span></span>
-            <svg class="world-icon world-icon--sm" aria-hidden="true"><use href="#icon-arrow"></use></svg>
-          </a>
-          <div class="evidence-signal">
-            <span class="status-indicator" data-state="active" aria-hidden="true"><span class="status-indicator__led"></span></span>
-            <span class="evidence-signal__body"><span class="evidence-signal__label">{% trans "Provenance recorded" %}</span><span class="evidence-signal__meta">{% trans "Inspectable relationship" %}</span></span>
-            <svg class="world-icon world-icon--sm" aria-hidden="true"><use href="#icon-graph"></use></svg>
+        <p class="world-evidence-panel__disclaimer">{% trans "Conceptual illustration — no live data" %}</p>
+        <div class="world-evidence-panel__graph world-evidence-panel__graph--v23" data-evidence-signal-v23>
+          <div class="world-evidence-panel__steps" role="group" aria-label="{% trans 'Evidence process steps' %}">
+            <button class="world-evidence-step" type="button" data-evidence-step="source" aria-pressed="true" aria-controls="world-evidence-description-source">
+              <svg class="world-icon" aria-hidden="true"><use href="#icon-search"></use></svg><span>{% trans "Source" %}</span>
+            </button>
+            <button class="world-evidence-step" type="button" data-evidence-step="evidence" aria-pressed="false" aria-controls="world-evidence-description-evidence">
+              <svg class="world-icon" aria-hidden="true"><use href="#icon-evidence"></use></svg><span>{% trans "Evidence" %}</span>
+            </button>
+            <button class="world-evidence-step" type="button" data-evidence-step="context" aria-pressed="false" aria-controls="world-evidence-description-context">
+              <svg class="world-icon" aria-hidden="true"><use href="#icon-graph"></use></svg><span>{% trans "Context" %}</span>
+            </button>
+            <button class="world-evidence-step" type="button" data-evidence-step="verification" aria-pressed="false" aria-controls="world-evidence-description-verification">
+              <svg class="world-icon" aria-hidden="true"><use href="#icon-shield"></use></svg><span>{% trans "Verification" %}</span>
+            </button>
           </div>
+          <div class="world-evidence-panel__detail" data-evidence-detail>
+            <p id="world-evidence-description-source" data-evidence-description="source">{% trans "Identify where a statement or record originates." %}</p>
+            <p id="world-evidence-description-evidence" data-evidence-description="evidence" hidden>{% trans "Link supporting material to the statement it describes." %}</p>
+            <p id="world-evidence-description-context" data-evidence-description="context" hidden>{% trans "Keep relevant conditions and limitations visible." %}</p>
+            <p id="world-evidence-description-verification" data-evidence-description="verification" hidden>{% trans "Document review steps without claiming automatic truth or approval." %}</p>
+          </div>
+          <span class="world-evidence-panel__announcement" role="status" aria-atomic="true" data-evidence-announcement></span>
         </div>
       </aside>
       </div>
@@ -230,4 +237,5 @@
 
 {% block extra_js %}
 <script src="{% static 'js/homepage-signal-nav-v2.js' %}" defer></script>
+<script src="{% static 'js/evidence-signal-v2-3.js' %}" defer></script>
 {% endblock %}

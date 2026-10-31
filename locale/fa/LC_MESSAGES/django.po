@@ -1829,3 +1829,35 @@ msgstr "اطلاعات را همراه با زمینهٔ آن کاوش کنید.
 
 msgid "Move from search and discovery into recorded context, evidence relationships, provenance, documents, and marketplace surfaces."
 msgstr "از جستجو و کشف به زمینهٔ ثبت‌شده، روابط شواهد، منشأ، اسناد و سطوح بازارچه حرکت کنید."
+
+#: templates/index.html
+msgid "Conceptual illustration — no live data"
+msgstr "نمایش مفهومی — بدون داده زنده"
+
+#: templates/index.html
+msgid "Conceptual evidence process"
+msgstr "فرایند مفهومی شواهد"
+
+#: templates/index.html
+msgid "Evidence process steps"
+msgstr "مراحل فرایند شواهد"
+
+#: templates/index.html
+msgid "Verification"
+msgstr "بررسی"
+
+#: templates/index.html
+msgid "Identify where a statement or record originates."
+msgstr "مشخص کنید یک گفته یا رکورد از کجا سرچشمه می‌گیرد."
+
+#: templates/index.html
+msgid "Link supporting material to the statement it describes."
+msgstr "مدارک پشتیبان را به گفته‌ای که توضیح می‌دهند پیوند دهید."
+
+#: templates/index.html
+msgid "Keep relevant conditions and limitations visible."
+msgstr "شرایط و محدودیت‌های مرتبط را آشکار نگه دارید."
+
+#: templates/index.html
+msgid "Document review steps without claiming automatic truth or approval."
+msgstr "مراحل بررسی را مستند کنید، بدون ادعای صحت یا تأیید خودکار."

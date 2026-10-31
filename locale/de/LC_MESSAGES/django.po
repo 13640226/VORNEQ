@@ -2093,3 +2093,35 @@ msgstr "Ergebnisse"
 #: templates/search.html
 msgid "Try adjusting your keywords or filters."
 msgstr "Versuchen Sie, Ihre Suchbegriffe oder Filter anzupassen."
+
+#: templates/index.html
+msgid "Conceptual illustration — no live data"
+msgstr "Schematische Darstellung — keine Live-Daten"
+
+#: templates/index.html
+msgid "Conceptual evidence process"
+msgstr "Schematischer Nachweisprozess"
+
+#: templates/index.html
+msgid "Evidence process steps"
+msgstr "Schritte des Nachweisprozesses"
+
+#: templates/index.html
+msgid "Verification"
+msgstr "Prüfung"
+
+#: templates/index.html
+msgid "Identify where a statement or record originates."
+msgstr "Erkennen, woher eine Aussage oder ein Datensatz stammt."
+
+#: templates/index.html
+msgid "Link supporting material to the statement it describes."
+msgstr "Verknüpfen Sie unterstützende Unterlagen mit der zugehörigen Aussage."
+
+#: templates/index.html
+msgid "Keep relevant conditions and limitations visible."
+msgstr "Halten Sie relevante Bedingungen und Einschränkungen sichtbar."
+
+#: templates/index.html
+msgid "Document review steps without claiming automatic truth or approval."
+msgstr "Dokumentieren Sie Prüfschritte, ohne automatische Richtigkeit oder Freigabe zu behaupten."
