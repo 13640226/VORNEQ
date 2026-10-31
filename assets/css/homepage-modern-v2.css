@@ -292,3 +292,29 @@ html[dir="rtl"] .world-home--layout-v3 .world-icon--sm {
     grid-column: 1;
   }
 }
+
+/* Evidence Signal V2.1 — conceptual, non-verification presentation only. */
+.world-home .world-evidence-panel__explanation {
+  margin: 0 0 var(--space-2);
+  color: var(--home-fg);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-h3);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.world-home .world-evidence-panel__disclaimer {
+  margin: 0 0 var(--space-4);
+  color: var(--home-fg-muted);
+  font-size: var(--font-size-caption);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.world-home .world-evidence-list > .evidence-signal--conceptual {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+@media (max-width: 639px) {
+  .world-home .world-evidence-panel__explanation,
+  .world-home .world-evidence-panel__disclaimer {
+    max-inline-size: 100%;
+  }
+}
