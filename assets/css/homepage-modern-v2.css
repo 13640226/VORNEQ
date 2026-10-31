@@ -306,5 +306,5 @@ html[dir="rtl"] .world-home--layout-v3 .world-icon--sm {
 .world-evidence-panel__detail { margin-block-start:var(--space-3); padding:var(--space-3); border:1px solid var(--home-divider); border-radius:var(--home-radius-md); background:var(--home-surface-raised); color:var(--home-fg); }
 .world-evidence-panel__detail p { margin:0; }
 .world-evidence-panel__detail [hidden] { display:none; }
-@media (max-width:600px) { .world-evidence-panel__steps { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:639px) { .world-evidence-panel__steps { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (prefers-reduced-motion:reduce) { .world-evidence-step { transition:none; } }
