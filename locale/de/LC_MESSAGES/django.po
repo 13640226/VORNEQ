@@ -2000,3 +2000,96 @@ msgstr "Erkunden Sie Informationen mit ihrem erhaltenen Kontext."
 
 msgid "Move from search and discovery into recorded context, evidence relationships, provenance, documents, and marketplace surfaces."
 msgstr "Wechseln Sie von Suche und Entdeckung zu erfasstem Kontext, Evidenzbeziehungen, Provenienz, Dokumenten und Marktplatzoberflächen."
+
+# UI-12A V1.7.1 — German search-page translations
+#: templates/search.html
+msgid "Discover knowledge"
+msgstr "Wissen entdecken"
+
+#: templates/search.html
+msgid "Filter public knowledge and marketplace metadata across supported content types."
+msgstr "Filtern Sie öffentliches Wissen und Marktplatz-Metadaten nach unterstützten Inhaltstypen."
+
+#: templates/search.html
+msgid "Advanced search filters"
+msgstr "Erweiterte Suchfilter"
+
+#: templates/search.html
+msgid "Search query"
+msgstr "Suchbegriff"
+
+#: templates/search.html
+msgid "Search VORNEQ…"
+msgstr "VORNEQ durchsuchen…"
+
+#: templates/search.html
+msgid "Content type"
+msgstr "Inhaltstyp"
+
+#: templates/search.html
+msgid "Browse by type"
+msgstr "Nach Typ durchsuchen"
+
+#: templates/search.html
+msgid "All types"
+msgstr "Alle Typen"
+
+#: templates/search.html
+msgid "Show filters"
+msgstr "Filter anzeigen"
+
+#: templates/search.html
+msgid "Search filters"
+msgstr "Suchfilter"
+
+#: templates/search.html
+msgid "Close filters"
+msgstr "Filter schließen"
+
+#: templates/search.html
+msgid "Library item type"
+msgstr "Bibliothekseintragstyp"
+
+#: templates/search.html
+msgid "Any library type"
+msgstr "Alle Bibliothekstypen"
+
+#: templates/search.html
+msgid "Any media type"
+msgstr "Alle Medientypen"
+
+#: templates/search.html
+msgid "Image"
+msgstr "Bild"
+
+#: templates/search.html
+msgid "Video"
+msgstr "Video"
+
+#: templates/search.html
+msgid "Minimum price"
+msgstr "Mindestpreis"
+
+#: templates/search.html
+msgid "Min price"
+msgstr "Mindestpreis"
+
+#: templates/search.html
+msgid "Maximum price"
+msgstr "Höchstpreis"
+
+#: templates/search.html
+msgid "Max price"
+msgstr "Höchstpreis"
+
+#: templates/search.html
+msgid "Apply filters"
+msgstr "Filter anwenden"
+
+#: templates/search.html
+msgid "Results"
+msgstr "Ergebnisse"
+
+#: templates/search.html
+msgid "Try adjusting your keywords or filters."
+msgstr "Versuchen Sie, Ihre Suchbegriffe oder Filter anzupassen."
