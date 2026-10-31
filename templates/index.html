@@ -59,19 +59,27 @@
           
         </div>
         <div class="world-evidence-panel__graph" aria-hidden="true">
-          <span class="world-node world-node--a"><svg class="world-icon"><use href="#icon-evidence"></use></svg></span>
+          <span class="world-node world-node--a"><svg class="world-icon"><use href="#icon-graph"></use></svg></span>
           <span class="world-node world-node--b"><svg class="world-icon"><use href="#icon-graph"></use></svg></span>
-          <span class="world-node world-node--c"><svg class="world-icon"><use href="#icon-shield"></use></svg></span>
+          <span class="world-node world-node--c"><svg class="world-icon"><use href="#icon-graph"></use></svg></span>
         </div>
+        <ol class="world-evidence-panel__steps" aria-label="{% trans 'Conceptual evidence relationship' %}">
+          <li>{% trans "Source" %}</li>
+          <li>{% trans "Evidence" %}</li>
+          <li>{% trans "Context" %}</li>
+        </ol>
+        <p class="world-evidence-panel__explanation">{% trans "Source → Evidence → Context" %}</p>
+        <p class="world-evidence-panel__demo-label">{% trans "Conceptual Example" %}</p>
+        <p class="world-evidence-panel__assessment">{% trans "Assessment process completed" %} — {% trans "Conceptual example only; this is not a real assessment result." %}</p>
+        <p class="world-evidence-panel__disclaimer">{% trans "Conceptual illustration only. Recorded evidence and provenance do not establish that a claim is true or verified." %}</p>
         <div class="world-evidence-list">
           <a class="evidence-signal" href="#trust">
             
-            <span class="evidence-signal__body"><span class="evidence-signal__label">{% trans "Evidence connected" %}</span><span class="evidence-signal__meta">{% trans "Source → evidence → context" %}</span></span>
+            <span class="evidence-signal__body"><span class="evidence-signal__label">{% trans "Evidence relationships" %}</span><span class="evidence-signal__meta">{% trans "Source → evidence → context" %}</span></span>
             <svg class="world-icon world-icon--sm" aria-hidden="true"><use href="#icon-arrow"></use></svg>
           </a>
-          <div class="evidence-signal">
-            <span class="status-indicator" data-state="active" aria-hidden="true"><span class="status-indicator__led"></span></span>
-            <span class="evidence-signal__body"><span class="evidence-signal__label">{% trans "Provenance recorded" %}</span><span class="evidence-signal__meta">{% trans "Inspectable relationship" %}</span></span>
+          <div class="evidence-signal evidence-signal--conceptual">
+            <span class="evidence-signal__body"><span class="evidence-signal__label">{% trans "Provenance can be recorded" %}</span><span class="evidence-signal__meta">{% trans "A recorded source is not proof of authenticity or claim truth." %}</span></span>
             <svg class="world-icon world-icon--sm" aria-hidden="true"><use href="#icon-graph"></use></svg>
           </div>
         </div>

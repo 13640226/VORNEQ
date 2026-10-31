@@ -292,3 +292,69 @@ html[dir="rtl"] .world-home--layout-v3 .world-icon--sm {
     grid-column: 1;
   }
 }
+
+/* Evidence Signal V2.1 — conceptual, non-verification presentation only. */
+.world-home .world-evidence-panel__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+.world-home .world-evidence-panel__steps > li {
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--home-divider);
+  border-radius: var(--home-radius-sm);
+  background: var(--home-surface-soft);
+  color: var(--home-fg);
+  font-size: var(--font-size-caption);
+  overflow-wrap: anywhere;
+}
+.world-home .world-evidence-panel__assessment {
+  margin: 0 0 var(--space-3);
+  color: var(--home-fg-muted);
+  font-size: var(--font-size-caption);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.world-home .world-evidence-panel__explanation {
+  margin: 0 0 var(--space-2);
+  color: var(--home-fg);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-h3);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.world-home .world-evidence-panel__disclaimer {
+  margin: 0 0 var(--space-4);
+  color: var(--home-fg-muted);
+  font-size: var(--font-size-caption);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.world-home .world-evidence-list > .evidence-signal--conceptual {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+@media (max-width: 639px) {
+  .world-home .world-evidence-panel__explanation,
+  .world-home .world-evidence-panel__disclaimer {
+    max-inline-size: 100%;
+  }
+}
+
+/* Explicit visual distinction for the fictional Evidence Signal example. */
+.world-home .world-evidence-panel__demo-label {
+  display: inline-block;
+  margin: 0 0 var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--home-divider);
+  border-radius: var(--home-radius-sm);
+  background: var(--home-surface-soft);
+  color: var(--home-fg);
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+  line-height: 1.5;
+}
