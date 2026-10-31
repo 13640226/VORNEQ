@@ -286,3 +286,9 @@ html[dir="rtl"] .world-home--layout-v3 .world-icon--sm {
     flex-wrap: wrap;
   }
 }
+/* UI-05 — Keep Hero copy in the first explicit grid column. */
+@media (min-width: 1024px) {
+  .world-home--layout-v3 .world-hero__copy {
+    grid-column: 1;
+  }
+}
