@@ -73,11 +73,11 @@
 
       {% if total_pages > 1 %}
         <nav class="suchen-page__pagination" aria-label="{% trans 'Pagination' %}">
-          <span>{% blocktrans with current=page total=total_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}</span>
           <span class="suchen-page__pagination-links">
-            {% if has_previous %}<a href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;media_type={{ current_media_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page|add:'-1' }}&amp;page_size={{ page_size }}">{% trans "Previous" %}</a>{% endif %}
-            {% if has_next %}<a href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;media_type={{ current_media_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page|add:'1' }}&amp;page_size={{ page_size }}">{% trans "Next" %}</a>{% endif %}
+            {% if has_previous %}<a class="suchen-page__page-btn" rel="prev" href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;media_type={{ current_media_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page|add:'-1' }}&amp;page_size={{ page_size }}">{% trans "Previous" %}</a>{% endif %}
+            {% if has_next %}<a class="suchen-page__page-btn" rel="next" href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;media_type={{ current_media_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page|add:'1' }}&amp;page_size={{ page_size }}">{% trans "Next" %}</a>{% endif %}
           </span>
+          <span class="suchen-page__page-status" aria-live="polite">{% blocktrans with current=page total=total_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}</span>
         </nav>
       {% endif %}
     </div>
