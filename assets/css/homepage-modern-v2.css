@@ -344,3 +344,17 @@ html[dir="rtl"] .world-home--layout-v3 .world-icon--sm {
     max-inline-size: 100%;
   }
 }
+
+/* Explicit visual distinction for the fictional Evidence Signal example. */
+.world-home .world-evidence-panel__demo-label {
+  display: inline-block;
+  margin: 0 0 var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--home-divider);
+  border-radius: var(--home-radius-sm);
+  background: var(--home-surface-soft);
+  color: var(--home-fg);
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+  line-height: 1.5;
+}
