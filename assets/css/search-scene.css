@@ -100,3 +100,46 @@ html[dir="rtl"] .suchen-page button span[aria-hidden="true"] { display: inline-b
   .suchen-page__tabs { gap:.35rem; }
   .suchen-page__tabs span { padding:.55rem .7rem; }
 }
+
+/* UI-12A V1.7 — local refinement only; shared components are untouched. */
+.suchen-page__hero { padding-bottom: 1.75rem; }
+.suchen-page__intro { margin-block: 1rem 1.5rem; }
+.suchen-page__form { gap: 1rem; }
+.suchen-page__filters { gap: .7rem; padding: 1rem; }
+.suchen-page__results { padding-top: 1.5rem; }
+.suchen-page__card { padding: 1rem 1.25rem; }
+.suchen-page__card h3 { font-size: 1.15rem; line-height: 1.3; margin-block: .45rem .35rem; }
+.suchen-page__card p { font-size: .9rem; line-height: 1.5; color: #c3cfdd; }
+.suchen-page__pagination {
+  justify-content: center;
+  align-items: center;
+  gap: .75rem 1.25rem;
+  flex-wrap: wrap;
+  margin-block: 2rem;
+}
+.suchen-page__pagination-links { justify-content: center; flex-wrap: wrap; gap: .75rem; }
+.suchen-page__pagination .suchen-page__page-btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 44px;
+  padding: .55rem 1.1rem;
+  border: 1px solid rgba(201,168,76,.55);
+  border-radius: .55rem;
+  background: #15263d;
+  color: #f1d78e;
+  text-decoration: none;
+  font-weight: 700;
+}
+.suchen-page__pagination .suchen-page__page-btn:hover {
+  border-color: #c9a84c;
+  background: #203650;
+}
+.suchen-page__pagination .suchen-page__page-btn:focus-visible {
+  outline: 3px solid #c9a84c;
+  outline-offset: 3px;
+}
+.suchen-page__page-status { color: #c3cfdd; font-size: .95rem; }
+@media (max-width: 560px) {
+  .suchen-page__pagination { flex-direction: row; align-items: center; }
+}
