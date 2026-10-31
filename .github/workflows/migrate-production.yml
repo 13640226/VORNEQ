@@ -72,6 +72,18 @@ jobs:
           echo 'MODE: APPLY DJANGO MIGRATIONS'
           echo "COMMIT: $GITHUB_SHA"
 
+      # Safety hold: this draft guard deliberately denies all write targets
+      # until independent target attestation and scoped authorization exist.
+      # Keep it BEFORE all Django commands, including preflight.
+      - name: Fail-closed database target gate (SAFE_HOLD)
+        env:
+          CONFIRM: ${{ inputs.confirm_migration }}
+          ALLOW_PRODUCTION_TARGET: 'false'
+        run: |
+          python scripts/db_target_guard.py guard \
+            --target-env DATABASE_URL \
+            --production-env PRODUCTION_DATABASE_URL
+
       - name: Show migration status before apply
         run: python manage.py showmigrations --plan
 

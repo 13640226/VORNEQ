@@ -106,18 +106,25 @@ def is_production(target: Identity, production: Identity | None, protected: tupl
     return target.database in protected
 
 
-def decide(target_is_production: bool, allow_production: bool, confirmed: bool) -> tuple[bool, str]:
-    """Pure decision rule; covered by the four-case matrix in the tests."""
+def decide(target_is_production: bool | None, allow_production: bool, confirmed: bool) -> tuple[bool, str]:
+    """Fail closed on unknown identity. Boolean False is NOT positive staging proof.
+
+    Until independent target attestation and single-use authorization are
+    implemented, no database-writing operation may pass this guard.
+    """
+    if target_is_production is None:
+        return False, "REFUSING: target identity is UNKNOWN; positive proof required."
     if not confirmed:
         return False, "REFUSING: run was not confirmed (confirm must be exactly 'yes')."
-    if target_is_production and not allow_production:
-        return False, (
-            "REFUSING: target database is PRODUCTION. Re-run with "
-            "allow_production_target=true only if production is the intended target."
-        )
     if target_is_production:
-        return True, "ALLOWED: explicit production target (allow_production_target=true)."
-    return True, "ALLOWED: target is not production."
+        return False, (
+            "REFUSING: production requires independently verified, scoped, "
+            "single-use authorization (not implemented)."
+        )
+    return False, (
+        "REFUSING: non-production identity and isolation require independent "
+        "positive attestation (not implemented)."
+    )
 
 
 def _truthy(value: str | None) -> bool:
@@ -153,13 +160,17 @@ def cmd_guard(args: argparse.Namespace) -> int:
     production = None
     if args.production_env and os.environ.get(args.production_env):
         production = query_identity(os.environ[args.production_env])
-    target_is_prod = is_production(target, production, protected_databases())
+    # Missing independent production reference is not proof of non-production.
+    target_is_prod = (
+        True if is_production(target, production, protected_databases())
+        else None
+    )
     allow = _truthy(os.environ.get("ALLOW_PRODUCTION_TARGET"))
     confirmed = os.environ.get("CONFIRM", "") == "yes"
 
     print(f"Target secret: {args.target_env} -> {sanitized(target_url)}")
     print(f"Target identity: {target.database} @ {target.server_addr}:{target.server_port}")
-    print(f"Detected as production: {'YES' if target_is_prod else 'no'}")
+    print(f"Target classification: {'PRODUCTION' if target_is_prod else 'UNKNOWN'}")
     ok, message = decide(target_is_prod, allow, confirmed)
     if ok and target_is_prod:
         # Prominent marker so production-targeted runs are easy to find in audits.

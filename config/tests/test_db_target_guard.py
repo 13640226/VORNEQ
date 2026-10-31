@@ -29,7 +29,7 @@ class DecisionMatrixTests(SimpleTestCase):
     def test_confirm_only_without_allow_on_production_is_refused(self):
         ok, message = guard.decide(target_is_production=True, allow_production=False, confirmed=True)
         self.assertFalse(ok)
-        self.assertIn("PRODUCTION", message)
+        self.assertIn("production requires independently verified", message)
 
     def test_allow_only_without_confirm_is_refused(self):
         ok, _ = guard.decide(target_is_production=True, allow_production=True, confirmed=False)
@@ -37,19 +37,28 @@ class DecisionMatrixTests(SimpleTestCase):
         ok, _ = guard.decide(target_is_production=False, allow_production=True, confirmed=False)
         self.assertFalse(ok)
 
-    def test_both_flags_non_production_target_is_allowed(self):
+    def test_both_flags_non_production_target_is_denied_without_positive_attestation(self):
         ok, message = guard.decide(target_is_production=False, allow_production=True, confirmed=True)
-        self.assertTrue(ok)
-        self.assertIn("not production", message)
+        self.assertFalse(ok)
+        self.assertIn("positive attestation", message)
 
-    def test_both_flags_production_target_is_allowed_explicitly(self):
+    def test_both_flags_production_target_is_denied_without_single_use_authorization(self):
         ok, message = guard.decide(target_is_production=True, allow_production=True, confirmed=True)
-        self.assertTrue(ok)
-        self.assertIn("explicit production target", message)
+        self.assertFalse(ok)
+        self.assertIn("single-use authorization", message)
 
-    def test_normal_non_production_run_is_allowed(self):
+    def test_unattested_non_production_run_is_denied(self):
         ok, _ = guard.decide(target_is_production=False, allow_production=False, confirmed=True)
-        self.assertTrue(ok)
+        self.assertFalse(ok)
+
+    def test_unknown_identity_is_denied_even_with_all_flags(self):
+        ok, message = guard.decide(target_is_production=None, allow_production=True, confirmed=True)
+        self.assertFalse(ok)
+        self.assertIn("UNKNOWN", message)
+
+    def test_unknown_identity_is_denied_without_confirmation(self):
+        ok, _ = guard.decide(target_is_production=None, allow_production=False, confirmed=False)
+        self.assertFalse(ok)
 
 
 class DetectionTests(SimpleTestCase):
@@ -113,14 +122,15 @@ class SanitizationTests(SimpleTestCase):
         self.assertIn("REFUSING", output)
         self.assertNotIn("S3cr3t-P4ss", output)
 
-    def test_guard_marks_explicit_production_run_in_log(self):
+    def test_guard_denies_explicit_production_flag_without_single_use_authorization(self):
         code, output = self._run(
             ["guard", "--target-env", "T_URL", "--production-env", "P_URL"],
             {"T_URL": SECRET_URL, "P_URL": SECRET_URL, "CONFIRM": "yes", "ALLOW_PRODUCTION_TARGET": "true"},
             {SECRET_URL: PROD},
         )
-        self.assertEqual(code, 0)
-        self.assertIn("::warning title=Production target::", output)
+        self.assertEqual(code, 1)
+        self.assertIn("single-use authorization", output)
+        self.assertNotIn("ALLOWED:", output)
 
     def test_guard_detects_production_reached_through_a_different_url(self):
         internal_url = "postgresql://vorneq_user:S3cr3t-P4ss@dpg-abc-a/vorneq_production_db"
@@ -136,15 +146,25 @@ class SanitizationTests(SimpleTestCase):
             {internal_url: PROD, SECRET_URL: PROD},
         )
         self.assertEqual(code, 1)
-        self.assertIn("Detected as production: YES", output)
+        self.assertIn("Target classification: PRODUCTION", output)
 
-    def test_guard_allows_dr_target(self):
+    def test_guard_denies_unattested_dr_target(self):
         code, _ = self._run(
             ["guard", "--target-env", "T_URL", "--production-env", "P_URL"],
             {"T_URL": OTHER_URL, "P_URL": SECRET_URL, "CONFIRM": "yes", "ALLOW_PRODUCTION_TARGET": "false"},
             {OTHER_URL: DR, SECRET_URL: PROD},
         )
-        self.assertEqual(code, 0)
+        self.assertEqual(code, 1)
+
+    def test_guard_denies_unknown_target_even_when_confirmed(self):
+        code, output = self._run(
+            ["guard", "--target-env", "T_URL", "--production-env", "P_URL"],
+            {"T_URL": OTHER_URL, "P_URL": SECRET_URL, "CONFIRM": "yes", "ALLOW_PRODUCTION_TARGET": "true"},
+            {OTHER_URL: DR, SECRET_URL: PROD},
+        )
+        self.assertEqual(code, 1)
+        self.assertIn("UNKNOWN", output)
+        self.assertNotIn("ALLOWED:", output)
 
     def test_psql_failure_is_refused_without_echoing_stderr(self):
         failing = mock.Mock(side_effect=subprocess.CalledProcessError(2, "psql", stderr=f"FATAL {SECRET_URL}"))
