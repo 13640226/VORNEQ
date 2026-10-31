@@ -29,7 +29,7 @@ class DecisionMatrixTests(SimpleTestCase):
     def test_confirm_only_without_allow_on_production_is_refused(self):
         ok, message = guard.decide(target_is_production=True, allow_production=False, confirmed=True)
         self.assertFalse(ok)
-        self.assertIn("PRODUCTION", message)
+        self.assertIn("production requires independently verified", message)
 
     def test_allow_only_without_confirm_is_refused(self):
         ok, _ = guard.decide(target_is_production=True, allow_production=True, confirmed=False)
