@@ -2125,3 +2125,55 @@ msgstr "Halten Sie relevante Bedingungen und Einschränkungen sichtbar."
 #: templates/index.html
 msgid "Document review steps without claiming automatic truth or approval."
 msgstr "Dokumentieren Sie Prüfschritte, ohne automatische Richtigkeit oder Freigabe zu behaupten."
+
+#: templates/index.html
+msgid "Sample source"
+msgstr "Beispielquelle"
+
+#: templates/index.html
+msgid "Fictional source reference: DEMO-SRC-001."
+msgstr "Fiktive Quellenreferenz: DEMO-SRC-001."
+
+#: templates/index.html
+msgid "Sample evidence"
+msgstr "Beispielnachweise"
+
+#: templates/index.html
+msgid "Fictional supporting note: DEMO-EVD-001."
+msgstr "Fiktive unterstützende Notiz: DEMO-EVD-001."
+
+#: templates/index.html
+msgid "Fictional attachment: DEMO-EVD-002."
+msgstr "Fiktiver Anhang: DEMO-EVD-002."
+
+#: templates/index.html
+msgid "Sample context"
+msgstr "Beispielkontext"
+
+#: templates/index.html
+msgid "Fictional condition: DEMO-CTX-001."
+msgstr "Fiktive Bedingung: DEMO-CTX-001."
+
+#: templates/index.html
+msgid "Sample verification"
+msgstr "Beispielprüfung"
+
+#: templates/index.html
+msgid "No verification was performed (DEMO-REV-001)."
+msgstr "Es wurde keine Prüfung durchgeführt (DEMO-REV-001)."
+
+#: templates/index.html
+msgid "All content in this panel is fictional."
+msgstr "Alle Inhalte in diesem Bereich sind frei erfunden."
+
+#: templates/index.html
+msgid "Read platform principles"
+msgstr "Plattformprinzipien lesen"
+
+#: templates/index.html
+msgid "Read how VORNEQ works"
+msgstr "Funktionsweise von VORNEQ lesen"
+
+#: templates/index.html
+msgid "Close demo panel"
+msgstr "Demo-Bereich schließen"
