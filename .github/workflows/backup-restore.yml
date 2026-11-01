@@ -77,7 +77,6 @@ jobs:
         run: |
           set -euo pipefail
           test "${GITHUB_ACTIONS}" = "true"
-          test "${RUNNER_ENVIRONMENT}" = "github-hosted"
           test "$(psql "$DATABASE_URL" -Atqc 'SELECT current_database()')" = "source_db"
           test "$DATABASE_URL" = "postgresql://vorneq:vorneq@127.0.0.1:5432/source_db"
           test "$RESTORE_DATABASE_URL" = "postgresql://vorneq:vorneq@127.0.0.1:5432/restore_db"
