@@ -28,6 +28,28 @@ jobs:
       REDIS_URL: ""
 
     steps:
+      # P0 candidate mitigation; runtime enforcement still requires independent evidence.
+      - name: Block unapproved outbound endpoints (before checkout)
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: block
+          disable-telemetry: true
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+            codeload.github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            raw.githubusercontent.com:443
+            archive.ubuntu.com:80
+            security.ubuntu.com:80
+            pypi.org:443
+            files.pythonhosted.org:443
+            registry.npmjs.org:443
+            nodejs.org:443
+            cdn.playwright.dev:443
+            playwright.azureedge.net:443
+            storage.googleapis.com:443
       - name: Preflight local-only quality configuration (before checkout)
         shell: bash
         run: |
@@ -37,12 +59,12 @@ jobs:
           test -z "${REDIS_URL:-}"
           test "$QUALITY_BASE_URL" = "http://127.0.0.1:8000"
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
           cache: pip
@@ -53,7 +75,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
 
@@ -95,7 +117,7 @@ jobs:
 
       - name: Upload quality evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: global-quality-verification-${{ github.run_id }}
           path: quality/artifacts/quality/
