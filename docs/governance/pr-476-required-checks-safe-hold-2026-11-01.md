@@ -82,3 +82,32 @@ Nur diese neue Markdown-Datei wird zur **dokumentarischen Sichtung** vorgeschlag
 Der Commit für diesen PR wird mit `[skip ci]` gekennzeichnet, um keine gewöhnlichen `push`-/`pull_request`-Workflows für den neuen Commit zu starten. Auch dies garantiert nicht die Abwesenheit sämtlicher Plattform- oder Drittanbieterereignisse.
 
 **Verbindlich:** `DRAFT_ONLY / NO MERGE / NO DEPLOY / NO TEST EXECUTION`.
+
+## 6. Nachtrag — PR #477: Dokumentarisches CI-Isolationsgate
+
+**Bezug:** [PR #477](https://github.com/13640226/VORNEQ/pull/477) · HEAD-Baseline `027622b0200dd4cf093f57681d1184237ff19751` (Stand vor diesem rein dokumentarischen Nachtrag).
+
+- PR #477 ist ein gesonderter **OPEN/DRAFT/NO-MERGE**-Dokumentations-PR; seine Datei beschreibt die ausstehenden Prüfungen von PR #476. Dieser Nachtrag hält zusätzlich den eigenen Status von PR #477 fest.
+- Beim lesenden Nachweisstand vom 01.11.2026 waren für den oben bezeichneten PR-#477-HEAD **0 Check-Runs** und **0 Pull-Request-Workflow-Runs** zugeordnet; der Commit-Status war `pending` ohne einzelne Statusmeldungen. Das sind **nicht** vier laufende oder fehlgeschlagene Tests.
+- Das aktive `main-protection`-Ruleset verlangt `dependencies`, `postgres-backup-restore`, `test (3.11)` und `test (3.12)`. Ein GitHub-`APPROVED` des eigentümerkontrollierten Kontos `hamidrezaasadian7-boop` ist kein unabhängiges Sicherheitsgutachten und kein `MERGE_GO`.
+- Der in der Unterhaltung erarbeitete **CI-Isolationsvertrag V1.1** besitzt ausschließlich den Status `DOCUMENTARY_ACCEPT`. Er ist **nicht Bestandteil des PR-Diffs** und bestätigt weder implementierte Schutzmechanismen noch effektive `GITHUB_TOKEN`-Berechtigungen, Produktionsisolation oder ausgeführte CI-Tests.
+- Mindestens die Workflow-Dateien `ci.yml`, `security.yml`, `backup-restore.yml` und `quality-verification.yml` enthalten `pull_request`-Trigger. Der bloße Wegfall von `[skip ci]` könnte deshalb mehr als die vier erforderlichen Prüfkontexte auslösen; eine solche Änderung ist **nicht autorisiert**.
+- Dieser Nachtrag ist eine Dokumentationsaktualisierung **ohne** CI-Start, Test, Datenbankverbindung, Migration, Secret-Zugriff, Änderung von Workflows/Rulesets, Merge, Deployment oder externe Kontaktaufnahme. Eine spätere technische Ausführung erfordert eigenständige gültige Freigaben und überprüfbare technische Schutzmaßnahmen.
+
+```text
+PR_477 = OPEN_DRAFT
+CI_ISOLATION_CONTRACT_V1_1 = DOCUMENTARY_ACCEPT_ONLY
+CI_EXECUTION_AUTHORIZATION = NO
+INDEPENDENT_SECURITY_APPROVAL = NOT_GRANTED
+STOP_340 = ACTIVE
+HARD_STOP = ACTIVE
+C02 = OPEN_CRITICAL
+SC_07 = OPEN_CRITICAL
+DATABASE_GO = NO
+MIGRATION_GO = NO
+MERGE_GO = NO
+DEPLOY_GO = NO
+FINAL_STATE = SAFE_HOLD / NO_GO
+```
+
+**Wichtige Einschränkung:** Die vorstehenden Zähler und Statuswerte sind an den ausdrücklich genannten alten HEAD gebunden. Dieser Dokumentations-Commit erzeugt einen **neuen HEAD**. Er stellt keine technische Neubewertung oder CI-Freigabe des neuen HEAD dar; `[skip ci]` bleibt in seiner Commit-Nachricht erhalten.
