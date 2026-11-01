@@ -131,7 +131,7 @@ html:has(.world-home) {
   display: grid;
   grid-column: 1 / -1;
   grid-template-columns: minmax(0, 1.12fr) minmax(19rem, .88fr);
-  align-items: center;
+  align-items: start;
   gap: clamp(var(--space-6), 6vw, var(--space-10));
 }
 .world-home--layout-v3 .world-hero__copy {
@@ -321,3 +321,11 @@ html[dir="rtl"] .world-home--layout-v3 .world-icon--sm {
 .world-evidence-panel__demo-action:hover { border-color:var(--home-accent); background:var(--home-surface-soft); }
 .world-evidence-panel__demo-action:focus-visible { outline:2px solid var(--home-focus); outline-offset:3px; }
 .world-evidence-step[aria-expanded="true"] { border-color:var(--home-accent); background:var(--home-surface-soft); }
+
+/* Keep the hero heading fixed while Evidence Signal DEMO panels change height. */
+.world-home--layout-v3 .world-hero__copy {
+  align-self: start;
+}
+.world-home--layout-v3 .world-hero__layout > .world-evidence-panel {
+  align-self: start;
+}
