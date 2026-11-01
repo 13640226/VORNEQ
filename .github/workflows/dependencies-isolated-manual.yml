@@ -1,0 +1,177 @@
+# VORNEQ / PR #482 — isolated dependency audit candidate.
+# REVIEW-ONLY: not authorized for merge, CI execution, migration or deploy.
+# workflow_dispatch requires this workflow to be on the default branch first.
+# This standalone job DOES NOT satisfy the four PR-required status checks.
+name: Isolated Dependency Audit — Manual (Non-required)
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_head_sha:
+        description: 'Exact authorized PR #482 head SHA (40 hex chars)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  dependencies-isolated:
+    name: dependencies-isolated (manual; not a required PR check)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      REQUESTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
+      DISPATCH_TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+      DISPATCH_WORKFLOW_REF: ${{ github.workflow_ref }}
+      PIP_CONFIG_FILE: /dev/null
+      PIP_NO_INPUT: "1"
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    steps:
+      - name: Block outbound connections and revoke elevated access
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: block
+          disable-telemetry: true
+          disable-sudo-and-containers: true
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+            codeload.github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            raw.githubusercontent.com:443
+            pypi.org:443
+            files.pythonhosted.org:443
+
+      - name: Fail-closed authorization and no-privilege preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected='6ad9bbf538aa313836f624d2218840bcd8e0d2f5'
+          test "$GITHUB_REPOSITORY" = '13640226/VORNEQ'
+          test "$GITHUB_EVENT_NAME" = 'workflow_dispatch'
+          test "$GITHUB_REF" = 'refs/heads/main'
+          test "$DISPATCH_WORKFLOW_REF" = '13640226/VORNEQ/.github/workflows/dependencies-isolated-manual.yml@refs/heads/main'
+          test "$GITHUB_ACTOR" = '13640226'
+          test "$DISPATCH_TRIGGERING_ACTOR" = '13640226'
+          test "$GITHUB_RUN_ATTEMPT" = '1'
+          test "$REQUESTED_HEAD_SHA" = "$expected"
+          if command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
+            echo '::error::Unexpected sudo permission'; exit 1
+          fi
+          if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+            echo '::error::Unexpected Docker daemon access'; exit 1
+          fi
+          for socket in /var/run/docker.sock /run/containerd/containerd.sock; do
+            if [ -S "$socket" ] && [ -w "$socket" ]; then
+              echo '::error::Writable container socket'; exit 1
+            fi
+          done
+
+      - name: Check out only the audited commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: 6ad9bbf538aa313836f624d2218840bcd8e0d2f5
+          persist-credentials: false
+
+      - name: Verify exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = '6ad9bbf538aa313836f624d2218840bcd8e0d2f5'
+          test -f requirements.txt
+          test -f requirements-security.txt
+
+      - name: Set up Python (no cache)
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+
+      # Fail closed: only direct pinned versions are eligible for no-resolution scanning.
+      # A complete transitive dependency audit needs a separately verified lockfile.
+      - name: Validate pinned requirements and reject pip directives
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+          pattern = re.compile(r"[A-Za-z0-9_.-]+(?:\[[A-Za-z0-9_,.-]+\])?==[A-Za-z0-9_.!+]+")
+          for name in ("requirements.txt", "requirements-security.txt"):
+              lines = pathlib.Path(name).read_text(encoding="utf-8").splitlines()
+              packages = [line.strip() for line in lines if line.strip() and not line.lstrip().startswith("#")]
+              if not packages or any(not pattern.fullmatch(line) for line in packages):
+                  print(f"::error::{name} has an unpinned/unsupported requirement or pip directive", file=sys.stderr)
+                  sys.exit(1)
+              print(f"{name}: {len(packages)} directly pinned packages")
+          PY
+
+      - name: Install pinned audit tool from wheels only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --no-input --only-binary=:all: --index-url https://pypi.org/simple 'pip-audit==2.10.1'
+          python -m pip_audit --version
+
+      - name: Audit both manifests without resolution and preserve separate results
+        id: audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/vorneq-dependency-audit"
+          mkdir -p "$evidence"
+          set +e
+          python -m pip_audit --no-deps --disable-pip --requirement requirements.txt --format=json --output "$evidence/application.json" 2>"$evidence/application.stderr"
+          app_rc=$?
+          python -m pip_audit --no-deps --disable-pip --requirement requirements-security.txt --format=json --output "$evidence/security-tools.json" 2>"$evidence/security-tools.stderr"
+          security_rc=$?
+          set -e
+          printf '{"source_sha":"6ad9bbf538aa313836f624d2218840bcd8e0d2f5","scope":"direct_pinned_only","application_exit":%s,"security_tools_exit":%s}\n' "$app_rc" "$security_rc" > "$evidence/manifest.json"
+          printf 'Application audit exit: %s\nSecurity-tool audit exit: %s\n' "$app_rc" "$security_rc" >> "$GITHUB_STEP_SUMMARY"
+          # Do not claim success here; the final job step enforces both results.
+
+      - name: Upload independent machine-readable audit evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: isolated-dependency-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/vorneq-dependency-audit/manifest.json
+            ${{ runner.temp }}/vorneq-dependency-audit/application.json
+            ${{ runner.temp }}/vorneq-dependency-audit/security-tools.json
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Enforce complete fail-closed audit verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+          import sys
+          root = pathlib.Path(os.environ["RUNNER_TEMP"]) / "vorneq-dependency-audit"
+          manifest = root / "manifest.json"
+          if not manifest.is_file():
+              sys.exit("Missing audit manifest (preflight, tool installation, or audit failed)")
+          data = json.loads(manifest.read_text(encoding="utf-8"))
+          if data.get("source_sha") != "6ad9bbf538aa313836f624d2218840bcd8e0d2f5" or data.get("scope") != "direct_pinned_only":
+              sys.exit("Unexpected evidence manifest identity or scope")
+          for key, filename in (("application_exit", "application.json"), ("security_tools_exit", "security-tools.json")):
+              code = data.get(key)
+              report = root / filename
+              if type(code) is not int or code != 0:
+                  sys.exit(f"{filename} audit was not clean (exit {code})")
+              if not report.is_file():
+                  sys.exit(f"Missing machine-readable report: {filename}")
+              evidence = json.loads(report.read_text(encoding="utf-8"))
+              if not isinstance(evidence, dict) or not isinstance(evidence.get("dependencies"), list):
+                  sys.exit(f"Invalid audit JSON schema: {filename}")
+              if not evidence["dependencies"] or any(item.get("vulns") for item in evidence["dependencies"]):
+                  sys.exit(f"Empty evidence or reported vulnerabilities: {filename}")
+          print("Both direct-dependency audits passed; transitive dependencies remain out of scope")
+          PY
