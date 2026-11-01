@@ -50,6 +50,9 @@ jobs:
             cdn.playwright.dev:443
             playwright.azureedge.net:443
             storage.googleapis.com:443
+            # GitHub Actions artifact transport (upload-artifact@v4).
+            results-receiver.actions.githubusercontent.com:443
+            '*.blob.core.windows.net:443'
       - name: Preflight local-only quality configuration (before checkout)
         shell: bash
         run: |
