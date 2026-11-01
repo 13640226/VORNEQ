@@ -72,6 +72,17 @@ jobs:
           pg_dump --version
           pg_restore --version
 
+      - name: Verify actual local database identity before writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_ACTIONS}" = "true"
+          test "${RUNNER_ENVIRONMENT}" = "github-hosted"
+          test "$(psql "$DATABASE_URL" -Atqc 'SELECT current_database()')" = "source_db"
+          test "$(psql "$DATABASE_URL" -Atqc 'SELECT inet_server_addr()::text')" = "172.17.0.2" || {
+            # Service container IP varies: require loopback client destination instead.
+            test "$DATABASE_URL" = "postgresql://vorneq:vorneq@127.0.0.1:5432/source_db"
+          }
       - name: Seed source database
         run: |
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
