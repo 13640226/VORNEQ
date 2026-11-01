@@ -22,6 +22,9 @@ jobs:
         with:
           egress-policy: block
           disable-telemetry: true
+          # This job installs and audits Python packages only; no sudo or Docker
+          # capability is needed. Privileged jobs require separate architecture.
+          disable-sudo-and-containers: true
           allowed-endpoints: >
             github.com:443
             api.github.com:443
@@ -33,6 +36,24 @@ jobs:
             security.ubuntu.com:80
             pypi.org:443
             files.pythonhosted.org:443
+      - name: Assert unprivileged runner boundary (before checkout)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
+            echo "::error::Unexpected sudo access in the dependency-audit job"
+            exit 1
+          fi
+          if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+            echo "::error::Unexpected Docker access in the dependency-audit job"
+            exit 1
+          fi
+          for socket in /var/run/docker.sock /run/containerd/containerd.sock; do
+            if [ -S "$socket" ] && [ -w "$socket" ]; then
+              echo "::error::Unexpected writable container socket"
+              exit 1
+            fi
+          done
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
