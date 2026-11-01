@@ -72,6 +72,16 @@ jobs:
           python-version: "3.12"
           cache: pip
 
+      - name: Verify isolated quality runner before dependency execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_ACTIONS}" = "true"
+          test "${RUNNER_ENVIRONMENT}" = "github-hosted"
+          test "${VORNEQ_ENV}" = "development"
+          test -z "${DATABASE_URL:-}"
+          test -z "${REDIS_URL:-}"
+          test "${QUALITY_BASE_URL}" = "http://127.0.0.1:8000"
       - name: Install application dependencies
         run: |
           python -m pip install --upgrade pip
