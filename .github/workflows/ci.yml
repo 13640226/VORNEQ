@@ -59,6 +59,31 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
           cache-dependency-path: requirements.txt
+      - name: Verify isolated CI identity before dependency execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_EVENT_NAME}" = "pull_request" -o "${GITHUB_EVENT_NAME}" = "push"
+          test "${VORNEQ_ENV}" = "development"
+          test -z "${REDIS_URL:-}"
+          if [ -n "${DATABASE_URL:-}" ]; then
+            test "${DATABASE_URL}" = "postgres://vorneq:vorneq@localhost:5432/vorneq"
+          fi
+          test "${GITHUB_ACTIONS}" = "true"
+          test "${RUNNER_ENVIRONMENT}" = "github-hosted"
+      - name: Verify local PostgreSQL identity before migration
+        if: matrix.python-version == '3.11' || matrix.python-version == '3.12'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${DATABASE_URL:-}" ]; then
+            python - <<'PY'
+          import os, urllib.parse
+          url = urllib.parse.urlparse(os.environ["DATABASE_URL"])
+          assert url.hostname == "localhost" and url.port == 5432
+          assert url.path == "/vorneq" and url.username == "vorneq"
+          PY
+          fi
       - name: Install dependencies
         run: |
           sudo apt-get update
