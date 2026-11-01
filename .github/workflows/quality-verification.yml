@@ -2,6 +2,10 @@ name: Global Quality Verification
 
 on:
   pull_request:
+    # Only governance-only changes may skip optional quality verification.
+    # Workflow changes MUST remain in scope for security review.
+    paths-ignore:
+      - "docs/governance/**"
   workflow_dispatch:
 
 permissions:
@@ -20,10 +24,22 @@ jobs:
       DJANGO_CSRF_TRUSTED_ORIGINS: http://127.0.0.1:8000,http://localhost:8000
       QUALITY_BASE_URL: http://127.0.0.1:8000
       QUALITY_OUT_DIR: artifacts/quality
+      DATABASE_URL: ""
+      REDIS_URL: ""
 
     steps:
+      - name: Preflight local-only quality configuration (before checkout)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$VORNEQ_ENV" = "development"
+          test -z "${DATABASE_URL:-}"
+          test -z "${REDIS_URL:-}"
+          test "$QUALITY_BASE_URL" = "http://127.0.0.1:8000"
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5

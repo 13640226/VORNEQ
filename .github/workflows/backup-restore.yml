@@ -33,9 +33,20 @@ jobs:
       DATABASE_URL: postgresql://vorneq:vorneq@127.0.0.1:5432/source_db
       RESTORE_DATABASE_URL: postgresql://vorneq:vorneq@127.0.0.1:5432/restore_db
       BACKUP_DIR: /tmp/vorneq-backups
+      REDIS_URL: ""
 
     steps:
+      - name: Preflight isolated backup and restore destinations (before checkout)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DATABASE_URL" = "postgresql://vorneq:vorneq@127.0.0.1:5432/source_db"
+          test "$RESTORE_DATABASE_URL" = "postgresql://vorneq:vorneq@127.0.0.1:5432/restore_db"
+          test "$PGPASSWORD" = "vorneq"
+          test -z "${REDIS_URL:-}"
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install PostgreSQL client
         run: |

@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+# Explicit minimum privilege for all CI jobs.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -15,11 +19,22 @@ jobs:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
       DJANGO_CSRF_TRUSTED_ORIGINS: http://localhost,http://127.0.0.1
+      DATABASE_URL: ""
+      REDIS_URL: ""
     strategy:
       matrix:
         python-version: ["3.11", "3.12"]
     steps:
+      - name: Preflight development SQLite configuration (before checkout)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$VORNEQ_ENV" = "development"
+          test -z "${DATABASE_URL:-}"
+          test -z "${REDIS_URL:-}"
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -52,6 +67,7 @@ jobs:
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
       DJANGO_CSRF_TRUSTED_ORIGINS: http://localhost,http://127.0.0.1
       DATABASE_URL: postgres://vorneq:vorneq@localhost:5432/vorneq
+      REDIS_URL: ""
     services:
       postgres:
         image: postgres:16
@@ -70,7 +86,16 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12"]
     steps:
+      - name: Preflight ephemeral PostgreSQL binding (before checkout)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$VORNEQ_ENV" = "development"
+          test "$DATABASE_URL" = "postgres://vorneq:vorneq@localhost:5432/vorneq"
+          test -z "${REDIS_URL:-}"
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
