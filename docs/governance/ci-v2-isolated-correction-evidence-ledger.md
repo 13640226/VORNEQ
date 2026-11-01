@@ -18,3 +18,8 @@ Scope: source-only changes; no CI runs, database connections, tests, merges, dep
 ## Static acceptance
 AC-CI2-01..10: 0/10 runtime verified. No security approval. No merge/deploy.
 STOP_340 ACTIVE; HARD_STOP ACTIVE; FINAL_STATE SAFE_HOLD / NO_GO.
+
+## Candidate implementation static review (2026-11-01)
+Commit 001e8d5284524a84f95937b5a0d172e597a3affc adds `scripts/ci_v2_isolated_candidate.sh` (not invoked by any workflow). It uses an internal Docker network, disposable PostgreSQL without published ports, non-root application container, read-only bind mount, no capabilities, no-new-privileges, and image digest gates.
+
+**REVIEW VERDICT: CHANGES_REQUIRED / NOT EXECUTABLE-ACCEPTED.** The script itself requires Docker privileges on its orchestration host. Image provenance, image pre-provisioning, package integrity, PostgreSQL writable filesystem/UID compatibility, nonroot /app/.cache ownership, application write paths, and reliable proof of network/secret isolation are unverified. The script does not satisfy a required GitHub check. A hostile dependency can still run inside the constrained container; this is defense-in-depth, not a security proof. The script must not be invoked until an independent assessor verifies these prerequisites and a separate owner authorization explicitly names the run SHA and environment. No runtime evidence has been produced.
