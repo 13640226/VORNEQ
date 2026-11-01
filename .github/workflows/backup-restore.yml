@@ -13,6 +13,7 @@ permissions:
 jobs:
   postgres-backup-restore:
     runs-on: ubuntu-24.04
+    timeout-minutes: 25
     services:
       postgres:
         image: postgres:16
@@ -33,9 +34,36 @@ jobs:
       DATABASE_URL: postgresql://vorneq:vorneq@127.0.0.1:5432/source_db
       RESTORE_DATABASE_URL: postgresql://vorneq:vorneq@127.0.0.1:5432/restore_db
       BACKUP_DIR: /tmp/vorneq-backups
+      REDIS_URL: ""
 
     steps:
-      - uses: actions/checkout@v4
+      # P0 candidate mitigation; runtime enforcement still requires independent evidence.
+      - name: Block unapproved outbound endpoints (before checkout)
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: block
+          disable-telemetry: true
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+            codeload.github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            raw.githubusercontent.com:443
+            archive.ubuntu.com:80
+            security.ubuntu.com:80
+            apt.postgresql.org:443
+      - name: Preflight isolated backup and restore destinations (before checkout)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DATABASE_URL" = "postgresql://vorneq:vorneq@127.0.0.1:5432/source_db"
+          test "$RESTORE_DATABASE_URL" = "postgresql://vorneq:vorneq@127.0.0.1:5432/restore_db"
+          test "$PGPASSWORD" = "vorneq"
+          test -z "${REDIS_URL:-}"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Install PostgreSQL client
         run: |

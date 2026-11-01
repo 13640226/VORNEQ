@@ -6,22 +6,55 @@ on:
   pull_request:
     branches: [main]
 
+# Explicit minimum privilege for all CI jobs.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       VORNEQ_ENV: development
       DJANGO_SECRET_KEY: ci-only-secret
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
       DJANGO_CSRF_TRUSTED_ORIGINS: http://localhost,http://127.0.0.1
+      DATABASE_URL: ""
+      REDIS_URL: ""
     strategy:
       matrix:
         python-version: ["3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v4
+      # P0 candidate mitigation; runtime enforcement still requires independent evidence.
+      - name: Block unapproved outbound endpoints (before checkout)
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: block
+          disable-telemetry: true
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+            codeload.github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            raw.githubusercontent.com:443
+            archive.ubuntu.com:80
+            security.ubuntu.com:80
+            pypi.org:443
+            files.pythonhosted.org:443
+      - name: Preflight development SQLite configuration (before checkout)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$VORNEQ_ENV" = "development"
+          test -z "${DATABASE_URL:-}"
+          test -z "${REDIS_URL:-}"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -45,6 +78,7 @@ jobs:
 
   test-postgres:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       VORNEQ_ENV: development
       DJANGO_SECRET_KEY: ci-only-secret
@@ -52,6 +86,7 @@ jobs:
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
       DJANGO_CSRF_TRUSTED_ORIGINS: http://localhost,http://127.0.0.1
       DATABASE_URL: postgres://vorneq:vorneq@localhost:5432/vorneq
+      REDIS_URL: ""
     services:
       postgres:
         image: postgres:16
@@ -70,9 +105,35 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v4
+      # P0 candidate mitigation; runtime enforcement still requires independent evidence.
+      - name: Block unapproved outbound endpoints (before checkout)
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: block
+          disable-telemetry: true
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+            codeload.github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            raw.githubusercontent.com:443
+            archive.ubuntu.com:80
+            security.ubuntu.com:80
+            pypi.org:443
+            files.pythonhosted.org:443
+      - name: Preflight ephemeral PostgreSQL binding (before checkout)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$VORNEQ_ENV" = "development"
+          test "$DATABASE_URL" = "postgres://vorneq:vorneq@localhost:5432/vorneq"
+          test -z "${REDIS_URL:-}"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
