@@ -15,24 +15,31 @@ umask 077
 [[ "$(git rev-parse HEAD)" == "$CI_V2_EXPECTED_SHA" ]] || exit 12
 [[ "${GITHUB_ACTIONS:-}" == "true" ]] || exit 13
 [[ "${GITHUB_EVENT_NAME:-}" == "workflow_dispatch" ]] || exit 14
+[[ "${CI_V2_REVIEWED_RUN_ID}" == "${GITHUB_RUN_ID:-unset}" ]] || exit 18
+[[ "${GITHUB_REPOSITORY:-}" == "13640226/VORNEQ" ]] || exit 19
 [[ -z "${DATABASE_URL:-}" && -z "${REDIS_URL:-}" ]] || exit 15
 [[ -z "${AWS_ACCESS_KEY_ID:-}" && -z "${RENDER_API_KEY:-}" ]] || exit 16
 
+# The orchestration host is privileged and MUST be independently isolated.
+# This script does not itself attest image provenance, host isolation, or authorization.
 # This orchestrator requires Docker access. The untrusted application NEVER
 # receives the Docker socket or host credentials.
 command -v docker >/dev/null || exit 17
-network="vorneq-ci2-${GITHUB_RUN_ID:-manual}-$$"
-pg="vorneq-ci2-pg-$$"
+network="vorneq-ci2-${GITHUB_RUN_ID:-manual}-$"
+pg="vorneq-ci2-pg-$"
+pg_volume="vorneq-ci2-pgdata-$"
 cleanup() {
   docker rm -f "$pg" >/dev/null 2>&1 || true
   docker network rm "$network" >/dev/null 2>&1 || true
+  docker volume rm -f "$pg_volume" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 docker network create --internal "$network" >/dev/null
+docker volume create "$pg_volume" >/dev/null
 # No published ports, no production endpoints, disposable container.
 docker run -d --name "$pg" --network "$network" --network-alias postgres \
   --read-only --tmpfs /var/run/postgresql:rw,noexec,nosuid \
-  --tmpfs /var/lib/postgresql/data:rw,nosuid \
+  --mount "type=volume,src=$pg_volume,dst=/var/lib/postgresql" \
   --cap-drop ALL --security-opt no-new-privileges \
   -e POSTGRES_USER=ci_only -e POSTGRES_PASSWORD=ci_only -e POSTGRES_DB=ci_test \
   "$CI_V2_PG_IMAGE_DIGEST" >/dev/null
@@ -46,7 +53,7 @@ docker exec "$pg" pg_isready -U ci_only -d ci_test >/dev/null
 docker run --rm --network "$network" --user 65532:65532 \
   --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 \
   --memory 2g --cpus 2 --read-only \
-  --tmpfs /tmp:rw,nosuid,nodev --tmpfs /app/.cache:rw,nosuid,nodev \
+  --tmpfs /tmp:rw,nosuid,nodev \
   --mount "type=bind,src=$(pwd),dst=/src,readonly" \
   -e VORNEQ_ENV=development -e DJANGO_SECRET_KEY=ci-isolated-only \
   -e DJANGO_DEBUG=0 -e DJANGO_ALLOWED_HOSTS=localhost,testserver \
