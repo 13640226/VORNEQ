@@ -24,6 +24,7 @@ permissions:
 jobs:
   profile:
     runs-on: ubuntu-latest
+    environment: staging
     timeout-minutes: 30
 
     steps:
