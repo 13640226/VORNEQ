@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""V1.2 offline-only CI skip directive diagnostic.
+"""V1.3 offline-only CI skip directive diagnostic.
 
 Consumes a caller-supplied local evidence manifest. The caller MUST obtain and
 independently verify GitHub provenance and completeness; this tool cannot.
-No network, Git, subprocess, workflow dispatch, secrets or database access.
+No network, Git, subprocess, workflow dispatch, secrets or database access.\nAll caller-supplied provenance/completeness fields are untrusted assertions.\nA clean scan MUST remain UNKNOWN, never a dispatch or security approval.
 Not wired into any CI workflow, hook, or Required Check.
 """
 from __future__ import annotations
@@ -57,7 +57,7 @@ def inspect(manifest: object) -> tuple[int, str]:
             evidence["pagination_complete"] is not True):
         return 2, "UNKNOWN: evidence claims incomplete or inconsistent"
     seen: set[str] = set()
-    blocked: list[str] = []
+    blocked: list[str] = []\n    historical: list[str] = []
     for item in commits:
         if not isinstance(item, dict) or set(item) != {"sha", "message"}:
             return 2, "UNKNOWN: invalid commit record"
@@ -66,14 +66,12 @@ def inspect(manifest: object) -> tuple[int, str]:
                 or not isinstance(message, str) or len(message) > 65536):
             return 2, "UNKNOWN: invalid or duplicate commit record"
         seen.add(sha)
-        if SKIP.search(message) or TRAILER.search(message):
-            blocked.append(sha[:12])
+        if SKIP.search(message) or TRAILER.search(message):\n            if sha == head:\n                blocked.append(sha[:12])\n            else:\n                historical.append(sha[:12])
     if commits[-1]["sha"] != head:
         return 2, "UNKNOWN: supplied commit sequence does not end at HEAD"
     if blocked:
         return 1, "BLOCKED: skip directives in supplied commits: " + ", ".join(blocked)
-    return 0, ("NO_SKIP_FOUND_IN_SUPPLIED_EVIDENCE: provenance and completeness "
-               "claims are NOT independently verified; NOT CI authorization")
+    history_note = ("; HISTORICAL_SKIP_DIRECTIVES=" + ",".join(historical)\n                    if historical else "")\n    return 2, ("UNKNOWN: no skip directive in supplied HEAD; provenance, "\n               "pagination, commit completeness and GitHub dispatch remain "\n               "UNVERIFIED" + history_note)
 
 
 def read_manifest(path: Path) -> object:
@@ -82,7 +80,7 @@ def read_manifest(path: Path) -> object:
     if not hasattr(os, "O_NOFOLLOW"):
         raise ValueError("O_NOFOLLOW unavailable")
     flags |= os.O_NOFOLLOW
-    fd = os.open(path, flags)
+    # Require a single basename: do not traverse untrusted parent directories.\n    if path.name != str(path) or str(path) in ("", ".", ".."):\n        raise ValueError("manifest must be a basename in the trusted working directory")\n    fd = os.open(path, flags)
     try:
         mode = os.fstat(fd).st_mode
         if not stat.S_ISREG(mode):
