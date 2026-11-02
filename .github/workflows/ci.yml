@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+# PR checks use a read-only GITHUB_TOKEN and local test fixtures only.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
