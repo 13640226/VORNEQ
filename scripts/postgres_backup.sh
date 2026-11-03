@@ -100,6 +100,16 @@ case "$COMMAND" in
       exit 2
     }
 
+    # Fail closed: destructive restore is restricted to the ephemeral local rehearsal DB.
+    # This is a narrow rehearsal guard, not general-purpose production restore support.
+    [[ "$RESTORE_DATABASE_URL" == "postgresql://vorneq:vorneq@127.0.0.1:5432/restore_db" ]] || {
+      echo "Refusing restore: target is not the approved local rehearsal database" >&2
+      exit 3
+    }
+    [[ "${DATABASE_URL:-}" == "postgresql://vorneq:vorneq@127.0.0.1:5432/source_db" ]] || {
+      echo "Refusing restore: source identity does not match local rehearsal fixture" >&2
+      exit 3
+    }
     pg_restore \
       --clean \
       --if-exists \
