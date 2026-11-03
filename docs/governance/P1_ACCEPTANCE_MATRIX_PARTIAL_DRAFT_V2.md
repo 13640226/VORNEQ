@@ -15,6 +15,18 @@
 
 **Zählung:** OD-10 = 25; AC-019 = 22; **47 gemeldete Kriterien**, getrennte Mengen. Keine automatische Deduplikation. `TEXT_RECONCILIATION = PARTIAL`, `RUNTIME_VERIFIED = 0`.
 
+## Quellenabgleich — dokumentarische Teilrekonsiliation
+
+| Kriterienmenge | Quellbasis | Anzahl | Abgleichstatus |
+|---|---|---:|---|
+| OD-10 | Nachtrag I (Owner/Chat-Kopie) | 25 | `TEXT_RECONCILED_CHAT_COPY` |
+| AC-019 | Issue #478 Body, Abschnitt 4, V1.1 (Owner/Chat-Kopie) | 22 | `TEXT_RECONCILED_CHAT_COPY (V1.1)`; `V1.2_EQUIVALENCE_UNVERIFIED` |
+| V3.1-B | Handoff | 24 reported | `SOURCE_PENDING` |
+| V3.1-C | Handoff | 28 reported | `SOURCE_PENDING` |
+| **Gesamt** | **99 reported, unreconciled** | **99** | `P1_TOTAL_VERIFIED = UNKNOWN` |
+
+**Grenze:** `TEXT_RECONCILED_CHAT_COPY` bezieht sich ausschließlich auf die im Gespräch vorliegende Kopie, nicht auf eine unabhängig verifizierte Übereinstimmung mit dem GitHub-Original. Keine der 99 Kriterien gilt dadurch als technisch oder unabhängig verifiziert. `F-11 = OPEN`.
+
 ## OD-10 — Arbeitsmatrix (25 Kriterien)
 
 | ID | Szenario (gekürzt) | Erwartung (gekürzt) | Status |
