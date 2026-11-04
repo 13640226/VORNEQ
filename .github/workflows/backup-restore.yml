@@ -10,9 +10,17 @@ on:
 permissions:
   contents: read
 
+# CI-01 / CI-03: the rehearsal runs as an unprivileged user (uid 1001, no sudo)
+# inside the digest-pinned postgres image, which already ships pg_dump,
+# pg_restore and psql. The disposable database is reachable only through the
+# job network alias "postgres"; no port is published on the runner host.
+
 jobs:
   postgres-backup-restore:
     runs-on: ubuntu-24.04
+    container:
+      image: postgres:16@sha256:5db6dac2ef5dcff512f4f00a009c3c332b9f2f28f24277175bf3e4a3d02ef83a
+      options: --user 1001:1001
     services:
       postgres:
         image: postgres:16@sha256:5db6dac2ef5dcff512f4f00a009c3c332b9f2f28f24277175bf3e4a3d02ef83a
@@ -20,8 +28,6 @@ jobs:
           POSTGRES_USER: vorneq
           POSTGRES_PASSWORD: vorneq
           POSTGRES_DB: source_db
-        ports:
-          - 5432:5432
         options: >-
           --health-cmd="pg_isready -U vorneq -d source_db"
           --health-interval=5s
@@ -30,19 +36,34 @@ jobs:
 
     env:
       PGPASSWORD: vorneq
-      DATABASE_URL: postgresql://vorneq:vorneq@127.0.0.1:5432/source_db
-      RESTORE_DATABASE_URL: postgresql://vorneq:vorneq@127.0.0.1:5432/restore_db
+      DATABASE_URL: postgresql://vorneq:vorneq@postgres:5432/source_db
+      RESTORE_DATABASE_URL: postgresql://vorneq:vorneq@postgres:5432/restore_db
       BACKUP_DIR: /tmp/vorneq-backups
 
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - name: Install PostgreSQL client
+      - name: Verify unprivileged runtime and client tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client-16
+          test "$(id -u)" != "0"
+          if command -v sudo >/dev/null 2>&1; then echo "sudo present" >&2; exit 1; fi
           pg_dump --version
           pg_restore --version
+
+      - name: Verify disposable database identity before any write (Z4)
+        run: |
+          set -eu
+          row="$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -Atc "SELECT current_database() || '|' || current_user || '|' || host(inet_server_addr())")"
+          echo "identity: $row"
+          db="$(echo "$row" | cut -d'|' -f1)"
+          user="$(echo "$row" | cut -d'|' -f2)"
+          addr="$(echo "$row" | cut -d'|' -f3)"
+          test "$db" = "source_db"
+          test "$user" = "vorneq"
+          case "$addr" in
+            10.*|172.1[6-9].*|172.2[0-9].*|172.3[0-1].*|192.168.*) ;;
+            *) echo "database address $addr is not a private job-network address" >&2; exit 1 ;;
+          esac
 
       - name: Seed source database
         run: |
@@ -53,7 +74,7 @@ jobs:
           );
           INSERT INTO restore_probe (id, payload) VALUES (1, 'vorneq-backup-rehearsal');
           SQL
-          createdb -h 127.0.0.1 -U vorneq restore_db
+          createdb -h postgres -U vorneq restore_db
 
       - name: Create backup
         run: bash scripts/postgres_backup.sh backup
