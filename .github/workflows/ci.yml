@@ -10,24 +10,19 @@ on:
 permissions:
   contents: read
 
-# CI-01 / AC-CI2-04: project code and dependencies run inside a digest-pinned
-# container as an unprivileged user (uid 1001, no sudo). No privileged
-# preparation step shares the job with untrusted code. Translations are
-# compiled with Babel instead of GNU gettext, so no OS package install is needed.
+# CI-01 / CI-02 / CI-03 (CI security architecture V2):
+# - Steps on the runner only orchestrate Docker; they never execute project code.
+# - Wheels are downloaded by pip from requirements-ci.lock with --require-hashes
+#   and --only-binary (no build hooks, no project code).
+# - Project code runs in a digest-pinned container as uid 1001, with all
+#   capabilities dropped, no-new-privileges, no Docker socket, no credentials,
+#   and no internet: --network none (test) or an --internal network that only
+#   reaches the disposable PostgreSQL (test-postgres).
 
 jobs:
   test:
     name: test (${{ matrix.python-version }})
     runs-on: ubuntu-latest
-    container:
-      image: ${{ matrix.image }}
-      options: --user 1001:1001
-    env:
-      VORNEQ_ENV: development
-      DJANGO_SECRET_KEY: ci-only-secret
-      DJANGO_DEBUG: "1"
-      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
-      DJANGO_CSRF_TRUSTED_ORIGINS: http://localhost,http://127.0.0.1
     strategy:
       matrix:
         include:
@@ -37,57 +32,34 @@ jobs:
             image: python:3.12-bookworm@sha256:a5bab0ff300f91231c2e68bf73a8a8d60762ac39ce1c50eaf6803e4c38a9062b
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Verify unprivileged runtime
+        with:
+          persist-credentials: false
+      - name: Download hash-pinned wheels (network; no project code runs)
         run: |
-          python --version
-          test "$(id -u)" != "0"
-          if command -v sudo >/dev/null 2>&1; then echo "sudo present" >&2; exit 1; fi
-      - name: Install dependencies (virtualenv, no root)
+          mkdir -p "$RUNNER_TEMP/wheels"
+          chmod 0777 "$RUNNER_TEMP/wheels"
+          docker run --rm --user 1001:1001 -e HOME=/tmp \
+            -v "$RUNNER_TEMP/wheels:/w" \
+            -v "$GITHUB_WORKSPACE/requirements-ci.lock:/lock:ro" \
+            "${{ matrix.image }}" \
+            python -m pip download --no-cache-dir --only-binary=:all: --require-hashes -r /lock -d /w
+      - name: Run checks and tests without network (CI-02)
         run: |
-          python -m venv "$RUNNER_TEMP/venv"
-          echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
-          "$RUNNER_TEMP/venv/bin/python" -m pip install --upgrade pip
-          "$RUNNER_TEMP/venv/bin/python" -m pip install -r requirements.txt "babel==2.16.0"
-      - name: Compile translations (Babel)
-        run: |
-          set -eu
-          for po in $(find . -path ./node_modules -prune -o -name django.po -print); do
-            pybabel compile -i "$po" -o "${po%.po}.mo"
-          done
-      - name: Django system check
-        run: python manage.py check
-      - name: Check migration drift
-        run: python manage.py makemigrations --check --dry-run
-      - name: Collect static files
-        run: python manage.py collectstatic --noinput
-      - name: Run tests
-        run: python manage.py test
+          docker run --rm --network none --user 1001:1001 \
+            --cap-drop ALL --security-opt no-new-privileges \
+            -e VORNEQ_ENV=development \
+            -e DJANGO_SECRET_KEY=ci-only-secret \
+            -e DJANGO_DEBUG=1 \
+            -e DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,testserver \
+            -e DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost,http://127.0.0.1 \
+            -v "$GITHUB_WORKSPACE:/src:ro" \
+            -v "$RUNNER_TEMP/wheels:/w:ro" \
+            -v "$GITHUB_WORKSPACE/requirements-ci.lock:/lock:ro" \
+            "${{ matrix.image }}" sh /src/scripts/ci_offline_tests.sh
 
   test-postgres:
     name: test-postgres (${{ matrix.python-version }})
     runs-on: ubuntu-latest
-    container:
-      image: ${{ matrix.image }}
-      options: --user 1001:1001
-    env:
-      VORNEQ_ENV: development
-      DJANGO_SECRET_KEY: ci-only-secret
-      DJANGO_DEBUG: "1"
-      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
-      DJANGO_CSRF_TRUSTED_ORIGINS: http://localhost,http://127.0.0.1
-      DATABASE_URL: postgres://vorneq:vorneq@postgres:5432/vorneq
-    services:
-      postgres:
-        image: postgres:16@sha256:5db6dac2ef5dcff512f4f00a009c3c332b9f2f28f24277175bf3e4a3d02ef83a
-        env:
-          POSTGRES_USER: vorneq
-          POSTGRES_PASSWORD: vorneq
-          POSTGRES_DB: vorneq
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     strategy:
       matrix:
         include:
@@ -97,50 +69,45 @@ jobs:
             image: python:3.12-bookworm@sha256:a5bab0ff300f91231c2e68bf73a8a8d60762ac39ce1c50eaf6803e4c38a9062b
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Verify unprivileged runtime
+        with:
+          persist-credentials: false
+      - name: Download hash-pinned wheels (network; no project code runs)
         run: |
-          python --version
-          test "$(id -u)" != "0"
-          if command -v sudo >/dev/null 2>&1; then echo "sudo present" >&2; exit 1; fi
-      - name: Install dependencies (virtualenv, no root)
+          mkdir -p "$RUNNER_TEMP/wheels"
+          chmod 0777 "$RUNNER_TEMP/wheels"
+          docker run --rm --user 1001:1001 -e HOME=/tmp \
+            -v "$RUNNER_TEMP/wheels:/w" \
+            -v "$GITHUB_WORKSPACE/requirements-ci.lock:/lock:ro" \
+            "${{ matrix.image }}" \
+            python -m pip download --no-cache-dir --only-binary=:all: --require-hashes -r /lock -d /w
+      - name: Start disposable PostgreSQL on an internal network
         run: |
-          python -m venv "$RUNNER_TEMP/venv"
-          echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
-          "$RUNNER_TEMP/venv/bin/python" -m pip install --upgrade pip
-          "$RUNNER_TEMP/venv/bin/python" -m pip install -r requirements.txt "babel==2.16.0"
-      - name: Compile translations (Babel)
-        run: |
-          set -eu
-          for po in $(find . -path ./node_modules -prune -o -name django.po -print); do
-            pybabel compile -i "$po" -o "${po%.po}.mo"
+          docker network create --internal ci-db
+          docker run -d --name ci-postgres --network ci-db --network-alias postgres \
+            -e POSTGRES_USER=vorneq -e POSTGRES_PASSWORD=vorneq -e POSTGRES_DB=vorneq \
+            --health-cmd "pg_isready -U vorneq -d vorneq" --health-interval 2s --health-retries 30 \
+            postgres:16@sha256:5db6dac2ef5dcff512f4f00a009c3c332b9f2f28f24277175bf3e4a3d02ef83a
+          for i in $(seq 1 60); do
+            [ "$(docker inspect -f '{{.State.Health.Status}}' ci-postgres)" = "healthy" ] && break
+            sleep 2
           done
-      - name: Django system check
-        run: python manage.py check
-      - name: Verify disposable database identity before any write (Z4)
+          test "$(docker inspect -f '{{.State.Health.Status}}' ci-postgres)" = "healthy"
+      - name: Run checks and tests without internet (CI-02)
         run: |
-          python - <<'EOF'
-          import ipaddress, os, sys
-          from urllib.parse import urlparse
-          import psycopg2
-          url = os.environ["DATABASE_URL"]
-          host = urlparse(url).hostname
-          if host != "postgres":
-              sys.exit(f"DATABASE_URL host {host!r} is not the job service alias 'postgres'")
-          with psycopg2.connect(url) as conn, conn.cursor() as cur:
-              cur.execute("SELECT current_database(), current_user, host(inet_server_addr())")
-              db, user, addr = cur.fetchone()
-          print(f"identity: {db}|{user}|{addr}")
-          if (db, user) != ("vorneq", "vorneq"):
-              sys.exit(f"unexpected database identity {db}/{user}")
-          ip = ipaddress.ip_address(addr)
-          if not ip.is_private or ip.is_loopback:
-              sys.exit(f"database address {addr} is not a private job-network address")
-          EOF
-      - name: Apply migrations
-        run: python manage.py migrate --noinput
-      - name: Check migration drift
-        run: python manage.py makemigrations --check --dry-run
-      - name: Collect static files
-        run: python manage.py collectstatic --noinput
-      - name: Run tests
-        run: python manage.py test
+          docker run --rm --network ci-db --user 1001:1001 \
+            --cap-drop ALL --security-opt no-new-privileges \
+            -e VORNEQ_ENV=development \
+            -e DJANGO_SECRET_KEY=ci-only-secret \
+            -e DJANGO_DEBUG=1 \
+            -e DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,testserver \
+            -e DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost,http://127.0.0.1 \
+            -e DATABASE_URL=postgres://vorneq:vorneq@postgres:5432/vorneq \
+            -v "$GITHUB_WORKSPACE:/src:ro" \
+            -v "$RUNNER_TEMP/wheels:/w:ro" \
+            -v "$GITHUB_WORKSPACE/requirements-ci.lock:/lock:ro" \
+            "${{ matrix.image }}" sh /src/scripts/ci_offline_tests.sh
+      - name: Remove disposable PostgreSQL
+        if: always()
+        run: |
+          docker rm -f ci-postgres || true
+          docker network rm ci-db || true
