@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-24.04
     services:
       postgres:
-        image: postgres:16
+        image: postgres:16@sha256:5db6dac2ef5dcff512f4f00a009c3c332b9f2f28f24277175bf3e4a3d02ef83a
         env:
           POSTGRES_USER: vorneq
           POSTGRES_PASSWORD: vorneq
@@ -35,7 +35,7 @@ jobs:
       BACKUP_DIR: /tmp/vorneq-backups
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Install PostgreSQL client
         run: |
