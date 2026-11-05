@@ -77,7 +77,7 @@ await assert.rejects(
   /Chrome cleanup failed/
 );
 await assert.rejects(
-  runWithIntegrityRetries({ executeAttempt: async () => ({ lhr: lhr() }), maxAttempts: 3 }),
+  runWithIntegrityRetries({ executeAttempt: async () => ({ lhr: lhr() }), maxAttempts: 4 }),
   RangeError
 );
 // NO_NAVSTART must remain explicitly invalid, and every attempt must preserve
@@ -152,5 +152,37 @@ const stillInvalidTrace = await runWithIntegrityRetries({
 assert.equal(stillInvalidTrace.status, 'MEASUREMENT_INVALID');
 assert.equal(stillInvalidTrace.attempts, 2);
 assert.equal(stillInvalidTrace.history[1].instrumentation.stages.cleanup, 'complete');
+
+// A third attempt is permitted only when the second report is NO_NAVSTART.
+let noNavTries = 0;
+const rescuedThird = await runWithIntegrityRetries({
+  executeAttempt: async () => {
+    noNavTries += 1;
+    return { lhr: noNavTries < 3 ? noNavStart : lhr() };
+  },
+  maxAttempts: 3
+});
+assert.equal(rescuedThird.status, 'VALID');
+assert.equal(rescuedThird.attempts, 3);
+let ordinaryInvalidTries = 0;
+const boundedOrdinary = await runWithIntegrityRetries({
+  executeAttempt: async () => {
+    ordinaryInvalidTries += 1;
+    return { lhr: lhr(null, null, null) };
+  },
+  maxAttempts: 3
+});
+assert.equal(boundedOrdinary.status, 'MEASUREMENT_INVALID');
+assert.equal(ordinaryInvalidTries, 2);
+let persistentNavTries = 0;
+const persistentNav = await runWithIntegrityRetries({
+  executeAttempt: async () => {
+    persistentNavTries += 1;
+    return { lhr: noNavStart };
+  },
+  maxAttempts: 3
+});
+assert.equal(persistentNav.status, 'MEASUREMENT_INVALID');
+assert.equal(persistentNavTries, 3);
 
 console.log('Lighthouse measurement integrity and retry self-tests passed.');

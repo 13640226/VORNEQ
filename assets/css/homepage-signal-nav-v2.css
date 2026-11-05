@@ -9,10 +9,12 @@
 .homepage-signal-nav {
     /* Compact bar can grow when translated labels wrap or browser text is enlarged. */
     --signal-bottom-bar-size: 96px;
-    --signal-scroll-offset: calc(var(--header-height) + var(--space-4));
     --signal-progress: 0;
 
     position: fixed;
+    /* P0: without a z-index, positioned homepage content (z-index 1–2)
+       paints above the fixed bar. */
+    z-index: var(--z-overlay);
     inset-block-start: 50%;
     inset-inline-start: max(
         var(--space-4),
@@ -81,8 +83,12 @@
     transform-origin: inline-start center;
 }
 
+/* P0: offset must resolve on the sections themselves, not on the nav.
+   --signal-header-height is measured by JS; tokens are the fallback. */
 [data-homepage-signal-section] {
-    scroll-margin-block-start: var(--signal-scroll-offset);
+    scroll-margin-block-start: calc(
+        var(--signal-header-height, var(--header-height)) + var(--space-4)
+    );
 }
 
 /*
