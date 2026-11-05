@@ -21,3 +21,14 @@
 @media (prefers-reduced-motion: reduce) {
   .world-home--layout-v3 .world-flow__action { transition: none; }
 }
+
+/* Keep the read-only limitation readable in all three locales. */
+.world-home--layout-v3 .world-flow__notice {
+  max-width: 72ch; line-height: 1.65; overflow-wrap: anywhere;
+  padding: .75rem 1rem; border-inline-start: 3px solid currentColor;
+}
+@media (max-width: 640px) {
+  .world-home--layout-v3 .world-flow__header,
+  .world-home--layout-v3 .world-flow__notice { min-width: 0; max-width: 100%; }
+  .world-home--layout-v3 .world-flow__steps { width: 100%; }
+}
