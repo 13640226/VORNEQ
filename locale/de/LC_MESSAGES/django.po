@@ -2177,3 +2177,24 @@ msgstr "Funktionsweise von VORNEQ lesen"
 #: templates/index.html
 msgid "Close demo panel"
 msgstr "Demo-Bereich schließen"
+
+msgid "Inspect information"
+msgstr "Informationen prüfen"
+
+msgid "Inspect the public context already recorded for a VORNEQ artifact."
+msgstr "Den bereits erfassten öffentlichen Kontext eines VORNEQ-Artefakts prüfen."
+
+msgid "Enter a VORNEQ URL, artifact ID, or title to inspect existing public context. This does not create new claims, evidence, or artifacts."
+msgstr "Geben Sie eine VORNEQ-URL, eine Artefakt-ID oder einen Titel ein, um den vorhandenen öffentlichen Kontext zu prüfen. Dabei werden keine neuen Aussagen, Evidenzen oder Artefakte erstellt."
+
+msgid "URL, artifact ID, or title"
+msgstr "URL, Artefakt-ID oder Titel"
+
+msgid "Paste a VORNEQ URL or enter a title"
+msgstr "VORNEQ-URL einfügen oder Titel eingeben"
+
+msgid "Inspect"
+msgstr "Prüfen"
+
+msgid "Inspect Context V1 currently supports public Products and Library items only."
+msgstr "Inspect Context V1 unterstützt derzeit nur öffentliche Produkte und Bibliothekseinträge."

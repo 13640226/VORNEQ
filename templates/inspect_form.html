@@ -7,27 +7,44 @@
 <meta name="description" content="{% trans 'Inspect the public context already recorded for a VORNEQ artifact.' %}">
 {% endblock %}
 
+{% block extra_head %}
+{{ block.super }}
+<style>
+  .inspect-form__fields { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0.75rem; margin-block: 0.75rem; }
+  .inspect-form__input { flex: 1 1 18rem; min-width: 0; width: 100%; box-sizing: border-box; }
+  .inspect-form__submit { flex: 0 0 auto; white-space: normal; }
+  .inspect-form__input:focus-visible, .inspect-form__submit:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  @media (max-width: 40rem) {
+    .inspect-form__fields { flex-direction: column; }
+    .inspect-form__input, .inspect-form__submit { flex: 0 0 auto; width: 100%; max-width: 100%; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<main class="container" aria-labelledby="inspect-title">
-  <section>
+<div class="container">
+  <section aria-labelledby="inspect-title">
     <p>{% trans "Context, not Score" %}</p>
     <h1 id="inspect-title">{% trans "Inspect information" %}</h1>
     <p>{% trans "Enter a VORNEQ URL, artifact ID, or title to inspect existing public context. This does not create new claims, evidence, or artifacts." %}</p>
 
-    <form method="post" role="search" aria-label="{% trans 'Inspect information' %}">
+    <form method="post" role="search" aria-label="{% trans 'Inspect information' %}" class="inspect-form">
       {% csrf_token %}
       <label for="inspect-input">{% trans "URL, artifact ID, or title" %}</label>
-      <input
-        id="inspect-input"
-        type="text"
-        name="input"
-        value="{{ inspect_input|default:'' }}"
-        maxlength="2000"
-        required
-        autocomplete="off"
-        placeholder="{% trans 'Paste a VORNEQ URL or enter a title' %}"
-      >
-      <button type="submit">{% trans "Inspect" %}</button>
+      <div class="inspect-form__fields">
+        <input
+          id="inspect-input"
+          class="inspect-form__input"
+          type="text"
+          name="input"
+          value="{{ inspect_input|default:'' }}"
+          maxlength="2000"
+          required
+          autocomplete="off"
+          placeholder="{% trans 'Paste a VORNEQ URL or enter a title' %}"
+        >
+        <button class="inspect-form__submit" type="submit">{% trans "Inspect" %}</button>
+      </div>
     </form>
 
     {% if inspect_error %}
@@ -36,5 +53,5 @@
 
     <p>{% trans "Inspect Context V1 currently supports public Products and Library items only." %}</p>
   </section>
-</main>
+</div>
 {% endblock %}
