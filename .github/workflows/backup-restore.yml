@@ -10,59 +10,47 @@ on:
 permissions:
   contents: read
 
+# CI-01 / CI-02 / CI-03: runner steps only orchestrate Docker. The rehearsal
+# (including scripts/postgres_backup.sh) runs in the digest-pinned postgres
+# image as uid 1001, all capabilities dropped, no-new-privileges, on an
+# --internal Docker network that reaches only the disposable database.
+
 jobs:
   postgres-backup-restore:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: vorneq
-          POSTGRES_PASSWORD: vorneq
-          POSTGRES_DB: source_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U vorneq -d source_db"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=10
-
-    env:
-      PGPASSWORD: vorneq
-      DATABASE_URL: postgresql://vorneq:vorneq@127.0.0.1:5432/source_db
-      RESTORE_DATABASE_URL: postgresql://vorneq:vorneq@127.0.0.1:5432/restore_db
-      BACKUP_DIR: /tmp/vorneq-backups
-
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
-      - name: Install PostgreSQL client
+      - name: Start disposable PostgreSQL on an internal network
         run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
+          docker network create --internal ci-db
+          docker run -d --name ci-postgres --network ci-db --network-alias postgres \
+            -e POSTGRES_USER=vorneq -e POSTGRES_PASSWORD=vorneq -e POSTGRES_DB=source_db \
+            --health-cmd "pg_isready -U vorneq -d source_db" --health-interval 2s --health-retries 30 \
+            postgres:16@sha256:5db6dac2ef5dcff512f4f00a009c3c332b9f2f28f24277175bf3e4a3d02ef83a
+          for i in $(seq 1 60); do
+            [ "$(docker inspect -f '{{.State.Health.Status}}' ci-postgres)" = "healthy" ] && break
+            sleep 2
+          done
+          test "$(docker inspect -f '{{.State.Health.Status}}' ci-postgres)" = "healthy"
 
-      - name: Seed source database
+      - name: Run backup/restore rehearsal without internet
         run: |
-          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
-          CREATE TABLE restore_probe (
-              id integer PRIMARY KEY,
-              payload text NOT NULL
-          );
-          INSERT INTO restore_probe (id, payload) VALUES (1, 'vorneq-backup-rehearsal');
-          SQL
-          createdb -h 127.0.0.1 -U vorneq restore_db
+          docker run --rm --network ci-db --user 1001:1001 \
+            --cap-drop ALL --security-opt no-new-privileges \
+            -e PGPASSWORD=vorneq \
+            -e DATABASE_URL=postgresql://vorneq:vorneq@postgres:5432/source_db \
+            -e RESTORE_DATABASE_URL=postgresql://vorneq:vorneq@postgres:5432/restore_db \
+            -e BACKUP_DIR=/tmp/vorneq-backups \
+            -v "$GITHUB_WORKSPACE:/src:ro" \
+            --entrypoint bash \
+            postgres:16@sha256:5db6dac2ef5dcff512f4f00a009c3c332b9f2f28f24277175bf3e4a3d02ef83a \
+            /src/scripts/ci_backup_rehearsal.sh
 
-      - name: Create backup
-        run: bash scripts/postgres_backup.sh backup
-
-      - name: Restore backup into isolated target
+      - name: Remove disposable PostgreSQL
+        if: always()
         run: |
-          backup_file="$(find "$BACKUP_DIR" -type f -name 'vorneq_*.dump' | head -n 1)"
-          test -n "$backup_file"
-          bash scripts/postgres_backup.sh --restore "$backup_file" --confirm-restore
-
-      - name: Verify restored data
-        run: |
-          restored="$(psql "$RESTORE_DATABASE_URL" -Atc "SELECT payload FROM restore_probe WHERE id = 1")"
-          test "$restored" = "vorneq-backup-rehearsal"
+          docker rm -f ci-postgres || true
+          docker network rm ci-db || true

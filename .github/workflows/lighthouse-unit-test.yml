@@ -1,0 +1,32 @@
+name: Lighthouse Unit Test (Targeted Phase A)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse-integrity-unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out approved immutable commit
+        uses: actions/checkout@v4
+        with:
+          ref: e464ebce64f47b1c87ea5c7ab221e7f9956a67c7
+          persist-credentials: false
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify approved source blobs
+        shell: bash
+        run: |
+          test "$(git hash-object quality/lighthouse-integrity.mjs)" = "a695213ce1b246b3bbf51209810c743388a8af18"
+          test "$(git hash-object quality/test-lighthouse-integrity.mjs)" = "2ae2c0753fc66b7c4036fb44aa229a1993050ca5"
+
+      - name: Run only approved Lighthouse integrity unit test
+        run: node quality/test-lighthouse-integrity.mjs

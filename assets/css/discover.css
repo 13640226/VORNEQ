@@ -88,7 +88,206 @@ html[dir="rtl"] .discover-object__meta { text-transform: none; }
   .discover-object { padding: 18px; }
 }
 
+/* Entdecken V2 — bounded visual evolution; existing palette and behavior retained. */
+.discover-page { padding-block-start: clamp(42px, 5vw, 72px); }
+.discover-hero { max-width: 850px; margin-block-end: 36px; }
+.discover-hero h1 { max-width: 18ch; text-wrap: balance; }
+.discover-hero > p { line-height: 1.65; }
+.discover-controls { border-radius: 16px; padding: clamp(18px, 2.6vw, 32px); box-shadow: 0 12px 32px rgba(11,31,61,.055); }
+.discover-search { max-width: none; flex-wrap: wrap; align-items: stretch; gap: 12px; }
+.discover-search input { flex: 1 1 280px; min-height: 58px; border-radius: 10px; padding-inline: 18px; }
+.discover-search input::placeholder { color: #64748b; opacity: 1; }
+.discover-search button { min-height: 58px; border-radius: 10px; padding-inline: 30px; }
+.discover-filters { gap: 10px; margin-block-start: 22px; padding-block: 5px 9px; }
+.discover-filters a { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 10px 18px; border-radius: 10px; line-height: 1.3; transition: border-color 160ms ease, background-color 160ms ease; }
+.discover-filters a:hover { border-color: var(--discover-mid); background: #eff6ff; }
+.discover-filters a[aria-current="page"]:hover { background: var(--discover-blue); }
+.discover-results { margin-block-start: 46px; }
+.discover-section-heading { margin-block-end: 24px; }
+.discover-grid { gap: 20px; }
+.discover-object { padding: clamp(20px, 2.3vw, 28px); border-radius: 14px; }
+.discover-object h3 { margin-block: 14px 10px; font-size: clamp(1.15rem, 1.7vw, 1.35rem); line-height: 1.35; overflow-wrap: anywhere; color: var(--discover-navy, #0B1F3D); }
+.discover-object > p { line-height: 1.7; }
+.discover-object dl { margin-block-start: 20px; }
+.discover-object dl div { flex-wrap: wrap; line-height: 1.5; }
+.discover-object dd { overflow-wrap: anywhere; }
+.discover-actions { margin-block-start: 22px; }
+.discover-graph { margin-block-start: 22px; }
+.discover-graph summary { min-height: 42px; display: list-item; padding-block: 9px; }
+.discover-graph__body { border-radius: 10px; padding: clamp(14px, 2vw, 20px); }
+.discover-graph__nodes li, .discover-graph__edges li { padding-block: 3px; }
+.discover-graph__nodes li:hover, .discover-graph__edges li:hover { background: #eff6ff; }
+.discover-pagination { flex-wrap: wrap; line-height: 1.6; }
+@media (max-width: 900px) {
+  .discover-page { padding-block-start: 48px; }
+  .discover-grid { gap: 16px; }
+}
+@media (max-width: 640px) {
+  .discover-page { padding-block-start: 36px; }
+  .discover-hero { margin-block-end: 28px; }
+  .discover-controls { padding: 18px; }
+  .discover-search { flex-direction: column; }
+  .discover-search input { flex-basis: auto; width: 100%; }
+  .discover-filters { margin-block-start: 18px; }
+  .discover-filters a { min-height: 44px; }
+  .discover-object { padding: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .discover-filters a { transition: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .discover-object { transition: none; }
   .discover-object:hover { transform: none; }
+}
+
+/* Entdecken V3: keyboard and narrow-screen refinements. */
+.discover-filters a:hover { border-color: var(--discover-mid); background: #eff6ff; }
+.discover-filters a[aria-current=page]:hover { background: var(--discover-blue); color: #fff; }
+.discover-action--context:hover { border-color: var(--discover-mid); background: #eff6ff; }
+.discover-action:focus-visible { outline: 3px solid var(--discover-light); outline-offset: 3px; }
+.discover-object { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+.discover-pagination { flex-wrap: wrap; gap: 12px; }
+.discover-object__meta { flex-wrap: wrap; }
+}
+
+/* Entdecken V1.4 — isolated, review-only branded search surface.
+   Scoped to the controls panel; existing results, page background and LED
+   behavior remain untouched. No runtime/production authorization implied. */
+.discover-page .discover-controls {
+  --discover-search-foreground: #fff;
+  --discover-search-muted: rgba(255,255,255,.88);
+  --discover-search-focus: #a5f3fc;
+  --discover-led-contrast: #a5f3fc;
+  --discover-led-glow: 0 0 0 3px rgba(165,243,252,.2), 0 0 16px rgba(165,243,252,.55);
+  background:
+    radial-gradient(ellipse at 80% 80%, rgba(68,185,245,.24), transparent 65%),
+    linear-gradient(135deg, #173b83 0%, #2158a6 55%, #277bb5 100%);
+  color: var(--discover-search-foreground);
+  border: 1px solid rgba(157,224,255,.3);
+  border-radius: 24px;
+}
+.discover-page .discover-controls .discover-search input {
+  background: rgba(12,43,91,.3);
+  color: var(--discover-search-foreground);
+  border: 2px solid rgba(157,224,255,.75);
+  border-radius: 12px;
+}
+.discover-page .discover-controls .discover-search input::placeholder {
+  color: var(--discover-search-muted);
+  opacity: 1;
+}
+.discover-page .discover-controls .discover-search input:focus-visible,
+.discover-page .discover-controls .discover-search button:focus-visible,
+.discover-page .discover-controls .discover-filters a:focus-visible {
+  outline: 3px solid var(--discover-search-focus);
+  outline-offset: 3px;
+}
+.discover-page .discover-controls .discover-search input:focus-visible {
+  border-color: var(--discover-search-focus);
+}
+.discover-page .discover-controls .discover-search button {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+.discover-page .discover-controls .discover-filters a {
+  color: var(--discover-search-foreground);
+  border-color: rgba(255,255,255,.35);
+  background: rgba(8,30,72,.18);
+}
+.discover-page .discover-controls .discover-filters a:hover {
+  background: rgba(255,255,255,.16);
+  border-color: var(--discover-search-focus);
+}
+.discover-page .discover-controls .discover-filters a[aria-current="page"],
+.discover-page .discover-controls .discover-filters a[aria-current="page"]:hover {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  border-color: var(--color-accent);
+}
+
+/* Entdecken V1.5 — Blue Glass result cards.
+   Isolated visual-only proposal; V1.4 search controls remain unchanged. */
+.discover-page .discover-object {
+  --discover-card-fg: #f8fafc;
+  --discover-card-muted: #cbd5e1;
+  --discover-card-led: #a5f3fc;
+  --discover-led-contrast: #a5f3fc;
+  --discover-led-glow: 0 0 0 3px rgba(165,243,252,.20), 0 0 16px rgba(165,243,252,.55);
+  background: linear-gradient(145deg, rgba(18,48,94,.92), rgba(10,30,65,.96));
+  border: 1px solid rgba(125,211,252,.30);
+  border-radius: 20px;
+  color: var(--discover-card-fg);
+  box-shadow: 0 12px 35px rgba(0,10,35,.20);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+.discover-page .discover-object h3,
+.discover-page .discover-object h3 a {
+  color: #fff;
+}
+.discover-page .discover-object > p,
+.discover-page .discover-object__meta,
+.discover-page .discover-object dt,
+.discover-page .discover-object dd,
+.discover-page .discover-object .discover-graph__relation,
+.discover-page .discover-object .discover-graph__relation-token,
+.discover-page .discover-object .discover-graph__notice {
+  color: var(--discover-card-muted);
+}
+.discover-page .discover-object .discover-action--context {
+  background: rgba(255,255,255,.05);
+  color: #e2e8f0;
+  border-color: rgba(125,211,252,.40);
+}
+.discover-page .discover-object .discover-action--context:hover {
+  background: rgba(255,255,255,.12);
+  border-color: rgba(165,243,252,.70);
+}
+.discover-page .discover-object .discover-graph {
+  border-top-color: rgba(125,211,252,.20);
+}
+.discover-page .discover-object .discover-graph summary {
+  color: var(--discover-card-led);
+}
+.discover-page .discover-object .discover-graph__body {
+  background: rgba(0,0,0,.25);
+  border-color: rgba(125,211,252,.20);
+}
+.discover-page .discover-object .discover-graph code,
+.discover-page .discover-object .discover-graph__edges strong {
+  color: #93c5fd;
+}
+.discover-page .discover-object .discover-graph__nodes li:hover,
+.discover-page .discover-object .discover-graph__edges li:hover {
+  background: rgba(255,255,255,.08);
+}
+.discover-page .discover-object .discover-action:focus-visible,
+.discover-page .discover-object .discover-graph summary:focus-visible,
+.discover-page .discover-object h3 a:focus-visible {
+  outline: 3px solid var(--discover-card-led);
+  outline-offset: 3px;
+}
+.discover-page .discover-object:focus-within {
+  border-color: var(--discover-led-contrast);
+  box-shadow: 0 12px 35px rgba(0,10,35,.20), var(--discover-led-glow);
+}
+@media (hover: hover) and (pointer: fine) {
+  .discover-page .discover-object:hover {
+    border-color: rgba(165,243,252,.70);
+    box-shadow: 0 16px 40px rgba(0,10,35,.28), 0 0 18px rgba(56,189,248,.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .discover-page .discover-object {
+    transition: none;
+  }
+}
+
+/* Entdecken pagination V1 — contrast-only, scoped to navigation links. */
+.discover-page .discover-pagination a,
+.discover-page .discover-pagination a:visited,
+.discover-page .discover-pagination a:hover,
+.discover-page .discover-pagination a:focus-visible {
+  color: #fff;
 }

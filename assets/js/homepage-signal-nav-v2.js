@@ -21,7 +21,7 @@
 
     if (!sections.length) return;
 
-    const TOTAL_SECTIONS = 7;
+    const TOTAL_SECTIONS = sections.length;
     const DIRECT_INTERACTION_SUPPRESSION_MS = 500;
     const SCROLL_KEYS = new Set([
         "ArrowUp",
@@ -77,7 +77,10 @@
             return;
         }
 
-        const compact = window.matchMedia("(max-width: 639px)").matches;
+        // Must match the compact-bar media query in the CSS.
+        const compact = window.matchMedia(
+            "(max-width: 1023px), (max-height: 599px)"
+        ).matches;
         if (!compact) return;
 
         link.scrollIntoView({
@@ -115,7 +118,7 @@
         const height = Math.ceil(header.getBoundingClientRect().height);
         if (height > 0) {
             document.documentElement.style.setProperty(
-                "--signal-scroll-offset",
+                "--signal-header-height",
                 `${height}px`
             );
         }

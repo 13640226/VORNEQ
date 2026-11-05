@@ -2000,3 +2000,180 @@ msgstr "Erkunden Sie Informationen mit ihrem erhaltenen Kontext."
 
 msgid "Move from search and discovery into recorded context, evidence relationships, provenance, documents, and marketplace surfaces."
 msgstr "Wechseln Sie von Suche und Entdeckung zu erfasstem Kontext, Evidenzbeziehungen, Provenienz, Dokumenten und Marktplatzoberflächen."
+
+# UI-12A V1.7.1 — German search-page translations
+#: templates/search.html
+msgid "Discover knowledge"
+msgstr "Wissen entdecken"
+
+#: templates/search.html
+msgid "Filter public knowledge and marketplace metadata across supported content types."
+msgstr "Filtern Sie öffentliches Wissen und Marktplatz-Metadaten nach unterstützten Inhaltstypen."
+
+#: templates/search.html
+msgid "Advanced search filters"
+msgstr "Erweiterte Suchfilter"
+
+#: templates/search.html
+msgid "Search query"
+msgstr "Suchbegriff"
+
+#: templates/search.html
+msgid "Search VORNEQ…"
+msgstr "VORNEQ durchsuchen…"
+
+#: templates/search.html
+msgid "Content type"
+msgstr "Inhaltstyp"
+
+#: templates/search.html
+msgid "Browse by type"
+msgstr "Nach Typ durchsuchen"
+
+#: templates/search.html
+msgid "All types"
+msgstr "Alle Typen"
+
+#: templates/search.html
+msgid "Show filters"
+msgstr "Filter anzeigen"
+
+#: templates/search.html
+msgid "Search filters"
+msgstr "Suchfilter"
+
+#: templates/search.html
+msgid "Close filters"
+msgstr "Filter schließen"
+
+#: templates/search.html
+msgid "Library item type"
+msgstr "Bibliothekseintragstyp"
+
+#: templates/search.html
+msgid "Any library type"
+msgstr "Alle Bibliothekstypen"
+
+#: templates/search.html
+msgid "Any media type"
+msgstr "Alle Medientypen"
+
+#: templates/search.html
+msgid "Image"
+msgstr "Bild"
+
+#: templates/search.html
+msgid "Video"
+msgstr "Video"
+
+#: templates/search.html
+msgid "Minimum price"
+msgstr "Mindestpreis"
+
+#: templates/search.html
+msgid "Min price"
+msgstr "Mindestpreis"
+
+#: templates/search.html
+msgid "Maximum price"
+msgstr "Höchstpreis"
+
+#: templates/search.html
+msgid "Max price"
+msgstr "Höchstpreis"
+
+#: templates/search.html
+msgid "Apply filters"
+msgstr "Filter anwenden"
+
+#: templates/search.html
+msgid "Results"
+msgstr "Ergebnisse"
+
+#: templates/search.html
+msgid "Try adjusting your keywords or filters."
+msgstr "Versuchen Sie, Ihre Suchbegriffe oder Filter anzupassen."
+
+#: templates/index.html
+msgid "Conceptual illustration — no live data"
+msgstr "Schematische Darstellung — keine Live-Daten"
+
+#: templates/index.html
+msgid "Conceptual evidence process"
+msgstr "Schematischer Nachweisprozess"
+
+#: templates/index.html
+msgid "Evidence process steps"
+msgstr "Schritte des Nachweisprozesses"
+
+#: templates/index.html
+msgid "Verification"
+msgstr "Prüfung"
+
+#: templates/index.html
+msgid "Identify where a statement or record originates."
+msgstr "Erkennen, woher eine Aussage oder ein Datensatz stammt."
+
+#: templates/index.html
+msgid "Link supporting material to the statement it describes."
+msgstr "Verknüpfen Sie unterstützende Unterlagen mit der zugehörigen Aussage."
+
+#: templates/index.html
+msgid "Keep relevant conditions and limitations visible."
+msgstr "Halten Sie relevante Bedingungen und Einschränkungen sichtbar."
+
+#: templates/index.html
+msgid "Document review steps without claiming automatic truth or approval."
+msgstr "Dokumentieren Sie Prüfschritte, ohne automatische Richtigkeit oder Freigabe zu behaupten."
+
+#: templates/index.html
+msgid "Sample source"
+msgstr "Beispielquelle"
+
+#: templates/index.html
+msgid "Fictional source reference: DEMO-SRC-001."
+msgstr "Fiktive Quellenreferenz: DEMO-SRC-001."
+
+#: templates/index.html
+msgid "Sample evidence"
+msgstr "Beispielnachweise"
+
+#: templates/index.html
+msgid "Fictional supporting note: DEMO-EVD-001."
+msgstr "Fiktive unterstützende Notiz: DEMO-EVD-001."
+
+#: templates/index.html
+msgid "Fictional attachment: DEMO-EVD-002."
+msgstr "Fiktiver Anhang: DEMO-EVD-002."
+
+#: templates/index.html
+msgid "Sample context"
+msgstr "Beispielkontext"
+
+#: templates/index.html
+msgid "Fictional condition: DEMO-CTX-001."
+msgstr "Fiktive Bedingung: DEMO-CTX-001."
+
+#: templates/index.html
+msgid "Sample verification"
+msgstr "Beispielprüfung"
+
+#: templates/index.html
+msgid "No verification was performed (DEMO-REV-001)."
+msgstr "Es wurde keine Prüfung durchgeführt (DEMO-REV-001)."
+
+#: templates/index.html
+msgid "All content in this panel is fictional."
+msgstr "Alle Inhalte in diesem Bereich sind frei erfunden."
+
+#: templates/index.html
+msgid "Read platform principles"
+msgstr "Plattformprinzipien lesen"
+
+#: templates/index.html
+msgid "Read how VORNEQ works"
+msgstr "Funktionsweise von VORNEQ lesen"
+
+#: templates/index.html
+msgid "Close demo panel"
+msgstr "Demo-Bereich schließen"

@@ -8,14 +8,6 @@ on:
         required: true
         default: 'no'
         type: string
-      allow_production_target:
-        description: 'Only if PRODUCTION is the intended target: set true. Detection uses the real database identity.'
-        required: true
-        default: 'false'
-        type: choice
-        options:
-          - 'false'
-          - 'true'
       articles:
         description: 'Number of synthetic articles'
         required: true
@@ -37,9 +29,14 @@ on:
         default: '200'
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   seed:
+    if: ${{ false }} # C02 hard stop: no database execution
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - uses: actions/checkout@v4
 
@@ -63,6 +60,20 @@ jobs:
             exit 1
           fi
 
+      - name: Require explicit seed confirmation
+        if: github.event.inputs.confirm_seed != 'yes'
+        run: |
+          echo 'Seed was not applied. Re-run with confirm_seed exactly "yes".' >&2
+          exit 1
+
+      - name: Guard against unintended production target
+        env:
+          TARGET_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
+          CONFIRM: ${{ inputs.confirm_seed }}
+          ALLOW_PRODUCTION_TARGET: 'false'
+        run: python3 scripts/db_target_guard.py guard --target-env TARGET_DATABASE_URL --production-env PRODUCTION_DATABASE_URL
+
       - name: Migration preflight
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
@@ -80,20 +91,6 @@ jobs:
             --library-items "${{ inputs.library_items }}" \
             --media-assets "${{ inputs.media_assets }}" \
             --dry-run
-
-      - name: Require explicit seed confirmation
-        if: github.event.inputs.confirm_seed != 'yes'
-        run: |
-          echo 'Seed was not applied. Re-run with confirm_seed exactly "yes".' >&2
-          exit 1
-
-      - name: Guard against unintended production target
-        env:
-          TARGET_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
-          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_SOURCE_DATABASE_URL }}
-          CONFIRM: ${{ inputs.confirm_seed }}
-          ALLOW_PRODUCTION_TARGET: ${{ inputs.allow_production_target }}
-        run: python3 scripts/db_target_guard.py guard --target-env TARGET_DATABASE_URL --production-env PRODUCTION_DATABASE_URL
 
       - name: Apply synthetic staging seed
         env:
