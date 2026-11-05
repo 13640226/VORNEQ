@@ -11,7 +11,10 @@ or unclear state stops the deploy (fail-closed):
        OWNER-AUTH-DEPLOY <AUTH-ID> <staging|production> @ <40-hex sha>
    that was never edited and was not revoked by a later
        OWNER-AUTH-DEPLOY-REVOKE <AUTH-ID>
-5. production only: the same SHA has a successful GitHub deployment to staging.
+5. production only: the same SHA has a successful GitHub deployment to staging,
+6. the authorization ID was not used for an earlier deploy (one deploy per ID),
+7. the SHA is not already live in the target environment (no silent re-deploy),
+8. trigger: the deploy hook belongs to the expected Render service.
 
 ``watch`` compares the commit reported by ``/health/`` with the last successful
 GitHub deployment per environment and reports drift (for example a manual
@@ -35,6 +38,12 @@ from dataclasses import dataclass
 DEFAULT_OWNER_LOGIN = "13640226"
 ENVIRONMENTS = ("staging", "production")
 REQUIRED_MAIN_CHECKS = frozenset({"test (3.11)", "test (3.12)", "dependencies"})
+# Render service IDs are not secrets; pinning them here (reviewed via the merge
+# control) prevents a hook of the wrong service from being used (2026-11-05).
+EXPECTED_SERVICE_IDS = {
+    "staging": "srv-dbm7dvc9v7es7393g70g",
+    "production": "srv-dadn07eq1p3s73eccau0",
+}
 
 _SHA_RE = re.compile(r"[0-9a-f]{40}")
 _AUTH_RE = re.compile(
@@ -57,6 +66,27 @@ class Decision:
 
 def is_full_sha(value: object) -> bool:
     return isinstance(value, str) and bool(_SHA_RE.fullmatch(value))
+
+
+def normalize_sha(value: object) -> str:
+    """Strip surrounding whitespace (copy/paste) and lower-case; validity is checked separately."""
+    return value.strip().lower() if isinstance(value, str) else ""
+
+
+def authorization_used(deployments: object, auth_id: str) -> bool:
+    """True if any recorded deployment was already made with this authorization ID."""
+    if not isinstance(deployments, list):
+        raise DeployRejected("deployment list unavailable")
+    marker = f"authorized by {auth_id}"
+    return any(isinstance(d, dict) and (d.get("description") or "").strip() == marker for d in deployments)
+
+
+def hook_service_id(hook_url: str) -> str | None:
+    parsed = urllib.parse.urlsplit(hook_url)
+    if parsed.scheme != "https" or parsed.netloc != "api.render.com":
+        return None
+    match = re.fullmatch(r"/deploy/(srv-[a-z0-9]+)", parsed.path)
+    return match.group(1) if match else None
 
 
 def _is_owner(comment: dict, owner_login: str) -> bool:
@@ -189,10 +219,15 @@ class GitHub:
         return (data or {}).get("check_runs")
 
     def compare_status(self, sha: str) -> str:
-        return (self.request("GET", f"/compare/{sha}...main") or {}).get("status")
+        try:
+            return (self.request("GET", f"/compare/{sha}...main") or {}).get("status")
+        except urllib.error.HTTPError as exc:
+            if exc.code in (404, 422):
+                raise DeployRejected("sha not found in the repository (not contained in main)") from exc
+            raise
 
     def deployments(self, environment: str, sha: str | None = None) -> list:
-        query = {"environment": environment, "per_page": "30"}
+        query = {"environment": environment, "per_page": "100"}
         if sha:
             query["sha"] = sha
         return self.request("GET", "/deployments?" + urllib.parse.urlencode(query)) or []
@@ -209,7 +244,7 @@ def last_successful_sha(gh: GitHub, environment: str) -> str | None:
 
 
 def preflight(gh: GitHub, environment: str, sha: str, auth_issue: int, actor: str, triggering_actor: str,
-              owner_login: str = DEFAULT_OWNER_LOGIN) -> str:
+              owner_login: str = DEFAULT_OWNER_LOGIN, live_release: object = None) -> str:
     if actor != owner_login or triggering_actor != owner_login:
         raise DeployRejected("workflow must be started by the owner account")
     if environment not in ENVIRONMENTS:
@@ -224,16 +259,24 @@ def preflight(gh: GitHub, environment: str, sha: str, auth_issue: int, actor: st
     decision = decide_deploy(environment, sha, gh.issue_comments(auth_issue), owner_login)
     if not decision.allowed:
         raise DeployRejected(decision.reason)
+    if authorization_used(gh.deployments(environment), decision.auth_id):
+        raise DeployRejected(f"authorization {decision.auth_id} was already used; post a new OWNER-AUTH-DEPLOY")
     if environment == "production":
         staged = any(deployment_succeeded(gh.deployment_statuses(d["id"])) for d in gh.deployments("staging", sha))
         if not staged:
             raise DeployRejected("sha has no successful staging deployment")
+    if release_matches(live_release, sha):
+        raise DeployRejected(f"sha is already live in {environment}; nothing to deploy")
     return decision.auth_id
 
 
-def trigger_hook(hook_url: str, sha: str) -> None:
+def trigger_hook(hook_url: str, sha: str, environment: str) -> None:
     if not hook_url.startswith("https://api.render.com/deploy/"):
         raise DeployRejected("deploy hook secret missing or malformed")
+    expected = EXPECTED_SERVICE_IDS.get(environment)
+    actual = hook_service_id(hook_url)
+    if not expected or actual != expected:
+        raise DeployRejected(f"deploy hook does not belong to the {environment} service")
     separator = "&" if "?" in hook_url else "?"
     req = urllib.request.Request(f"{hook_url}{separator}ref={sha}", data=b"", method="POST",
                                  headers={"User-Agent": "vorneq-deploy-control"})
@@ -275,12 +318,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--environment", choices=ENVIRONMENTS)
     parser.add_argument("--sha")
     args = parser.parse_args(argv)
+    args.sha = normalize_sha(args.sha) if args.sha is not None else None
     owner = os.environ.get("DEPLOY_OWNER_LOGIN", DEFAULT_OWNER_LOGIN)
     try:
         if args.command == "trigger":
             if not is_full_sha(args.sha):
                 raise DeployRejected("invalid sha")
-            trigger_hook(os.environ.get("RENDER_DEPLOY_HOOK_URL", ""), args.sha)
+            trigger_hook(os.environ.get("RENDER_DEPLOY_HOOK_URL", ""), args.sha, args.environment)
             print(f"TRIGGERED {args.environment} @ {args.sha}")
             return 0
         if args.command == "verify":
@@ -289,15 +333,19 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         gh = GitHub(os.environ.get("GITHUB_TOKEN", ""), os.environ.get("GITHUB_REPOSITORY", ""))
         if args.command == "preflight":
+            base = os.environ.get(f"{(args.environment or '').upper()}_BASE_URL", "")
+            live = fetch_release(base) if base.startswith("https://") else None
             auth_id = preflight(
                 gh, args.environment, args.sha, int(os.environ.get("DEPLOY_AUTH_ISSUE", "448")),
                 os.environ.get("GITHUB_ACTOR", ""), os.environ.get("GITHUB_TRIGGERING_ACTOR", ""), owner,
+                live_release=live,
             )
             print(f"ALLOW {args.environment} @ {args.sha} ({auth_id})")
             output = os.environ.get("GITHUB_OUTPUT")
             if output:
                 with open(output, "a", encoding="utf-8") as fh:
                     fh.write(f"auth_id={auth_id}\n")
+                    fh.write(f"sha={args.sha}\n")
             return 0
         drift = []
         for environment in ENVIRONMENTS:

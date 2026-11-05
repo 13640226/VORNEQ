@@ -164,6 +164,70 @@ class PreflightTests(TestCase):
             urlopen.assert_not_called()
 
 
+class HardeningTests(TestCase):
+    """Fixes from the 2026-11-05 staging/production runs (OWNER-AUTH-BUILD-DEPLOY-CONTROL-02)."""
+
+    STAGING_HOOK = "https://api.render.com/deploy/srv-dbm7dvc9v7es7393g70g?key=abc"
+    PROD_HOOK = "https://api.render.com/deploy/srv-dadn07eq1p3s73eccau0?key=abc"
+
+    def _gh(self, deployments=None):
+        gh = PreflightTests._gh(PreflightTests())
+        if deployments is not None:
+            gh.deployments.side_effect = lambda env, sha=None: deployments.get(env, [])
+        return gh
+
+    def test_normalize_sha_strips_pasted_whitespace(self):
+        self.assertEqual(dc.normalize_sha("   " + SHA + "\n"), SHA)
+        self.assertEqual(dc.normalize_sha(SHA.upper()), SHA)
+        self.assertEqual(dc.normalize_sha(None), "")
+
+    def test_main_accepts_padded_sha_input(self):
+        env = {"GITHUB_TOKEN": "t", "GITHUB_REPOSITORY": "o/r", "GITHUB_ACTOR": OWNER, "GITHUB_TRIGGERING_ACTOR": OWNER}
+        with mock.patch.dict(os.environ, env, clear=True), mock.patch.object(dc, "GitHub", return_value=self._gh()):
+            self.assertEqual(dc.main(["preflight", "--environment", "staging", "--sha", "   " + SHA]), 0)
+
+    def test_hook_of_other_service_is_rejected_without_network(self):
+        with mock.patch.object(dc.urllib.request, "urlopen") as urlopen:
+            with self.assertRaises(dc.DeployRejected):
+                dc.trigger_hook(self.STAGING_HOOK, SHA, "production")
+            with self.assertRaises(dc.DeployRejected):
+                dc.trigger_hook(self.PROD_HOOK, SHA, "staging")
+            with self.assertRaises(dc.DeployRejected):
+                dc.trigger_hook("https://api.render.com/deploy/srv-other?key=x", SHA, "production")
+            urlopen.assert_not_called()
+
+    def test_hook_of_expected_service_is_called(self):
+        response = mock.MagicMock(status=200)
+        response.__enter__.return_value = response
+        with mock.patch.object(dc.urllib.request, "urlopen", return_value=response) as urlopen:
+            dc.trigger_hook(self.PROD_HOOK, SHA, "production")
+        self.assertIn("ref=" + SHA, urlopen.call_args[0][0].full_url)
+
+    def test_authorization_is_single_use(self):
+        used = {"staging": [{"id": 1, "description": "authorized by OWNER-AUTH-DEPLOY-TEST-01"}]}
+        with self.assertRaises(dc.DeployRejected):
+            dc.preflight(self._gh(used), "staging", SHA, 448, OWNER, OWNER)
+        other = {"staging": [{"id": 1, "description": "authorized by OTHER-01"}]}
+        self.assertEqual(dc.preflight(self._gh(other), "staging", SHA, 448, OWNER, OWNER), "OWNER-AUTH-DEPLOY-TEST-01")
+
+    def test_authorization_used_is_fail_closed(self):
+        with self.assertRaises(dc.DeployRejected):
+            dc.authorization_used(None, "X-01")
+
+    def test_sha_already_live_is_rejected(self):
+        with self.assertRaises(dc.DeployRejected):
+            dc.preflight(self._gh(), "staging", SHA, 448, OWNER, OWNER, live_release=SHA)
+        self.assertTrue(dc.preflight(self._gh(), "staging", SHA, 448, OWNER, OWNER, live_release=OTHER))
+        self.assertTrue(dc.preflight(self._gh(), "staging", SHA, 448, OWNER, OWNER, live_release=None))
+
+    def test_unknown_sha_gets_clear_message(self):
+        gh = dc.GitHub("t", "o/r")
+        error = urllib.error.HTTPError("u", 404, "Not Found", {}, None)
+        with mock.patch.object(gh, "request", side_effect=error):
+            with self.assertRaisesRegex(dc.DeployRejected, "not found"):
+                gh.compare_status(SHA)
+
+
 class HealthReleaseTests(DjangoTestCase):
     def test_release_prefers_override_then_render_commit(self):
         with mock.patch.dict(os.environ, {"RENDER_GIT_COMMIT": SHA}, clear=False):

@@ -37,9 +37,10 @@ jobs:
       issues: read
     outputs:
       auth_id: ${{ steps.check.outputs.auth_id }}
+      sha: ${{ steps.check.outputs.sha }}
     steps:
       - name: Checkout deploy control from main only
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 (node24)
         with:
           ref: main
           persist-credentials: false
@@ -53,6 +54,10 @@ jobs:
           DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
           DEPLOY_SHA: ${{ inputs.sha }}
           DEPLOY_AUTH_ISSUE: "448"
+          # Public base URLs (repository variables): used to refuse a re-deploy
+          # of the SHA that is already live.
+          STAGING_BASE_URL: ${{ vars.STAGING_BASE_URL }}
+          PRODUCTION_BASE_URL: ${{ vars.PRODUCTION_BASE_URL }}
         run: python3 -I scripts/deploy_control.py preflight --environment "$DEPLOY_ENVIRONMENT" --sha "$DEPLOY_SHA"
 
   deploy:
@@ -69,11 +74,12 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
-      DEPLOY_SHA: ${{ inputs.sha }}
+      # Normalized (trimmed, lower-case) SHA as validated by the preflight job.
+      DEPLOY_SHA: ${{ needs.preflight.outputs.sha }}
       AUTH_ID: ${{ needs.preflight.outputs.auth_id }}
     steps:
       - name: Checkout deploy control and smoke test from main only
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 (node24)
         with:
           ref: main
           persist-credentials: false
