@@ -36,7 +36,10 @@ jobs:
   seed:
     if: ${{ false }} # C02 hard stop: no database execution
     runs-on: ubuntu-latest
-    environment: production
+    # C02-INVENTORY-01: Staging-Job laeuft nicht mehr in der Umgebung "production"
+    # und erhaelt damit keine Produktions-Secrets. STAGING_DATABASE_URL muss vor
+    # einer Aufhebung des Hard-Stops in der Umgebung "staging" hinterlegt werden.
+    environment: staging
     steps:
       - uses: actions/checkout@v4
 
