@@ -1,0 +1,60 @@
+name: Deploy Watch
+
+# G4 control: detects live releases that do not match the last successful
+# owner-authorized deploy (for example a manual Render dashboard deploy).
+# Read-only towards Render: it only reads the public /health/ endpoint.
+
+on:
+  schedule:
+    - cron: "41 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: deploy-watch
+  cancel-in-progress: true
+
+jobs:
+  watch:
+    name: deploy-watch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      deployments: read
+      issues: write
+    steps:
+      - name: Checkout deploy control from main only
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          persist-credentials: false
+          sparse-checkout: scripts/deploy_control.py
+          sparse-checkout-cone-mode: false
+
+      - name: Compare live releases with authorized deploys
+        id: watch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          STAGING_BASE_URL: ${{ vars.STAGING_BASE_URL }}
+          PRODUCTION_BASE_URL: ${{ vars.PRODUCTION_BASE_URL }}
+        run: python3 -I scripts/deploy_control.py watch
+
+      - name: Open alert issue on drift
+        if: steps.watch.outputs.drift == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SUMMARY: ${{ steps.watch.outputs.drift_summary }}
+        run: |
+          set -euo pipefail
+          title="[Deploy-Waechter] Nicht autorisierter Live-Stand erkannt"
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          body=$(printf 'Automatische Meldung von deploy-watch (%s).\n\n%s\n\nDer Live-Stand entspricht nicht dem letzten erfolgreichen, vom Eigentuemer autorisierten Deploy (OWNER-AUTH-DEPLOY). Bitte pruefen und dokumentieren (Issue #448).' \
+            "$(date -u +%Y-%m-%dT%H:%MZ)" "$SUMMARY")
+          if [ -n "$existing" ]; then
+            echo "Alert issue #$existing is already open; no duplicate comment."
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
+          fi
+          echo "::warning::$SUMMARY"

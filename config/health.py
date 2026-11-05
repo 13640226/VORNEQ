@@ -11,6 +11,24 @@ from django.http import JsonResponse
 logger = structlog.get_logger(__name__)
 
 
+_SHA_CHARS = frozenset("0123456789abcdef")
+
+
+def release_identifier():
+    """Return the deployed commit for external deploy verification.
+
+    Render sets RENDER_GIT_COMMIT for every build. VORNEQ_RELEASE remains an
+    explicit override. Anything that is not a plausible lower-case hex commit
+    id is reported as "unknown" so arbitrary environment content is never
+    echoed by this public endpoint.
+    """
+    for name in ("VORNEQ_RELEASE", "RENDER_GIT_COMMIT"):
+        value = (os.environ.get(name) or "").strip().lower()
+        if 7 <= len(value) <= 40 and set(value) <= _SHA_CHARS:
+            return value
+    return "unknown"
+
+
 def health_check(request):
     """Read-only readiness check for database, storage, and cache."""
     started = time.monotonic()
@@ -46,7 +64,7 @@ def health_check(request):
         "status": "ok" if healthy else "degraded",
         "checks": checks,
         "duration_ms": duration_ms,
-        "release": os.environ.get("VORNEQ_RELEASE", "unknown"),
+        "release": release_identifier(),
     }
 
     logger.info(
