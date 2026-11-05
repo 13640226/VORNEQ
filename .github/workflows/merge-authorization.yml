@@ -1,0 +1,46 @@
+name: Merge Authorization
+
+# GOV_BREACH_01 control: publishes the commit status "merge-authorization" on the
+# PR head SHA. Success only when the owner posted
+#   OWNER-AUTH-MERGE <AUTH-ID> PR #<n> @ <40-hex head sha>
+# Both triggers run this workflow file from the base branch (main), never from
+# the pull request. No pull request code is checked out or executed.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [main]
+  issue_comment:
+    types: [created, edited, deleted]
+
+permissions: {}
+
+concurrency:
+  group: merge-authorization-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    name: merge-authorization-evaluator
+    if: github.event_name == 'pull_request_target' || github.event.issue.pull_request
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write
+    steps:
+      - name: Checkout evaluator from main only
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          persist-credentials: false
+          sparse-checkout: scripts/merge_authorization.py
+          sparse-checkout-cone-mode: false
+
+      - name: Evaluate owner authorization
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+        run: python3 -I scripts/merge_authorization.py
