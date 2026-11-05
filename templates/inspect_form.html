@@ -16,14 +16,14 @@
   .inspect-form__input:focus-visible, .inspect-form__submit:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
   @media (max-width: 40rem) {
     .inspect-form__fields { flex-direction: column; }
-    .inspect-form__input, .inspect-form__submit { width: 100%; max-width: 100%; }
+    .inspect-form__input, .inspect-form__submit { flex: 0 0 auto; width: 100%; max-width: 100%; }
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container" aria-labelledby="inspect-title">
-  <section>
+<div class="container">
+  <section aria-labelledby="inspect-title">
     <p>{% trans "Context, not Score" %}</p>
     <h1 id="inspect-title">{% trans "Inspect information" %}</h1>
     <p>{% trans "Enter a VORNEQ URL, artifact ID, or title to inspect existing public context. This does not create new claims, evidence, or artifacts." %}</p>
