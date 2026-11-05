@@ -1,0 +1,1 @@
+Runtime-Test merge-authorization T3: neuer Push nach Autorisierung (2026-11-05). NICHT MERGEN.
