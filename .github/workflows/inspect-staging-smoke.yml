@@ -12,6 +12,7 @@ on:
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    environment: staging
     env:
       STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
       DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}

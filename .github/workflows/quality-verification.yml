@@ -7,85 +7,83 @@ on:
 permissions:
   contents: read
 
+# CI-01 / CI-02: runner steps only orchestrate Docker and never execute project
+# or dependency code. Python wheels come from requirements-ci.lock with hashes;
+# npm packages come from quality/package-lock.json via `npm ci --ignore-scripts`
+# (no lifecycle scripts). The app and the Playwright browser run as uid 1001,
+# all capabilities dropped, no-new-privileges, on an --internal Docker network
+# without internet. Chromium is preinstalled in the digest-pinned Playwright image.
+
 jobs:
   quality-verification:
-    # Pinned runner: Playwright 1.55.1 cannot install Chromium on Ubuntu 26.04.
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
-      VORNEQ_ENV: development
-      DJANGO_DEBUG: "true"
-      DJANGO_SECRET_KEY: quality-verification-only
-      DJANGO_ALLOWED_HOSTS: 127.0.0.1,localhost
-      DJANGO_CSRF_TRUSTED_ORIGINS: http://127.0.0.1:8000,http://localhost:8000
-      QUALITY_BASE_URL: http://127.0.0.1:8000
-      QUALITY_OUT_DIR: artifacts/quality
-
+      PY_IMAGE: python:3.12-bookworm@sha256:a5bab0ff300f91231c2e68bf73a8a8d60762ac39ce1c50eaf6803e4c38a9062b
+      PW_IMAGE: mcr.microsoft.com/playwright:v1.55.1-noble@sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          python-version: "3.12"
-          cache: pip
+          persist-credentials: false
 
-      - name: Install application dependencies
+      - name: Download hash-pinned dependencies (network; no project or dependency code runs)
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          mkdir -p "$RUNNER_TEMP/wheels" "$RUNNER_TEMP/deps" "$RUNNER_TEMP/out"
+          chmod 0777 "$RUNNER_TEMP/wheels" "$RUNNER_TEMP/deps" "$RUNNER_TEMP/out"
+          docker run --rm --user 1001:1001 -e HOME=/tmp \
+            -v "$RUNNER_TEMP/wheels:/w" \
+            -v "$GITHUB_WORKSPACE/requirements-ci.lock:/lock:ro" \
+            "$PY_IMAGE" \
+            python -m pip download --no-cache-dir --only-binary=:all: --require-hashes -r /lock -d /w
+          docker run --rm --user 1001:1001 -e HOME=/tmp -e npm_config_cache=/tmp/.npm \
+            -v "$GITHUB_WORKSPACE/quality/package.json:/deps/package.json:ro" \
+            -v "$GITHUB_WORKSPACE/quality/package-lock.json:/deps/package-lock.json:ro" \
+            -v "$RUNNER_TEMP/deps:/out" \
+            "$PW_IMAGE" \
+            sh -c 'cp /deps/package.json /deps/package-lock.json /tmp/ && cd /tmp && npm ci --ignore-scripts --no-audit --no-fund && cp -r node_modules /out/'
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Install verification dependencies
-        working-directory: quality
-        run: npm install --no-audit --no-fund
-
-      - name: Install browser
-        working-directory: quality
-        run: npx playwright install --with-deps chromium
-
-      - name: Self-test verification contract
-        working-directory: quality
-        run: npm test
-
-      - name: Prepare application database
-        run: python manage.py migrate --noinput
-
-      - name: Start application
+      - name: Start application on an internal network
         run: |
-          python manage.py runserver 127.0.0.1:8000 > /tmp/vorneq-quality-server.log 2>&1 &
-          echo $! > /tmp/vorneq-quality-server.pid
-          for attempt in $(seq 1 60); do
-            if curl --fail --silent http://127.0.0.1:8000/en/ >/dev/null; then
-              exit 0
-            fi
-            sleep 1
-          done
-          cat /tmp/vorneq-quality-server.log
-          exit 1
+          docker network create --internal qv-net
+          docker run -d --name qv-app --network qv-net --network-alias app --user 1001:1001 \
+            --cap-drop ALL --security-opt no-new-privileges \
+            -e VORNEQ_ENV=development \
+            -e DJANGO_DEBUG=true \
+            -e DJANGO_SECRET_KEY=quality-verification-only \
+            -e DJANGO_ALLOWED_HOSTS=app,127.0.0.1,localhost \
+            -e DJANGO_CSRF_TRUSTED_ORIGINS=http://app:8000 \
+            -v "$GITHUB_WORKSPACE:/src:ro" \
+            -v "$RUNNER_TEMP/wheels:/w:ro" \
+            -v "$GITHUB_WORKSPACE/requirements-ci.lock:/lock:ro" \
+            "$PY_IMAGE" sh /src/scripts/ci_quality_app.sh
 
-      - name: Run browser, accessibility, SEO and i18n verification
-        working-directory: quality
-        run: npm run verify
-
-      - name: Run Lighthouse lab measurements
-        working-directory: quality
-        run: npm run lighthouse
+      - name: Run browser, accessibility, SEO, i18n and Lighthouse verification without internet
+        run: |
+          docker run --rm --network qv-net --user 1001:1001 \
+            --cap-drop ALL --security-opt no-new-privileges --ipc=host \
+            -e QUALITY_BASE_URL=http://app:8000 \
+            -e QUALITY_OUT_DIR=artifacts/quality \
+            -v "$GITHUB_WORKSPACE:/src:ro" \
+            -v "$RUNNER_TEMP/deps:/deps:ro" \
+            -v "$RUNNER_TEMP/out:/out" \
+            "$PW_IMAGE" sh /src/scripts/ci_quality_verify.sh
 
       - name: Upload quality evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: global-quality-verification-${{ github.run_id }}
-          path: quality/artifacts/quality/
+          path: ${{ runner.temp }}/out/
           retention-days: 14
           if-no-files-found: error
 
-      - name: Show application log on infrastructure failure
+      - name: Show application log on failure
         if: failure()
-        run: cat /tmp/vorneq-quality-server.log || true
+        run: docker logs qv-app || true
+
+      - name: Remove containers and network
+        if: always()
+        run: |
+          docker rm -f qv-app || true
+          docker network rm qv-net || true
