@@ -99,10 +99,16 @@ class HealthPayloadTests(TestCase):
         self.assertEqual(set(database), {"vendor", "name", "render_id"})
         self.assertEqual(database["vendor"], connection.vendor)
         body = response.content.decode()
-        for key in ("USER", "PASSWORD", "PORT"):
-            value = str(connection.settings_dict.get(key) or "")
-            if len(value) >= 4:
-                self.assertNotIn(value, body)
+        password = str(connection.settings_dict.get("PASSWORD") or "")
+        if len(password) >= 4:
+            self.assertNotIn(password, body)
+        for marker in ("postgres://", "postgresql://", "@"):
+            self.assertNotIn(marker, body)
+        # The user name may be a substring of the database name (CI: user
+        # "vorneq", database "test_vorneq"), so no field may equal it exactly.
+        user = str(connection.settings_dict.get("USER") or "")
+        if user:
+            self.assertNotIn(user, set(database.values()))
 
     @patch("config.health.connection.cursor", side_effect=RuntimeError("down"))
     def test_database_failure_reports_unknown_identity(self, _cursor):
