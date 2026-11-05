@@ -3,7 +3,7 @@
 Status: DRAFT / REVIEW ONLY
 Base: ff6c69df2ecce33b46237292f2ae1dedd79502e2
 Authorization: User-requested isolated branch and Draft PR only.
-No merge, deploy, migration, database access, secrets access or runtime change.
+This PR changes the homepage How-it-works section (`templates/index.html`, `assets/css/how-it-works-upgrade.css`, de/fa catalogs). This document authorizes no merge, deploy, migration, database access or secrets access.
 
 ## Source audit (initial, static)
 - `config/urls.py`: localized home, discover, orientation, search, inspect, context, graph; API routes for core, verification, media, search.
@@ -11,7 +11,7 @@ No merge, deploy, migration, database access, secrets access or runtime change.
 - `templates/inspect_form.html`: existing form POST with CSRF, length limit, translated labels; current scope limited to public Products and Library items.
 - `.github/workflows/ci.yml`: isolated container test design; no CI run or security acceptance performed in this review.
 - Current screenshot: /de/#how-it-works; visible sidebar Startseite, Suchen, Funktionen, So funktioniert es, Vertrauen, Prinzipien, Erkunden and 5 workflow cards.
-- Source for screenshot's exact section and shared navigation: NOT YET LOCATED. Do not edit blindly.
+- Source of the How-it-works section: `templates/index.html` (`section#how-it-works`, `.world-flow__*`), styled by `assets/css/homepage-modern-v2.css` and `assets/css/how-it-works-upgrade.css`. Shared section navigation: `templates/partials/_homepage_signal_nav.html`.
 
 ## Security and governance prerequisites
 - Preserve STOP_340, HARD_STOP, C02, SC_07, SAFE_HOLD / NO_GO unless separately resolved with independently verifiable evidence and explicit owner decision.
@@ -19,7 +19,7 @@ No merge, deploy, migration, database access, secrets access or runtime change.
 - No new public write endpoints, unscoped object lookups, tenant-crossing relations, or data visibility expansion without independent review.
 - Backend work must use existing authorization policy, object-level checks, tenant boundaries, audit logging, rate limits, input validation, and fail-closed behavior.
 - No new migrations without a separately authorized database identity verification and migration gate.
-- CI execution is NOT authorized by this document. Do not trigger a run solely to test this plan.
+- CI runs automatically on every push to a PR (required checks of ruleset 22881408). This document authorizes no merge or deploy.
 
 ## Proposed phased implementation
 1. Phase 1: locate source ownership for home/how-it-works/sidebar; audit accessibility, CSS, translations, URL names, current tests and affected views. Create precise file/line matrix.

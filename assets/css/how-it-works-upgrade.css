@@ -18,6 +18,10 @@
   .world-home--layout-v3 .world-flow__step { padding: 1.15rem; }
   .world-home--layout-v3 .world-flow__action { max-width: 100%; }
 }
+/* Mirror the forward arrow in right-to-left locales (fa). */
+[dir="rtl"] .world-home--layout-v3 .world-flow__action span[aria-hidden="true"] {
+  display: inline-block; transform: scaleX(-1);
+}
 @media (prefers-reduced-motion: reduce) {
   .world-home--layout-v3 .world-flow__action { transition: none; }
 }
