@@ -178,6 +178,10 @@ def main() -> int:
         client = GitHubClient(token, repository)
         pr = client.pull_request(pr_number)
         head_sha = pr["head"]["sha"]
+        if pr.get("state") != "open":
+            # A closed or merged PR can no longer be merged; no status is written.
+            print(f"SKIP: PR #{pr_number} is {pr.get('state')}")
+            return 0
         if pr.get("base", {}).get("ref") != "main":
             client.set_status(head_sha, "success", "base is not main; gate not applicable")
             print("SKIP: base branch is not main")
@@ -186,7 +190,10 @@ def main() -> int:
         state = "success" if decision.allowed else "failure"
         client.set_status(head_sha, state, decision.reason)
         print(f"{'ALLOW' if decision.allowed else 'DENY'} PR #{pr_number} @ {head_sha}: {decision.reason}")
-        return 0 if decision.allowed else 1
+        # The required check is the commit status above. A DENY is a normal,
+        # successfully evaluated result, so the job itself exits 0. Only an
+        # evaluation error (below) fails the job.
+        return 0
     except (urllib.error.URLError, RuntimeError, KeyError, ValueError, TypeError) as exc:
         print(f"DENY (fail-closed): {type(exc).__name__}", file=sys.stderr)
         if client is not None and head_sha:

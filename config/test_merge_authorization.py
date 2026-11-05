@@ -117,7 +117,7 @@ class MergeAuthorizationMainFailClosedTests(TestCase):
 
     def _client(self, comments=None, comments_error=None):
         client = mock.Mock()
-        client.pull_request.return_value = {"head": {"sha": HEAD}, "base": {"ref": "main"}}
+        client.pull_request.return_value = {"state": "open", "head": {"sha": HEAD}, "base": {"ref": "main"}}
         if comments_error:
             client.issue_comments.side_effect = comments_error
         else:
@@ -136,12 +136,32 @@ class MergeAuthorizationMainFailClosedTests(TestCase):
         with mock.patch.dict("os.environ", env, clear=True):
             self.assertEqual(ma.main(), 1)
 
-    def test_main_deny_sets_failure_status(self):
+    def test_main_deny_sets_failure_status_and_exits_zero(self):
+        # DENY is a successfully evaluated result: the required commit status is
+        # "failure", but the job itself does not fail (noise reduction).
         client = self._client(comments=[comment("LGTM")])
         with mock.patch.dict("os.environ", self.ENV, clear=True), \
                 mock.patch.object(ma, "GitHubClient", return_value=client):
-            self.assertEqual(ma.main(), 1)
+            self.assertEqual(ma.main(), 0)
+        client.set_status.assert_called_once()
         self.assertEqual(client.set_status.call_args.args[1], "failure")
+
+    def test_main_closed_pr_is_skipped_without_status(self):
+        for state in ("closed", None):
+            client = self._client(comments=[comment(auth())])
+            client.pull_request.return_value = {"state": state, "head": {"sha": HEAD}, "base": {"ref": "main"}}
+            with mock.patch.dict("os.environ", self.ENV, clear=True), \
+                    mock.patch.object(ma, "GitHubClient", return_value=client):
+                self.assertEqual(ma.main(), 0)
+            client.set_status.assert_not_called()
+            client.issue_comments.assert_not_called()
+
+    def test_t9_pull_request_api_error_exits_one(self):
+        client = self._client()
+        client.pull_request.side_effect = urllib.error.URLError("down")
+        with mock.patch.dict("os.environ", self.ENV, clear=True), \
+                mock.patch.object(ma, "GitHubClient", return_value=client):
+            self.assertEqual(ma.main(), 1)
 
     def test_main_allow_sets_success_status(self):
         client = self._client(comments=[comment(auth())])
