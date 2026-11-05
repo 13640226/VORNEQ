@@ -1,4 +1,5 @@
 import os
+import re
 import time
 
 import structlog
@@ -12,6 +13,11 @@ logger = structlog.get_logger(__name__)
 
 
 _SHA_CHARS = frozenset("0123456789abcdef")
+
+# Render Postgres host names: internal "dpg-<id>-a", external
+# "dpg-<id>-a.<region>-postgres.render.com". Only the instance id is reported.
+_RENDER_DB_HOST_RE = re.compile(r"^(dpg-[a-z0-9]{8,40}-[a-z])(?:\.[a-z0-9.-]+)?$")
+_DB_NAME_RE = re.compile(r"^[A-Za-z0-9_]{1,63}$")
 
 
 def release_identifier():
@@ -27,6 +33,41 @@ def release_identifier():
         if 7 <= len(value) <= 40 and set(value) <= _SHA_CHARS:
             return value
     return "unknown"
+
+
+def render_database_id(host):
+    """Return the Render Postgres instance id from a host name, else "other".
+
+    Credentials, ports and IP addresses are never part of the result.
+    """
+    host = (host or "").strip().lower()
+    if not host:
+        return "unknown"
+    match = _RENDER_DB_HOST_RE.match(host)
+    return match.group(1) if match else "other"
+
+
+def database_identity():
+    """Identity of the database this process is connected to (G5 / C02).
+
+    Reports the database name as seen by the server (current_database()) and
+    the Render instance id derived from the configured host. No user name,
+    password, IP address, port or connection string is included. Any failure
+    yields "unknown" values instead of an exception.
+    """
+    identity = {"vendor": connection.vendor, "name": "unknown", "render_id": "unknown"}
+    if connection.vendor != "postgresql":
+        return identity
+    identity["render_id"] = render_database_id(connection.settings_dict.get("HOST"))
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT current_database()")
+            name = cursor.fetchone()[0]
+    except Exception:
+        logger.exception("health.database_identity_failed")
+        return identity
+    identity["name"] = name if isinstance(name, str) and _DB_NAME_RE.match(name) else "unknown"
+    return identity
 
 
 def health_check(request):
@@ -65,6 +106,9 @@ def health_check(request):
         "checks": checks,
         "duration_ms": duration_ms,
         "release": release_identifier(),
+        "database": database_identity() if checks["database"] == "ok" else {
+            "vendor": connection.vendor, "name": "unknown", "render_id": "unknown",
+        },
     }
 
     logger.info(
