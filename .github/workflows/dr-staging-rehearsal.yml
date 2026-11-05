@@ -20,6 +20,8 @@ jobs:
   rehearse:
     if: ${{ false }} # C02 hard stop: no database execution
     runs-on: ubuntu-latest
+    # C02-INVENTORY-01: bewusst "production" - die Probe liest die Produktionsquelle
+    # (PRODUCTION_SOURCE_DATABASE_URL) und DR_RESTORE_DATABASE_URL, die nur dort liegen.
     environment: production
     timeout-minutes: 60
 
