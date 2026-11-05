@@ -22,7 +22,9 @@ concurrency:
 jobs:
   evaluate:
     name: merge-authorization-evaluator
-    if: github.event_name == 'pull_request_target' || github.event.issue.pull_request
+    if: >-
+      github.event_name == 'pull_request_target' ||
+      (github.event.issue.pull_request && github.event.issue.state == 'open')
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
