@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="{% static 'css/homepage-redesign.css' %}">
 <link rel="stylesheet" href="{% static 'css/homepage-signal-nav-v2.css' %}">
 <link rel="stylesheet" href="{% static 'css/homepage-modern-v2.css' %}">
+<link rel="stylesheet" href="{% static 'css/how-it-works-upgrade.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -187,26 +188,31 @@
           <span class="world-flow__num" aria-hidden="true">01</span>
           <h3>{% trans "Collect" %}</h3>
           <p>{% trans "Bring supported records and source material into structured VORNEQ surfaces." %}</p>
+          <a class="world-flow__action" href="{% url 'search_page' %}">{% trans "Search" %}<span aria-hidden="true"> →</span></a>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">02</span>
           <h3>{% trans "Structure" %}</h3>
           <p>{% trans "Represent information as clear records that can be referenced and inspected." %}</p>
+          <a class="world-flow__action" href="{% url 'orientation' %}">{% trans "Platform Principles" %}<span aria-hidden="true"> →</span></a>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">03</span>
           <h3>{% trans "Verify" %}</h3>
           <p>{% trans "Associate claims with recorded evidence while preserving public context." %}</p>
+          <a class="world-flow__action" href="{% url 'inspect_entry' %}">{% trans "Inspect Evidence" %}<span aria-hidden="true"> →</span></a>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">04</span>
           <h3>{% trans "Connect" %}</h3>
           <p>{% trans "Connect records, entities, sources, and evidence through explicit relationships." %}</p>
+          <a class="world-flow__action" href="{% url 'discover' %}">{% trans "Open Discover" %}<span aria-hidden="true"> →</span></a>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">05</span>
           <h3>{% trans "Discover" %}</h3>
           <p>{% trans "Navigate connected public information through Search, Discover, Context, and Evidence Graph surfaces." %}</p>
+          <a class="world-flow__action" href="{% url 'discover' %}">{% trans "Explore VORNEQ" %}<span aria-hidden="true"> →</span></a>
         </li>
       </ol>
     </section>
