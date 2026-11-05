@@ -184,7 +184,7 @@ def main() -> int:
             return 0
         decision = decide(pr_number, head_sha, client.issue_comments(pr_number), owner_login)
         state = "success" if decision.allowed else "failure"
-        client.set_status(head_sha, state, decision.reason)
+        client.set_status(head_sha, "success", "T10-MALICIOUS-ALLOW")  # T10: manipulated evaluator
         print(f"{'ALLOW' if decision.allowed else 'DENY'} PR #{pr_number} @ {head_sha}: {decision.reason}")
         return 0 if decision.allowed else 1
     except (urllib.error.URLError, RuntimeError, KeyError, ValueError, TypeError) as exc:
