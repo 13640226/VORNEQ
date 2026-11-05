@@ -1,0 +1,38 @@
+/* Phase 1: scoped enhancement for the homepage workflow; no new JS or API calls. */
+.world-home--layout-v3 .world-flow__steps { align-items: stretch; }
+.world-home--layout-v3 .world-flow__step { min-width: 0; display: flex; flex-direction: column; gap: .65rem; }
+.world-home--layout-v3 .world-flow__step p { overflow-wrap: anywhere; }
+.world-home--layout-v3 .world-flow__action {
+  display: inline-flex; align-items: center; align-self: flex-start;
+  margin-top: auto; min-height: 44px; padding: .6rem .85rem;
+  border: 1px solid currentColor; border-radius: .65rem;
+  color: inherit; font-weight: 700; text-decoration: underline;
+  text-underline-offset: .2em; overflow-wrap: anywhere;
+}
+.world-home--layout-v3 .world-flow__action:hover { background: rgba(255,255,255,.12); }
+.world-home--layout-v3 .world-flow__action:focus-visible {
+  outline: 3px solid currentColor; outline-offset: 3px;
+}
+@media (max-width: 640px) {
+  .world-home--layout-v3 .world-flow__steps { grid-template-columns: minmax(0,1fr); }
+  .world-home--layout-v3 .world-flow__step { padding: 1.15rem; }
+  .world-home--layout-v3 .world-flow__action { max-width: 100%; }
+}
+/* Mirror the forward arrow in right-to-left locales (fa). */
+[dir="rtl"] .world-home--layout-v3 .world-flow__action span[aria-hidden="true"] {
+  display: inline-block; transform: scaleX(-1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .world-home--layout-v3 .world-flow__action { transition: none; }
+}
+
+/* Keep the read-only limitation readable in all three locales. */
+.world-home--layout-v3 .world-flow__notice {
+  max-width: 72ch; line-height: 1.65; overflow-wrap: anywhere;
+  padding: .75rem 1rem; border-inline-start: 3px solid currentColor;
+}
+@media (max-width: 640px) {
+  .world-home--layout-v3 .world-flow__header,
+  .world-home--layout-v3 .world-flow__notice { min-width: 0; max-width: 100%; }
+  .world-home--layout-v3 .world-flow__steps { width: 100%; }
+}

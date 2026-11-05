@@ -1913,3 +1913,15 @@ msgstr "مطالعه نحوه کار VORNEQ"
 #: templates/index.html
 msgid "Close demo panel"
 msgstr "بستن پنل نمایشی"
+
+msgid "Explore existing records"
+msgstr "کاوش در رکوردهای موجود"
+
+msgid "Read about structured records"
+msgstr "آشنایی با رکوردهای ساختاریافته"
+
+msgid "Inspect existing public context"
+msgstr "بررسی زمینه عمومی موجود"
+
+msgid "These links open existing read-only views; they do not create sources, structured records, or verification decisions."
+msgstr "این پیوندها نماهای موجودِ فقط‌خواندنی را باز می‌کنند و منبع، رکورد ساختاریافته یا تصمیم راستی‌آزمایی جدید ایجاد نمی‌کنند."

@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="{% static 'css/homepage-redesign.css' %}">
 <link rel="stylesheet" href="{% static 'css/homepage-signal-nav-v2.css' %}">
 <link rel="stylesheet" href="{% static 'css/homepage-modern-v2.css' %}">
+<link rel="stylesheet" href="{% static 'css/how-it-works-upgrade.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -182,21 +183,25 @@
         <h2 id="world-flow-title" class="world-title world-title--md">{% trans "From source material to inspectable context." %}</h2>
         <p class="world-flow__intro">{% trans "VORNEQ keeps records, evidence, provenance, and relationships connected so context remains visible as information moves through the platform." %}</p>
       </header>
+      <p class="world-flow__notice">{% trans "These links open existing read-only views; they do not create sources, structured records, or verification decisions." %}</p>
       <ol class="world-flow__steps">
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">01</span>
           <h3>{% trans "Collect" %}</h3>
           <p>{% trans "Bring supported records and source material into structured VORNEQ surfaces." %}</p>
+          <a class="world-flow__action" href="{% url 'search_page' %}">{% trans "Explore existing records" %}<span aria-hidden="true"> →</span></a>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">02</span>
           <h3>{% trans "Structure" %}</h3>
           <p>{% trans "Represent information as clear records that can be referenced and inspected." %}</p>
+          <a class="world-flow__action" href="{% url 'orientation' %}">{% trans "Read about structured records" %}<span aria-hidden="true"> →</span></a>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">03</span>
           <h3>{% trans "Verify" %}</h3>
           <p>{% trans "Associate claims with recorded evidence while preserving public context." %}</p>
+          <a class="world-flow__action" href="{% url 'inspect_entry' %}">{% trans "Inspect existing public context" %}<span aria-hidden="true"> →</span></a>
         </li>
         <li class="world-flow__step">
           <span class="world-flow__num" aria-hidden="true">04</span>
@@ -207,6 +212,7 @@
           <span class="world-flow__num" aria-hidden="true">05</span>
           <h3>{% trans "Discover" %}</h3>
           <p>{% trans "Navigate connected public information through Search, Discover, Context, and Evidence Graph surfaces." %}</p>
+          <a class="world-flow__action" href="{% url 'discover' %}">{% trans "Explore VORNEQ" %}<span aria-hidden="true"> →</span></a>
         </li>
       </ol>
     </section>
