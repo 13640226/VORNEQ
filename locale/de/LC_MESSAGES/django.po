@@ -2177,3 +2177,15 @@ msgstr "Funktionsweise von VORNEQ lesen"
 #: templates/index.html
 msgid "Close demo panel"
 msgstr "Demo-Bereich schließen"
+
+msgid "Explore existing records"
+msgstr "Bestehende Einträge erkunden"
+
+msgid "Read about structured records"
+msgstr "Mehr über strukturierte Einträge erfahren"
+
+msgid "Inspect existing public context"
+msgstr "Vorhandenen öffentlichen Kontext ansehen"
+
+msgid "These links open existing read-only views; they do not create sources, structured records, or verification decisions."
+msgstr "Diese Links öffnen bestehende Ansichten mit Lesezugriff. Sie erstellen weder Quellen noch strukturierte Einträge oder Verifizierungsentscheidungen."
