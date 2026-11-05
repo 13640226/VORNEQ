@@ -1,0 +1,121 @@
+name: Deploy
+
+# G4 control: the only deploy path (OWNER-DEC-DEPLOY-PATH-01, Issue #448).
+# Started manually by the owner only. Every precondition is checked by
+# scripts/deploy_control.py from main; any failure stops before the Render
+# deploy hook is called. AI assistants never start this workflow (Issue #448,
+# rule 4).
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options: [staging, production]
+      sha:
+        description: "Full 40-character commit SHA on main"
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: deploy-preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      checks: read
+      deployments: read
+      issues: read
+    outputs:
+      auth_id: ${{ steps.check.outputs.auth_id }}
+    steps:
+      - name: Checkout deploy control from main only
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          persist-credentials: false
+          sparse-checkout: scripts/deploy_control.py
+          sparse-checkout-cone-mode: false
+
+      - name: Verify owner, SHA, CI and authorization
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
+          DEPLOY_SHA: ${{ inputs.sha }}
+          DEPLOY_AUTH_ISSUE: "448"
+        run: python3 -I scripts/deploy_control.py preflight --environment "$DEPLOY_ENVIRONMENT" --sha "$DEPLOY_SHA"
+
+  deploy:
+    name: deploy-${{ inputs.environment }}
+    needs: preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # Dedicated environments that hold only the deploy hook secret and the
+    # public base URL (no database secrets).
+    environment: deploy-${{ inputs.environment }}
+    permissions:
+      contents: read
+      deployments: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
+      DEPLOY_SHA: ${{ inputs.sha }}
+      AUTH_ID: ${{ needs.preflight.outputs.auth_id }}
+    steps:
+      - name: Checkout deploy control and smoke test from main only
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          persist-credentials: false
+          sparse-checkout: |
+            scripts/deploy_control.py
+            scripts/smoke_test.py
+          sparse-checkout-cone-mode: false
+
+      - name: Record GitHub deployment
+        id: record
+        run: |
+          set -euo pipefail
+          id=$(jq -n --arg ref "$DEPLOY_SHA" --arg env "$DEPLOY_ENVIRONMENT" --arg desc "authorized by $AUTH_ID" \
+            '{ref:$ref, environment:$env, auto_merge:false, required_contexts:[], description:$desc}' \
+            | gh api -X POST "repos/$GITHUB_REPOSITORY/deployments" --input - --jq .id)
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          gh api -X POST "repos/$GITHUB_REPOSITORY/deployments/$id/statuses" -f state=in_progress -f description="deploy started" > /dev/null
+
+      - name: Trigger Render deploy of the authorized SHA
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: python3 -I scripts/deploy_control.py trigger --environment "$DEPLOY_ENVIRONMENT" --sha "$DEPLOY_SHA"
+
+      - name: Wait until /health/ reports the SHA
+        env:
+          STAGING_BASE_URL: ${{ vars.BASE_URL }}
+          PRODUCTION_BASE_URL: ${{ vars.BASE_URL }}
+        run: python3 -I scripts/deploy_control.py verify --environment "$DEPLOY_ENVIRONMENT" --sha "$DEPLOY_SHA"
+
+      - name: Smoke test
+        env:
+          BASE_URL: ${{ vars.BASE_URL }}
+        run: python3 -I scripts/smoke_test.py --base-url "$BASE_URL"
+
+      - name: Mark deployment result
+        if: always() && steps.record.outputs.id
+        env:
+          DEPLOYMENT_ID: ${{ steps.record.outputs.id }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          state=failure
+          if [ "$JOB_STATUS" = "success" ]; then state=success; fi
+          gh api -X POST "repos/$GITHUB_REPOSITORY/deployments/$DEPLOYMENT_ID/statuses" \
+            -f state="$state" -f description="$AUTH_ID: $state" > /dev/null
+          echo "Deployment $DEPLOYMENT_ID ($DEPLOY_ENVIRONMENT @ $DEPLOY_SHA): $state"
