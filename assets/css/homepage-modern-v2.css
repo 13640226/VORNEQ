@@ -329,3 +329,6 @@ html[dir="rtl"] .world-home--layout-v3 .world-icon--sm {
 .world-home--layout-v3 .world-hero__layout > .world-evidence-panel {
   align-self: start;
 }
+
+/* Homepage V3.1: scoped ecosystem introduction; no shared-token overrides. */
+.world-home-v31__intro { max-width: 68ch; line-height: 1.65; margin-block: .75rem 1.5rem; color: var(--text-muted, inherit); }

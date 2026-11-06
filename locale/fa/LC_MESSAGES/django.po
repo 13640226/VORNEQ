@@ -1925,3 +1925,15 @@ msgstr "بررسی زمینه عمومی موجود"
 
 msgid "These links open existing read-only views; they do not create sources, structured records, or verification decisions."
 msgstr "این پیوندها نماهای موجودِ فقط‌خواندنی را باز می‌کنند و منبع، رکورد ساختاریافته یا تصمیم راستی‌آزمایی جدید ایجاد نمی‌کنند."
+
+msgid "One Platform. Many Applications. Connected Possibilities."
+msgstr "یک پلتفرم. اپلیکیشن‌های متعدد. امکانات به‌هم‌پیوسته."
+
+msgid "Explore connected applications through distinct capabilities, explicit permissions, and inspectable evidence."
+msgstr "اپلیکیشن‌های مرتبط را با قابلیت‌های مستقل، مجوزهای صریح و شواهد قابل بررسی کشف کنید."
+
+msgid "A CONNECTED APPLICATION ECOSYSTEM"
+msgstr "اکوسیستم اپلیکیشن‌های به‌هم‌پیوسته"
+
+msgid "Independent applications. Connected possibilities. Permissions remain explicit."
+msgstr "اپلیکیشن‌های مستقل. امکانات به‌هم‌پیوسته. مجوزها همواره صریح هستند."

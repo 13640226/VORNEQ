@@ -1,4 +1,4 @@
-﻿from django.test import TestCase
+from django.test import TestCase
 from django.urls import reverse
 from django.utils.translation import override
 
@@ -129,6 +129,7 @@ class HomepageSimplificationTests(TestCase):
             self.assertContains(response, f'href="{url}"')
 
         self.assertContains(response, "Capabilities")
+        self.assertContains(response, "Independent applications. Connected possibilities. Permissions remain explicit.")
         self.assertNotContains(response, "Checkout")
         self.assertNotContains(response, "Entitlement")
         self.assertNotContains(response, "Search results")
@@ -138,7 +139,7 @@ class HomepageSimplificationTests(TestCase):
 
         self.assertContains(
             response,
-            "Evidence-aware infrastructure for connected knowledge.",
+            "One Platform. Many Applications. Connected Possibilities.",
         )
         self.assertContains(response, "Context, not Score")
         self.assertContains(response, "Evidence, not Truth")

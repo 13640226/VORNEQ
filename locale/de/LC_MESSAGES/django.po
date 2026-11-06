@@ -2210,3 +2210,15 @@ msgstr "Prüfen"
 
 msgid "Inspect Context V1 currently supports public Products and Library items only."
 msgstr "Inspect Context V1 unterstützt derzeit nur öffentliche Produkte und Bibliothekseinträge."
+
+msgid "One Platform. Many Applications. Connected Possibilities."
+msgstr "Eine Plattform. Viele Anwendungen. Vernetzte Möglichkeiten."
+
+msgid "Explore connected applications through distinct capabilities, explicit permissions, and inspectable evidence."
+msgstr "Entdecken Sie vernetzte Anwendungen mit eigenständigen Funktionen, ausdrücklichen Berechtigungen und prüfbaren Nachweisen."
+
+msgid "A CONNECTED APPLICATION ECOSYSTEM"
+msgstr "EIN VERNETZTES ANWENDUNGSÖKOSYSTEM"
+
+msgid "Independent applications. Connected possibilities. Permissions remain explicit."
+msgstr "Eigenständige Anwendungen. Vernetzte Möglichkeiten. Berechtigungen bleiben ausdrücklich geregelt."
