@@ -49,3 +49,11 @@ Documentation only. No GitHub ruleset, workflow, application code, production en
 **GITHUB_MAIN_PROTECTION = NOT_PRESENT_AT_LAST_CHECK**  
 **HISTORICAL_FINDINGS = PRESERVED**  
 **PRODUCTION_SECURITY_VERIFIED = NO**
+
+## 7. Clarification — independent-review references in merge and CI governance (2026-11-06)
+
+The owner's prospective decision applies to ordinary owner-initiated PR merges and the **human reviewer eligibility/sign-off requirement** in historical governance documents. In particular, the independent-human-signoff clause in `docs/governance/ci-security-architecture-v2.0.md` AC-CI2-09 is superseded **for future ordinary owner PR merge authorization** by the owner's own documented decision bound to the relevant PR/head SHA where a signed authorization record is required. The historical frozen CI architecture remains unchanged as evidence of its original baseline; this addendum is the prospective policy interpretation, not a claim that the frozen source text was edited.
+
+This removes the requirement to obtain an independent human reviewer or approval as a condition of an ordinary owner merge. It does **not** waive actual source/test evidence, authorization identity, required runtime isolation, or safety controls for production credentials and databases. The existing `.github/workflows/merge-authorization.yml` is an **owner-authorization SHA check**, not an independent-review gate, and is not disabled by this policy. Its presence as a workflow does not by itself imply that GitHub requires its status for merging.
+
+No other historical reviewer report is deleted or relabeled. Security-specific or incident-specific claims of independent verification remain unverified unless supported by genuine evidence.
