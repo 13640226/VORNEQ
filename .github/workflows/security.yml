@@ -25,6 +25,7 @@ jobs:
       - name: Download hash-verified audit wheels
         run: |
           mkdir -p "$RUNNER_TEMP/security-wheels"
+          chmod 777 "$RUNNER_TEMP/security-wheels"
           docker run --rm --cap-drop ALL --security-opt no-new-privileges \
             --network bridge --user 65534:65534 \
             --mount "type=bind,src=$PWD,dst=/src,readonly" \
