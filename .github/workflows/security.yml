@@ -31,7 +31,7 @@ jobs:
             --mount "type=bind,src=$PWD,dst=/src,readonly" \
             --mount "type=bind,src=$RUNNER_TEMP/security-wheels,dst=/wheels" \
             --tmpfs /tmp:rw,nosuid,nodev,size=256m \
-            python:3.12-slim-bookworm \
+            python@sha256:935c3c5b12357a7e10caa9c1e6ca5692344d97cf229832ef584be2cec9fc03df \
             sh -c 'python -m pip download --disable-pip-version-check --no-cache-dir --require-hashes --only-binary=:all: -r /src/requirements-security.lock -d /wheels'
           test -n "$(find "$RUNNER_TEMP/security-wheels" -maxdepth 1 -name '*.whl' -print -quit)"
 
@@ -45,7 +45,7 @@ jobs:
             --mount "type=bind,src=$RUNNER_TEMP/security-wheels,dst=/wheels,readonly" \
             --mount "type=bind,src=$RUNNER_TEMP/security-tools,dst=/tools" \
             --tmpfs /tmp:rw,nosuid,nodev,size=256m \
-            python:3.12-slim-bookworm \
+            python@sha256:935c3c5b12357a7e10caa9c1e6ca5692344d97cf229832ef584be2cec9fc03df \
             sh -c 'python -m pip install --disable-pip-version-check --no-index --find-links=/wheels --require-hashes --only-binary=:all: --target /tools -r /src/requirements-security.lock'
 
       # The advisory lookup needs outbound HTTPS. This step deliberately uses
@@ -59,5 +59,5 @@ jobs:
             --mount "type=bind,src=$RUNNER_TEMP/security-tools,dst=/tools,readonly" \
             --tmpfs /tmp:rw,nosuid,nodev,size=256m \
             -e PYTHONPATH=/tools -e HOME=/tmp \
-            python:3.12-slim-bookworm \
+            python@sha256:935c3c5b12357a7e10caa9c1e6ca5692344d97cf229832ef584be2cec9fc03df \
             python -m pip_audit --requirement /src/requirements-audit.lock --require-hashes --disable-pip
