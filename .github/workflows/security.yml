@@ -58,6 +58,6 @@ jobs:
             --mount "type=bind,src=$PWD,dst=/src,readonly" \
             --mount "type=bind,src=$RUNNER_TEMP/security-tools,dst=/tools,readonly" \
             --tmpfs /tmp:rw,nosuid,nodev,size=256m \
-            -e PYTHONPATH=/tools \
+            -e PYTHONPATH=/tools -e HOME=/tmp \
             python:3.12-slim-bookworm \
             python -m pip_audit --requirement /src/requirements-audit.lock --require-hashes --disable-pip
