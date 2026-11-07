@@ -6,6 +6,8 @@ from django.conf import settings
 from django.conf.urls.i18n import i18n_patterns
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.http import HttpResponseRedirect
 from django.urls import include, path
 from django.views.generic import RedirectView
 
@@ -17,9 +19,14 @@ from config.public_graph_views import public_graph_presentation_view, public_gra
 from config.views import discover, home, orientation, profile, robots_txt, search_page, sitemap_xml
 
 
+def favicon_redirect(request):
+    return HttpResponseRedirect(staticfiles_storage.url("favicon.svg"))
+
+
 # Non-localized operational and API endpoints.
 urlpatterns = [
     path("health/", health_check, name="health"),
+    path("favicon.ico", favicon_redirect, name="favicon"),
     path("robots.txt", robots_txt, name="robots_txt"),
     path("sitemap.xml", sitemap_xml, name="sitemap_xml"),
     path("metrics", metrics_view, name="prometheus-django-metrics"),
