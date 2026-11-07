@@ -30,6 +30,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
+      issues: read
       statuses: write
     steps:
       - name: Checkout evaluator from main only
