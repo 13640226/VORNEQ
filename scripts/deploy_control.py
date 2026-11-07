@@ -79,7 +79,8 @@ def authorization_used(deployments: object, auth_id: str, reserved_deployment_id
         raise DeployRejected("deployment list unavailable")
     prefix = f"authorized by {auth_id} "
     return any(isinstance(d, dict) and isinstance(d.get("description"), str)
-               and d["description"].startswith(prefix) and d.get("id") != reserved_deployment_id
+               and (d["description"].startswith(prefix) or d["description"].strip() == f"authorized by {auth_id}")
+               and d.get("id") != reserved_deployment_id
                for d in deployments)
 
 
@@ -293,7 +294,8 @@ def preflight(gh: GitHub, environment: str, sha: str, auth_issue: int, actor: st
     all_deployments = gh.deployments("staging") + gh.deployments("production")
     matching_deployments = [d for d in all_deployments if isinstance(d, dict)
                             and isinstance(d.get("description"), str)
-                            and d["description"].startswith(f"authorized by {decision.auth_id} ")]
+                            and (d["description"].startswith(f"authorized by {decision.auth_id} ")
+                                 or d["description"].strip() == f"authorized by {decision.auth_id}")]
     if reserved_deployment_id is not None and (len(matching_deployments) != 1
                                                or matching_deployments[0].get("id") != reserved_deployment_id):
         raise DeployRejected("deployment reservation is missing, duplicated, or mismatched")
