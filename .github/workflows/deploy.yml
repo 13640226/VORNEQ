@@ -71,6 +71,8 @@ jobs:
     permissions:
       contents: read
       deployments: write
+      checks: read
+      issues: read
     env:
       GH_TOKEN: ${{ github.token }}
       DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
@@ -88,6 +90,15 @@ jobs:
             scripts/smoke_test.py
           sparse-checkout-cone-mode: false
 
+      - name: Trigger Render deploy of the authorized SHA
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          GITHUB_TOKEN: ${{ github.token }}
+          DEPLOY_AUTH_ISSUE: "448"
+          STAGING_BASE_URL: ${{ vars.STAGING_BASE_URL }}
+          PRODUCTION_BASE_URL: ${{ vars.PRODUCTION_BASE_URL }}
+        run: python3 -I scripts/deploy_control.py trigger --environment "$DEPLOY_ENVIRONMENT" --sha "$DEPLOY_SHA"
+
       - name: Record GitHub deployment
         id: record
         run: |
@@ -97,11 +108,6 @@ jobs:
             | gh api -X POST "repos/$GITHUB_REPOSITORY/deployments" --input - --jq .id)
           echo "id=$id" >> "$GITHUB_OUTPUT"
           gh api -X POST "repos/$GITHUB_REPOSITORY/deployments/$id/statuses" -f state=in_progress -f description="deploy started" > /dev/null
-
-      - name: Trigger Render deploy of the authorized SHA
-        env:
-          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-        run: python3 -I scripts/deploy_control.py trigger --environment "$DEPLOY_ENVIRONMENT" --sha "$DEPLOY_SHA"
 
       - name: Wait until /health/ reports the SHA
         env:
