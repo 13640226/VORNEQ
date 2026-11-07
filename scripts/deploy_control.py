@@ -324,6 +324,12 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "trigger":
             if not is_full_sha(args.sha):
                 raise DeployRejected("invalid sha")
+            gh = GitHub(os.environ.get("GITHUB_TOKEN", ""), os.environ.get("GITHUB_REPOSITORY", ""))
+            base = os.environ.get(f"{(args.environment or '').upper()}_BASE_URL", "")
+            live = fetch_release(base) if base.startswith("https://") else None
+            preflight(gh, args.environment, args.sha, int(os.environ.get("DEPLOY_AUTH_ISSUE", "448")),
+                      os.environ.get("GITHUB_ACTOR", ""), os.environ.get("GITHUB_TRIGGERING_ACTOR", ""),
+                      owner, live_release=live)
             trigger_hook(os.environ.get("RENDER_DEPLOY_HOOK_URL", ""), args.sha, args.environment)
             print(f"TRIGGERED {args.environment} @ {args.sha}")
             return 0
