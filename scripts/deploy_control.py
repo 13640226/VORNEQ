@@ -130,7 +130,9 @@ def decide_deploy(environment: str, sha: str, comments: list, owner_login: str =
 
     if not valid:
         return Decision(False, f"no valid owner deploy authorization for {environment} @ {sha[:12]}")
-    return list(valid.values())[-1]
+    if len(valid) != 1:
+        return Decision(False, "ambiguous: multiple active owner deploy authorizations")
+    return next(iter(valid.values()))
 
 
 def sha_contained_in_main(compare_status: object) -> bool:
@@ -230,7 +232,16 @@ class GitHub:
         query = {"environment": environment, "per_page": "100"}
         if sha:
             query["sha"] = sha
-        return self.request("GET", "/deployments?" + urllib.parse.urlencode(query)) or []
+        results = []
+        for page in range(1, 51):
+            query["page"] = str(page)
+            batch = self.request("GET", "/deployments?" + urllib.parse.urlencode(query))
+            if not isinstance(batch, list):
+                raise DeployRejected("deployment list unavailable")
+            results.extend(batch)
+            if len(batch) < 100:
+                return results
+        raise DeployRejected("deployment list exceeds safe pagination limit")
 
     def deployment(self, deployment_id: int) -> dict:
         value = self.request("GET", f"/deployments/{deployment_id}")
@@ -272,7 +283,13 @@ def preflight(gh: GitHub, environment: str, sha: str, auth_issue: int, actor: st
                 or reserved.get("environment") != environment
                 or reserved.get("description") != f"authorized by {decision.auth_id}"):
             raise DeployRejected("deployment reservation does not match authorization")
-    if authorization_used(gh.deployments(environment), decision.auth_id, reserved_deployment_id):
+    matching_deployments = [d for d in gh.deployments(environment)
+                            if isinstance(d, dict) and (d.get("description") or "").strip()
+                            == f"authorized by {decision.auth_id}"]
+    if reserved_deployment_id is not None and (len(matching_deployments) != 1
+                                               or matching_deployments[0].get("id") != reserved_deployment_id):
+        raise DeployRejected("deployment reservation is missing, duplicated, or mismatched")
+    if authorization_used(matching_deployments, decision.auth_id, reserved_deployment_id):
         raise DeployRejected(f"authorization {decision.auth_id} was already used; post a new OWNER-AUTH-DEPLOY")
     if environment == "production":
         staged = any(deployment_succeeded(gh.deployment_statuses(d["id"])) for d in gh.deployments("staging", sha))
