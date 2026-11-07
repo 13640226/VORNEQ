@@ -190,9 +190,8 @@ def main() -> int:
         state = "success" if decision.allowed else "failure"
         client.set_status(head_sha, state, decision.reason)
         print(f"{'ALLOW' if decision.allowed else 'DENY'} PR #{pr_number} @ {head_sha}: {decision.reason}")
-        # The required check is the commit status above. A DENY is a normal,
-        # successfully evaluated result, so the job itself exits 0. Only an
-        # evaluation error (below) fails the job.
+        # DENY must also fail the workflow job; branch protection must require
+        # the corresponding check for GitHub to enforce this at merge time.
         return 0 if decision.allowed else 1
     except (urllib.error.URLError, RuntimeError, KeyError, ValueError, TypeError) as exc:
         print(f"DENY (fail-closed): {type(exc).__name__}", file=sys.stderr)
