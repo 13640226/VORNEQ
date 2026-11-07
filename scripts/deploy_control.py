@@ -77,8 +77,10 @@ def authorization_used(deployments: object, auth_id: str, reserved_deployment_id
     """True if any recorded deployment was already made with this authorization ID."""
     if not isinstance(deployments, list):
         raise DeployRejected("deployment list unavailable")
-    marker = f"authorized by {auth_id}"
-    return any(isinstance(d, dict) and (d.get("description") or "").strip() == marker and d.get("id") != reserved_deployment_id for d in deployments)
+    prefix = f"authorized by {auth_id} "
+    return any(isinstance(d, dict) and isinstance(d.get("description"), str)
+               and d["description"].startswith(prefix) and d.get("id") != reserved_deployment_id
+               for d in deployments)
 
 
 def hook_service_id(hook_url: str) -> str | None:
@@ -262,7 +264,8 @@ def last_successful_sha(gh: GitHub, environment: str) -> str | None:
 
 def preflight(gh: GitHub, environment: str, sha: str, auth_issue: int, actor: str, triggering_actor: str,
               owner_login: str = DEFAULT_OWNER_LOGIN, live_release: object = None,
-              reserved_deployment_id: int | None = None) -> str:
+              reserved_deployment_id: int | None = None,
+              run_id: str | None = None, run_attempt: str | None = None) -> str:
     if actor != owner_login or triggering_actor != owner_login:
         raise DeployRejected("workflow must be started by the owner account")
     if environment not in ENVIRONMENTS:
@@ -277,15 +280,20 @@ def preflight(gh: GitHub, environment: str, sha: str, auth_issue: int, actor: st
     decision = decide_deploy(environment, sha, gh.issue_comments(auth_issue), owner_login)
     if not decision.allowed:
         raise DeployRejected(decision.reason)
+    if not run_id or not run_id.isdecimal() or not run_attempt or not run_attempt.isdecimal():
+        raise DeployRejected("missing or malformed workflow run identity")
+    marker = f"authorized by {decision.auth_id} run {run_id} attempt {run_attempt}"
     if reserved_deployment_id is not None:
         reserved = gh.deployment(reserved_deployment_id)
         if (reserved.get("id") != reserved_deployment_id or reserved.get("sha") != sha
                 or reserved.get("environment") != environment
-                or reserved.get("description") != f"authorized by {decision.auth_id}"):
+                or reserved.get("description") != marker):
             raise DeployRejected("deployment reservation does not match authorization")
-    matching_deployments = [d for d in gh.deployments(environment)
-                            if isinstance(d, dict) and (d.get("description") or "").strip()
-                            == f"authorized by {decision.auth_id}"]
+    # Search both environments: authorization IDs are globally single-use.
+    all_deployments = gh.deployments("staging") + gh.deployments("production")
+    matching_deployments = [d for d in all_deployments if isinstance(d, dict)
+                            and isinstance(d.get("description"), str)
+                            and d["description"].startswith(f"authorized by {decision.auth_id} ")]
     if reserved_deployment_id is not None and (len(matching_deployments) != 1
                                                or matching_deployments[0].get("id") != reserved_deployment_id):
         raise DeployRejected("deployment reservation is missing, duplicated, or mismatched")
@@ -362,7 +370,8 @@ def main(argv: list[str] | None = None) -> int:
             live = fetch_release(base) if base.startswith("https://") else None
             preflight(gh, args.environment, args.sha, int(os.environ.get("DEPLOY_AUTH_ISSUE", "448")),
                       os.environ.get("GITHUB_ACTOR", ""), os.environ.get("GITHUB_TRIGGERING_ACTOR", ""),
-                      owner, live_release=live, reserved_deployment_id=args.deployment_id)
+                      owner, live_release=live, reserved_deployment_id=args.deployment_id,
+                      run_id=os.environ.get("GITHUB_RUN_ID"), run_attempt=os.environ.get("GITHUB_RUN_ATTEMPT"))
             trigger_hook(os.environ.get("RENDER_DEPLOY_HOOK_URL", ""), args.sha, args.environment)
             print(f"TRIGGERED {args.environment} @ {args.sha}")
             return 0
@@ -378,6 +387,7 @@ def main(argv: list[str] | None = None) -> int:
                 gh, args.environment, args.sha, int(os.environ.get("DEPLOY_AUTH_ISSUE", "448")),
                 os.environ.get("GITHUB_ACTOR", ""), os.environ.get("GITHUB_TRIGGERING_ACTOR", ""), owner,
                 live_release=live,
+                run_id=os.environ.get("GITHUB_RUN_ID"), run_attempt=os.environ.get("GITHUB_RUN_ATTEMPT"),
             )
             print(f"ALLOW {args.environment} @ {args.sha} ({auth_id})")
             output = os.environ.get("GITHUB_OUTPUT")
