@@ -9,7 +9,7 @@ from django.contrib import admin
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.http import HttpResponseRedirect
 from django.urls import include, path
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, TemplateView
 
 from apps.platform_shell.registry import registry as platform_registry
 from config.health import health_check
@@ -45,6 +45,7 @@ urlpatterns += i18n_patterns(
     path("", home, name="home"),
     path("discover/", discover, name="discover"),
     path("orientation/", orientation, name="orientation"),
+    path("platform-report/", TemplateView.as_view(template_name="reports/platform_review.html"), name="platform_report"),
     path("discover/knowledge/", discover, {"domain": "knowledge"}, name="discover_knowledge"),
     path("discover/media/", discover, {"domain": "media"}, name="discover_media"),
     path(
