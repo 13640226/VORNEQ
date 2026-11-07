@@ -36,8 +36,13 @@ class MigrationWrapperPreflightTests(unittest.TestCase):
             exclusive_window_reviewed=True,
         )
 
-    def test_review_context_only(self):
-        validate_review_context(self.valid_context)
+    def test_valid_review_context_is_rejected_while_guard_is_fail_closed(self):
+        # db_target_guard.decide() is fail-closed on main until independent
+        # attestation and single-use authorization exist, so even a fully
+        # valid review context must be rejected. The preflight is inert.
+        with self.assertRaises(PreflightRejected) as ctx:
+            validate_review_context(self.valid_context)
+        self.assertIn("explicit review confirmation missing", str(ctx.exception))
 
     def test_fail_closed_on_invalid_review_input(self):
         for changes in INVALID_CHANGES:
