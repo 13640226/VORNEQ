@@ -22,7 +22,8 @@ on:
 permissions: {}
 
 concurrency:
-  group: deploy-${{ inputs.environment }}
+  # Serialize staging and production within this workflow; this is not an external atomic lock.
+  group: vorneq-owner-deploy-global
   cancel-in-progress: false
 
 jobs:
