@@ -1,5 +1,6 @@
 from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
+from django.utils.translation import override
 
 
 @override_settings(ALLOWED_HOSTS=["testserver"])
@@ -22,4 +23,5 @@ class PlatformReportTests(SimpleTestCase):
         self.assertNotContains(response, "<script src=")
 
     def test_report_route_is_named(self):
-        self.assertEqual(reverse("platform_report"), "/en/platform-report/")
+        with override("en"):
+            self.assertEqual(reverse("platform_report"), "/en/platform-report/")
