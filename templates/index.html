@@ -9,7 +9,13 @@
 {% language 'en' %}<link rel="alternate" hreflang="en" href="{% url 'home' %}">{% endlanguage %}
 {% language 'de' %}<link rel="alternate" hreflang="de" href="{% url 'home' %}">{% endlanguage %}
 {% language 'en' %}<link rel="alternate" hreflang="x-default" href="{% url 'home' %}">{% endlanguage %}
-<meta name="description" content="{% trans 'VORNEQ connects discovery, evidence, provenance, and structured records so information can be inspected in context.' %}">
+{% if request.LANGUAGE_CODE == 'de' %}
+<meta name="description" content="VORNEQ verbindet Entdeckung, Evidenz, Herkunft und strukturierte Datensätze, damit Informationen im Kontext geprüft werden können.">
+{% elif request.LANGUAGE_CODE == 'fa' %}
+<meta name="description" content="VORNEQ کشف اطلاعات، شواهد، منشأ و رکوردهای ساختاریافته را به هم پیوند می‌دهد تا اطلاعات در زمینهٔ خود بررسی شوند.">
+{% else %}
+<meta name="description" content="VORNEQ connects discovery, evidence, provenance, and structured records so information can be inspected in context.">
+{% endif %}
 <meta property="og:title" content="VORNEQ — {% trans 'Precision Digital Infrastructure' %}">
 <meta property="og:description" content="{% trans 'Dependable digital infrastructure for clarity, resilience, and long-term trust.' %}">
 <meta property="og:type" content="website">
