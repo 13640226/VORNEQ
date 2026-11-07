@@ -193,7 +193,7 @@ def main() -> int:
         # The required check is the commit status above. A DENY is a normal,
         # successfully evaluated result, so the job itself exits 0. Only an
         # evaluation error (below) fails the job.
-        return 0
+        return 0 if decision.allowed else 1
     except (urllib.error.URLError, RuntimeError, KeyError, ValueError, TypeError) as exc:
         print(f"DENY (fail-closed): {type(exc).__name__}", file=sys.stderr)
         if client is not None and head_sha:
