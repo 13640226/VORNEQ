@@ -95,7 +95,7 @@ jobs:
         id: record
         run: |
           set -euo pipefail
-          id=$(jq -n --arg ref "$DEPLOY_SHA" --arg env "$DEPLOY_ENVIRONMENT" --arg desc "authorized by $AUTH_ID" \
+          id=$(jq -n --arg ref "$DEPLOY_SHA" --arg env "$DEPLOY_ENVIRONMENT" --arg desc "authorized by $AUTH_ID run $GITHUB_RUN_ID attempt $GITHUB_RUN_ATTEMPT" \
             '{ref:$ref, environment:$env, auto_merge:false, required_contexts:[], description:$desc}' \
             | gh api -X POST "repos/$GITHUB_REPOSITORY/deployments" --input - --jq .id)
           echo "id=$id" >> "$GITHUB_OUTPUT"
