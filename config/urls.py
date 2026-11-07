@@ -20,6 +20,7 @@ from config.views import discover, home, orientation, profile, robots_txt, searc
 # Non-localized operational and API endpoints.
 urlpatterns = [
     path("health/", health_check, name="health"),
+    path("favicon.ico", RedirectView.as_view(url="/static/favicon.svg", permanent=False)),
     path("robots.txt", robots_txt, name="robots_txt"),
     path("sitemap.xml", sitemap_xml, name="sitemap_xml"),
     path("metrics", metrics_view, name="prometheus-django-metrics"),

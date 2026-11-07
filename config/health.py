@@ -116,4 +116,7 @@ def health_check(request):
         status=payload["status"],
         duration_ms=duration_ms,
     )
-    return JsonResponse(payload, status=200 if healthy else 503)
+    response = JsonResponse(payload, status=200 if healthy else 503)
+    if request.method == "HEAD":
+        response.content = b""
+    return response
