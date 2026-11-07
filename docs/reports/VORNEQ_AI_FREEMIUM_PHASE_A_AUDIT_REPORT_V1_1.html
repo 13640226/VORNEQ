@@ -1,5 +1,497 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="description" content="VORNEQ AI Freemium Phase A Audit V1.1 — PARTIAL_COMPLETED / SAFE_HOLD"><title>VORNEQ — AI Freemium Phase A Audit V1.1</title><style>:root{--bg:#f5f6f8;--surface:#fff;--border:#d5dae0;--text:#171c22;--muted:#5b6573;--brand:#1f4e79;--warn:#8a5300;--danger:#b3261e;--radius:10px}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:7rem}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.75 Vazirmatn,IRANSans,Tahoma,"Segoe UI",sans-serif}h1,h2,h3{line-height:1.4}h1{font-size:1.8rem}h2{font-size:1.4rem}h3{font-size:1.1rem}a{color:var(--brand)}code{font-family:ui-monospace,Consolas,monospace;direction:ltr;unicode-bidi:isolate;background:#eceff3;border-radius:4px;padding:1px 4px;overflow-wrap:anywhere}header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--border);padding:12px 20px}.header-inner,main,footer{max-width:1100px;margin:auto}.header-inner{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center;min-width:0}.header-id{font:12px/1.6 ui-monospace,monospace;color:var(--muted);direction:ltr;overflow-wrap:anywhere;max-width:100%}.badges{display:flex;flex-wrap:wrap;gap:6px}.badge{font:600 12px/1.4 ui-monospace,monospace;border:1px solid var(--border);border-radius:20px;padding:4px 9px;overflow-wrap:anywhere;max-width:100%}main{padding:16px 20px}.doc-section,.toc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px 32px;margin:20px 0}.toc ol{columns:2}.toc li{break-inside:avoid}.meta,.data-table{border-collapse:collapse;width:100%;font-size:14px}.meta td,.meta th,.data-table td,.data-table th{border:1px solid var(--border);padding:9px 12px;text-align:start;vertical-align:top}.meta th,.data-table th{background:#eceff3}.meta td{direction:ltr;overflow-wrap:anywhere;font-family:ui-monospace,monospace}.meta th{width:30%;font-size:12px;direction:ltr;text-align:left}.table-scroll{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}.table-scroll .data-table{min-width:580px}.table-scroll:focus-visible{outline:3px solid var(--brand);outline-offset:3px}.file-tree{background:#1d2430;color:#d6dde7;border-radius:8px;padding:20px;overflow-x:auto;direction:ltr;text-align:left;white-space:pre;font:13px/1.6 ui-monospace,Consolas,monospace}.file-tree code{background:none;color:inherit;padding:0;overflow-wrap:normal}.finding{border:1px solid var(--border);border-inline-start:4px solid var(--warn);padding:16px;margin:16px 0;border-radius:8px}.finding__head{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center}.notice{border-inline-start:4px solid var(--warn);background:#fdf1d8;padding:14px 18px;border-radius:5px}.flow__list{list-style:none;padding:20px;margin:16px 0;background:#eceff3;border-radius:8px;text-align:center;direction:ltr}.flow__list li{margin:0}.flow__list li:not(:last-child)::after{content:"↓";display:block;color:#8a939f;line-height:1.5}.flow__step{display:inline-block;width:min(100%,420px);padding:10px;background:#fff;border:1px solid var(--border);border-radius:5px;font:600 13px/1.6 ui-monospace,monospace;overflow-wrap:anywhere}.flow__step--brand{background:#e7eef6;color:var(--brand)}.flow__step--warn{background:#fdf1d8;color:var(--warn)}.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.plan-card,.phase{border:1px solid var(--border);border-radius:8px;padding:18px;margin:12px 0}.plan-card h3{color:var(--brand)}.phase{border-inline-start:4px solid var(--brand)}.principle{text-align:center;direction:ltr;overflow-wrap:anywhere;border:2px dashed #aeb6bf;padding:16px;font:600 14px/1.7 ui-monospace,monospace}.final-block{direction:ltr;text-align:left;background:#eceff3;border:1px solid var(--border);border-radius:8px;padding:20px;font:13px/1.9 ui-monospace,monospace;overflow-wrap:anywhere}.final-block .k{display:inline-block;min-width:32ch;color:var(--muted)}.final-block .v{font-weight:700;overflow-wrap:anywhere}footer{padding:24px 20px;color:var(--muted);font:12px/1.8 ui-monospace,monospace;direction:ltr;overflow-wrap:anywhere}@media(max-width:720px){main{padding:12px}.doc-section,.toc{padding:16px}.toc ol{columns:1}.plan-grid{grid-template-columns:1fr}.final-block{font-size:12px;padding:12px}.final-block .k,.final-block .v{display:block;min-width:0}.header-inner{align-items:flex-start}.file-tree{font-size:12px;padding:12px}.meta{display:block;overflow-x:auto}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}@media print{body{background:#fff;font-size:11pt}header{position:static}.doc-section,.final-block,.flow__list{break-inside:auto}.finding,.plan-card,.phase{break-inside:avoid}.file-tree{background:#f0f0f0;color:#000;border:1px solid #999}.table-scroll{overflow:visible}.table-scroll .data-table{min-width:0;width:100%}a{color:inherit}}</style></head><body><header><div class="header-inner"><div><strong>VORNEQ — AI Freemium Phase A Audit</strong><div class="header-id">P1_VORNEQ_AI_FREEMIUM_EXISTING_SOURCE_AND_ARCHITECTURE_AUDIT_REPORT_V1 · 2026-11-07</div></div><div class="badges"><span class="badge">SAFE_HOLD / NO_GO</span><span class="badge">PARTIAL_COMPLETED</span><span class="badge">STRICT_READ_ONLY</span><span class="badge">0/20 VERIFIED</span></div></div></header><main><section class="doc-section"><h1>گزارش ممیزی معماری و سورس — فاز A هوش مصنوعی Freemium</h1><table class="meta"><tr><th>DOCUMENT_ID</th><td>P1_VORNEQ_AI_FREEMIUM_EXISTING_SOURCE_AND_ARCHITECTURE_AUDIT_REPORT_V1</td></tr><tr><th>PROJECT</th><td>VORNEQ</td></tr><tr><th>REPOSITORY</th><td>13640226/VORNEQ</td></tr><tr><th>REFERENCE</th><td>VORNEQ_AI_FREEMIUM_PRODUCT_AND_BILLING_CONTRACT_V1</td></tr><tr><th>REFERENCE_PR</th><td>#553</td></tr><tr><th>REFERENCE_MERGE_COMMIT</th><td>3ea92bae74a6929f0410f5e83d0e502c11586636</td></tr><tr><th>DATE</th><td>2026-11-07</td></tr><tr><th>PRIORITY</th><td>P1 — Product Architecture / P0 — Security Boundaries</td></tr><tr><th>AUTHORIZATION_SCOPE</th><td>STRICT_READ_ONLY / DOCUMENTARY_ONLY</td></tr><tr><th>AUDIT_STATUS</th><td>PARTIAL_COMPLETED / FURTHER_SOURCE_VERIFICATION_REQUIRED</td></tr><tr><th>IMPLEMENTATION_AUTHORIZATION</th><td>NOT_GRANTED</td></tr><tr><th>FINAL_STATE</th><td>SAFE_HOLD / NO_GO</td></tr></table><p>نسخه نمایشی V1.1 با اصلاحات واکنش‌گرایی، دسترس‌پذیری و چاپ؛ محتوای فنی همچنان گزارش ممیزی جزئی است.</p></section><nav class="toc" aria-label="فهرست مطالب"><h2>فهرست مطالب</h2><ol><li><a href="#s1">1. هدف ممیزی</a></li><li><a href="#s2">2. بررسی سورس</a></li><li><a href="#s3">3. معماری Django</a></li><li><a href="#s4">4. سیستم Entitlement</a></li><li><a href="#s5">5. معماری اسناد و فایل‌ها</a></li><li><a href="#s6">6. معماری API</a></li><li><a href="#s7">7. دیتابیس و Storage</a></li><li><a href="#s8">8. Billing و پرداخت</a></li><li><a href="#s9">9. معماری پیشنهادی AI</a></li><li><a href="#s10">10. ماژول Django پیشنهادی</a></li><li><a href="#s11">11. مدل‌های داده پیشنهادی</a></li><li><a href="#s12">12. مدل Free / Premium</a></li><li><a href="#s13">13. ماتریس معیارهای پذیرش</a></li><li><a href="#s14">14. نقشه راه پیاده‌سازی</a></li><li><a href="#s15">15. وضعیت حاکمیتی</a></li><li><a href="#s16">16. اقدام پیشنهادی بعدی</a></li><li><a href="#s17">17. ارزیابی نهایی</a></li></ol></nav><article id="s1" class="doc-section"><h2>1. هدف ممیزی</h2><p>هدف این ممیزی بررسی معماری فعلی VORNEQ برای دستیار هوش مصنوعی چندزبانه با مدل Free/Premium است.</p><ul><li>Django Backend، احراز هویت، پروفایل و Tenant Isolation</li><li>Document، MediaAsset و Library</li><li>API، Entitlement، Billing و Payment</li><li>PostgreSQL، Storage و شکاف‌های امنیتی</li><li>نقشه پیاده‌سازی AI Freemium</li></ul><p class="notice">این ممیزی فقط بررسی ایستای بخش‌هایی از Source است. هیچ Runtime، SQL، Migration، Commit، Push، Merge یا Deploy در ممیزی انجام نشده است.</p></article><article id="s2" class="doc-section"><h2>2. بررسی سورس</h2><p><b>REPOSITORY:</b> <code>13640226/VORNEQ</code> — <b>BASE:</b> <code>origin/main</code></p><pre class="file-tree"><code>config/
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="VORNEQ AI Freemium Phase A Audit V1.1 — PARTIAL_COMPLETED / SAFE_HOLD">
+<title>VORNEQ — AI Freemium Phase A Audit V1.1</title>
+<style>
+:root {
+  --bg:#f5f6f8;
+  --surface:#fff;
+  --border:#d5dae0;
+  --text:#171c22;
+  --muted:#5b6573;
+  --brand:#1f4e79;
+  --warn:#8a5300;
+  --danger:#b3261e;
+  --radius:10px}
+
+* {
+  box-sizing:border-box}
+
+html {
+  scroll-behavior:smooth;
+  scroll-padding-top:7rem}
+
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font:16px/1.75 Vazirmatn,IRANSans,Tahoma,"Segoe UI",sans-serif}
+
+h1,h2,h3 {
+  line-height:1.4}
+
+h1 {
+  font-size:1.8rem}
+
+h2 {
+  font-size:1.4rem}
+
+h3 {
+  font-size:1.1rem}
+
+a {
+  color:var(--brand)}
+
+code {
+  font-family:ui-monospace,Consolas,monospace;
+  direction:ltr;
+  unicode-bidi:isolate;
+  background:#eceff3;
+  border-radius:4px;
+  padding:1px 4px;
+  overflow-wrap:anywhere}
+
+header {
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  padding:12px 20px}
+
+.header-inner,main,footer {
+  max-width:1100px;
+  margin:auto}
+
+.header-inner {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+  min-width:0}
+
+.header-id {
+  font:12px/1.6 ui-monospace,monospace;
+  color:var(--muted);
+  direction:ltr;
+  overflow-wrap:anywhere;
+  max-width:100%}
+
+.badges {
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px}
+
+.badge {
+  font:600 12px/1.4 ui-monospace,monospace;
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:4px 9px;
+  overflow-wrap:anywhere;
+  max-width:100%}
+
+main {
+  padding:16px 20px}
+
+.doc-section,.toc {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px 32px;
+  margin:20px 0}
+
+.toc ol {
+  columns:2}
+
+.toc li {
+  break-inside:avoid}
+
+.meta,.data-table {
+  border-collapse:collapse;
+  width:100%;
+  font-size:14px}
+
+.meta td,.meta th,.data-table td,.data-table th {
+  border:1px solid var(--border);
+  padding:9px 12px;
+  text-align:start;
+  vertical-align:top}
+
+.meta th,.data-table th {
+  background:#eceff3}
+
+.meta td {
+  direction:ltr;
+  overflow-wrap:anywhere;
+  font-family:ui-monospace,monospace}
+
+.meta th {
+  width:30%;
+  font-size:12px;
+  direction:ltr;
+  text-align:left}
+
+.table-scroll {
+  width:100%;
+  max-width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch}
+
+.table-scroll .data-table {
+  min-width:580px}
+
+.table-scroll:focus-visible {
+  outline:3px solid var(--brand);
+  outline-offset:3px}
+
+.file-tree {
+  background:#1d2430;
+  color:#d6dde7;
+  border-radius:8px;
+  padding:20px;
+  overflow-x:auto;
+  direction:ltr;
+  text-align:left;
+  white-space:pre;
+  font:13px/1.6 ui-monospace,Consolas,monospace}
+
+.file-tree code {
+  background:none;
+  color:inherit;
+  padding:0;
+  overflow-wrap:normal}
+
+.finding {
+  border:1px solid var(--border);
+  border-inline-start:4px solid var(--warn);
+  padding:16px;
+  margin:16px 0;
+  border-radius:8px}
+
+.finding__head {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:space-between;
+  align-items:center}
+
+.notice {
+  border-inline-start:4px solid var(--warn);
+  background:#fdf1d8;
+  padding:14px 18px;
+  border-radius:5px}
+
+.flow__list {
+  list-style:none;
+  padding:20px;
+  margin:16px 0;
+  background:#eceff3;
+  border-radius:8px;
+  text-align:center;
+  direction:ltr}
+
+.flow__list li {
+  margin:0}
+
+.flow__list li:not(:last-child)::after {
+  content:"↓";
+  display:block;
+  color:#8a939f;
+  line-height:1.5}
+
+.flow__step {
+  display:inline-block;
+  width:min(100%,420px);
+  padding:10px;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:5px;
+  font:600 13px/1.6 ui-monospace,monospace;
+  overflow-wrap:anywhere}
+
+.flow__step--brand {
+  background:#e7eef6;
+  color:var(--brand)}
+
+.flow__step--warn {
+  background:#fdf1d8;
+  color:var(--warn)}
+
+.plan-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px}
+
+.plan-card,.phase {
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:18px;
+  margin:12px 0}
+
+.plan-card h3 {
+  color:var(--brand)}
+
+.phase {
+  border-inline-start:4px solid var(--brand)}
+
+.principle {
+  text-align:center;
+  direction:ltr;
+  overflow-wrap:anywhere;
+  border:2px dashed #aeb6bf;
+  padding:16px;
+  font:600 14px/1.7 ui-monospace,monospace}
+
+.final-block {
+  direction:ltr;
+  text-align:left;
+  background:#eceff3;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:20px;
+  font:13px/1.9 ui-monospace,monospace;
+  overflow-wrap:anywhere}
+
+.final-block .k {
+  display:inline-block;
+  min-width:32ch;
+  color:var(--muted)}
+
+.final-block .v {
+  font-weight:700;
+  overflow-wrap:anywhere}
+
+footer {
+  padding:24px 20px;
+  color:var(--muted);
+  font:12px/1.8 ui-monospace,monospace;
+  direction:ltr;
+  overflow-wrap:anywhere}
+
+@media(max-width:720px) {
+  main {
+  padding:12px}
+
+.doc-section,.toc {
+  padding:16px}
+
+.toc ol {
+  columns:1}
+
+.plan-grid {
+  grid-template-columns:1fr}
+
+.final-block {
+  font-size:12px;
+  padding:12px}
+
+.final-block .k,.final-block .v {
+  display:block;
+  min-width:0}
+
+.header-inner {
+  align-items:flex-start}
+
+.file-tree {
+  font-size:12px;
+  padding:12px}
+
+.meta {
+  display:block;
+  overflow-x:auto}
+
+}
+
+@media(prefers-reduced-motion:reduce) {
+  html {
+  scroll-behavior:auto}
+
+}
+
+@media print {
+  body {
+  background:#fff;
+  font-size:11pt}
+
+header {
+  position:static}
+
+.doc-section,.final-block,.flow__list {
+  break-inside:auto}
+
+.finding,.plan-card,.phase {
+  break-inside:avoid}
+
+.file-tree {
+  background:#f0f0f0;
+  color:#000;
+  border:1px solid #999}
+
+.table-scroll {
+  overflow:visible}
+
+.table-scroll .data-table {
+  min-width:0;
+  width:100%}
+
+a {
+  color:inherit}
+
+}
+
+
+</style>
+</head>
+<body>
+<header>
+<div class="header-inner">
+<div>
+<strong>VORNEQ — AI Freemium Phase A Audit</strong>
+<div class="header-id">P1_VORNEQ_AI_FREEMIUM_EXISTING_SOURCE_AND_ARCHITECTURE_AUDIT_REPORT_V1 · 2026-11-07</div>
+</div>
+<div class="badges">
+<span class="badge">SAFE_HOLD / NO_GO</span>
+<span class="badge">PARTIAL_COMPLETED</span>
+<span class="badge">STRICT_READ_ONLY</span>
+<span class="badge">0/20 VERIFIED</span>
+</div>
+</div>
+</header>
+<main>
+<section class="doc-section">
+<h1>گزارش ممیزی معماری و سورس — فاز A هوش مصنوعی Freemium</h1>
+<table class="meta">
+<tr>
+<th>DOCUMENT_ID</th>
+<td>P1_VORNEQ_AI_FREEMIUM_EXISTING_SOURCE_AND_ARCHITECTURE_AUDIT_REPORT_V1</td>
+</tr>
+<tr>
+<th>PROJECT</th>
+<td>VORNEQ</td>
+</tr>
+<tr>
+<th>REPOSITORY</th>
+<td>13640226/VORNEQ</td>
+</tr>
+<tr>
+<th>REFERENCE</th>
+<td>VORNEQ_AI_FREEMIUM_PRODUCT_AND_BILLING_CONTRACT_V1</td>
+</tr>
+<tr>
+<th>REFERENCE_PR</th>
+<td>#553</td>
+</tr>
+<tr>
+<th>REFERENCE_MERGE_COMMIT</th>
+<td>3ea92bae74a6929f0410f5e83d0e502c11586636</td>
+</tr>
+<tr>
+<th>DATE</th>
+<td>2026-11-07</td>
+</tr>
+<tr>
+<th>PRIORITY</th>
+<td>P1 — Product Architecture / P0 — Security Boundaries</td>
+</tr>
+<tr>
+<th>AUTHORIZATION_SCOPE</th>
+<td>STRICT_READ_ONLY / DOCUMENTARY_ONLY</td>
+</tr>
+<tr>
+<th>AUDIT_STATUS</th>
+<td>PARTIAL_COMPLETED / FURTHER_SOURCE_VERIFICATION_REQUIRED</td>
+</tr>
+<tr>
+<th>IMPLEMENTATION_AUTHORIZATION</th>
+<td>NOT_GRANTED</td>
+</tr>
+<tr>
+<th>FINAL_STATE</th>
+<td>SAFE_HOLD / NO_GO</td>
+</tr>
+</table>
+<p>نسخه نمایشی V1.1 با اصلاحات واکنش‌گرایی، دسترس‌پذیری و چاپ؛ محتوای فنی همچنان گزارش ممیزی جزئی است.</p>
+</section>
+<nav class="toc" aria-label="فهرست مطالب">
+<h2>فهرست مطالب</h2>
+<ol>
+<li>
+<a href="#s1">1. هدف ممیزی</a>
+</li>
+<li>
+<a href="#s2">2. بررسی سورس</a>
+</li>
+<li>
+<a href="#s3">3. معماری Django</a>
+</li>
+<li>
+<a href="#s4">4. سیستم Entitlement</a>
+</li>
+<li>
+<a href="#s5">5. معماری اسناد و فایل‌ها</a>
+</li>
+<li>
+<a href="#s6">6. معماری API</a>
+</li>
+<li>
+<a href="#s7">7. دیتابیس و Storage</a>
+</li>
+<li>
+<a href="#s8">8. Billing و پرداخت</a>
+</li>
+<li>
+<a href="#s9">9. معماری پیشنهادی AI</a>
+</li>
+<li>
+<a href="#s10">10. ماژول Django پیشنهادی</a>
+</li>
+<li>
+<a href="#s11">11. مدل‌های داده پیشنهادی</a>
+</li>
+<li>
+<a href="#s12">12. مدل Free / Premium</a>
+</li>
+<li>
+<a href="#s13">13. ماتریس معیارهای پذیرش</a>
+</li>
+<li>
+<a href="#s14">14. نقشه راه پیاده‌سازی</a>
+</li>
+<li>
+<a href="#s15">15. وضعیت حاکمیتی</a>
+</li>
+<li>
+<a href="#s16">16. اقدام پیشنهادی بعدی</a>
+</li>
+<li>
+<a href="#s17">17. ارزیابی نهایی</a>
+</li>
+</ol>
+</nav>
+<article id="s1" class="doc-section">
+<h2>1. هدف ممیزی</h2>
+<p>هدف این ممیزی بررسی معماری فعلی VORNEQ برای دستیار هوش مصنوعی چندزبانه با مدل Free/Premium است.</p>
+<ul>
+<li>Django Backend، احراز هویت، پروفایل و Tenant Isolation</li>
+<li>Document، MediaAsset و Library</li>
+<li>API، Entitlement، Billing و Payment</li>
+<li>PostgreSQL، Storage و شکاف‌های امنیتی</li>
+<li>نقشه پیاده‌سازی AI Freemium</li>
+</ul>
+<p class="notice">این ممیزی فقط بررسی ایستای بخش‌هایی از Source است. هیچ Runtime، SQL، Migration، Commit، Push، Merge یا Deploy در ممیزی انجام نشده است.</p>
+</article>
+<article id="s2" class="doc-section">
+<h2>2. بررسی سورس</h2>
+<p>
+<b>REPOSITORY:</b> <code>13640226/VORNEQ</code> — <b>BASE:</b> <code>origin/main</code>
+</p>
+<pre class="file-tree">
+<code>config/
 ├── settings.py
 └── urls.py
 apps/
@@ -12,7 +504,166 @@ apps/
 ├── verification/
 ├── audit/
 └── content/
-library/ (models.py, services.py, views.py, urls.py)</code></pre><p><code>EXISTING_DJANGO_ARCHITECTURE_IDENTIFIED</code> — فهرست بالا کامل نیست.</p></article><article id="s3" class="doc-section"><h2>3. معماری Django</h2><h3>Framework</h3><ul><li>Django چنداپلیکیشنی، تنظیمات مرکزی، Django Admin</li><li>مسیرهای API، پیکربندی PostgreSQL، ترجمه‌ها و تست‌ها</li></ul><h3>Authentication</h3><p><code>django-allauth</code>، مسیرهای <code>/accounts/</code> و <code>/profile/</code> و مدل <code>UserProfile</code> مشاهده شدند.</p><p><b>REUSABLE_WITH_SECURITY_REVIEW</b> — احراز هویت API خصوصی، مالکیت گفتگو و فایل، Rate Limiting، هم‌زمانی و نشست‌ها باید بررسی شوند.</p></article><article id="s4" class="doc-section"><h2>4. سیستم Entitlement</h2><p>فایل‌ها: <code>apps/core/models.py</code> و <code>apps/core/services/entitlement.py</code></p><ul><li>grant_entitlement()</li><li>revoke_entitlement()</li><li>has_valid_entitlement()</li></ul><div class="finding"><div class="finding__head"><strong dir="ltr">AI-ARCH-01</strong><span class="badge">SUBSCRIPTION_SEMANTICS_NOT_VERIFIED</span></div><p>Entitlement فعلی به کاربران، محصولات و Artifactها مرتبط است و بدون بررسی بیشتر معادل اشتراک ماهانه AI نیست.</p><ul><li>Product Entitlement</li><li>Subscription State</li><li>AI Usage Quota</li></ul></div></article><article id="s5" class="doc-section"><h2>5. معماری اسناد و فایل‌ها</h2><p>مدل‌های مشاهده‌شده:</p><ul><li>Document، DocumentAccess، DocumentAuditLog، RetentionHold</li><li>MediaAsset، MediaEmbedding</li></ul><p>در MediaAsset یک FileField و در Document ارتباط سازنده و هویت مالک مشاهده شد؛ مسیرهای ایجاد، مشاهده، ویرایش و اشتراک‌گذاری نیز وجود دارند.</p><div class="finding"><div class="finding__head"><strong dir="ltr">AI-ARCH-02</strong><span class="badge">AI_SECURITY_NOT_VERIFIED</span></div><p>زیرساخت موجود به‌تنهایی امنیت فایل خصوصی AI را اثبات نمی‌کند.</p><ul><li>مالکیت فایل و Tenant Isolation</li><li>محدودیت حجم و نوع فایل، Malware Scanning</li><li>Storage خصوصی، جلوگیری از دسترسی مستقیم</li><li>Retention، حذف و Audit حساس</li></ul></div></article><article id="s6" class="doc-section"><h2>6. معماری API</h2><p>مسیرهای موجود:</p><ul><li>/api/</li><li>/api/media/</li><li>/api/search/</li><li>/api/verification/</li></ul><p>مسیرهای پیشنهادی و اجرا‌نشده:</p><ul><li>/api/ai/v1/chat</li><li>/api/ai/v1/conversations</li><li>/api/ai/v1/files</li><li>/api/ai/v1/usage</li><li>/api/ai/v1/subscription</li></ul><p><b>API_INFRASTRUCTURE_FOUND / AI_ENDPOINTS_PROPOSED_ONLY</b></p></article><article id="s7" class="doc-section"><h2>7. دیتابیس و Storage</h2><p>در <code>config/settings.py</code> پیکربندی دیتابیس و <code>FileSystemStorage</code> مشاهده شد.</p><div class="finding"><div class="finding__head"><strong dir="ltr">AI-ARCH-03</strong><span class="badge">C02 OPEN_CRITICAL</span></div><p>وجود تنظیمات PostgreSQL به معنی تأیید هویت Runtime نیست. <b>DATABASE_IDENTITY = UNVERIFIED</b>. هیچ Migration مجاز نیست.</p></div><div class="finding"><div class="finding__head"><strong dir="ltr">AI-ARCH-04</strong><span class="badge">STORAGE_SECURITY_REVIEW_REQUIRED</span></div><p>ذخیره‌سازی محلی برای فایل خصوصی AI نیازمند بررسی کنترل دسترسی، حذف، نگهداری و بازیابی است.</p></div></article><article id="s8" class="doc-section"><h2>8. Billing و پرداخت</h2><p>در محدوده بررسی‌شده، پیاده‌سازی کامل Subscription Billing، Stripe، Payment Webhook، Recurring Payment، Invoice یا AI Subscription Lifecycle تأیید نشد.</p><p><b>NOT_OBSERVED_IN_INSPECTED_SCOPE</b> — این نتیجه اثبات نبودن تمام کدهای پرداخت نیست.</p><ul><li>Billing مستقل از AI Provider باشد.</li><li>Premium فقط با وضعیت معتبر Backend فعال شود.</li><li>بازگشت موفق از صفحه پرداخت به‌تنهایی مجوز Premium نیست.</li></ul></article><article id="s9" class="doc-section"><h2>9. معماری پیشنهادی AI</h2><ol class="flow__list"><li><div class="flow__step flow__step--brand">VORNEQ FRONTEND</div></li><li><div class="flow__step ">DJANGO AUTHENTICATION</div></li><li><div class="flow__step ">AI AUTHORIZATION SERVICE</div></li><li><div class="flow__step ">SUBSCRIPTION / ENTITLEMENT CHECK</div></li><li><div class="flow__step flow__step--warn">QUOTA & COST RESERVATION</div></li><li><div class="flow__step ">AI GATEWAY</div></li><li><div class="flow__step ">MODEL ROUTER</div></li><li><div class="flow__step ">APPROVED AI PROVIDER</div></li><li><div class="flow__step ">USAGE RECONCILIATION</div></li><li><div class="flow__step ">POSTGRESQL USAGE LEDGER</div></li><li><div class="flow__step flow__step--brand">AUTHORIZED USER RESPONSE</div></li></ol><ul><li>Client cannot choose unauthorized models or forge subscription.</li><li>API keys server-side; ownership checks on every conversation/file.</li><li>Atomic quota and hard cost limits; unknown authorization fails closed.</li><li>Untrusted uploads and AI output are never verified authorization evidence.</li></ul></article><article id="s10" class="doc-section"><h2>10. ماژول Django پیشنهادی</h2><pre class="file-tree"><code>apps/ai/
+library/ (models.py, services.py, views.py, urls.py)</code>
+</pre>
+<p>
+<code>EXISTING_DJANGO_ARCHITECTURE_IDENTIFIED</code> — فهرست بالا کامل نیست.</p>
+</article>
+<article id="s3" class="doc-section">
+<h2>3. معماری Django</h2>
+<h3>Framework</h3>
+<ul>
+<li>Django چنداپلیکیشنی، تنظیمات مرکزی، Django Admin</li>
+<li>مسیرهای API، پیکربندی PostgreSQL، ترجمه‌ها و تست‌ها</li>
+</ul>
+<h3>Authentication</h3>
+<p>
+<code>django-allauth</code>، مسیرهای <code>/accounts/</code> و <code>/profile/</code> و مدل <code>UserProfile</code> مشاهده شدند.</p>
+<p>
+<b>REUSABLE_WITH_SECURITY_REVIEW</b> — احراز هویت API خصوصی، مالکیت گفتگو و فایل، Rate Limiting، هم‌زمانی و نشست‌ها باید بررسی شوند.</p>
+</article>
+<article id="s4" class="doc-section">
+<h2>4. سیستم Entitlement</h2>
+<p>فایل‌ها: <code>apps/core/models.py</code> و <code>apps/core/services/entitlement.py</code>
+</p>
+<ul>
+<li>grant_entitlement()</li>
+<li>revoke_entitlement()</li>
+<li>has_valid_entitlement()</li>
+</ul>
+<div class="finding">
+<div class="finding__head">
+<strong dir="ltr">AI-ARCH-01</strong>
+<span class="badge">SUBSCRIPTION_SEMANTICS_NOT_VERIFIED</span>
+</div>
+<p>Entitlement فعلی به کاربران، محصولات و Artifactها مرتبط است و بدون بررسی بیشتر معادل اشتراک ماهانه AI نیست.</p>
+<ul>
+<li>Product Entitlement</li>
+<li>Subscription State</li>
+<li>AI Usage Quota</li>
+</ul>
+</div>
+</article>
+<article id="s5" class="doc-section">
+<h2>5. معماری اسناد و فایل‌ها</h2>
+<p>مدل‌های مشاهده‌شده:</p>
+<ul>
+<li>Document، DocumentAccess، DocumentAuditLog، RetentionHold</li>
+<li>MediaAsset، MediaEmbedding</li>
+</ul>
+<p>در MediaAsset یک FileField و در Document ارتباط سازنده و هویت مالک مشاهده شد؛ مسیرهای ایجاد، مشاهده، ویرایش و اشتراک‌گذاری نیز وجود دارند.</p>
+<div class="finding">
+<div class="finding__head">
+<strong dir="ltr">AI-ARCH-02</strong>
+<span class="badge">AI_SECURITY_NOT_VERIFIED</span>
+</div>
+<p>زیرساخت موجود به‌تنهایی امنیت فایل خصوصی AI را اثبات نمی‌کند.</p>
+<ul>
+<li>مالکیت فایل و Tenant Isolation</li>
+<li>محدودیت حجم و نوع فایل، Malware Scanning</li>
+<li>Storage خصوصی، جلوگیری از دسترسی مستقیم</li>
+<li>Retention، حذف و Audit حساس</li>
+</ul>
+</div>
+</article>
+<article id="s6" class="doc-section">
+<h2>6. معماری API</h2>
+<p>مسیرهای موجود:</p>
+<ul>
+<li>/api/</li>
+<li>/api/media/</li>
+<li>/api/search/</li>
+<li>/api/verification/</li>
+</ul>
+<p>مسیرهای پیشنهادی و اجرا‌نشده:</p>
+<ul>
+<li>/api/ai/v1/chat</li>
+<li>/api/ai/v1/conversations</li>
+<li>/api/ai/v1/files</li>
+<li>/api/ai/v1/usage</li>
+<li>/api/ai/v1/subscription</li>
+</ul>
+<p>
+<b>API_INFRASTRUCTURE_FOUND / AI_ENDPOINTS_PROPOSED_ONLY</b>
+</p>
+</article>
+<article id="s7" class="doc-section">
+<h2>7. دیتابیس و Storage</h2>
+<p>در <code>config/settings.py</code> پیکربندی دیتابیس و <code>FileSystemStorage</code> مشاهده شد.</p>
+<div class="finding">
+<div class="finding__head">
+<strong dir="ltr">AI-ARCH-03</strong>
+<span class="badge">C02 OPEN_CRITICAL</span>
+</div>
+<p>وجود تنظیمات PostgreSQL به معنی تأیید هویت Runtime نیست. <b>DATABASE_IDENTITY = UNVERIFIED</b>. هیچ Migration مجاز نیست.</p>
+</div>
+<div class="finding">
+<div class="finding__head">
+<strong dir="ltr">AI-ARCH-04</strong>
+<span class="badge">STORAGE_SECURITY_REVIEW_REQUIRED</span>
+</div>
+<p>ذخیره‌سازی محلی برای فایل خصوصی AI نیازمند بررسی کنترل دسترسی، حذف، نگهداری و بازیابی است.</p>
+</div>
+</article>
+<article id="s8" class="doc-section">
+<h2>8. Billing و پرداخت</h2>
+<p>در محدوده بررسی‌شده، پیاده‌سازی کامل Subscription Billing، Stripe، Payment Webhook، Recurring Payment، Invoice یا AI Subscription Lifecycle تأیید نشد.</p>
+<p>
+<b>NOT_OBSERVED_IN_INSPECTED_SCOPE</b> — این نتیجه اثبات نبودن تمام کدهای پرداخت نیست.</p>
+<ul>
+<li>Billing مستقل از AI Provider باشد.</li>
+<li>Premium فقط با وضعیت معتبر Backend فعال شود.</li>
+<li>بازگشت موفق از صفحه پرداخت به‌تنهایی مجوز Premium نیست.</li>
+</ul>
+</article>
+<article id="s9" class="doc-section">
+<h2>9. معماری پیشنهادی AI</h2>
+<ol class="flow__list">
+<li>
+<div class="flow__step flow__step--brand">VORNEQ FRONTEND</div>
+</li>
+<li>
+<div class="flow__step ">DJANGO AUTHENTICATION</div>
+</li>
+<li>
+<div class="flow__step ">AI AUTHORIZATION SERVICE</div>
+</li>
+<li>
+<div class="flow__step ">SUBSCRIPTION / ENTITLEMENT CHECK</div>
+</li>
+<li>
+<div class="flow__step flow__step--warn">QUOTA & COST RESERVATION</div>
+</li>
+<li>
+<div class="flow__step ">AI GATEWAY</div>
+</li>
+<li>
+<div class="flow__step ">MODEL ROUTER</div>
+</li>
+<li>
+<div class="flow__step ">APPROVED AI PROVIDER</div>
+</li>
+<li>
+<div class="flow__step ">USAGE RECONCILIATION</div>
+</li>
+<li>
+<div class="flow__step ">POSTGRESQL USAGE LEDGER</div>
+</li>
+<li>
+<div class="flow__step flow__step--brand">AUTHORIZED USER RESPONSE</div>
+</li>
+</ol>
+<ul>
+<li>Client cannot choose unauthorized models or forge subscription.</li>
+<li>API keys server-side; ownership checks on every conversation/file.</li>
+<li>Atomic quota and hard cost limits; unknown authorization fails closed.</li>
+<li>Untrusted uploads and AI output are never verified authorization evidence.</li>
+</ul>
+</article>
+<article id="s10" class="doc-section">
+<h2>10. ماژول Django پیشنهادی</h2>
+<pre class="file-tree">
+<code>apps/ai/
 ├── __init__.py
 ├── apps.py
 ├── models.py
@@ -30,4 +681,406 @@ library/ (models.py, services.py, views.py, urls.py)</code></pre><p><code>EXISTI
 │   └── webhooks.py
 ├── templates/ai/
 ├── migrations/
-└── tests/</code></pre><p><b>PROPOSED_ONLY</b> — ابتدا قابلیت استفاده مجدد سرویس‌های موجود مشخص شود.</p></article><article id="s11" class="doc-section"><h2>11. مدل‌های داده پیشنهادی</h2><ul><li>SubscriptionPlan</li><li>UserSubscription</li><li>AIConversation</li><li>AIMessage</li><li>AIUsageLedger</li><li>QuotaReservation</li><li>BillingEvent</li><li>AIFile</li></ul><p><b>DATABASE_MIGRATION = NOT_AUTHORIZED</b>. تمام مدل‌ها نیازمند بررسی مالکیت، Tenant، Audit، Retention و سازگاری هستند.</p></article><article id="s12" class="doc-section"><h2>12. مدل Free / Premium</h2><div class="plan-grid"><div class="plan-card"><h3>FREE — €0 / ماه</h3><ul><li>30 messages/day</li><li>3 files/month; 5 MB/file</li><li>Economy; 30 days history</li><li>1 concurrent request; €0.75/month AI cap</li></ul></div><div class="plan-card"><h3>PREMIUM — €12.90 / ماه</h3><ul><li>150 messages/day</li><li>50 files/month; 20 MB/file</li><li>Economy + metered Advanced; long-term history</li><li>3 concurrent requests; €5/month AI cap</li><li>VAT-inclusive where applicable</li></ul></div></div><p><b>CONTRACT_DEFINED / NOT_IMPLEMENTED</b>. محدودیت‌ها باید در Backend اعمال شوند.</p></article><article id="s13" class="doc-section"><h2>13. ماتریس معیارهای پذیرش</h2><p>NOT_VERIFIED به معنای فقدان شواهد کافی در دامنه این ممیزی است، نه اثبات آسیب‌پذیری یا مردودبودن معیار.</p><div class="table-scroll" role="region" aria-label="جدول معیارهای پذیرش" tabindex="0"><table class="data-table"><thead><tr><th>AC</th><th>موضوع</th><th>وضعیت</th></tr></thead><tbody><tr><td><code>AC-AI-01</code></td><td>جلوگیری از جعل Entitlement</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-02</code></td><td>امنیت گفتگو بین Tenantها</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-03</code></td><td>امنیت فایل بین Tenantها</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-04</code></td><td>رزرو اتمی سهمیه</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-05</code></td><td>سقف هزینه هم‌زمان</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-06</code></td><td>تسویه مصرف ناموفق یا نامشخص</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-07</code></td><td>انتخاب مجاز مدل</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-08</code></td><td>حفاظت از API Secrets</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-09</code></td><td>اعتبارسنجی Webhook</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-10</code></td><td>Idempotency رویداد پرداخت</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-11</code></td><td>جلوگیری از فعال‌سازی جعلی Premium</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-12</code></td><td>چرخه لغو و کاهش اشتراک</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-13</code></td><td>صحت Usage Ledger</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-14</code></td><td>امنیت آپلود فایل</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-15</code></td><td>Retention و حذف داده</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-16</code></td><td>رابط چندزبانه و دسترس‌پذیر</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-17</code></td><td>کنترل سوءاستفاده</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-18</code></td><td>رفتار امن هنگام خرابی Provider</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-19</code></td><td>تطبیق هزینه AI و پرداخت</td><td>NOT_VERIFIED</td></tr><tr><td><code>AC-AI-20</code></td><td>تأیید امنیتی پیش از انتشار</td><td>NOT_VERIFIED</td></tr></tbody></table></div><p class="notice"><b>ACCEPTANCE_RESULT: 0/20 VERIFIED</b></p></article><article id="s14" class="doc-section"><h2>14. نقشه راه پیاده‌سازی</h2><div class="phase"><h3>PHASE A — SOURCE AUDIT</h3><p><code>PARTIAL_COMPLETED</code> — Authentication، سرویس‌های دسترسی، Tenant/Organization، آپلود، Billing، تست‌ها و شواهد خطی</p></div><div class="phase"><h3>PHASE B — CONTRACT REVIEW</h3><p><code>PENDING</code> — VORNEQ_AI_GATEWAY_IMPLEMENTATION_CONTRACT_V1 و قرارداد سهمیه، داده، فایل و Billing</p></div><div class="phase"><h3>PHASE C — ISOLATED IMPLEMENTATION</h3><p><code>NOT_AUTHORIZED</code> — Gateway، Provider، مدل‌ها، رابط گفتگو و سهمیه</p></div><div class="phase"><h3>PHASE D — SECURITY VERIFICATION</h3><p><code>NOT_STARTED</code> — Unit، Integration، Tenant Isolation، Concurrency، Cost Ceiling، Failure، Secrets و Webhook</p></div><div class="phase"><h3>PHASE E — LIMITED BETA</h3><p><code>NOT_AUTHORIZED</code> — آزمایش محدود فقط پس از مجوز جداگانه</p></div><div class="phase"><h3>PHASE F — PRODUCTION RELEASE</h3><p><code>NOT_AUTHORIZED</code> — شواهد Runtime، پذیرش امنیتی و مجوز انتشار مستقل</p></div><p class="notice">هیچ مرحله‌ای به‌صورت خودکار مرحله بعد را مجاز نمی‌کند.</p></article><article id="s15" class="doc-section"><h2>15. وضعیت حاکمیتی</h2><div class="table-scroll" role="region" aria-label="جدول وضعیت حاکمیتی" tabindex="0"><table class="data-table"><thead><tr><th>شناسه</th><th>وضعیت</th></tr></thead><tbody><tr><td>C02</td><td>OPEN_CRITICAL</td></tr><tr><td>SC_07</td><td>OPEN_CRITICAL</td></tr><tr><td>GOV_BREACH_01</td><td>OPEN</td></tr><tr><td>P_06</td><td>UNRESOLVED</td></tr></tbody></table></div><p class="principle">PROPOSAL ≠ APPROVAL ≠ EXECUTION_AUTHORIZATION ≠ VERIFIED_EVIDENCE</p><p>ادغام PR #553 مجوز پیاده‌سازی، Migration، پرداخت یا انتشار نیست.</p></article><article id="s16" class="doc-section"><h2>16. اقدام پیشنهادی بعدی</h2><p><b>ACTION_ID:</b> <code>P1_VORNEQ_AI_FREEMIUM_PHASE_A_SOURCE_GAP_CLOSURE_V1</code></p><p><b>AUTHORIZATION_SCOPE:</b> STRICT_READ_ONLY / DOCUMENTARY_ONLY</p><ul><li>Source Inventory با فایل و خط</li><li>Authentication & Tenant Boundary Map</li><li>Existing Services Reuse Matrix</li><li>File Storage Security Assessment</li><li>Subscription & Billing Gap Report</li><li>AC-AI-01..20 Evidence Matrix</li><li>Implementation File Map و Risk Register</li><li>Independent Review Requirements و Readiness Decision</li></ul><p class="notice"><b>PROHIBITED:</b> Code Modification، Branch، Commit، Push، Merge، SQL، Migration، Secret Access، Paid API، Payment Activation، Render Change، Deploy (در دامنه ممیزی بعدی).</p></article><article id="s17" class="doc-section"><h2>17. ارزیابی نهایی</h2><div class="final-block"><div><span class="k">PROJECT</span><span class="v">VORNEQ</span></div><div><span class="k">AUDIT</span><span class="v">AI_FREEMIUM_PHASE_A</span></div><div><span class="k">SOURCE_AUDIT</span><span class="v">PARTIAL_COMPLETED</span></div><div><span class="k">DJANGO_ARCHITECTURE</span><span class="v">EXISTING_FOUND</span></div><div><span class="k">AUTHENTICATION</span><span class="v">EXISTING_FOUND</span></div><div><span class="k">ENTITLEMENT_SYSTEM</span><span class="v">EXISTING_FOUND</span></div><div><span class="k">DOCUMENT_INFRASTRUCTURE</span><span class="v">EXISTING_FOUND</span></div><div><span class="k">MEDIA_INFRASTRUCTURE</span><span class="v">EXISTING_FOUND</span></div><div><span class="k">API_INFRASTRUCTURE</span><span class="v">EXISTING_FOUND</span></div><div><span class="k">AI_GATEWAY</span><span class="v">NOT_VERIFIED_AS_IMPLEMENTED</span></div><div><span class="k">AI_SUBSCRIPTION</span><span class="v">NOT_VERIFIED_AS_IMPLEMENTED</span></div><div><span class="k">BILLING_SYSTEM</span><span class="v">NOT_OBSERVED_IN_INSPECTED_SCOPE</span></div><div><span class="k">AI_QUOTA_LEDGER</span><span class="v">NOT_VERIFIED_AS_IMPLEMENTED</span></div><div><span class="k">TENANT_ISOLATION</span><span class="v">NOT_VERIFIED_FOR_AI</span></div><div><span class="k">FILE_STORAGE_SECURITY</span><span class="v">REVIEW_REQUIRED</span></div><div><span class="k">DATABASE_IDENTITY</span><span class="v">UNVERIFIED</span></div><div><span class="k">ACCEPTANCE_CRITERIA</span><span class="v">20_DEFINED / 0_VERIFIED</span></div><div><span class="k">IMPLEMENTATION_READY</span><span class="v">NO</span></div><div><span class="k">DATABASE_GO</span><span class="v">NO</span></div><div><span class="k">MIGRATION_GO</span><span class="v">NO</span></div><div><span class="k">PAYMENT_ACTIVATION_GO</span><span class="v">NO</span></div><div><span class="k">DEPLOY_GO</span><span class="v">NO</span></div><div><span class="k">PRODUCT_RELEASE_GO</span><span class="v">NO</span></div><div><span class="k">NEXT_ACTION</span><span class="v">P1_VORNEQ_AI_FREEMIUM_PHASE_A_SOURCE_GAP_CLOSURE_V1</span></div><div><span class="k">FINAL_STATE</span><span class="v">SAFE_HOLD / NO_GO</span></div></div><p class="notice">OWNER DECISION REQUIRED: فقط ادامه ممیزی مستنداتی و بررسی قرارداد فنی؛ هیچ مجوز اجرایی استنتاج نمی‌شود.</p></article></main><footer>PROJECT: VORNEQ · DOCUMENT_ID: P1_VORNEQ_AI_FREEMIUM_EXISTING_SOURCE_AND_ARCHITECTURE_AUDIT_REPORT_V1 · REFERENCE_PR: #553 · REFERENCE_MERGE_COMMIT: 3ea92bae74a6929f0410f5e83d0e502c11586636 · AUTHORIZATION_SCOPE: STRICT_READ_ONLY / DOCUMENTARY_ONLY · IMPLEMENTATION_AUTHORIZATION: NOT_GRANTED · FINAL_STATE: SAFE_HOLD / NO_GO<br>END OF REPORT — VORNEQ AI FREEMIUM PHASE A AUDIT V1.1</footer></body></html>
+└── tests/</code>
+</pre>
+<p>
+<b>PROPOSED_ONLY</b> — ابتدا قابلیت استفاده مجدد سرویس‌های موجود مشخص شود.</p>
+</article>
+<article id="s11" class="doc-section">
+<h2>11. مدل‌های داده پیشنهادی</h2>
+<ul>
+<li>SubscriptionPlan</li>
+<li>UserSubscription</li>
+<li>AIConversation</li>
+<li>AIMessage</li>
+<li>AIUsageLedger</li>
+<li>QuotaReservation</li>
+<li>BillingEvent</li>
+<li>AIFile</li>
+</ul>
+<p>
+<b>DATABASE_MIGRATION = NOT_AUTHORIZED</b>. تمام مدل‌ها نیازمند بررسی مالکیت، Tenant، Audit، Retention و سازگاری هستند.</p>
+</article>
+<article id="s12" class="doc-section">
+<h2>12. مدل Free / Premium</h2>
+<div class="plan-grid">
+<div class="plan-card">
+<h3>FREE — €0 / ماه</h3>
+<ul>
+<li>30 messages/day</li>
+<li>3 files/month; 5 MB/file</li>
+<li>Economy; 30 days history</li>
+<li>1 concurrent request; €0.75/month AI cap</li>
+</ul>
+</div>
+<div class="plan-card">
+<h3>PREMIUM — €12.90 / ماه</h3>
+<ul>
+<li>150 messages/day</li>
+<li>50 files/month; 20 MB/file</li>
+<li>Economy + metered Advanced; long-term history</li>
+<li>3 concurrent requests; €5/month AI cap</li>
+<li>VAT-inclusive where applicable</li>
+</ul>
+</div>
+</div>
+<p>
+<b>CONTRACT_DEFINED / NOT_IMPLEMENTED</b>. محدودیت‌ها باید در Backend اعمال شوند.</p>
+</article>
+<article id="s13" class="doc-section">
+<h2>13. ماتریس معیارهای پذیرش</h2>
+<p>NOT_VERIFIED به معنای فقدان شواهد کافی در دامنه این ممیزی است، نه اثبات آسیب‌پذیری یا مردودبودن معیار.</p>
+<div class="table-scroll" role="region" aria-label="جدول معیارهای پذیرش" tabindex="0">
+<table class="data-table">
+<thead>
+<tr>
+<th>AC</th>
+<th>موضوع</th>
+<th>وضعیت</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>AC-AI-01</code>
+</td>
+<td>جلوگیری از جعل Entitlement</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-02</code>
+</td>
+<td>امنیت گفتگو بین Tenantها</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-03</code>
+</td>
+<td>امنیت فایل بین Tenantها</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-04</code>
+</td>
+<td>رزرو اتمی سهمیه</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-05</code>
+</td>
+<td>سقف هزینه هم‌زمان</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-06</code>
+</td>
+<td>تسویه مصرف ناموفق یا نامشخص</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-07</code>
+</td>
+<td>انتخاب مجاز مدل</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-08</code>
+</td>
+<td>حفاظت از API Secrets</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-09</code>
+</td>
+<td>اعتبارسنجی Webhook</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-10</code>
+</td>
+<td>Idempotency رویداد پرداخت</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-11</code>
+</td>
+<td>جلوگیری از فعال‌سازی جعلی Premium</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-12</code>
+</td>
+<td>چرخه لغو و کاهش اشتراک</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-13</code>
+</td>
+<td>صحت Usage Ledger</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-14</code>
+</td>
+<td>امنیت آپلود فایل</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-15</code>
+</td>
+<td>Retention و حذف داده</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-16</code>
+</td>
+<td>رابط چندزبانه و دسترس‌پذیر</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-17</code>
+</td>
+<td>کنترل سوءاستفاده</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-18</code>
+</td>
+<td>رفتار امن هنگام خرابی Provider</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-19</code>
+</td>
+<td>تطبیق هزینه AI و پرداخت</td>
+<td>NOT_VERIFIED</td>
+</tr>
+<tr>
+<td>
+<code>AC-AI-20</code>
+</td>
+<td>تأیید امنیتی پیش از انتشار</td>
+<td>NOT_VERIFIED</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="notice">
+<b>ACCEPTANCE_RESULT: 0/20 VERIFIED</b>
+</p>
+</article>
+<article id="s14" class="doc-section">
+<h2>14. نقشه راه پیاده‌سازی</h2>
+<div class="phase">
+<h3>PHASE A — SOURCE AUDIT</h3>
+<p>
+<code>PARTIAL_COMPLETED</code> — Authentication، سرویس‌های دسترسی، Tenant/Organization، آپلود، Billing، تست‌ها و شواهد خطی</p>
+</div>
+<div class="phase">
+<h3>PHASE B — CONTRACT REVIEW</h3>
+<p>
+<code>PENDING</code> — VORNEQ_AI_GATEWAY_IMPLEMENTATION_CONTRACT_V1 و قرارداد سهمیه، داده، فایل و Billing</p>
+</div>
+<div class="phase">
+<h3>PHASE C — ISOLATED IMPLEMENTATION</h3>
+<p>
+<code>NOT_AUTHORIZED</code> — Gateway، Provider، مدل‌ها، رابط گفتگو و سهمیه</p>
+</div>
+<div class="phase">
+<h3>PHASE D — SECURITY VERIFICATION</h3>
+<p>
+<code>NOT_STARTED</code> — Unit، Integration، Tenant Isolation، Concurrency، Cost Ceiling، Failure، Secrets و Webhook</p>
+</div>
+<div class="phase">
+<h3>PHASE E — LIMITED BETA</h3>
+<p>
+<code>NOT_AUTHORIZED</code> — آزمایش محدود فقط پس از مجوز جداگانه</p>
+</div>
+<div class="phase">
+<h3>PHASE F — PRODUCTION RELEASE</h3>
+<p>
+<code>NOT_AUTHORIZED</code> — شواهد Runtime، پذیرش امنیتی و مجوز انتشار مستقل</p>
+</div>
+<p class="notice">هیچ مرحله‌ای به‌صورت خودکار مرحله بعد را مجاز نمی‌کند.</p>
+</article>
+<article id="s15" class="doc-section">
+<h2>15. وضعیت حاکمیتی</h2>
+<div class="table-scroll" role="region" aria-label="جدول وضعیت حاکمیتی" tabindex="0">
+<table class="data-table">
+<thead>
+<tr>
+<th>شناسه</th>
+<th>وضعیت</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C02</td>
+<td>OPEN_CRITICAL</td>
+</tr>
+<tr>
+<td>SC_07</td>
+<td>OPEN_CRITICAL</td>
+</tr>
+<tr>
+<td>GOV_BREACH_01</td>
+<td>OPEN</td>
+</tr>
+<tr>
+<td>P_06</td>
+<td>UNRESOLVED</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="principle">PROPOSAL ≠ APPROVAL ≠ EXECUTION_AUTHORIZATION ≠ VERIFIED_EVIDENCE</p>
+<p>ادغام PR #553 مجوز پیاده‌سازی، Migration، پرداخت یا انتشار نیست.</p>
+</article>
+<article id="s16" class="doc-section">
+<h2>16. اقدام پیشنهادی بعدی</h2>
+<p>
+<b>ACTION_ID:</b> <code>P1_VORNEQ_AI_FREEMIUM_PHASE_A_SOURCE_GAP_CLOSURE_V1</code>
+</p>
+<p>
+<b>AUTHORIZATION_SCOPE:</b> STRICT_READ_ONLY / DOCUMENTARY_ONLY</p>
+<ul>
+<li>Source Inventory با فایل و خط</li>
+<li>Authentication & Tenant Boundary Map</li>
+<li>Existing Services Reuse Matrix</li>
+<li>File Storage Security Assessment</li>
+<li>Subscription & Billing Gap Report</li>
+<li>AC-AI-01..20 Evidence Matrix</li>
+<li>Implementation File Map و Risk Register</li>
+<li>Independent Review Requirements و Readiness Decision</li>
+</ul>
+<p class="notice">
+<b>PROHIBITED:</b> Code Modification، Branch، Commit، Push، Merge، SQL، Migration، Secret Access، Paid API، Payment Activation، Render Change، Deploy (در دامنه ممیزی بعدی).</p>
+</article>
+<article id="s17" class="doc-section">
+<h2>17. ارزیابی نهایی</h2>
+<div class="final-block">
+<div>
+<span class="k">PROJECT</span>
+<span class="v">VORNEQ</span>
+</div>
+<div>
+<span class="k">AUDIT</span>
+<span class="v">AI_FREEMIUM_PHASE_A</span>
+</div>
+<div>
+<span class="k">SOURCE_AUDIT</span>
+<span class="v">PARTIAL_COMPLETED</span>
+</div>
+<div>
+<span class="k">DJANGO_ARCHITECTURE</span>
+<span class="v">EXISTING_FOUND</span>
+</div>
+<div>
+<span class="k">AUTHENTICATION</span>
+<span class="v">EXISTING_FOUND</span>
+</div>
+<div>
+<span class="k">ENTITLEMENT_SYSTEM</span>
+<span class="v">EXISTING_FOUND</span>
+</div>
+<div>
+<span class="k">DOCUMENT_INFRASTRUCTURE</span>
+<span class="v">EXISTING_FOUND</span>
+</div>
+<div>
+<span class="k">MEDIA_INFRASTRUCTURE</span>
+<span class="v">EXISTING_FOUND</span>
+</div>
+<div>
+<span class="k">API_INFRASTRUCTURE</span>
+<span class="v">EXISTING_FOUND</span>
+</div>
+<div>
+<span class="k">AI_GATEWAY</span>
+<span class="v">NOT_VERIFIED_AS_IMPLEMENTED</span>
+</div>
+<div>
+<span class="k">AI_SUBSCRIPTION</span>
+<span class="v">NOT_VERIFIED_AS_IMPLEMENTED</span>
+</div>
+<div>
+<span class="k">BILLING_SYSTEM</span>
+<span class="v">NOT_OBSERVED_IN_INSPECTED_SCOPE</span>
+</div>
+<div>
+<span class="k">AI_QUOTA_LEDGER</span>
+<span class="v">NOT_VERIFIED_AS_IMPLEMENTED</span>
+</div>
+<div>
+<span class="k">TENANT_ISOLATION</span>
+<span class="v">NOT_VERIFIED_FOR_AI</span>
+</div>
+<div>
+<span class="k">FILE_STORAGE_SECURITY</span>
+<span class="v">REVIEW_REQUIRED</span>
+</div>
+<div>
+<span class="k">DATABASE_IDENTITY</span>
+<span class="v">UNVERIFIED</span>
+</div>
+<div>
+<span class="k">ACCEPTANCE_CRITERIA</span>
+<span class="v">20_DEFINED / 0_VERIFIED</span>
+</div>
+<div>
+<span class="k">IMPLEMENTATION_READY</span>
+<span class="v">NO</span>
+</div>
+<div>
+<span class="k">DATABASE_GO</span>
+<span class="v">NO</span>
+</div>
+<div>
+<span class="k">MIGRATION_GO</span>
+<span class="v">NO</span>
+</div>
+<div>
+<span class="k">PAYMENT_ACTIVATION_GO</span>
+<span class="v">NO</span>
+</div>
+<div>
+<span class="k">DEPLOY_GO</span>
+<span class="v">NO</span>
+</div>
+<div>
+<span class="k">PRODUCT_RELEASE_GO</span>
+<span class="v">NO</span>
+</div>
+<div>
+<span class="k">NEXT_ACTION</span>
+<span class="v">P1_VORNEQ_AI_FREEMIUM_PHASE_A_SOURCE_GAP_CLOSURE_V1</span>
+</div>
+<div>
+<span class="k">FINAL_STATE</span>
+<span class="v">SAFE_HOLD / NO_GO</span>
+</div>
+</div>
+<p class="notice">OWNER DECISION REQUIRED: فقط ادامه ممیزی مستنداتی و بررسی قرارداد فنی؛ هیچ مجوز اجرایی استنتاج نمی‌شود.</p>
+</article>
+</main>
+<footer>PROJECT: VORNEQ · DOCUMENT_ID: P1_VORNEQ_AI_FREEMIUM_EXISTING_SOURCE_AND_ARCHITECTURE_AUDIT_REPORT_V1 · REFERENCE_PR: #553 · REFERENCE_MERGE_COMMIT: 3ea92bae74a6929f0410f5e83d0e502c11586636 · AUTHORIZATION_SCOPE: STRICT_READ_ONLY / DOCUMENTARY_ONLY · IMPLEMENTATION_AUTHORIZATION: NOT_GRANTED · FINAL_STATE: SAFE_HOLD / NO_GO<br>END OF REPORT — VORNEQ AI FREEMIUM PHASE A AUDIT V1.1</footer>
+</body>
+</html>
