@@ -1,3 +1,7 @@
+import re
+from html.parser import HTMLParser
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.urls import reverse
 from django.utils.translation import override
@@ -157,7 +161,41 @@ class HomepageSimplificationTests(TestCase):
         self.assertNotContains(response, 'id="discoveries"')
 
 
+class _DiscoverVisibleText(HTMLParser):
+    """Capture visible text and purchase-control labels, not hidden CSRF values."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.fragments = []
+        self._nonvisible_depth = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in {"script", "style"}:
+            self._nonvisible_depth += 1
+            return
+        attrs = dict(attrs)
+        if tag in {"a", "button", "form", "input"}:
+            for name in ("aria-label", "title"):
+                if attrs.get(name):
+                    self.fragments.append(attrs[name])
+            if tag == "input" and attrs.get("type", "").lower() in {"submit", "button"}:
+                self.fragments.append(attrs.get("value", ""))
+
+    def handle_endtag(self, tag):
+        if tag in {"script", "style"}:
+            self._nonvisible_depth = max(0, self._nonvisible_depth - 1)
+
+    def handle_data(self, data):
+        if not self._nonvisible_depth:
+            self.fragments.append(data)
+
+
 class DiscoverRouteContractTests(TestCase):
+    def assertNoVisibleBuy(self, html):
+        parser = _DiscoverVisibleText()
+        parser.feed(html)
+        self.assertNotRegex(" ".join(parser.fragments), re.compile(r"\bbuy\b", re.I))
+
     def test_canonical_discover_routes_resolve(self):
         route_names = (
             "discover",
@@ -181,4 +219,16 @@ class DiscoverRouteContractTests(TestCase):
         self.assertNotContains(response, "Search results")
         self.assertNotContains(response, "Advanced filters")
         self.assertNotContains(response, "Checkout")
-        self.assertNotContains(response, "Buy")
+        self.assertNoVisibleBuy(response.content.decode(response.charset))
+
+    def test_csrf_with_buy_text_does_not_create_a_false_purchase_control(self):
+        token = "a" * 16 + "Buy" + "b" * 45  # 64 characters, like a masked CSRF token.
+        with patch("django.middleware.csrf._mask_cipher_secret", return_value=token):
+            with override("en"):
+                response = self.client.get(reverse("discover"))
+        self.assertContains(response, 'value="' + token + '"')
+        self.assertNoVisibleBuy(response.content.decode(response.charset))
+
+    def test_a_real_buy_button_is_rejected_by_the_contract(self):
+        with self.assertRaises(AssertionError):
+            self.assertNoVisibleBuy('<button type="submit"><span>Buy now</span></button>')
