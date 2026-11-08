@@ -1,3 +1,9 @@
-# Proposed repository-wide code owner.
-# Effective after this change is merged into the default branch.
-* @hamidrezaasadian7-boop
+# VORNEQ CODEOWNERS — owner-led governance
+#
+# No mandatory external code owner is designated by this file.
+# A reviewer account is not required by default for future owner-directed work.
+# See docs/governance/OWNER_GENERAL_REVIEW_OPTIONAL_POLICY_V2_20261108.md.
+#
+# This file does not change GitHub branch protection, required status checks,
+# security testing, production deployment authorization, or database safeguards.
+# GitHub's CODEOWNERS feature is not a substitute for those controls.
