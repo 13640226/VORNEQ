@@ -6,40 +6,44 @@ from django.urls import reverse
 
 
 class BrandIntegrationTests(TestCase):
-    def test_homepage_renders_canonical_wordmark_without_decorative_symbol(self):
+    def test_homepage_renders_canonical_wordmark_with_symbol(self):
         response = self.client.get(reverse("home"))
         content = response.content.decode()
 
         self.assertContains(response, 'class="standalone-nav__brand"')
-        self.assertNotContains(response, 'class="standalone-nav__symbol"')
+        self.assertContains(response, 'class="standalone-nav__symbol"')
         self.assertContains(response, 'class="standalone-nav__wordmark">VORNEQ</span>')
 
         brand_start = content.index('class="standalone-nav__brand"')
         brand_end = content.index("</a>", brand_start)
         brand_markup = content[brand_start:brand_end]
         self.assertNotIn("<img", brand_markup)
-        self.assertNotIn("<svg", brand_markup)
-        self.assertNotIn("vorneq-node", brand_markup)
-        self.assertNotIn("vorneq-traj", brand_markup)
+        self.assertIn("<svg", brand_markup)
+        self.assertIn('aria-hidden="true"', brand_markup)
+        self.assertIn('focusable="false"', brand_markup)
+        self.assertIn("vorneq-node", brand_markup)
+        self.assertIn("vorneq-traj", brand_markup)
 
     def test_ia_s_asset_is_discoverable_by_staticfiles(self):
         asset_path = finders.find("images/brand/ia-s.svg")
         self.assertIsNotNone(asset_path)
         self.assertTrue(Path(asset_path).is_file())
 
-    def test_navigation_css_keeps_brand_neutral_and_removes_decorative_mark_rules(self):
+    def test_navigation_css_defines_symbol_rules_and_keeps_wordmark_neutral(self):
         css_path = finders.find("css/standalone-nav.css")
         self.assertIsNotNone(css_path)
         css = Path(css_path).read_text(encoding="utf-8")
 
         self.assertNotIn('mask-image: url("../images/brand/ia-s.svg")', css)
         self.assertNotIn('-webkit-mask-image: url("../images/brand/ia-s.svg")', css)
-        self.assertNotIn(".standalone-nav__symbol", css)
-        self.assertNotIn(".vorneq-mark", css)
-        self.assertNotIn(".vorneq-traj", css)
-        self.assertNotIn(".vorneq-node--cobalt", css)
-        self.assertNotIn(".vorneq-node--cyan", css)
-        self.assertNotIn("@keyframes vorneq-logo-rotate", css)
+        self.assertIn(".standalone-nav__symbol", css)
+        self.assertIn(".vorneq-mark", css)
+        self.assertIn(".vorneq-traj", css)
+        self.assertIn(".vorneq-node--cobalt", css)
+        self.assertIn(".vorneq-node--cyan", css)
+        self.assertIn("@keyframes vorneq-logo-rotate", css)
+        reduced_motion = css.split("@media (prefers-reduced-motion: reduce)", 1)[1]
+        self.assertIn("animation: none;", reduced_motion)
 
         wordmark_block = css.split(".standalone-nav__wordmark {", 1)[1].split("}", 1)[0]
         self.assertIn("color: var(--color-text-primary);", wordmark_block)
