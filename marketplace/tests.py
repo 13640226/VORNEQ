@@ -177,8 +177,11 @@ class DownloadSecurityTests(TestCase):
             self.assertIn("attachment", response["Content-Disposition"])
             self.assertIn("test.pdf", response["Content-Disposition"])
         finally:
-            # Release the file handle so tearDown can delete it on Windows.
-            response.close()
+            # Exhaust the test client's guarded streaming iterator. It closes
+            # the file without closing the TestCase PostgreSQL transaction.
+            if response.streaming:
+                for _ in response.streaming_content:
+                    pass
 
     def test_expired_entitlement_returns_404(self):
         Entitlement.objects.create(
