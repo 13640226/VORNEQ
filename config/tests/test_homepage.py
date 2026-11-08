@@ -162,39 +162,99 @@ class HomepageSimplificationTests(TestCase):
 
 
 class _DiscoverVisibleText(HTMLParser):
-    """Capture visible text and purchase-control labels, not hidden CSRF values."""
+    """Approximate visible text with block boundaries; ignore hidden markup.
+
+    This is a conservative HTML test helper, not a browser layout engine.
+    Inline descendants share a text segment; independent blocks and controls
+    do not. Labels are tested separately from surrounding text nodes.
+    """
+
+    _BOUNDARIES = {
+        "a", "article", "aside", "blockquote", "br", "button", "dd", "div",
+        "dl", "dt", "fieldset", "footer", "form", "h1", "h2", "h3", "h4",
+        "h5", "h6", "header", "hr", "li", "main", "nav", "ol", "p",
+        "pre", "section", "table", "tbody", "td", "th", "tr", "ul",
+    }
+    _SKIP_TAGS = {"script", "style", "template", "noscript"}
+    _VOID_TAGS = {
+        "area", "base", "br", "col", "embed", "hr", "img", "input",
+        "link", "meta", "param", "source", "track", "wbr",
+    }
 
     def __init__(self):
         super().__init__(convert_charrefs=True)
         self.fragments = []
-        self._nonvisible_depth = 0
+        self._text_parts = []
+        self._excluded = []
+
+    def _flush(self):
+        if self._text_parts:
+            self.fragments.append("".join(self._text_parts))
+            self._text_parts.clear()
 
     def handle_starttag(self, tag, attrs):
-        if tag in {"script", "style"}:
-            self._nonvisible_depth += 1
-            return
         attrs = dict(attrs)
+        if self._excluded:
+            if tag not in self._VOID_TAGS:
+                self._excluded.append(tag)
+            return
+
+        style = re.sub(r"\s+", "", attrs.get("style") or "").lower()
+        not_visible = (
+            tag in self._SKIP_TAGS
+            or "hidden" in attrs
+            or (attrs.get("aria-hidden") or "").lower() == "true"
+            or "display:none" in style
+            or "visibility:hidden" in style
+        )
+        if not_visible:
+            self._flush()
+            if tag not in self._VOID_TAGS:
+                self._excluded.append(tag)
+            return
+
+        if tag in self._BOUNDARIES:
+            self._flush()
+        if tag == "input" and (attrs.get("type") or "").lower() == "hidden":
+            return
         if tag in {"a", "button", "form", "input"}:
             for name in ("aria-label", "title"):
                 if attrs.get(name):
                     self.fragments.append(attrs[name])
-            if tag == "input" and attrs.get("type", "").lower() in {"submit", "button"}:
-                self.fragments.append(attrs.get("value", ""))
+        if tag == "input" and (attrs.get("type") or "").lower() in {"submit", "button"}:
+            self.fragments.append(attrs.get("value", ""))
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        if tag not in self._VOID_TAGS:
+            self.handle_endtag(tag)
 
     def handle_endtag(self, tag):
-        if tag in {"script", "style"}:
-            self._nonvisible_depth = max(0, self._nonvisible_depth - 1)
+        if self._excluded:
+            if tag in self._excluded:
+                # Discard nested excluded elements up to the matching close.
+                del self._excluded[len(self._excluded) - 1 - self._excluded[::-1].index(tag):]
+            return
+        if tag in self._BOUNDARIES:
+            self._flush()
 
     def handle_data(self, data):
-        if not self._nonvisible_depth:
-            self.fragments.append(data)
+        if not self._excluded:
+            self._text_parts.append(data)
+
+    def visible_fragments(self):
+        self.close()
+        self._flush()
+        return self.fragments
 
 
 class DiscoverRouteContractTests(TestCase):
     def assertNoVisibleBuy(self, html):
         parser = _DiscoverVisibleText()
         parser.feed(html)
-        self.assertNotRegex(" ".join(parser.fragments), re.compile(r"\bbuy\b", re.I))
+        pattern = re.compile(r"\bbuy\b", re.I)
+        for fragment in parser.visible_fragments():
+            self.assertNotRegex(fragment, pattern)
 
     def test_canonical_discover_routes_resolve(self):
         route_names = (
@@ -222,7 +282,9 @@ class DiscoverRouteContractTests(TestCase):
         self.assertNoVisibleBuy(response.content.decode(response.charset))
 
     def test_csrf_with_buy_text_does_not_create_a_false_purchase_control(self):
-        token = "a" * 16 + "Buy" + "b" * 45  # 64 characters, like a masked CSRF token.
+        # Deliberately invalid as a real CSRF token: this synthetic value proves
+        # the parser excludes hidden values even when Buy has word boundaries.
+        token = "a" * 16 + " Buy " + "b" * 43  # 64 characters
         with patch("django.middleware.csrf._mask_cipher_secret", return_value=token):
             with override("en"):
                 response = self.client.get(reverse("discover"))
@@ -232,3 +294,40 @@ class DiscoverRouteContractTests(TestCase):
     def test_a_real_buy_button_is_rejected_by_the_contract(self):
         with self.assertRaises(AssertionError):
             self.assertNoVisibleBuy('<button type="submit"><span>Buy now</span></button>')
+
+    def test_nested_button_label_is_detected(self):
+        with self.assertRaises(AssertionError):
+            self.assertNoVisibleBuy("<button>B<span>uy</span></button>")
+
+    def test_nested_link_label_is_detected(self):
+        with self.assertRaises(AssertionError):
+            self.assertNoVisibleBuy("<a><b>B</b><i>u</i>y</a>")
+
+    def test_independent_paragraphs_are_not_joined(self):
+        self.assertNoVisibleBuy("<p>B</p><p>uy</p>")
+
+    def test_independent_link_labels_are_not_joined(self):
+        self.assertNoVisibleBuy('<a aria-label="B"></a><a aria-label="uy"></a>')
+
+    def test_template_descendant_labels_are_ignored(self):
+        self.assertNoVisibleBuy('<template><button aria-label="Buy"></button></template>')
+
+    def test_hidden_input_label_is_ignored(self):
+        self.assertNoVisibleBuy('<input type="hidden" aria-label="Buy" value=" Buy ">')
+
+    def test_hidden_input_value_never_forms_visible_buy(self):
+        self.assertNoVisibleBuy('<form><input type="hidden" value=" Buy "></form>')
+
+    def test_submit_value_is_a_visible_buy_control(self):
+        with self.assertRaises(AssertionError):
+            self.assertNoVisibleBuy('<input type="submit" value="Buy">')
+
+    def test_script_and_style_does_not_create_buy_control(self):
+        self.assertNoVisibleBuy('<script>var x="Buy";</script><style>.Buy{}</style>')
+
+    def test_buy_injected_into_actual_discover_response_is_rejected(self):
+        with override("en"):
+            response = self.client.get(reverse("discover"))
+        html = response.content.decode(response.charset)
+        with self.assertRaises(AssertionError):
+            self.assertNoVisibleBuy(html + '<button>B<span>uy</span></button>')
