@@ -93,8 +93,11 @@ class EditableProfileTest(TestCase):
             self.assertEqual(avatar_response["Content-Type"], "image/png")
             self.assertIn("private", avatar_response["Cache-Control"])
         finally:
-            # Release the file handle so tearDown can delete it on Windows.
-            avatar_response.close()
+            # Exhaust the test client's guarded streaming iterator. It closes
+            # the file without closing the TestCase PostgreSQL transaction.
+            if avatar_response.streaming:
+                for _ in avatar_response.streaming_content:
+                    pass
 
     def test_avatar_accepts_valid_image_between_two_and_five_mb(self):
         form = ProfileEditForm(
