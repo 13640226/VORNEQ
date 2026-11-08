@@ -88,9 +88,13 @@ class EditableProfileTest(TestCase):
         self.assertTrue(profile.avatar.name.startswith(f"avatars/{self.user.id}/"))
 
         avatar_response = self.client.get(reverse("profile_avatar"))
-        self.assertEqual(avatar_response.status_code, 200)
-        self.assertEqual(avatar_response["Content-Type"], "image/png")
-        self.assertIn("private", avatar_response["Cache-Control"])
+        try:
+            self.assertEqual(avatar_response.status_code, 200)
+            self.assertEqual(avatar_response["Content-Type"], "image/png")
+            self.assertIn("private", avatar_response["Cache-Control"])
+        finally:
+            # Release the file handle so tearDown can delete it on Windows.
+            avatar_response.close()
 
     def test_avatar_accepts_valid_image_between_two_and_five_mb(self):
         form = ProfileEditForm(

@@ -1,3 +1,4 @@
+import tempfile
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
@@ -119,6 +120,11 @@ class MarketplaceViewTests(TestCase):
 @override_settings(STORAGES=TEST_STORAGES)
 class DownloadSecurityTests(TestCase):
     def setUp(self):
+        # Isolate uploaded files from the real media/ directory so test runs
+        # neither collide with leftovers nor pollute it.
+        self.media_dir = tempfile.TemporaryDirectory()
+        self.settings_override = override_settings(MEDIA_ROOT=self.media_dir.name)
+        self.settings_override.enable()
         self.user = User.objects.create_user(
             username="download-user",
             password="testpass",
@@ -147,6 +153,8 @@ class DownloadSecurityTests(TestCase):
             name = self.product.digital_file.name
             if name and storage.exists(name):
                 storage.delete(name)
+        self.settings_override.disable()
+        self.media_dir.cleanup()
 
     def test_unauthenticated_download_redirects_to_login(self):
         response = self.client.get(self.download_url)
@@ -163,10 +171,14 @@ class DownloadSecurityTests(TestCase):
         grant_entitlement(self.user, self.product)
         self.client.force_login(self.user)
         response = self.client.get(self.download_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "application/pdf")
-        self.assertIn("attachment", response["Content-Disposition"])
-        self.assertIn("test.pdf", response["Content-Disposition"])
+        try:
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response["Content-Type"], "application/pdf")
+            self.assertIn("attachment", response["Content-Disposition"])
+            self.assertIn("test.pdf", response["Content-Disposition"])
+        finally:
+            # Release the file handle so tearDown can delete it on Windows.
+            response.close()
 
     def test_expired_entitlement_returns_404(self):
         Entitlement.objects.create(
