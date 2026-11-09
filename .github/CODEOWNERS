@@ -1,3 +1,6 @@
-# Proposed repository-wide code owner.
-# Effective after this change is merged into the default branch.
-* @hamidrezaasadian7-boop
+# VORNEQ CODEOWNERS — no designated independent reviewer.
+# Owner policy: https://github.com/13640226/VORNEQ/issues/340#issuecomment-6738990574
+# Previous repository-wide reviewer selection was withdrawn prospectively.
+# No CODEOWNERS entries: owner review is optional under the general policy.
+# This file does not alter GitHub protections, CI, SHA-bound owner authorizations,
+# database controls, secrets access, or production deployment requirements.
