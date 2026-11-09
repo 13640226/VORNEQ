@@ -17,10 +17,17 @@ DISCOVERY_NOTE = (
 )
 
 
+# P0 MEDIA HOLD (OWNER-DEC-MEDIA-P0A-Z1-01, A3/A4): both similarity endpoints
+# are disabled independently of DEBUG until authentication and object-level
+# authorization (P0-B) exist. Lifting this requires a separate SHA-bound owner
+# authorization; DEBUG is not an authorization control.
+MEDIA_SIMILARITY_API_HOLD = True
+
+
 def _service():
     # The deterministic provider is deliberately development-only. Production
     # must configure a real provider in a later adapter PR.
-    if not settings.DEBUG:
+    if MEDIA_SIMILARITY_API_HOLD or not settings.DEBUG:
         return None
     return MediaSimilarityService(
         provider=DeterministicLocalEmbeddingProvider(),
@@ -50,6 +57,10 @@ def _unavailable_response():
 
 @require_POST
 def search_by_image(request):
+    # Hold check precedes any access to request.FILES / request.POST / request.body.
+    if MEDIA_SIMILARITY_API_HOLD:
+        return _unavailable_response()
+
     service = _service()
     if service is None:
         return _unavailable_response()
@@ -78,6 +89,10 @@ def search_by_image(request):
 
 @require_POST
 def search_by_text(request):
+    # Hold check precedes any access to request.FILES / request.POST / request.body.
+    if MEDIA_SIMILARITY_API_HOLD:
+        return _unavailable_response()
+
     service = _service()
     if service is None:
         return _unavailable_response()

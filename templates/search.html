@@ -27,7 +27,6 @@
           <label><input type="radio" name="type" value="article"{% if current_type == 'article' %} checked{% endif %}><span>{% trans "Articles" %}</span></label>
           <label><input type="radio" name="type" value="product"{% if current_type == 'product' %} checked{% endif %}><span>{% trans "Products" %}</span></label>
           <label><input type="radio" name="type" value="libraryitem"{% if current_type == 'libraryitem' %} checked{% endif %}><span>{% trans "Library" %}</span></label>
-          <label><input type="radio" name="type" value="mediaasset"{% if current_type == 'mediaasset' %} checked{% endif %}><span>{% trans "Media" %}</span></label>
           <label><input type="radio" name="type" value="audio"{% if current_type == 'audio' %} checked{% endif %}><span>{% trans "Audio" %}</span></label>
         </fieldset>
         <button type="button" class="suchen-page__filter-toggle" id="suchen-filter-open" aria-controls="suchen-filter-panel" aria-expanded="false">{% trans "Show filters" %}</button>
@@ -35,7 +34,6 @@
         <div class="suchen-page__filters" id="suchen-filter-panel" role="region" aria-label="{% trans 'Search filters' %}" tabindex="-1">
           <button type="button" class="suchen-page__filter-close" id="suchen-filter-close">{% trans "Close filters" %}</button>
           <label><span>{% trans "Library item type" %}</span><select name="item_type"><option value="">{% trans "Any library type" %}</option><option value="book"{% if current_item_type == 'book' %} selected{% endif %}>{% trans "Book" %}</option><option value="article"{% if current_item_type == 'article' %} selected{% endif %}>{% trans "Article" %}</option><option value="document"{% if current_item_type == 'document' %} selected{% endif %}>{% trans "Document" %}</option><option value="other"{% if current_item_type == 'other' %} selected{% endif %}>{% trans "Other" %}</option></select></label>
-          <label><span>{% trans "Media type" %}</span><select name="media_type"><option value="">{% trans "Any media type" %}</option><option value="image"{% if current_media_type == 'image' %} selected{% endif %}>{% trans "Image" %}</option><option value="video"{% if current_media_type == 'video' %} selected{% endif %}>{% trans "Video" %}</option></select></label>
           <label><span>{% trans "Category" %}</span><input type="text" name="category" value="{{ current_category }}" maxlength="120" placeholder="{% trans 'Category' %}"></label>
           <label><span>{% trans "Minimum price" %}</span><input type="number" name="price_min" value="{{ current_price_min }}" min="0" step="0.01" placeholder="{% trans 'Min price' %}"></label>
           <label><span>{% trans "Maximum price" %}</span><input type="number" name="price_max" value="{{ current_price_max }}" min="0" step="0.01" placeholder="{% trans 'Max price' %}"></label>
@@ -74,8 +72,8 @@
       {% if total_pages > 1 %}
         <nav class="suchen-page__pagination" aria-label="{% trans 'Pagination' %}">
           <span class="suchen-page__pagination-links">
-            {% if has_previous %}<a class="suchen-page__page-btn" rel="prev" href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;media_type={{ current_media_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page|add:'-1' }}&amp;page_size={{ page_size }}">{% trans "Previous" %}</a>{% endif %}
-            {% if has_next %}<a class="suchen-page__page-btn" rel="next" href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;media_type={{ current_media_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page|add:'1' }}&amp;page_size={{ page_size }}">{% trans "Next" %}</a>{% endif %}
+            {% if has_previous %}<a class="suchen-page__page-btn" rel="prev" href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page|add:'-1' }}&amp;page_size={{ page_size }}">{% trans "Previous" %}</a>{% endif %}
+            {% if has_next %}<a class="suchen-page__page-btn" rel="next" href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page|add:'1' }}&amp;page_size={{ page_size }}">{% trans "Next" %}</a>{% endif %}
           </span>
           <span class="suchen-page__page-status" aria-live="polite">{% blocktrans with current=page total=total_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}</span>
         </nav>

@@ -37,7 +37,9 @@ class ProfileSearchTailCommandTests(TestCase):
         self.assertGreaterEqual(payload["avg_db_queries"], 1.0)
         self.assertEqual(
             set(payload["adapters"]),
-            {"article", "product", "libraryitem", "mediaasset", "audio"},
+            # P0 MEDIA HOLD (OWNER-DEC-MEDIA-P0A-Z1-01): "mediaasset" is no
+            # longer a default UnifiedSearch adapter.
+            {"article", "product", "libraryitem", "audio"},
         )
         for phase in ("wall", "sql", "residual"):
             self.assertIn(phase, payload["production"])

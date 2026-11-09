@@ -143,8 +143,10 @@ class NarrowWindowRolloutTests(TestCase):
             actual = self.search.search(page=page, page_size=2, language="en")
             self.assertEqual(self._contract(actual), self._contract(expected))
 
-    def test_supported_production_path_uses_five_queries(self):
-        with self.assertNumQueries(5):
+    def test_supported_production_path_uses_four_queries(self):
+        # P0 MEDIA HOLD (OWNER-DEC-MEDIA-P0A-Z1-01): one narrow-CTE query per
+        # default adapter; MediaAssetAdapter is no longer registered (5 -> 4).
+        with self.assertNumQueries(4):
             self.search.search(page=1, page_size=12, language="en")
 
     def test_explicit_capability_fallback_keeps_window_count_path(self):

@@ -30,7 +30,6 @@
       <a href="?{% if discover_query %}q={{ discover_query|urlencode }}{% endif %}"{% if not current_type %} aria-current="page"{% endif %}>{% trans "All" %}</a>
       <a href="?type=article{% if discover_query %}&amp;q={{ discover_query|urlencode }}{% endif %}"{% if current_type == "article" %} aria-current="page"{% endif %}>{% trans "Articles" %}</a>
       <a href="?type=libraryitem{% if discover_query %}&amp;q={{ discover_query|urlencode }}{% endif %}"{% if current_type == "libraryitem" %} aria-current="page"{% endif %}>{% trans "Library" %}</a>
-      <a href="?type=mediaasset{% if discover_query %}&amp;q={{ discover_query|urlencode }}{% endif %}"{% if current_type == "mediaasset" %} aria-current="page"{% endif %}>{% trans "Media" %}</a>
       <a href="?type=audio{% if discover_query %}&amp;q={{ discover_query|urlencode }}{% endif %}"{% if current_type == "audio" %} aria-current="page"{% endif %}>{% trans "Audio" %}</a>
       <a href="?type=product{% if discover_query %}&amp;q={{ discover_query|urlencode }}{% endif %}"{% if current_type == "product" %} aria-current="page"{% endif %}>{% trans "Products" %}</a>
     </nav>

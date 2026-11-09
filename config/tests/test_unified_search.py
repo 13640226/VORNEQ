@@ -59,9 +59,12 @@ class UnifiedSearchTests(TestCase):
         )
 
     def test_search_retrieves_all_primary_adapter_types(self):
+        # P0 MEDIA HOLD (OWNER-DEC-MEDIA-P0A-Z1-01): Media is intentionally not a
+        # public primary type; the active MediaAsset from setUp must not appear.
         payload = UnifiedSearch().search("test", page_size=20)
         keys = {result["key"].split(":", 1)[0] for result in payload["results"]}
-        self.assertTrue({"article", "product", "library", "media"}.issubset(keys))
+        self.assertTrue({"article", "product", "library"}.issubset(keys))
+        self.assertNotIn("media", keys)
 
     def test_type_filter_limits_to_article_adapter(self):
         payload = UnifiedSearch().search("test", filters={"types": {"article"}})
@@ -97,7 +100,10 @@ class UnifiedSearchTests(TestCase):
         self.assertEqual(data["normalized_query"], "test")
         self.assertEqual(data["page"], 1)
         self.assertEqual(len(data["results"]), 2)
-        self.assertGreaterEqual(data["total"], 4)
+        # P0 MEDIA HOLD: article, product and library match "test"; the active
+        # MediaAsset from setUp is excluded from public search and its count.
+        self.assertEqual(data["total"], 3)
+        self.assertFalse(any(r["key"].startswith("media:") for r in data["results"]))
 
     def test_api_type_filter(self):
         response = self.client.get(

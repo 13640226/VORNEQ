@@ -235,7 +235,10 @@ class MediaAssetAdapter(SearchAdapter):
             title=asset.title or asset.alt_text or str(asset.pk),
             description=asset.alt_text,
             url=None,
-            image_url=asset.file.url if asset.file else None,
+            # P0 MEDIA HOLD (OWNER-DEC-MEDIA-P0A-Z1-01, A2): never serialize a
+            # storage URL. With private object storage, file.url is a presigned
+            # GET URL that grants access to private bytes.
+            image_url=None,
             source="",
             published_at=asset.created_at,
             media_type=asset.media_type,
@@ -278,13 +281,18 @@ class UnifiedSearch:
     MAX_PAGE_SIZE = 50
 
     def __init__(self, adapters: Iterable[SearchAdapter] | None = None):
+        # P0 MEDIA HOLD (OWNER-DEC-MEDIA-POLICY-01 / OWNER-DEC-MEDIA-P0A-Z1-01, A1):
+        # MediaAssetAdapter is intentionally NOT registered by default, so no
+        # MediaAsset title, id, alt text, URL or count reaches public search.
+        # Do not replace this with MediaAsset.objects.none(): the narrow-CTE
+        # path compiles each adapter queryset to SQL and raises EmptyResultSet,
+        # which breaks all search (HTTP 500).
         self.adapters = list(
             adapters
             or (
                 ArticleAdapter(),
                 ProductAdapter(),
                 LibraryItemAdapter(),
-                MediaAssetAdapter(),
                 AudioItemAdapter(),
             )
         )

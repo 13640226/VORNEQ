@@ -150,11 +150,14 @@ class NarrowWindowPoCTests(TestCase):
             self.assert_scenarios_match(page=1, page_size=2)
 
     def test_expected_query_counts_when_all_adapters_have_candidates(self):
-        with self.assertNumQueries(5):
+        # P0 MEDIA HOLD (OWNER-DEC-MEDIA-P0A-Z1-01): MediaAssetAdapter is no
+        # longer a default UnifiedSearch adapter, so each path runs one adapter
+        # less: 5 -> 4 (one query per adapter) and 10 -> 8 (two per adapter).
+        with self.assertNumQueries(4):
             self.poc.baseline(page=1, page_size=12, language="en")
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(8):
             self.poc.narrow_enrichment(page=1, page_size=12, language="en")
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(4):
             self.poc.narrow_cte(page=1, page_size=12, language="en")
 
     def test_poc_paths_are_read_only(self):

@@ -58,8 +58,12 @@ class PersistentSimilarityTests(TestCase):
         )
         self.assertEqual(results, [])
 
+    # P0 MEDIA HOLD (OWNER-DEC-MEDIA-P0A-Z1-01): the similarity endpoints are
+    # disabled independently of DEBUG. These two tests previously expected
+    # HTTP 200 for an anonymous caller with DEBUG=True; that was the AI-03
+    # authorization gap. They now assert the fail-closed hold instead.
     @override_settings(DEBUG=True)
-    def test_image_api_is_ephemeral_and_returns_discovery_note(self):
+    def test_image_api_is_held_even_with_debug_and_discloses_nothing(self):
         asset = self._image()
         MediaSimilarityService(
             provider=self.provider,
@@ -79,22 +83,21 @@ class PersistentSimilarityTests(TestCase):
             },
         )
 
-        self.assertEqual(response.status_code, 200)
-        payload = response.json()
-        self.assertEqual(payload["results"][0]["id"], str(asset.pk))
-        self.assertIn("discovery only", payload["note"])
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json()["error"], "embedding_provider_not_configured")
+        self.assertNotIn(str(asset.pk), response.content.decode())
+        self.assertNotIn(asset.title, response.content.decode())
         self.assertEqual(MediaAsset.objects.count(), before_count)
-        self.assertNotIn("url", payload["results"][0])
 
     @override_settings(DEBUG=True)
-    def test_text_api_searches_compatible_local_space(self):
+    def test_text_api_is_held_even_with_debug(self):
         response = self.client.post(
             reverse("media:search_text"),
             data='{"text":"example","limit":5}',
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["results"], [])
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json()["error"], "embedding_provider_not_configured")
 
     @override_settings(DEBUG=False)
     def test_production_api_fails_closed_without_real_provider(self):
