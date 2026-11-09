@@ -117,7 +117,8 @@ class MergeAuthorizationMainFailClosedTests(TestCase):
 
     def _client(self, comments=None, comments_error=None):
         client = mock.Mock()
-        client.pull_request.return_value = {"state": "open", "head": {"sha": HEAD}, "base": {"ref": "main"}}
+        client.pull_request.return_value = {"state": "open", "head": {"sha": HEAD}, "base": {"ref": "main"}, "draft": False}
+        client.open_pulls.return_value = [{"number": PR, "state": "open", "head": {"sha": HEAD}, "base": {"ref": "main"}}]
         if comments_error:
             client.issue_comments.side_effect = comments_error
         else:
@@ -169,3 +170,142 @@ class MergeAuthorizationMainFailClosedTests(TestCase):
                 mock.patch.object(ma, "GitHubClient", return_value=client):
             self.assertEqual(ma.main(), 0)
         self.assertEqual(client.set_status.call_args.args[1], "success")
+
+
+class MA01MA02HardeningTests(TestCase):
+    """Reproducible read-only tests: synthetic PR inventory and mocked API calls."""
+
+    ENV = {"GITHUB_TOKEN": "synthetic", "GITHUB_REPOSITORY": "o/r", "PR_NUMBER": str(PR)}
+
+    def _client(self):
+        client = mock.Mock()
+        client.pull_request.return_value = {
+            "state": "open", "number": PR, "head": {"sha": HEAD},
+            "base": {"ref": "main"}, "draft": False,
+        }
+        client.issue_comments.return_value = [comment(auth())]
+        client.open_pulls.return_value = [
+            {"state": "open", "number": PR, "head": {"sha": HEAD}, "base": {"ref": "main"}},
+        ]
+        return client
+
+    def _run(self, client):
+        with mock.patch.dict("os.environ", self.ENV, clear=True), mock.patch.object(
+            ma, "GitHubClient", return_value=client
+        ):
+            return ma.main()
+
+    def test_ma01_only_one_open_pr_with_sha_allows(self):
+        self.assertTrue(ma.require_unique_open_head(PR, HEAD, self._client().open_pulls.return_value).allowed)
+
+    def test_ma01_two_prs_same_sha_denies_even_different_base(self):
+        client = self._client()
+        client.open_pulls.return_value.append({
+            "state": "open", "number": PR + 1, "head": {"sha": HEAD},
+            "base": {"ref": "develop"},
+        })
+        self.assertEqual(self._run(client), 0)
+        client.set_status.assert_called_once()
+        self.assertEqual(client.set_status.call_args.args[1], "failure")
+        self.assertIn("shared", client.set_status.call_args.args[2])
+
+    def test_ma01_target_missing_from_inventory_denies(self):
+        client = self._client()
+        client.open_pulls.return_value = [
+            {"state": "open", "number": PR + 1, "head": {"sha": HEAD}, "base": {"ref": "main"}},
+        ]
+        self._run(client)
+        self.assertEqual(client.set_status.call_args.args[1], "failure")
+
+    def test_ma01_empty_inventory_denies(self):
+        client = self._client()
+        client.open_pulls.return_value = []
+        self._run(client)
+        self.assertEqual(client.set_status.call_args.args[1], "failure")
+
+    def test_ma01_malformed_inventory_denies(self):
+        client = self._client()
+        client.open_pulls.return_value.append({"number": PR + 1, "head": None})
+        self._run(client)
+        self.assertEqual(client.set_status.call_args.args[1], "failure")
+
+    def test_ma01_duplicate_item_in_inventory_denies(self):
+        client = self._client()
+        client.open_pulls.return_value.append(client.open_pulls.return_value[0].copy())
+        self._run(client)
+        self.assertEqual(client.set_status.call_args.args[1], "failure")
+
+    def test_ma01_inventory_api_error_fails_closed(self):
+        client = self._client()
+        client.open_pulls.side_effect = urllib.error.URLError("synthetic API outage")
+        self.assertEqual(self._run(client), 1)
+        client.set_status.assert_called_once_with(HEAD, "failure", "evaluation error (fail-closed)")
+
+    def test_ma01_invalid_comment_does_not_need_inventory(self):
+        client = self._client()
+        client.issue_comments.return_value = [comment("not authorized")]
+        self._run(client)
+        client.open_pulls.assert_not_called()
+        self.assertEqual(client.set_status.call_args.args[1], "failure")
+
+    def test_ma02_current_base_other_than_main_invalidates_status(self):
+        client = self._client()
+        client.pull_request.return_value["base"]["ref"] = "develop"
+        self._run(client)
+        client.set_status.assert_called_once_with(HEAD, "failure", "PR does not target main")
+        client.issue_comments.assert_not_called()
+
+    def test_ma02_retarget_between_fetches_denies(self):
+        client = self._client()
+        original = client.pull_request.return_value
+        changed = {**original, "base": {"ref": "develop"}}
+        client.pull_request.side_effect = [original, changed]
+        self._run(client)
+        self.assertEqual(client.set_status.call_args.args[1], "failure")
+        self.assertIn("changed", client.set_status.call_args.args[2])
+
+    def test_ma02_head_change_between_fetches_denies(self):
+        client = self._client()
+        original = client.pull_request.return_value
+        changed = {**original, "head": {"sha": OLD}}
+        client.pull_request.side_effect = [original, changed]
+        self._run(client)
+        self.assertEqual(client.set_status.call_args.args[1], "failure")
+
+    def test_ma02_draft_rejects_without_inventory(self):
+        client = self._client()
+        client.pull_request.return_value["draft"] = True
+        self._run(client)
+        self.assertEqual(client.set_status.call_args.args[1], "failure")
+        client.open_pulls.assert_not_called()
+
+    def test_ma02_retarget_to_main_allows_after_auth(self):
+        client = self._client()
+        self._run(client)
+        self.assertEqual(client.set_status.call_args.args[1], "success")
+
+    def test_ma01_pagination_two_pages(self):
+        client = ma.GitHubClient("synthetic", "o/r")
+        batch = [{"number": i + 1} for i in range(100)]
+        with mock.patch.object(client, "_request", side_effect=[batch, [{"number": 101}]]) as request:
+            self.assertEqual(len(client.open_pulls()), 101)
+            self.assertEqual(request.call_count, 2)
+            self.assertIn("page=2", request.call_args_list[1].args[1])
+
+    def test_ma01_pagination_malformed_raises(self):
+        client = ma.GitHubClient("synthetic", "o/r")
+        with mock.patch.object(client, "_request", return_value={"items": []}):
+            with self.assertRaises(RuntimeError):
+                client.open_pulls()
+
+    def test_workflow_base_edit_event_and_no_filter(self):
+        workflow = (_PATH.parent.parent / ".github/workflows/merge-authorization.yml").read_text(encoding="utf-8")
+        self.assertIn("edited", workflow)
+        self.assertIn("converted_to_draft", workflow)
+        self.assertNotIn("    branches: [main]", workflow)
+        self.assertIn("pull_request_target:", workflow)
+
+    def test_ma01_stale_success_race_is_unresolved(self):
+        # Document the fundamental limitation: two separate PRs with the same
+        # commit share the same commit-status context, even after this patch.
+        self.assertEqual(ma.STATUS_CONTEXT, "merge-authorization")
