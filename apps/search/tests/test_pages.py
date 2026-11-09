@@ -127,7 +127,7 @@ class StandaloneSearchPageTests(TestCase):
         self.assertNotContains(response, "Verification badge")
         self.assertContains(response, 'name="type"')
         self.assertContains(response, 'name="item_type"')
-        self.assertContains(response, 'name="media_type"')
+        self.assertNotContains(response, 'name="media_type"')
         self.assertContains(response, 'name="category"')
         self.assertContains(response, 'name="price_min"')
         self.assertContains(response, 'name="price_max"')

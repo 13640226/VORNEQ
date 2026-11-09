@@ -2,7 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 from unittest.mock import patch
 
-from django.db import IntegrityError, close_old_connections, connection
+from django.db import IntegrityError, close_old_connections, connection, connections
 from django.test import TestCase, TransactionTestCase
 
 from apps.core.models import Identity, IdentityHandle
@@ -145,7 +145,7 @@ class IdentityHandleRaceTests(TransactionTestCase):
                 )
                 return result.pk
             finally:
-                close_old_connections()
+                connections.close_all()
 
         with ThreadPoolExecutor(max_workers=2) as executor:
             futures = [
