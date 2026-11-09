@@ -3,6 +3,8 @@ from django.db import transaction
 from django.db.models import BooleanField, Case, Q, Value, When
 from django.utils import timezone
 
+from apps.core.models import Identity
+
 from .artifact_sync import DocumentArtifactSync
 from .audit_service import CAPABILITY_READ_AUDIT_SOURCE, DocumentAuditService
 from .identity_resolver import IdentityResolver
@@ -206,10 +208,16 @@ class DocumentService:
             allowed_roles={cls.OWNER_ROLE},
         )
         actor_identity = IdentityResolver.resolve(user)
-        collaborator_identity = IdentityResolver.resolve(collaborator)
+        collaborator_identity = IdentityResolver.resolve_subject(collaborator)
 
         if collaborator_identity.pk == document.owner_identity_id:
             raise ValidationError("The document owner cannot be added as a collaborator.")
+        if (
+            getattr(collaborator, "is_active", False) is not True
+            or collaborator_identity.is_active is not True
+            or collaborator_identity.kind != Identity.Kind.HUMAN
+        ):
+            raise ValidationError("This collaborator cannot receive access.")
         if role not in {DocumentAccess.Role.EDITOR, DocumentAccess.Role.VIEWER}:
             raise ValidationError("Shared access role must be editor or viewer.")
 
@@ -247,7 +255,8 @@ class DocumentService:
             allowed_roles={cls.OWNER_ROLE},
         )
         actor_identity = IdentityResolver.resolve(user)
-        collaborator_identity = IdentityResolver.resolve(collaborator)
+        # Target lookup only: an owner must be able to revoke an inactive collaborator.
+        collaborator_identity = IdentityResolver.resolve_subject(collaborator)
         if collaborator_identity.pk == document.owner_identity_id:
             raise ValidationError("Owner access cannot be revoked.")
 
