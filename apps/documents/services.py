@@ -1,10 +1,10 @@
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import BooleanField, Case, Q, Value, When
 from django.utils import timezone
 
 from .artifact_sync import DocumentArtifactSync
-from .audit_service import DocumentAuditService
+from .audit_service import CAPABILITY_READ_AUDIT_SOURCE, DocumentAuditService
 from .identity_resolver import IdentityResolver
 from .models import (
     Document,
@@ -34,6 +34,21 @@ class DocumentService:
             ).role
         except DocumentAccess.DoesNotExist:
             return None
+
+    @classmethod
+    def can_read(cls, *, user, document):
+        """Domain-owned read-role decision for the capability; fail closed.
+
+        The separate document lifecycle/active check remains mandatory in the
+        calling read path. This method does not alter existing Documents CRUD.
+        """
+        try:
+            identity = IdentityResolver.resolve(user)
+        except PermissionDenied:
+            return False
+        if not identity.is_active:
+            return False
+        return cls._role_for(user=user, document=document) in cls.READ_ROLES
 
     @classmethod
     def _require_role(cls, *, user, document, allowed_roles):
@@ -125,6 +140,17 @@ class DocumentService:
                 document__is_active=True,
                 document_id__in=readable_ids,
             )
+            # Explicit CASE avoids NULL/missing-JSON-key semantics of exclude().
+            # Legacy VIEWED events with metadata={} stay included on SQLite
+            # and PostgreSQL. Only positively marked capability reads vanish.
+            .annotate(
+                _is_capability_read=Case(
+                    When(metadata__source=CAPABILITY_READ_AUDIT_SOURCE, then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField(),
+                )
+            )
+            .filter(_is_capability_read=False)
             .select_related("document")
             .order_by("-timestamp", "-id")
         )

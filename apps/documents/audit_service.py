@@ -3,6 +3,10 @@ from django.core.exceptions import ValidationError
 from .models import DocumentAuditLog
 
 
+# Fixed source marker: capability reads remain auditable but are not direct user views.
+CAPABILITY_READ_AUDIT_SOURCE = "read_artifact_v1"
+
+
 class DocumentAuditService:
     """Record and query domain-owned Document audit events."""
 
