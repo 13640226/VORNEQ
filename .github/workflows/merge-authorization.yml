@@ -3,13 +3,15 @@ name: Merge Authorization
 # GOV_BREACH_01 control: publishes the commit status "merge-authorization" on the
 # PR head SHA. Success only when the owner posted
 #   OWNER-AUTH-MERGE <AUTH-ID> PR #<n> @ <40-hex head sha>
-# Both triggers run this workflow file from the base branch (main), never from
-# the pull request. No pull request code is checked out or executed.
+# Both triggers run the trusted workflow file on the default branch, never
+# from the pull-request head. No pull-request code is checked out or executed.
+# MA-01: duplicate open head SHAs fail closed; MA-02: retarget edits re-evaluated.
+# Residual: SHA-scoped commit status cannot guarantee PR-specific atomicity.
 
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
-    branches: [main]
+    # MA-02: include base-branch edits; never filter out retarget-away events.
+    types: [opened, synchronize, reopened, ready_for_review, edited, converted_to_draft]
   issue_comment:
     types: [created, edited, deleted]
 
