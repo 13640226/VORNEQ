@@ -342,6 +342,16 @@ if not DEBUG:
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["upgrade-insecure-requests"] = True
 
 
+# CAP-ACTOR-02: staging-only actor-binding diagnostic. Off by default; it is
+# also never active outside VORNEQ_ENV=staging (apps/platform_shell/diagnostics.py).
+VORNEQ_ACTOR_DIAGNOSTICS_ENABLED = env_bool("VORNEQ_ACTOR_DIAGNOSTICS_ENABLED", False)
+VORNEQ_ACTOR_DIAGNOSTICS_IDENTITY_ID = os.environ.get("VORNEQ_ACTOR_DIAGNOSTICS_IDENTITY_ID", "")
+if VORNEQ_ACTOR_DIAGNOSTICS_ENABLED and VORNEQ_ENV != "staging":
+    logging.getLogger(__name__).warning(
+        "VORNEQ_ACTOR_DIAGNOSTICS_ENABLED is ignored outside VORNEQ_ENV=staging."
+    )
+    VORNEQ_ACTOR_DIAGNOSTICS_ENABLED = False
+
 PROMETHEUS_EXPORT_MIGRATIONS = False
 VORNEQ_METRICS_TOKEN = os.environ.get("VORNEQ_METRICS_TOKEN")
 
