@@ -17,6 +17,7 @@ Chain::
 
 from dataclasses import dataclass, field
 
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 
 
@@ -71,7 +72,9 @@ class BoundActor:
         is honoured even if this in-memory user object is stale.
         """
         try:
-            fresh_user = type(self.user)._default_manager.get(pk=self.user.pk)
+            # get_user_model(), not type(self.user): request.user is a
+            # SimpleLazyObject in real HTTP requests (CAP-ACTOR-02 finding).
+            fresh_user = get_user_model()._default_manager.get(pk=self.user.pk)
             identity = _resolver().resolve(fresh_user)
         except (PermissionDenied, ObjectDoesNotExist, AttributeError) as exc:
             raise ActorBindingError(ACTOR_UNAVAILABLE_MESSAGE) from exc

@@ -9,6 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.contenttypes.models import ContentType
 from django.test import RequestFactory, TestCase
+from django.utils.functional import SimpleLazyObject
 
 from apps.core.capabilities.read_artifact import ReadArtifactCapability, ReadArtifactInput
 from apps.core.models import ArtifactBinding, Identity, UserIdentity
@@ -242,6 +243,48 @@ class InvokerActorEnforcementTests(ActorBindingTestBase):
         UserIdentity.objects.filter(user=self.bob).delete()
         User.objects.filter(pk=self.bob.pk).delete()
         self.assert_denied_without_reaching_capability(self.probe(actor))
+
+    # A17 (regression, found by CAP-ACTOR-02): real HTTP requests carry
+    # request.user as a SimpleLazyObject, not a concrete User instance.
+    def test_a17_lazy_request_user_binds_and_revalidates(self):
+        request = self.factory.get("/")
+        request.user = SimpleLazyObject(lambda: self.alice)
+        actor = BoundActor.from_request(request)
+        result = self.probe(actor)
+        self.assertTrue(result.success)
+        self.assertEqual(result.data.identity_id, str(self.alice_identity.pk))
+
+    def test_a17_lazy_request_user_still_denied_after_deactivation(self):
+        request = self.factory.get("/")
+        request.user = SimpleLazyObject(lambda: self.alice)
+        actor = BoundActor.from_request(request)
+        User.objects.filter(pk=self.alice.pk).update(is_active=False)
+        self.assert_denied_without_reaching_capability(self.probe(actor))
+
+    def test_a17_real_session_request_reaches_capability(self):
+        from django.test import Client
+
+        captured = {}
+
+        def view(request):
+            captured["result"] = self.invoker.invoke(
+                "probe_v1",
+                context=CapabilityContext.for_request(request),
+                input_data={"value": "x"},
+            )
+            from django.http import HttpResponse
+
+            return HttpResponse("ok")
+
+        from django.urls import path
+
+        urlconf = type("U", (), {"urlpatterns": [path("probe/", view)]})
+        with self.settings(ROOT_URLCONF=urlconf):
+            client = Client()
+            client.force_login(self.alice)
+            self.assertEqual(client.get("/probe/").status_code, 200)
+        self.assertTrue(captured["result"].success)
+        self.assertEqual(captured["result"].data.identity_id, str(self.alice_identity.pk))
 
     # A11
     def test_a11_rebound_identity_invalidates_existing_actor(self):
