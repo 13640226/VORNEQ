@@ -2,9 +2,13 @@ from dataclasses import fields, is_dataclass
 from types import UnionType
 from typing import Any, Union, get_args, get_origin, get_type_hints
 
+from .actor import ActorBindingError, BoundActor
 from .base import CapabilityContext
 from .errors import CapabilityExecutionError, CapabilityResult
 from .executable_registry import ExecutableCapabilityRegistry, executable_registry
+
+# Single denial message for every not_authorized path (no existence disclosure).
+NOT_AUTHORIZED_MESSAGE = "The capability domain policy denied this invocation."
 
 
 def _matches_type(value: object, annotation: object) -> bool:
@@ -55,6 +59,17 @@ def _validate_dataclass_instance(value: object, schema: type, *, label: str) -> 
             )
 
 
+def _require_trusted_actor(context: object) -> None:
+    """CAP-ACTOR-01: only a server-bound, currently valid actor may invoke."""
+    actor = context.actor if isinstance(context, CapabilityContext) else None
+    if not isinstance(actor, BoundActor):
+        raise CapabilityExecutionError("not_authorized", NOT_AUTHORIZED_MESSAGE)
+    try:
+        actor.revalidate()
+    except ActorBindingError:
+        raise CapabilityExecutionError("not_authorized", NOT_AUTHORIZED_MESSAGE) from None
+
+
 def _coerce_input(raw_input: object, schema: type) -> object:
     if isinstance(raw_input, schema):
         value = raw_input
@@ -92,6 +107,9 @@ class CapabilityInvoker:
         input_data: object,
     ) -> CapabilityResult:
         try:
+            # Actor check precedes capability lookup so an untrusted caller
+            # cannot learn which capabilities are registered.
+            _require_trusted_actor(context)
             capability_cls = self.registry.get(name)
             if capability_cls is None:
                 raise CapabilityExecutionError(
@@ -102,10 +120,7 @@ class CapabilityInvoker:
             capability = capability_cls()
             typed_input = _coerce_input(input_data, capability.input_schema)
             if not capability.authorize(context, typed_input):
-                raise CapabilityExecutionError(
-                    "not_authorized",
-                    "The capability domain policy denied this invocation.",
-                )
+                raise CapabilityExecutionError("not_authorized", NOT_AUTHORIZED_MESSAGE)
 
             output = capability.execute(context, typed_input)
             _validate_dataclass_instance(

@@ -15,6 +15,7 @@ from apps.platform_shell.capabilities import (
     ExecutableCapabilityRegistry,
 )
 from apps.platform_shell.registry import AppManifest, PlatformRegistry
+from apps.platform_shell.tests.actor_helpers import actor_or_untrusted
 
 User = get_user_model()
 
@@ -75,7 +76,7 @@ class DocumentArtifactReadPolicyTests(TestCase):
     def read(self, actor, artifact_id=None):
         return self.invoker.invoke(
             "read_artifact_v1",
-            context=CapabilityContext(actor=actor, request_id="doc-read-test"),
+            context=CapabilityContext(actor=actor_or_untrusted(actor), request_id="doc-read-test"),
             input_data=ReadArtifactInput(artifact_id=artifact_id or self.artifact.id),
         )
 

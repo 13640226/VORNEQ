@@ -1,9 +1,12 @@
+from .actor import ActorBindingError, BoundActor
 from .base import BaseCapability, CapabilityContext
 from .errors import CapabilityExecutionError, CapabilityFailure, CapabilityResult
 from .executable_registry import ExecutableCapabilityRegistry, executable_registry
 from .invoker import CapabilityInvoker
 
 __all__ = [
+    "ActorBindingError",
+    "BoundActor",
     "BaseCapability",
     "CapabilityContext",
     "CapabilityExecutionError",

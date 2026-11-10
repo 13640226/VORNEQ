@@ -22,6 +22,7 @@ from apps.documents.models import Document, DocumentAccess, DocumentAuditLog
 from apps.documents.search_service import DocumentSearchService
 from apps.documents.services import DocumentService
 from apps.platform_shell.capabilities import CapabilityContext, CapabilityInvoker
+from apps.platform_shell.tests.actor_helpers import actor_or_untrusted
 
 
 User = get_user_model()
@@ -248,7 +249,7 @@ class InactiveCollaboratorTests(InactiveIdentityBase):
         artifact_id = ArtifactBinding.objects.get(object_id=str(self.document.pk)).artifact_id
         result = CapabilityInvoker().invoke(
             "read_artifact_v1",
-            context=CapabilityContext(actor=self.viewer, request_id="n08"),
+            context=CapabilityContext(actor=actor_or_untrusted(self.viewer), request_id="n08"),
             input_data={"artifact_id": artifact_id},
         )
         self.assertFalse(result.success)

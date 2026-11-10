@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from django.test import SimpleTestCase
+from django.test import TestCase
 
 from apps.platform_shell.capabilities import (
     BaseCapability,
@@ -10,6 +10,7 @@ from apps.platform_shell.capabilities import (
     ExecutableCapabilityRegistry,
 )
 from apps.platform_shell.registry import AppManifest, PlatformRegistry
+from apps.platform_shell.tests.actor_helpers import make_bound_actor
 
 
 @dataclass(frozen=True)
@@ -66,7 +67,10 @@ class ControlledFailureCapability(EchoCapability):
         )
 
 
-class ExecutableCapabilityTests(SimpleTestCase):
+class ExecutableCapabilityTests(TestCase):
+    def setUp(self):
+        self.actor = make_bound_actor()
+
     def make_registry(self, *capabilities):
         platform_registry = PlatformRegistry()
         platform_registry.register(
@@ -98,7 +102,7 @@ class ExecutableCapabilityTests(SimpleTestCase):
 
         result = invoker.invoke(
             "echo_v1",
-            context=CapabilityContext(actor=object(), request_id="req-1"),
+            context=CapabilityContext(actor=self.actor, request_id="req-1"),
             input_data={"value": "hello"},
         )
 
@@ -112,7 +116,7 @@ class ExecutableCapabilityTests(SimpleTestCase):
 
         result = CapabilityInvoker(registry).invoke(
             "echo_v1",
-            context=CapabilityContext(actor=object(), request_id="req-2"),
+            context=CapabilityContext(actor=self.actor, request_id="req-2"),
             input_data={"value": 123},
         )
 
@@ -125,7 +129,7 @@ class ExecutableCapabilityTests(SimpleTestCase):
 
         result = CapabilityInvoker(registry).invoke(
             "denied_v1",
-            context=CapabilityContext(actor=object(), request_id="req-3"),
+            context=CapabilityContext(actor=self.actor, request_id="req-3"),
             input_data=EchoInput(value="hello"),
         )
 
@@ -138,7 +142,7 @@ class ExecutableCapabilityTests(SimpleTestCase):
 
         result = CapabilityInvoker(registry).invoke(
             "broken_v1",
-            context=CapabilityContext(actor=object(), request_id="req-4"),
+            context=CapabilityContext(actor=self.actor, request_id="req-4"),
             input_data=EchoInput(value="hello"),
         )
 
@@ -152,7 +156,7 @@ class ExecutableCapabilityTests(SimpleTestCase):
 
         result = CapabilityInvoker(registry).invoke(
             "invalid_output_v1",
-            context=CapabilityContext(actor=object(), request_id="req-5"),
+            context=CapabilityContext(actor=self.actor, request_id="req-5"),
             input_data=EchoInput(value="hello"),
         )
 
@@ -165,7 +169,7 @@ class ExecutableCapabilityTests(SimpleTestCase):
 
         result = CapabilityInvoker(registry).invoke(
             "controlled_failure_v1",
-            context=CapabilityContext(actor=object(), request_id="req-6"),
+            context=CapabilityContext(actor=self.actor, request_id="req-6"),
             input_data=EchoInput(value="hello"),
         )
 
@@ -177,7 +181,7 @@ class ExecutableCapabilityTests(SimpleTestCase):
     def test_unknown_capability_returns_failure_envelope(self):
         result = CapabilityInvoker(self.make_registry()).invoke(
             "missing_v1",
-            context=CapabilityContext(actor=object(), request_id="req-7"),
+            context=CapabilityContext(actor=self.actor, request_id="req-7"),
             input_data={},
         )
 

@@ -14,6 +14,7 @@ from apps.platform_shell.capabilities import (
     ExecutableCapabilityRegistry,
 )
 from apps.platform_shell.registry import AppManifest, PlatformRegistry
+from apps.platform_shell.tests.actor_helpers import make_bound_actor
 
 
 def build_invoker(capability_cls=ReadArtifactCapability):
@@ -34,7 +35,7 @@ def build_invoker(capability_cls=ReadArtifactCapability):
 class ReadArtifactCapabilityTests(TestCase):
     def setUp(self):
         self.invoker = build_invoker()
-        self.context = CapabilityContext(actor=object(), request_id="artifact-test")
+        self.context = CapabilityContext(actor=make_bound_actor(), request_id="artifact-test")
 
     def invoke(self, artifact_id):
         return self.invoker.invoke(
