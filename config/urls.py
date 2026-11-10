@@ -11,6 +11,7 @@ from django.http import HttpResponseRedirect
 from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
 
+from apps.platform_shell.diagnostics import diagnostics_urlpatterns
 from apps.platform_shell.registry import registry as platform_registry
 from config.health import health_check
 from config.inspect_views import context_view, inspect_entry
@@ -37,6 +38,8 @@ urlpatterns = [
     path("api/media/", include("apps.media.urls")),
     path("api/search/", include("apps.search.urls")),
     path("artifacts/<uuid:artifact_id>/graph/", public_graph_view, name="public_graph"),
+    # CAP-ACTOR-02: empty list unless staging + flag + diagnostic Identity id.
+    *diagnostics_urlpatterns(),
 ]
 
 
