@@ -239,10 +239,14 @@ class VerificationServiceTests(TestCase):
                 reported_confidence=40,
             )
 
-        records = ReviewRecord.objects.for_object(request).order_by("timestamp", "id")
+        # Random UUID keys are not a reliable tie-breaker for equal timestamps.
+        # Verify the append-only transition chain independently of row order.
+        records = list(ReviewRecord.objects.for_object(request))
+        self.assertEqual(len(records), 3)
+        transitions = {(r.previous_state, r.new_state) for r in records}
         self.assertEqual(
-            list(records.values_list("new_state", flat=True)),
-            ["requested", "in_progress", "completed"],
+            transitions,
+            {("", "requested"), ("requested", "in_progress"), ("in_progress", "completed")},
         )
         self.assertTrue(
             AuditEvent.objects.filter(
