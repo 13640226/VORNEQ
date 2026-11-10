@@ -154,6 +154,18 @@ class GateTests(DiagnosticsBase):
         self.assertIsNotNone(redis.Redis)
         self.assertIsNotNone(backend._cache)  # constructs RedisCacheClient, no network
 
+    def test_malformed_redis_url_never_enables_diagnostic(self):
+        """A copied service name or HTTP URL is not a valid Redis URL."""
+        for invalid_url in (
+            "vorneq-staging-redis",
+            "https://example.invalid/redis",
+            "redis:/missing-slash",
+            "127.0.0.1:6379",
+        ):
+            with self.subTest(redis_url=invalid_url), override_settings(REDIS_URL=invalid_url):
+                self.assertFalse(diagnostics_enabled())
+                self.assertEqual(diagnostics_urlpatterns(), [])
+
     def test_only_get_is_allowed(self):
         client = Client(enforce_csrf_checks=False)
         client.force_login(self.diag_user)
