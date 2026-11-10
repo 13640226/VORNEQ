@@ -145,6 +145,15 @@ class GateTests(DiagnosticsBase):
         self.assertEqual(len(patterns), 1)
         self.assertEqual(str(patterns[0].pattern), URL.lstrip("/"))
 
+    def test_redis_cache_runtime_dependency_importable(self):
+        """Fail CI when Django can configure Redis but redis-py is missing."""
+        import redis
+        from django.core.cache.backends.redis import RedisCache
+
+        backend = RedisCache("redis://127.0.0.1:6379/14", {})
+        self.assertIsNotNone(redis.Redis)
+        self.assertIsNotNone(backend._cache)  # constructs RedisCacheClient, no network
+
     def test_only_get_is_allowed(self):
         client = Client(enforce_csrf_checks=False)
         client.force_login(self.diag_user)
