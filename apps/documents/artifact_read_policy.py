@@ -17,6 +17,7 @@ from apps.core.capabilities.artifact_read_policy import (
     ArtifactReadProjection,
 )
 from apps.core.models import Artifact, ArtifactBinding
+from apps.platform_shell.capabilities.actor import BoundActor
 
 from .audit_service import CAPABILITY_READ_AUDIT_SOURCE, DocumentAuditService
 from .identity_resolver import IdentityResolver
@@ -46,26 +47,38 @@ class DocumentArtifactReadPolicy(ArtifactReadPolicy):
         ):
             return None
 
+    @staticmethod
+    def _user_for(actor):
+        # CAP-ACTOR-01: only a server-bound actor is accepted; never a raw user.
+        return actor.user if isinstance(actor, BoundActor) else None
+
     def authorize(self, *, actor, artifact) -> bool:
+        user = self._user_for(actor)
+        if user is None:
+            logger.info("read_artifact_v1 denied: untrusted actor")
+            return False
         document = self._document_for(artifact)
         if document is None:
             logger.info("read_artifact_v1 denied: no active bound document")
             return False
-        allowed = DocumentService.can_read(user=actor, document=document)
+        allowed = DocumentService.can_read(user=user, document=document)
         if not allowed:
             logger.info("read_artifact_v1 denied: actor has no read role")
         return allowed
 
     def read(self, *, actor, artifact) -> ArtifactReadProjection:
+        user = self._user_for(actor)
+        if user is None:
+            raise ArtifactReadDenied
         with transaction.atomic():
             document = self._document_for(artifact)
-            if document is None or not DocumentService.can_read(user=actor, document=document):
+            if document is None or not DocumentService.can_read(user=user, document=document):
                 raise ArtifactReadDenied
             # Audit only a successful authorized read. A failure here propagates
             # and rolls back, so nothing below is ever released.
             DocumentAuditService.record(
                 document=document,
-                actor_identity=IdentityResolver.resolve(actor),
+                actor_identity=IdentityResolver.resolve(user),
                 event_type=DocumentAuditLog.EventType.VIEWED,
                 metadata=dict(READ_ARTIFACT_AUDIT_METADATA),
             )
