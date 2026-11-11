@@ -36,7 +36,9 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-          sparse-checkout: scripts/deploy_control.py
+          sparse-checkout: |
+            scripts/deploy_control.py
+            scripts/deploy_watch_alert.py
           sparse-checkout-cone-mode: false
 
       - name: Compare live releases with authorized deploys
@@ -47,20 +49,12 @@ jobs:
           PRODUCTION_BASE_URL: ${{ vars.PRODUCTION_BASE_URL }}
         run: python3 -I scripts/deploy_control.py watch
 
-      - name: Open alert issue on drift
+      - name: Record each changed drift state in alert issue
         if: steps.watch.outputs.drift == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
-          SUMMARY: ${{ steps.watch.outputs.drift_summary }}
+          GITHUB_TOKEN: ${{ github.token }}
+          DRIFT_SUMMARY: ${{ steps.watch.outputs.drift_summary }}
         run: |
           set -euo pipefail
-          title="[Deploy-Waechter] Nicht autorisierter Live-Stand erkannt"
-          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
-          body=$(printf 'Automatische Meldung von deploy-watch (%s).\n\n%s\n\nDer Live-Stand entspricht nicht dem letzten erfolgreichen, vom Eigentuemer autorisierten Deploy (OWNER-AUTH-DEPLOY). Bitte pruefen und dokumentieren (Issue #448).' \
-            "$(date -u +%Y-%m-%dT%H:%MZ)" "$SUMMARY")
-          if [ -n "$existing" ]; then
-            echo "Alert issue #$existing is already open; no duplicate comment."
-          else
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
-          fi
-          echo "::warning::$SUMMARY"
+          python3 -I scripts/deploy_watch_alert.py
+          echo "::warning::$DRIFT_SUMMARY"
