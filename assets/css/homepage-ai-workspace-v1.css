@@ -1,0 +1,267 @@
+/* VORNEQ AI-first Homepage V1 — visual enhancement only.
+ * Keeps the existing Search/Discover/Marketplace endpoints and 7-section nav.
+ * No AI inference or private-data API is called from this CSS/companion JS.
+ */
+.world-home--layout-v3 {
+  --vq-workspace-accent: #128778;
+  --vq-workspace-ink: var(--home-fg);
+  --vq-workspace-border: var(--home-divider);
+}
+.world-home--layout-v3 .world-hero {
+  min-height: min(790px, calc(100svh - 100px));
+  padding-block: clamp(54px, 7.5vw, 104px);
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse 48% 58% at 8% 0%, rgba(50, 170, 153, .10), transparent 80%),
+    radial-gradient(ellipse 48% 60% at 100% 80%, rgba(83, 124, 191, .08), transparent 85%),
+    var(--home-surface);
+}
+.world-home--layout-v3 .world-hero::before {
+  inset: 0 0 0 44%;
+  block-size: auto;
+  opacity: .18;
+  background-size: 42px 42px;
+}
+.world-home--layout-v3 .world-hero__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.14fr) minmax(300px, .80fr);
+  gap: clamp(28px, 5.5vw, 88px);
+  align-items: center;
+  width: 100%;
+}
+.world-home--layout-v3 .vq-ai-hero { max-width: 760px; min-width: 0; }
+.world-home--layout-v3 .vq-ai-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 22px;
+  padding: 8px 13px;
+  border: 1px solid var(--vq-workspace-border);
+  border-radius: 999px;
+  background: var(--home-surface-raised);
+  color: var(--home-fg-muted);
+  font-size: .76rem;
+  font-weight: 680;
+  letter-spacing: .07em;
+}
+.vq-ai-hero__pulse {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #129782;
+  box-shadow: 0 0 0 4px rgba(18,151,130,.13);
+}
+.world-home--layout-v3 .vq-ai-hero__title {
+  max-width: 16ch;
+  margin: 0;
+  color: var(--home-fg);
+  font-size: clamp(2.35rem, 5.1vw, 4.6rem);
+  font-weight: 760;
+  line-height: 1.07;
+  letter-spacing: -.055em;
+  text-wrap: balance;
+}
+.world-home--layout-v3 .vq-ai-hero__subtitle {
+  margin: 22px 0 27px;
+  max-width: 57ch;
+  font-size: clamp(.98rem, 1.2vw, 1.12rem);
+  line-height: 1.75;
+  color: var(--home-fg-muted);
+}
+.world-home--layout-v3 .vq-ai-composer {
+  position: relative;
+  width: 100%;
+  padding: 7px;
+  background: var(--home-surface-raised);
+  border: 1px solid var(--vq-workspace-border);
+  border-radius: 23px;
+  box-shadow: 0 22px 58px rgba(20,31,47,.10), 0 3px 12px rgba(20,31,47,.05);
+}
+.world-home--layout-v3 .vq-ai-composer:focus-within {
+  border-color: var(--vq-workspace-accent);
+  box-shadow: 0 0 0 3px rgba(18,135,120,.16), 0 22px 58px rgba(20,31,47,.10);
+}
+.vq-ai-composer__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 9px 13px 5px;
+  color: var(--home-fg-muted);
+  font-size: .77rem;
+  font-weight: 680;
+}
+.vq-ai-composer__icon {
+  width: 15px; height: 15px; flex: 0 0 auto;
+  fill: none; stroke: currentColor; stroke-width: 1.7;
+}
+.world-home--layout-v3 .vq-ai-composer__input {
+  display: block;
+  width: 100%;
+  min-height: 110px;
+  max-height: 240px;
+  padding: 10px 14px;
+  background: transparent;
+  border: 0;
+  border-radius: 12px;
+  color: var(--home-fg);
+  font: inherit;
+  font-size: 1.08rem;
+  line-height: 1.65;
+  resize: vertical;
+  box-shadow: none;
+}
+.world-home--layout-v3 .vq-ai-composer__input::placeholder {
+  color: var(--home-fg-muted);
+  opacity: .82;
+}
+.world-home--layout-v3 .vq-ai-composer__input:focus { outline: none; box-shadow: none; }
+.vq-ai-composer__footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 4px 5px 5px 11px;
+}
+.vq-ai-composer__mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: .77rem;
+  color: var(--home-fg-muted);
+  font-weight: 620;
+}
+.vq-ai-composer__mode-icon {
+  display: inline-grid;
+  width: 24px; height: 24px;
+  place-items: center;
+  border: 1px solid var(--vq-workspace-border);
+  border-radius: 8px;
+  color: var(--vq-workspace-accent);
+  font-size: .85rem;
+}
+.vq-ai-composer__end {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.vq-ai-composer__count {
+  font-size: .75rem;
+  color: var(--home-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+.world-home--layout-v3 .vq-ai-composer__send {
+  display: inline-flex;
+  min-height: 44px;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  border: none;
+  border-radius: 13px;
+  background: linear-gradient(130deg, #0e8275, #225c9d);
+  color: #fff;
+  padding: 0 16px;
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 730;
+  cursor: pointer;
+}
+.world-home--layout-v3 .vq-ai-composer__send:hover { filter: brightness(1.09); }
+.world-home--layout-v3 .vq-ai-composer__send:focus-visible,
+.world-home--layout-v3 .vq-ai-prompt:focus-visible {
+  outline: 3px solid var(--home-focus);
+  outline-offset: 3px;
+}
+.vq-ai-composer__arrow { font-size: 1.25em; line-height: 1; }
+.vq-ai-prompt-area { margin-top: 22px; }
+.vq-ai-prompt-area__label {
+  display: block;
+  font-size: .8rem;
+  color: var(--home-fg-muted);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.vq-ai-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.world-home--layout-v3 .vq-ai-prompt {
+  display: inline-flex;
+  align-items: center;
+  min-height: 39px;
+  gap: 8px;
+  max-width: 100%;
+  border: 1px solid var(--vq-workspace-border);
+  background: var(--home-surface-raised);
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: var(--home-fg);
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 570;
+  text-align: start;
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+.world-home--layout-v3 .vq-ai-prompt:hover {
+  transform: translateY(-1px);
+  border-color: var(--vq-workspace-accent);
+  background: var(--home-surface-soft);
+}
+.vq-ai-prompt__icon { color: var(--vq-workspace-accent); font-size: 1rem; }
+.vq-ai-hero__disclaimer {
+  margin: 15px 0 0;
+  max-width: 68ch;
+  color: var(--home-fg-muted);
+  font-size: .76rem;
+  line-height: 1.55;
+}
+.vq-ai-shortcuts {
+  display: flex; flex-wrap: wrap;
+  gap: 10px 18px;
+  align-items: center;
+  margin-top: 20px;
+}
+.world-home--layout-v3 .vq-ai-shortcuts a {
+  color: var(--home-fg-muted);
+  font-size: .85rem;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.world-home--layout-v3 .vq-ai-shortcuts a:hover,
+.world-home--layout-v3 .vq-ai-shortcuts a:focus-visible {
+  color: var(--vq-workspace-accent);
+  border-bottom-color: currentColor;
+}
+.world-home--layout-v3 .world-evidence-panel {
+  grid-column: auto;
+  align-self: center;
+  border-radius: 22px;
+  background: var(--home-surface-raised);
+  border: 1px solid var(--home-divider);
+  box-shadow: 0 20px 55px rgba(20,31,47,.065);
+}
+.world-home--layout-v3 .world-evidence-panel__head { padding-bottom: 8px; }
+html[dir="rtl"] .vq-ai-composer__input,
+html[dir="rtl"] .vq-ai-hero__title { text-align: right; }
+html[dir="rtl"] .vq-ai-composer__footer { padding-inline-start: 11px; padding-inline-end: 5px; }
+@media (max-width: 1023px) {
+  .world-home--layout-v3 .world-hero { min-height: 0; padding-block: 66px; }
+  .world-home--layout-v3 .world-hero__layout { grid-template-columns: minmax(0, 1fr); gap: 34px; }
+  .world-home--layout-v3 .vq-ai-hero { max-width: 760px; margin-inline: auto; }
+  .world-home--layout-v3 .world-evidence-panel { width: 100%; max-width: 760px; margin-inline: auto; }
+}
+@media (max-width: 639px) {
+  .world-home--layout-v3 .world-hero { padding-block: 38px 52px; }
+  .world-home--layout-v3 .vq-ai-hero__title { font-size: clamp(2.12rem, 8vw, 3rem); }
+  .world-home--layout-v3 .vq-ai-hero__subtitle { margin-block: 16px 22px; }
+  .world-home--layout-v3 .vq-ai-composer { border-radius: 18px; }
+  .world-home--layout-v3 .vq-ai-composer__input { min-height: 94px; font-size: 1rem; }
+  .world-home--layout-v3 .vq-ai-composer__send { min-height: 41px; padding-inline: 12px; }
+  .world-home--layout-v3 .vq-ai-composer__count { display: none; }
+  .world-home--layout-v3 .vq-ai-hero__eyebrow { margin-bottom: 16px; }
+  .world-home--layout-v3 .vq-ai-prompt { flex: 1 1 auto; }
+  .world-home--layout-v3 .world-evidence-panel { max-width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .world-home--layout-v3 .vq-ai-prompt { transition: none; }
+  .world-home--layout-v3 .vq-ai-prompt:hover { transform: none; }
+}

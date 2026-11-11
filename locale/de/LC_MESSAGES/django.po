@@ -2222,3 +2222,57 @@ msgstr "EIN VERNETZTES ANWENDUNGSÖKOSYSTEM"
 
 msgid "Independent applications. Connected possibilities. Permissions remain explicit."
 msgstr "Eigenständige Anwendungen. Vernetzte Möglichkeiten. Berechtigungen bleiben ausdrücklich geregelt."
+
+msgid "VORNEQ · CONNECTED DISCOVERY"
+msgstr "VORNEQ · VERNETZTES ENTDECKEN"
+
+msgid "What would you like to explore?"
+msgstr "Was möchten Sie entdecken?"
+
+msgid "Start with a question, topic, or keyword. Explore matching records, sources and evidence across VORNEQ."
+msgstr "Beginnen Sie mit einer Frage, einem Thema oder einem Stichwort. Entdecken Sie passende Einträge, Quellen und Nachweise in VORNEQ."
+
+msgid "Search connected VORNEQ records"
+msgstr "Verknüpfte VORNEQ-Einträge durchsuchen"
+
+msgid "Your question"
+msgstr "Ihre Frage"
+
+msgid "Search by topic, document or source…"
+msgstr "Nach Thema, Dokument oder Quelle suchen …"
+
+msgid "Connected Search"
+msgstr "Vernetzte Suche"
+
+msgid "Characters used"
+msgstr "Verwendete Zeichen"
+
+msgid "Try a starting point"
+msgstr "Vorschläge zum Einstieg"
+
+msgid "Suggested searches"
+msgstr "Suchvorschläge"
+
+msgid "Find documents about identity"
+msgstr "Dokumente zur Identität finden"
+
+msgid "Explore available evidence"
+msgstr "Vorhandene Nachweise erkunden"
+
+msgid "Discover connected public records"
+msgstr "Verknüpfte öffentliche Einträge entdecken"
+
+msgid "Find documents"
+msgstr "Dokumente finden"
+
+msgid "Explore evidence"
+msgstr "Nachweise erkunden"
+
+msgid "Discover sources"
+msgstr "Quellen entdecken"
+
+msgid "This sends your question to the existing Search page. Live AI chat answers are not enabled here."
+msgstr "Ihre Anfrage öffnet die vorhandene Suchseite. Live-Antworten eines KI-Chats sind hier noch nicht verfügbar."
+
+msgid "Platform principles"
+msgstr "Plattformprinzipien"
