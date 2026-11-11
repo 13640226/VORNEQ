@@ -191,6 +191,8 @@ class ProductAdmin(admin.ModelAdmin):
 
     actions = (
         "approve_products",
+        "publish_approved_products",
+        "unpublish_products",
         "reject_products",
         "reset_products_to_pending",
     )
@@ -275,13 +277,13 @@ class ProductAdmin(admin.ModelAdmin):
         must be assigned explicitly because Product.save() is not called.
         """
 
-        now = timezone.now()
-
+        # Approval and publication are intentionally separate decisions.
         updated = queryset.exclude(
             status=Product.STATUS_APPROVED,
         ).update(
             status=Product.STATUS_APPROVED,
-            published_at=now,
+            is_published=False,
+            published_at=None,
         )
 
         self.message_user(
@@ -290,6 +292,41 @@ class ProductAdmin(admin.ModelAdmin):
             % {
                 "count": updated,
             },
+            level=messages.SUCCESS,
+        )
+
+
+    # Explicit publication is a superuser-only operation. Staff moderation
+    # approval by itself must not make a seller product publicly visible.
+    @admin.action(description=_("Publish approved non-synthetic products (superuser)"))
+    def publish_approved_products(self, request, queryset):
+        if not getattr(request.user, "is_superuser", False):
+            self.message_user(request, _("Publication requires a superuser."), level=messages.ERROR)
+            return
+        eligible = (
+            queryset.filter(status=Product.STATUS_APPROVED, is_published=False)
+            .exclude(slug__startswith="vorneq-benchmark-")
+            .exclude(slug__startswith="inspect-staging-smoke")
+            .exclude(seller__username__in=("vorneq-benchmark-seed", "vorneq-inspect-smoke"))
+        )
+        count = eligible.update(is_published=True, published_at=timezone.now())
+        self.message_user(
+            request,
+            _("%(count)s approved product(s) published.") % {"count": count},
+            level=messages.SUCCESS,
+        )
+
+    @admin.action(description=_("Unpublish selected products (superuser)"))
+    def unpublish_products(self, request, queryset):
+        if not getattr(request.user, "is_superuser", False):
+            self.message_user(request, _("Unpublication requires a superuser."), level=messages.ERROR)
+            return
+        count = queryset.filter(is_published=True).update(
+            is_published=False, published_at=None
+        )
+        self.message_user(
+            request,
+            _("%(count)s product(s) unpublished.") % {"count": count},
             level=messages.SUCCESS,
         )
 
@@ -311,6 +348,7 @@ class ProductAdmin(admin.ModelAdmin):
             status=Product.STATUS_REJECTED,
         ).update(
             status=Product.STATUS_REJECTED,
+            is_published=False,
             published_at=None,
         )
 
@@ -339,6 +377,7 @@ class ProductAdmin(admin.ModelAdmin):
             status=Product.STATUS_PENDING,
         ).update(
             status=Product.STATUS_PENDING,
+            is_published=False,
             published_at=None,
         )
 
