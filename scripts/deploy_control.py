@@ -73,12 +73,23 @@ def normalize_sha(value: object) -> str:
     return value.strip().lower() if isinstance(value, str) else ""
 
 
-def authorization_used(deployments: object, auth_id: str) -> bool:
-    """True if any recorded deployment was already made with this authorization ID."""
+def authorization_used(deployments: object, auth_id: str, own_deployment_id: int | None = None) -> bool:
+    """True if any recorded deployment was already made with this authorization ID.
+
+    ``own_deployment_id`` is the GitHub deployment created by the *current*
+    run immediately before the trigger. Exactly that record is excluded, and it
+    must exist with this authorization marker; otherwise the check fails closed.
+    """
     if not isinstance(deployments, list):
         raise DeployRejected("deployment list unavailable")
     marker = f"authorized by {auth_id}"
-    return any(isinstance(d, dict) and (d.get("description") or "").strip() == marker for d in deployments)
+    matching = [d for d in deployments
+                if isinstance(d, dict) and (d.get("description") or "").strip() == marker]
+    if own_deployment_id is None:
+        return bool(matching)
+    if not any(d.get("id") == own_deployment_id for d in matching):
+        raise DeployRejected("current deployment record not found for this authorization")
+    return any(d.get("id") != own_deployment_id for d in matching)
 
 
 def hook_service_id(hook_url: str) -> str | None:
@@ -244,7 +255,8 @@ def last_successful_sha(gh: GitHub, environment: str) -> str | None:
 
 
 def preflight(gh: GitHub, environment: str, sha: str, auth_issue: int, actor: str, triggering_actor: str,
-              owner_login: str = DEFAULT_OWNER_LOGIN, live_release: object = None) -> str:
+              owner_login: str = DEFAULT_OWNER_LOGIN, live_release: object = None,
+              own_deployment_id: int | None = None) -> str:
     if actor != owner_login or triggering_actor != owner_login:
         raise DeployRejected("workflow must be started by the owner account")
     if environment not in ENVIRONMENTS:
@@ -259,7 +271,7 @@ def preflight(gh: GitHub, environment: str, sha: str, auth_issue: int, actor: st
     decision = decide_deploy(environment, sha, gh.issue_comments(auth_issue), owner_login)
     if not decision.allowed:
         raise DeployRejected(decision.reason)
-    if authorization_used(gh.deployments(environment), decision.auth_id):
+    if authorization_used(gh.deployments(environment), decision.auth_id, own_deployment_id):
         raise DeployRejected(f"authorization {decision.auth_id} was already used; post a new OWNER-AUTH-DEPLOY")
     if environment == "production":
         staged = any(deployment_succeeded(gh.deployment_statuses(d["id"])) for d in gh.deployments("staging", sha))
@@ -317,15 +329,40 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("command", choices=["preflight", "trigger", "verify", "watch"])
     parser.add_argument("--environment", choices=ENVIRONMENTS)
     parser.add_argument("--sha")
+    parser.add_argument("--expect-auth-id",
+                        help="trigger only: authorization ID approved by the preflight job")
+    parser.add_argument("--deployment-id",
+                        help="trigger only: GitHub deployment ID recorded by this run")
     args = parser.parse_args(argv)
     args.sha = normalize_sha(args.sha) if args.sha is not None else None
     owner = os.environ.get("DEPLOY_OWNER_LOGIN", DEFAULT_OWNER_LOGIN)
     try:
+        if args.command != "trigger" and (args.expect_auth_id is not None or args.deployment_id is not None):
+            raise DeployRejected("--expect-auth-id/--deployment-id are only valid for trigger")
         if args.command == "trigger":
             if not is_full_sha(args.sha):
                 raise DeployRejected("invalid sha")
+            expected_auth = (args.expect_auth_id or "").strip()
+            if not expected_auth:
+                raise DeployRejected("trigger requires --expect-auth-id (trigger-time re-validation)")
+            if not (args.deployment_id or "").strip().isdecimal():
+                raise DeployRejected("trigger requires a numeric --deployment-id")
+            # TOCTOU guard: repeat the complete preflight in the same process,
+            # immediately before the hook call, excluding only this run's record.
+            gh = GitHub(os.environ.get("GITHUB_TOKEN", ""), os.environ.get("GITHUB_REPOSITORY", ""))
+            base = os.environ.get(f"{(args.environment or '').upper()}_BASE_URL", "")
+            if not base.startswith("https://"):
+                raise DeployRejected(f"{(args.environment or '').upper()}_BASE_URL is not configured")
+            live = fetch_release(base)
+            auth_id = preflight(
+                gh, args.environment, args.sha, int(os.environ.get("DEPLOY_AUTH_ISSUE", "448")),
+                os.environ.get("GITHUB_ACTOR", ""), os.environ.get("GITHUB_TRIGGERING_ACTOR", ""), owner,
+                live_release=live, own_deployment_id=int(args.deployment_id),
+            )
+            if auth_id != expected_auth:
+                raise DeployRejected("authorization changed since the preflight job")
             trigger_hook(os.environ.get("RENDER_DEPLOY_HOOK_URL", ""), args.sha, args.environment)
-            print(f"TRIGGERED {args.environment} @ {args.sha}")
+            print(f"TRIGGERED {args.environment} @ {args.sha} ({auth_id})")
             return 0
         if args.command == "verify":
             wait_for_release(_base_url(args.environment), args.sha)

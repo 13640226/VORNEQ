@@ -71,6 +71,8 @@ jobs:
     permissions:
       contents: read
       deployments: write
+      checks: read
+      issues: read
     env:
       GH_TOKEN: ${{ github.token }}
       DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
@@ -98,10 +100,23 @@ jobs:
           echo "id=$id" >> "$GITHUB_OUTPUT"
           gh api -X POST "repos/$GITHUB_REPOSITORY/deployments/$id/statuses" -f state=in_progress -f description="deploy started" > /dev/null
 
+      # TOCTOU guard: "trigger" repeats the complete preflight (owner actor,
+      # SHA on main, required checks, unedited/unrevoked/unused authorization,
+      # staging prerequisite, SHA not yet live) in the same process right before
+      # the hook call, and requires the same authorization ID as the preflight
+      # job. Only this run's own deployment record is excluded from replay.
       - name: Trigger Render deploy of the authorized SHA
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-        run: python3 -I scripts/deploy_control.py trigger --environment "$DEPLOY_ENVIRONMENT" --sha "$DEPLOY_SHA"
+          GITHUB_TOKEN: ${{ github.token }}
+          DEPLOY_AUTH_ISSUE: "448"
+          STAGING_BASE_URL: ${{ vars.STAGING_BASE_URL }}
+          PRODUCTION_BASE_URL: ${{ vars.PRODUCTION_BASE_URL }}
+          DEPLOYMENT_ID: ${{ steps.record.outputs.id }}
+        run: >-
+          python3 -I scripts/deploy_control.py trigger
+          --environment "$DEPLOY_ENVIRONMENT" --sha "$DEPLOY_SHA"
+          --expect-auth-id "$AUTH_ID" --deployment-id "$DEPLOYMENT_ID"
 
       - name: Wait until /health/ reports the SHA
         env:
