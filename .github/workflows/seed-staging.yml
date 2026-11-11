@@ -36,6 +36,8 @@ jobs:
   seed:
     if: ${{ false }} # C02 hard stop: no database execution
     runs-on: ubuntu-latest
+    env:
+      VORNEQ_ENV: staging
     # C02-INVENTORY-01: Staging-Job laeuft nicht mehr in der Umgebung "production"
     # und erhaelt damit keine Produktions-Secrets. STAGING_DATABASE_URL muss vor
     # einer Aufhebung des Hard-Stops in der Umgebung "staging" hinterlegt werden.
@@ -100,6 +102,10 @@ jobs:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
           DJANGO_SETTINGS_MODULE: config.settings_render
           VORNEQ_ALLOW_STAGING_SEED: 'yes'
+          VORNEQ_EXPECTED_STAGING_DATABASE: ${{ vars.STAGING_DATABASE_NAME }}
+          VORNEQ_EXPECTED_STAGING_DB_USER: ${{ vars.STAGING_DATABASE_USER }}
+          VORNEQ_EXPECTED_STAGING_DB_HOST: ${{ vars.STAGING_DATABASE_HOST }}
+          VORNEQ_EXPECTED_STAGING_DB_PORT: ${{ vars.STAGING_DATABASE_PORT }}
         run: |
           python manage.py seed_staging_data \
             --articles "${{ inputs.articles }}" \

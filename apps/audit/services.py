@@ -31,6 +31,22 @@ EVENT_SCHEMAS = {
         "reason_codes": {"RESULT_RECORDED"},
         "outcomes": {AuditEvent.Outcome.SUCCEEDED},
     },
+    "marketplace.product.published": {
+        "required_keys": {"previous_state", "new_state", "review_id"},
+        "allowed_keys": {
+            "previous_state": str,
+            "new_state": str,
+            "review_id": int,
+        },
+        "reason_codes": {"PRODUCT_PUBLISHED"},
+        "outcomes": {AuditEvent.Outcome.CHANGED},
+    },
+    "marketplace.product.unpublished": {
+        "required_keys": {"previous_state", "new_state"},
+        "allowed_keys": {"previous_state": str, "new_state": str},
+        "reason_codes": {"PRODUCT_UNPUBLISHED", "PRODUCT_REJECTED", "PRODUCT_RESET"},
+        "outcomes": {AuditEvent.Outcome.REVOKED},
+    },
 }
 
 ACTOR_TYPES = {"user", "system"}

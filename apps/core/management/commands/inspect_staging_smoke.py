@@ -8,6 +8,8 @@ from apps.core.services.context import get_context_view, resolve_artifact_from_i
 from apps.core.services.registry import register_artifact
 from marketplace.models import Product
 
+from ._staging_target_guard import require_staging_target
+
 
 SMOKE_USERNAME = "vorneq-inspect-smoke"
 SMOKE_SLUG = "inspect-staging-smoke"
@@ -22,6 +24,8 @@ class Command(BaseCommand):
             raise CommandError(
                 "Refusing to run: VORNEQ_ALLOW_INSPECT_STAGING_SMOKE must be set to 'yes'."
             )
+
+        require_staging_target()
 
         User = get_user_model()
         user, user_created = User.objects.get_or_create(username=SMOKE_USERNAME)

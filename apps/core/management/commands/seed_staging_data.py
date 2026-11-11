@@ -12,6 +12,8 @@ from apps.media.models import MediaAsset
 from library.models import LibraryItem
 from marketplace.models import Product
 
+from ._staging_target_guard import require_staging_target
+
 
 SEED_PREFIX = "vorneq-benchmark"
 MEDIA_TITLE_PREFIX = "VORNEQ Benchmark Media"
@@ -60,6 +62,8 @@ class Command(BaseCommand):
             raise CommandError(
                 "Refusing to seed: VORNEQ_ALLOW_STAGING_SEED must be set to 'yes'."
             )
+
+        require_staging_target()
 
         now = timezone.now()
         User = get_user_model()
