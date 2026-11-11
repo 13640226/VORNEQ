@@ -245,3 +245,207 @@ class HealthReleaseTests(DjangoTestCase):
             os.environ.pop("VORNEQ_RELEASE", None)
             payload = self.client.get(reverse("health")).json()
         self.assertEqual(payload["release"], SHA)
+
+
+class TriggerTimeRevalidationTests(TestCase):
+    """G4-TOCTOU-T01..T15: "trigger" repeats the full preflight right before the hook."""
+
+    AUTH = "OWNER-AUTH-DEPLOY-TEST-01"
+    OWN_ID = 900
+    STAGING_HOOK = "https://api.render.com/deploy/srv-dbm7dvc9v7es7393g70g?key=abc"
+    PROD_HOOK = "https://api.render.com/deploy/srv-dadn07eq1p3s73eccau0?key=abc"
+
+    def env(self, **overrides):
+        base = {
+            "GITHUB_TOKEN": "t", "GITHUB_REPOSITORY": "o/r",
+            "GITHUB_ACTOR": OWNER, "GITHUB_TRIGGERING_ACTOR": OWNER,
+            "DEPLOY_AUTH_ISSUE": "448",
+            "STAGING_BASE_URL": "https://staging.example.test",
+            "PRODUCTION_BASE_URL": "https://production.example.test",
+            "RENDER_DEPLOY_HOOK_URL": self.STAGING_HOOK,
+        }
+        base.update(overrides)
+        return base
+
+    def gh(self, *, comments=None, checks=None, compare="ahead", deployments=None, staged=True):
+        gh = mock.Mock()
+        gh.compare_status.return_value = compare
+        gh.check_runs.return_value = checks if checks is not None else [
+            {"name": n, "status": "completed", "conclusion": "success", "completed_at": T0}
+            for n in dc.REQUIRED_MAIN_CHECKS]
+        gh.issue_comments.return_value = comments if comments is not None else [
+            comment(auth("staging", auth_id=self.AUTH)),
+            comment(auth("production", auth_id="OWNER-AUTH-DEPLOY-PROD-01"), cid=2)]
+        own = {"id": self.OWN_ID, "description": f"authorized by {self.AUTH}"}
+        records = deployments if deployments is not None else {"staging": [own], "production": []}
+
+        def list_deployments(env, sha=None):
+            if sha is not None:  # staging prerequisite lookup for production
+                return [{"id": 1}] if staged else []
+            return records.get(env, [])
+
+        gh.deployments.side_effect = list_deployments
+        gh.deployment_statuses.return_value = [{"state": "success"}]
+        return gh
+
+    def run_trigger(self, gh, *, env="staging", expect=AUTH, deployment_id=OWN_ID, live=None, environ=None,
+                    hook_status=200):
+        argv = ["trigger", "--environment", env, "--sha", SHA]
+        if expect is not None:
+            argv += ["--expect-auth-id", expect]
+        if deployment_id is not None:
+            argv += ["--deployment-id", str(deployment_id)]
+        response = mock.MagicMock(status=hook_status)
+        response.__enter__.return_value = response
+        with mock.patch.dict(os.environ, environ or self.env(), clear=True), \
+                mock.patch.object(dc, "GitHub", return_value=gh), \
+                mock.patch.object(dc, "fetch_release", return_value=live), \
+                mock.patch.object(dc.urllib.request, "urlopen", return_value=response) as urlopen:
+            code = dc.main(argv)
+        return code, urlopen
+
+    def assert_denied_before_hook(self, result):
+        code, urlopen = result
+        self.assertEqual(code, 1)
+        urlopen.assert_not_called()
+
+    # T01
+    def test_t01_same_authorization_triggers_hook_once(self):
+        code, urlopen = self.run_trigger(self.gh())
+        self.assertEqual(code, 0)
+        urlopen.assert_called_once()
+        self.assertIn("ref=" + SHA, urlopen.call_args[0][0].full_url)
+
+    # T02
+    def test_t02_changed_authorization_id_denied(self):
+        self.assert_denied_before_hook(self.run_trigger(self.gh(), expect="OWNER-AUTH-DEPLOY-OTHER-02"))
+
+    # T03 / T12 — revoked after preflight and after the deployment record was created
+    def test_t03_t12_revoked_after_record_denied_before_hook(self):
+        comments = [comment(auth("staging", auth_id=self.AUTH)),
+                    comment(f"OWNER-AUTH-DEPLOY-REVOKE {self.AUTH}", cid=3, created=T1)]
+        self.assert_denied_before_hook(self.run_trigger(self.gh(comments=comments)))
+
+    def test_edited_authorization_denied(self):
+        comments = [comment(auth("staging", auth_id=self.AUTH), updated=T1)]
+        self.assert_denied_before_hook(self.run_trigger(self.gh(comments=comments)))
+
+    # T04
+    def test_t04_required_check_no_longer_green_denied(self):
+        self.assert_denied_before_hook(self.run_trigger(self.gh(checks=[])))
+
+    # T05
+    def test_t05_sha_no_longer_on_main_denied(self):
+        self.assert_denied_before_hook(self.run_trigger(self.gh(compare="diverged")))
+
+    # T06
+    def test_t06_github_api_unavailable_denied(self):
+        gh = self.gh()
+        gh.compare_status.side_effect = urllib.error.URLError("down")
+        self.assert_denied_before_hook(self.run_trigger(gh))
+
+    # T07
+    def test_t07_sha_already_live_denied(self):
+        self.assert_denied_before_hook(self.run_trigger(self.gh(), live=SHA[:12]))
+
+    # T08
+    def test_t08_production_without_successful_staging_denied(self):
+        own = {"id": self.OWN_ID, "description": "authorized by OWNER-AUTH-DEPLOY-PROD-01"}
+        gh = self.gh(deployments={"staging": [], "production": [own]}, staged=False)
+        self.assert_denied_before_hook(self.run_trigger(
+            gh, env="production", expect="OWNER-AUTH-DEPLOY-PROD-01",
+            environ=self.env(RENDER_DEPLOY_HOOK_URL=self.PROD_HOOK)))
+
+    def test_t08_production_with_staging_and_prod_hook_triggers(self):
+        own = {"id": self.OWN_ID, "description": "authorized by OWNER-AUTH-DEPLOY-PROD-01"}
+        gh = self.gh(deployments={"staging": [], "production": [own]}, staged=True)
+        code, urlopen = self.run_trigger(gh, env="production", expect="OWNER-AUTH-DEPLOY-PROD-01",
+                                         environ=self.env(RENDER_DEPLOY_HOOK_URL=self.PROD_HOOK))
+        self.assertEqual(code, 0)
+        urlopen.assert_called_once()
+
+    # T09
+    def test_t09_invalid_environment_rejected(self):
+        with self.assertRaises(SystemExit):
+            dc.main(["trigger", "--environment", "prod", "--sha", SHA, "--expect-auth-id", self.AUTH,
+                     "--deployment-id", "1"])
+
+    def test_t09_missing_base_url_denied(self):
+        env = self.env()
+        del env["STAGING_BASE_URL"]
+        self.assert_denied_before_hook(self.run_trigger(self.gh(), environ=env))
+
+    # T10
+    def test_t10_hook_of_other_service_denied(self):
+        self.assert_denied_before_hook(self.run_trigger(
+            self.gh(), environ=self.env(RENDER_DEPLOY_HOOK_URL=self.PROD_HOOK)))
+
+    # T11 — replay: another deployment already used this authorization
+    def test_t11_concurrent_or_replayed_authorization_denied(self):
+        own = {"id": self.OWN_ID, "description": f"authorized by {self.AUTH}"}
+        other = {"id": 777, "description": f"authorized by {self.AUTH}"}
+        gh = self.gh(deployments={"staging": [other, own]})
+        self.assert_denied_before_hook(self.run_trigger(gh))
+
+    def test_t11_unknown_own_deployment_id_denied(self):
+        self.assert_denied_before_hook(self.run_trigger(self.gh(), deployment_id=12345))
+
+    def test_t11_own_record_with_other_authorization_denied(self):
+        mine = {"id": self.OWN_ID, "description": "authorized by OWNER-AUTH-DEPLOY-OTHER-02"}
+        self.assert_denied_before_hook(self.run_trigger(self.gh(deployments={"staging": [mine]})))
+
+    # T13
+    def test_t13_hook_http_error_fails(self):
+        code, urlopen = self.run_trigger(self.gh(), hook_status=500)
+        self.assertEqual(code, 1)
+        urlopen.assert_called_once()
+
+    # T14
+    def test_t14_non_owner_dispatch_denied(self):
+        self.assert_denied_before_hook(self.run_trigger(
+            self.gh(), environ=self.env(GITHUB_ACTOR="someone", GITHUB_TRIGGERING_ACTOR="someone")))
+
+    # T15
+    def test_t15_missing_hook_secret_denied(self):
+        env = self.env()
+        del env["RENDER_DEPLOY_HOOK_URL"]
+        self.assert_denied_before_hook(self.run_trigger(self.gh(), environ=env))
+
+    def test_trigger_requires_revalidation_arguments(self):
+        self.assert_denied_before_hook(self.run_trigger(self.gh(), expect=None))
+        self.assert_denied_before_hook(self.run_trigger(self.gh(), deployment_id=None))
+        self.assert_denied_before_hook(self.run_trigger(self.gh(), deployment_id="abc"))
+
+    def test_revalidation_arguments_rejected_for_other_commands(self):
+        with mock.patch.dict(os.environ, self.env(), clear=True):
+            self.assertEqual(dc.main(["verify", "--environment", "staging", "--sha", SHA,
+                                      "--expect-auth-id", self.AUTH]), 1)
+            self.assertEqual(dc.main(["watch", "--deployment-id", "1"]), 1)
+
+    def test_hook_secret_never_printed(self):
+        with mock.patch("sys.stdout") as stdout, mock.patch("sys.stderr") as stderr:
+            self.run_trigger(self.gh())
+            self.run_trigger(self.gh(), environ=self.env(RENDER_DEPLOY_HOOK_URL=self.PROD_HOOK))
+        printed = "".join(str(c) for c in stdout.write.call_args_list + stderr.write.call_args_list)
+        self.assertNotIn("key=abc", printed)
+        self.assertNotIn("api.render.com/deploy", printed)
+
+    def test_workflow_passes_revalidation_context_to_trigger(self):
+        workflow = (Path(__file__).resolve().parents[2] / ".github" / "workflows" / "deploy.yml").read_text()
+        deploy_job = workflow[workflow.index("\n  deploy:\n"):]
+        record = deploy_job.index("name: Record GitHub deployment")
+        trigger = deploy_job.index("name: Trigger Render deploy of the authorized SHA")
+        verify = deploy_job.index("name: Wait until /health/ reports the SHA")
+        self.assertLess(record, trigger)
+        step = deploy_job[trigger:verify]
+        for required in ('GITHUB_TOKEN: ${{ github.token }}', 'DEPLOY_AUTH_ISSUE: "448"',
+                         "STAGING_BASE_URL: ${{ vars.STAGING_BASE_URL }}",
+                         "PRODUCTION_BASE_URL: ${{ vars.PRODUCTION_BASE_URL }}",
+                         "DEPLOYMENT_ID: ${{ steps.record.outputs.id }}",
+                         '--expect-auth-id "$AUTH_ID"', '--deployment-id "$DEPLOYMENT_ID"'):
+            self.assertIn(required, step)
+        permissions = deploy_job[:record]
+        self.assertIn("checks: read", permissions)
+        self.assertIn("issues: read", permissions)
+        self.assertNotIn("issues: write", permissions)
+        self.assertNotIn("checks: write", permissions)
