@@ -1937,3 +1937,57 @@ msgstr "اکوسیستم اپلیکیشن‌های به‌هم‌پیوسته"
 
 msgid "Independent applications. Connected possibilities. Permissions remain explicit."
 msgstr "اپلیکیشن‌های مستقل. امکانات به‌هم‌پیوسته. مجوزها همواره صریح هستند."
+
+msgid "VORNEQ · CONNECTED DISCOVERY"
+msgstr "VORNEQ · کاوش پیوسته"
+
+msgid "What would you like to explore?"
+msgstr "دوست دارید چه چیزی را کاوش کنید؟"
+
+msgid "Start with a question, topic, or keyword. Explore matching records, sources and evidence across VORNEQ."
+msgstr "با یک پرسش، موضوع یا کلیدواژه شروع کنید. رکوردها، منابع و شواهد مرتبط را در VORNEQ پیدا کنید."
+
+msgid "Search connected VORNEQ records"
+msgstr "جست‌وجو در رکوردهای متصل VORNEQ"
+
+msgid "Your question"
+msgstr "پرسش شما"
+
+msgid "Search by topic, document or source…"
+msgstr "موضوع، سند یا منبعی را جست‌وجو کنید…"
+
+msgid "Connected Search"
+msgstr "جست‌وجوی پیوسته"
+
+msgid "Characters used"
+msgstr "تعداد نویسه‌های استفاده‌شده"
+
+msgid "Try a starting point"
+msgstr "برای شروع امتحان کنید"
+
+msgid "Suggested searches"
+msgstr "پیشنهادهای جست‌وجو"
+
+msgid "Find documents about identity"
+msgstr "اسنادی درباره هویت پیدا کن"
+
+msgid "Explore available evidence"
+msgstr "شواهد موجود را کاوش کن"
+
+msgid "Discover connected public records"
+msgstr "رکوردهای عمومی مرتبط را کشف کن"
+
+msgid "Find documents"
+msgstr "یافتن اسناد"
+
+msgid "Explore evidence"
+msgstr "کاوش شواهد"
+
+msgid "Discover sources"
+msgstr "کشف منابع"
+
+msgid "This sends your question to the existing Search page. Live AI chat answers are not enabled here."
+msgstr "پرسش شما به صفحه جست‌وجوی موجود ارسال می‌شود. پاسخ زندهٔ گفت‌وگوی هوش مصنوعی هنوز در این بخش فعال نیست."
+
+msgid "Platform principles"
+msgstr "اصول پلتفرم"

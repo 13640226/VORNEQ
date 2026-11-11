@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="{% static 'css/homepage-signal-nav-v2.css' %}">
 <link rel="stylesheet" href="{% static 'css/homepage-modern-v2.css' %}">
 <link rel="stylesheet" href="{% static 'css/how-it-works-upgrade.css' %}">
+<link rel="stylesheet" href="{% static 'css/homepage-ai-workspace-v1.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -45,19 +46,77 @@
   <main class="world-home__main">
     <section id="home" class="world-hero" data-homepage-signal-section aria-labelledby="world-home-title">
       <div class="world-hero__layout">
-      <div class="world-hero__copy">
-        <p class="world-eyebrow">{% trans "A CONNECTED APPLICATION ECOSYSTEM" %}</p>
-        <h1 id="world-home-title" class="world-title">{% trans "One Platform. Many Applications. Connected Possibilities." %}</h1>
-        <p class="world-subtitle">{% trans "Explore connected applications through distinct capabilities, explicit permissions, and inspectable evidence." %}</p>
-        <div class="world-hero__actions">
-          <a href="{% url 'discover' %}" class="world-cta">
-            {% trans "Explore VORNEQ" %}
-            <svg class="world-icon world-icon--sm" aria-hidden="true"><use href="#icon-arrow"></use></svg>
-          </a>
-          <a href="#trust" class="world-cta world-cta--secondary">
-            {% trans "Inspect Evidence" %}
-          </a>
+      <div class="world-hero__copy vq-ai-hero" data-vq-ai-workspace>
+        <p class="vq-ai-hero__eyebrow">
+          <span class="vq-ai-hero__pulse" aria-hidden="true"></span>
+          {% trans "VORNEQ · CONNECTED DISCOVERY" %}
+        </p>
+        <h1 id="world-home-title" class="world-title vq-ai-hero__title">{% trans "What would you like to explore?" %}</h1>
+        <p class="world-subtitle vq-ai-hero__subtitle">
+          {% trans "Start with a question, topic, or keyword. Explore matching records, sources and evidence across VORNEQ." %}
+        </p>
+
+        <div class="vq-ai-composer">
+          <form method="get" action="{% url 'search_page' %}" role="search"
+                aria-label="{% trans 'Search connected VORNEQ records' %}"
+                data-vq-composer>
+            <label class="vq-ai-composer__label" for="vq-ai-question">
+              <svg class="vq-ai-composer__icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3 14 9 21 12 14 15 12 21 9 15 3 12 9 9Z"></path>
+              </svg>
+              {% trans "Your question" %}
+            </label>
+            <textarea id="vq-ai-question" class="vq-ai-composer__input" name="q"
+                      maxlength="200" rows="2" required autocomplete="off"
+                      placeholder="{% trans 'Search by topic, document or source…' %}"
+                      aria-describedby="vq-ai-search-limitation"
+                      data-vq-composer-input></textarea>
+            <div class="vq-ai-composer__footer">
+              <span class="vq-ai-composer__mode">
+                <span class="vq-ai-composer__mode-icon" aria-hidden="true">⌕</span>
+                {% trans "Connected Search" %}
+              </span>
+              <span class="vq-ai-composer__end">
+                <output class="vq-ai-composer__count" data-vq-composer-count
+                        aria-label="{% trans 'Characters used' %}">0/200</output>
+                <button class="vq-ai-composer__send" type="submit">
+                  <span>{% trans "Explore" %}</span>
+                  <span class="vq-ai-composer__arrow" aria-hidden="true">↗</span>
+                </button>
+              </span>
+            </div>
+          </form>
         </div>
+
+        <div class="vq-ai-prompt-area">
+          <span class="vq-ai-prompt-area__label">{% trans "Try a starting point" %}</span>
+          <div class="vq-ai-prompts" role="group" aria-label="{% trans 'Suggested searches' %}">
+            <button type="button" class="vq-ai-prompt" data-vq-example
+                    data-vq-prompt="{% trans 'Find documents about identity' %}">
+              <span class="vq-ai-prompt__icon" aria-hidden="true">◇</span>
+              {% trans "Find documents" %}
+            </button>
+            <button type="button" class="vq-ai-prompt" data-vq-example
+                    data-vq-prompt="{% trans 'Explore available evidence' %}">
+              <span class="vq-ai-prompt__icon" aria-hidden="true">◈</span>
+              {% trans "Explore evidence" %}
+            </button>
+            <button type="button" class="vq-ai-prompt" data-vq-example
+                    data-vq-prompt="{% trans 'Discover connected public records' %}">
+              <span class="vq-ai-prompt__icon" aria-hidden="true">⌁</span>
+              {% trans "Discover sources" %}
+            </button>
+          </div>
+        </div>
+
+        <p id="vq-ai-search-limitation" class="vq-ai-hero__disclaimer">
+          {% trans "This sends your question to the existing Search page. Live AI chat answers are not enabled here." %}
+        </p>
+        <nav class="vq-ai-shortcuts" aria-label="{% trans 'Explore VORNEQ' %}">
+          <a href="{% url 'discover' %}">{% trans "Discover" %} ↗</a>
+          <a href="{% url 'marketplace:index' %}">{% trans "Marketplace" %} ↗</a>
+          <a href="{% url 'orientation' %}">{% trans "Platform principles" %} ↗</a>
+        </nav>
       </div>
 
       <aside class="world-evidence-panel" aria-label="{% trans 'Evidence and knowledge overview' %}">
@@ -296,4 +355,5 @@
 {% block extra_js %}
 <script src="{% static 'js/homepage-signal-nav-v2.js' %}" defer></script>
 <script src="{% static 'js/evidence-signal-v2-3.js' %}" defer></script>
+<script src="{% static 'js/homepage-ai-workspace-v1.js' %}" defer></script>
 {% endblock %}
