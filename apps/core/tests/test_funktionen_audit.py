@@ -194,19 +194,11 @@ class SelfReportingTests(SimpleTestCase):
 
 
 class AuditCommandTests(SimpleTestCase):
-    def test_command_reports_real_flow_cards(self):
-        out = StringIO()
-        call_command("audit_funktionen", stdout=out)
-        report = json.loads(out.getvalue())
-        self.assertEqual(report["status"], "COMPLETE")
-        titles = [c["title"] for c in report["cards"]]
-        self.assertEqual(titles, ["Collect", "Structure", "Verify", "Connect", "Discover"])
-        routes = {r["route"]: r for r in report["routes"]}
-        self.assertEqual(set(routes), {"search_page", "orientation", "inspect_entry", "discover"})
-        self.assertTrue(all(r["resolved"] for r in routes.values()))
-        self.assertTrue(routes["inspect_entry"]["view_source_mentions_post"]["value"])
-        self.assertTrue(all(f["has_csrf"] for f in report["post_forms"]))
-        self.assertEqual(validate_report(report), [])
+    def test_command_fails_closed_after_homepage_v2_removed_flow_section(self):
+        # Homepage V2 removed the "How VORNEQ works" section by owner request.
+        # The audit must not report COMPLETE for cards that no longer exist.
+        with self.assertRaises(CommandError):
+            call_command("audit_funktionen", stdout=StringIO())
 
     def test_command_fails_on_incomplete_report(self):
         with tempfile.TemporaryDirectory() as tmp:

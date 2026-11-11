@@ -2,89 +2,48 @@ import re
 from html.parser import HTMLParser
 from unittest.mock import patch
 
+from django.contrib.auth import get_user_model
+from django.db import connection
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils.translation import override
 
 
 class HomepageSimplificationTests(TestCase):
+    """Homepage V2 contract: one task-focused AI workspace screen.
+
+    The marketing sections (signal navigation, evidence demo, capabilities,
+    how-it-works, trust, principles, final CTA) were removed by owner request.
+    """
+
+    REMOVED_SECTION_IDS = ("start", "capabilities", "how-it-works", "trust", "principles", "explore")
+
     def get_english_home(self, params=None):
         with override("en"):
             return self.client.get(reverse("home"), data=params or {})
 
-    def test_homepage_keeps_only_orientation_and_routing_surfaces(self):
-        response = self.get_english_home()
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'class="world-home ')
-        self.assertContains(response, 'id="start"')
-        self.assertContains(response, 'id="principles"')
-        self.assertContains(response, 'id="capabilities"')
-
-        self.assertNotContains(response, 'id="discoveries"')
-        self.assertNotContains(response, 'id="identity"')
-        self.assertNotContains(response, 'id="apps"')
-        self.assertContains(response, 'id="explore"')
-        self.assertNotContains(response, "Featured Discoveries")
-        self.assertNotContains(response, "Latest Discoveries")
-        self.assertNotContains(response, "Explore topics")
-        self.assertNotContains(response, "Software categories")
-
-    def test_homepage_signal_navigation_contract(self):
+    def test_homepage_is_single_task_focused_workspace(self):
         response = self.get_english_home()
         html = response.content.decode()
 
-        section_ids = (
-            "home",
-            "start",
-            "capabilities",
-            "how-it-works",
-            "trust",
-            "principles",
-            "explore",
-        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="vq-home"')
+        self.assertContains(response, "What do you need today?")
+        for section_id in self.REMOVED_SECTION_IDS:
+            self.assertNotIn(f'id="{section_id}"', html)
+        self.assertNotIn("data-homepage-signal-section", html)
+        self.assertNotIn("world-evidence-panel", html)
+        self.assertNotContains(response, 'id="discoveries"')
+        self.assertNotContains(response, "Featured Discoveries")
+        self.assertNotContains(response, "Latest Discoveries")
 
-        for section_id in section_ids:
-            self.assertContains(response, f'id="{section_id}"')
-
-        self.assertContains(response, 'href="#home"')
-        self.assertContains(response, 'href="#start"')
-        self.assertContains(response, 'href="#capabilities"')
-        self.assertContains(response, 'href="#how-it-works"')
-        self.assertContains(response, 'href="#trust"')
-        self.assertContains(response, 'href="#principles"')
-        self.assertContains(response, 'href="#explore"')
-
-        self.assertEqual(
-            html.count("data-homepage-signal-section"),
-            7,
-        )
-        self.assertEqual(
-            html.count("data-homepage-signal-link"),
-            7,
-        )
-
-        self.assertContains(
-            response,
-            'aria-label="Section navigation"',
-        )
-        self.assertEqual(
-            html.count('aria-current="location"'),
-            1,
-        )
-
-        self.assertContains(
-            response,
-            "css/homepage-signal-nav-v2",
-        )
-        self.assertContains(
-            response,
-            "js/homepage-signal-nav-v2",
-        )
-
-        # Global navigation and homepage section navigation coexist.
+    def test_signal_navigation_removed(self):
+        response = self.get_english_home()
+        self.assertNotContains(response, 'class="homepage-signal-nav')
+        self.assertNotContains(response, "js/homepage-signal-nav-v2")
+        self.assertNotContains(response, "js/evidence-signal-v2-3")
         self.assertContains(response, 'class="standalone-nav')
-        self.assertContains(response, 'class="homepage-signal-nav')
 
     def test_signal_navigation_is_homepage_only(self):
         with override("en"):
@@ -97,10 +56,12 @@ class HomepageSimplificationTests(TestCase):
 
     def test_homepage_search_is_primary_entry_without_refinement(self):
         response = self.get_english_home()
+        html = response.content.decode()
 
         with override("en"):
             search_url = reverse("search_page")
 
+        self.assertEqual(html.count('role="search"'), 1)
         self.assertContains(response, f'action="{search_url}"')
         self.assertContains(response, 'name="q"')
         self.assertNotContains(response, 'name="type"')
@@ -111,46 +72,54 @@ class HomepageSimplificationTests(TestCase):
         self.assertNotContains(response, "Quick content filters")
         self.assertNotContains(response, "Open advanced search")
 
-    def test_homepage_has_independent_discover_handoff(self):
+    def test_public_tools_route_to_existing_surfaces(self):
         response = self.get_english_home()
-        with override("en"):
-            discover_url = reverse("discover")
-
-        self.assertContains(response, f'href="{discover_url}"')
-        self.assertContains(response, "Open Discover")
-
-    def test_homepage_capability_surface_routes_without_replication(self):
-        response = self.get_english_home()
-
         with override("en"):
             expected_urls = (
                 reverse("search_page"),
                 reverse("discover"),
                 reverse("marketplace:index"),
+                reverse("account_login"),
             )
-
         for url in expected_urls:
             self.assertContains(response, f'href="{url}"')
-
-        self.assertContains(response, "Capabilities")
-        self.assertContains(response, "Independent applications. Connected possibilities. Permissions remain explicit.")
+        self.assertContains(response, "Your tools")
         self.assertNotContains(response, "Checkout")
         self.assertNotContains(response, "Entitlement")
         self.assertNotContains(response, "Search results")
 
-    def test_homepage_preserves_platform_principles_and_visual_contract(self):
-        response = self.get_english_home()
+    def test_private_tools_only_for_authenticated_users(self):
+        with override("en"):
+            private_urls = (
+                reverse("documents:list"),
+                reverse("notes:list"),
+                reverse("documents:create"),
+                reverse("notes:create"),
+                reverse("platform_shell:personal_home"),
+            )
+        anonymous = self.get_english_home().content.decode()
+        for url in private_urls:
+            self.assertNotIn(f'href="{url}"', anonymous)
 
-        self.assertContains(
-            response,
-            "One Platform. Many Applications. Connected Possibilities.",
-        )
-        self.assertContains(response, "Context, not Score")
-        self.assertContains(response, "Evidence, not Truth")
-        self.assertContains(response, "Portable Identity")
-        self.assertNotContains(response, 'class="global-home__globe"')
-        self.assertNotContains(response, 'class="global-home__globe-node"')
-        self.assertNotContains(response, "global-home__atlas")
+        user = get_user_model().objects.create_user(username="home-v2-user", password="pass")
+        self.client.force_login(user)
+        authenticated = self.get_english_home()
+        for url in private_urls:
+            self.assertContains(authenticated, f'href="{url}"')
+        self.assertContains(authenticated, "Welcome back. What do you need?")
+        self.assertNotContains(authenticated, "Use your own workspace")
+
+    def test_ai_is_labelled_honestly(self):
+        response = self.get_english_home()
+        self.assertContains(response, "AI answers · coming soon")
+        self.assertContains(response, "AI answers are not enabled yet.")
+        self.assertContains(response, 'aria-disabled="true"')
+
+    def test_anonymous_home_runs_no_database_queries(self):
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.get_english_home()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(ctx.captured_queries), 0)
 
     def test_home_does_not_execute_search_for_query_parameters(self):
         response = self.get_english_home({"q": "anything", "type": "product"})
