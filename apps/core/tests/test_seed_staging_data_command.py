@@ -19,13 +19,17 @@ def permitted_staging_target():
     env = {
         "VORNEQ_ALLOW_STAGING_SEED": "yes",
         "VORNEQ_EXPECTED_STAGING_DATABASE": "vorneq_staging_db_test",
+        "VORNEQ_EXPECTED_STAGING_DB_USER": "vorneq_staging_db_test_user",
+        "VORNEQ_EXPECTED_STAGING_DB_HOST": "staging-db.internal",
+        "VORNEQ_EXPECTED_STAGING_DB_PORT": "5432",
     }
     with override_settings(VORNEQ_ENV="staging"):
         with patch.dict(os.environ, env):
             with patch("apps.core.management.commands._staging_target_guard.connection") as target:
                 target.vendor = "postgresql"
+                target.settings_dict = {"HOST": "staging-db.internal", "PORT": "5432"}
                 target.cursor.return_value.__enter__.return_value.fetchone.return_value = (
-                    "vorneq_staging_db_test",
+                    "vorneq_staging_db_test", "vorneq_staging_db_test_user", 5432,
                 )
                 yield target
 
@@ -87,7 +91,7 @@ class SeedStagingDataCommandTests(TestCase):
     def test_force_rejects_wrong_database_identity(self):
         with permitted_staging_target() as target:
             target.cursor.return_value.__enter__.return_value.fetchone.return_value = (
-                "vorneq_production_db",
+                "vorneq_production_db", "vorneq_staging_db_test_user", 5432,
             )
             with self.assertRaisesRegex(CommandError, "does not match"):
                 call_command("seed_staging_data", "--count", "1", "--force")
@@ -97,5 +101,30 @@ class SeedStagingDataCommandTests(TestCase):
         with permitted_staging_target() as target:
             target.vendor = "sqlite"
             with self.assertRaisesRegex(CommandError, "must be PostgreSQL"):
+                call_command("seed_staging_data", "--count", "1", "--force")
+        self.assertEqual(Product.objects.count(), 0)
+
+    def test_force_rejects_wrong_postgres_login_role(self):
+        with permitted_staging_target() as target:
+            target.cursor.return_value.__enter__.return_value.fetchone.return_value = (
+                "vorneq_staging_db_test", "vorneq_production_db_user", 5432,
+            )
+            with self.assertRaisesRegex(CommandError, "runtime identity"):
+                call_command("seed_staging_data", "--count", "1", "--force")
+        self.assertEqual(Product.objects.count(), 0)
+
+    def test_force_rejects_wrong_endpoint(self):
+        with permitted_staging_target() as target:
+            target.settings_dict = {"HOST": "production-db.internal", "PORT": "5432"}
+            with self.assertRaisesRegex(CommandError, "connection endpoint"):
+                call_command("seed_staging_data", "--count", "1", "--force")
+        self.assertEqual(Product.objects.count(), 0)
+
+    def test_force_rejects_wrong_server_port(self):
+        with permitted_staging_target() as target:
+            target.cursor.return_value.__enter__.return_value.fetchone.return_value = (
+                "vorneq_staging_db_test", "vorneq_staging_db_test_user", 6432,
+            )
+            with self.assertRaisesRegex(CommandError, "runtime identity"):
                 call_command("seed_staging_data", "--count", "1", "--force")
         self.assertEqual(Product.objects.count(), 0)

@@ -103,6 +103,9 @@ jobs:
           DJANGO_SETTINGS_MODULE: config.settings_render
           VORNEQ_ALLOW_STAGING_SEED: 'yes'
           VORNEQ_EXPECTED_STAGING_DATABASE: ${{ vars.STAGING_DATABASE_NAME }}
+          VORNEQ_EXPECTED_STAGING_DB_USER: ${{ vars.STAGING_DATABASE_USER }}
+          VORNEQ_EXPECTED_STAGING_DB_HOST: ${{ vars.STAGING_DATABASE_HOST }}
+          VORNEQ_EXPECTED_STAGING_DB_PORT: ${{ vars.STAGING_DATABASE_PORT }}
         run: |
           python manage.py seed_staging_data \
             --articles "${{ inputs.articles }}" \

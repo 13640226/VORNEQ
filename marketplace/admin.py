@@ -9,11 +9,13 @@ Provides:
 """
 
 from django.contrib import admin, messages
+from django.db import transaction
 from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from .models import Product, ProductReview
+from .publication import transition_publication
 
 
 # ============================================================================
@@ -32,14 +34,18 @@ class ProductReviewInline(admin.StackedInline):
 
     fields = (
         "moderator",
+        "decision",
         "notes",
         "quality_score",
         "reviewed_at",
     )
+    readonly_fields = fields
 
-    readonly_fields = (
-        "reviewed_at",
-    )
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
     verbose_name = _("Product review")
     verbose_name_plural = _("Product review")
@@ -113,7 +119,22 @@ class ProductAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
         "published_at",
+        "status",
     )
+
+    def get_readonly_fields(self, request, obj=None):
+        """Approved products must be reset and re-reviewed before content edits."""
+        fields = super().get_readonly_fields(request, obj)
+        if obj is not None and obj.status == Product.STATUS_APPROVED:
+            return (*fields, "seller", "title", "slug", "short_description",
+                    "description", "category", "tags", "version", "price",
+                    "image", "digital_file")
+        return fields
+
+    def get_prepopulated_fields(self, request, obj=None):
+        if obj is not None and obj.status == Product.STATUS_APPROVED:
+            return {}
+        return super().get_prepopulated_fields(request, obj)
 
     fieldsets = (
         (
@@ -190,7 +211,6 @@ class ProductAdmin(admin.ModelAdmin):
     )
 
     actions = (
-        "approve_products",
         "publish_approved_products",
         "unpublish_products",
         "reject_products",
@@ -262,131 +282,83 @@ class ProductAdmin(admin.ModelAdmin):
             label,
         )
 
-    # ------------------------------------------------------------------------
-    # Bulk action: approve
-    # ------------------------------------------------------------------------
-
-    @admin.action(
-        description=_("Approve selected products"),
-    )
-    def approve_products(self, request, queryset):
-        """
-        Approve selected products and set their publication time.
-
-        queryset.update() is intentionally used here, so published_at
-        must be assigned explicitly because Product.save() is not called.
-        """
-
-        # Approval and publication are intentionally separate decisions.
-        updated = queryset.exclude(
-            status=Product.STATUS_APPROVED,
-        ).update(
-            status=Product.STATUS_APPROVED,
-            is_published=False,
-            published_at=None,
-        )
-
-        self.message_user(
-            request,
-            _("%(count)s product(s) approved successfully.")
-            % {
-                "count": updated,
-            },
-            level=messages.SUCCESS,
-        )
-
-
-    # Explicit publication is a superuser-only operation. Staff moderation
-    # approval by itself must not make a seller product publicly visible.
-    @admin.action(description=_("Publish approved non-synthetic products (superuser)"))
+    @admin.action(description=_("Publish reviewed products (superuser)"))
     def publish_approved_products(self, request, queryset):
-        if not getattr(request.user, "is_superuser", False):
+        """Only latest-approved, genuine products may become publicly visible."""
+        if not request.user.is_superuser:
             self.message_user(request, _("Publication requires a superuser."), level=messages.ERROR)
             return
-        eligible = (
-            queryset.filter(status=Product.STATUS_APPROVED, is_published=False)
-            .exclude(slug__startswith="vorneq-benchmark-")
-            .exclude(slug__startswith="inspect-staging-smoke")
-            .exclude(seller__username__in=("vorneq-benchmark-seed", "vorneq-inspect-smoke"))
+        changed = transition_publication(
+            actor=request.user,
+            product_ids=list(queryset.values_list("pk", flat=True)),
+            publish=True,
         )
-        count = eligible.update(is_published=True, published_at=timezone.now())
         self.message_user(
             request,
-            _("%(count)s approved product(s) published.") % {"count": count},
+            _("%(count)s reviewed product(s) published.") % {"count": changed},
             level=messages.SUCCESS,
         )
 
-    @admin.action(description=_("Unpublish selected products (superuser)"))
+    @admin.action(description=_("Unpublish products (superuser)"))
     def unpublish_products(self, request, queryset):
-        if not getattr(request.user, "is_superuser", False):
+        if not request.user.is_superuser:
             self.message_user(request, _("Unpublication requires a superuser."), level=messages.ERROR)
             return
-        count = queryset.filter(is_published=True).update(
-            is_published=False, published_at=None
+        changed = transition_publication(
+            actor=request.user,
+            product_ids=list(queryset.values_list("pk", flat=True)),
+            publish=False,
         )
         self.message_user(
             request,
-            _("%(count)s product(s) unpublished.") % {"count": count},
+            _("%(count)s product(s) unpublished.") % {"count": changed},
             level=messages.SUCCESS,
         )
 
-    # ------------------------------------------------------------------------
-    # Bulk action: reject
-    # ------------------------------------------------------------------------
-
-    @admin.action(
-        description=_("Reject selected products"),
-    )
+    @admin.action(description=_("Reject selected products"))
     def reject_products(self, request, queryset):
-        """
-        Reject selected products.
-
-        A rejected product is no longer considered published.
-        """
-
-        updated = queryset.exclude(
-            status=Product.STATUS_REJECTED,
-        ).update(
-            status=Product.STATUS_REJECTED,
-            is_published=False,
-            published_at=None,
-        )
-
+        """Revocation and moderation state change are one atomic operation."""
+        if not request.user.is_staff:
+            self.message_user(request, _("Staff is required."), level=messages.ERROR)
+            return
+        with transaction.atomic():
+            ids = list(queryset.values_list("pk", flat=True))
+            list(Product.objects.select_for_update().filter(pk__in=ids).values_list("pk", flat=True))
+            transition_publication(
+                actor=request.user, product_ids=ids, publish=False,
+                reason_code="PRODUCT_REJECTED", staff_revoke=True,
+            )
+            count = Product.objects.filter(pk__in=ids).exclude(
+                status=Product.STATUS_REJECTED,
+            ).update(
+                status=Product.STATUS_REJECTED, is_published=False, published_at=None,
+            )
         self.message_user(
             request,
-            _("%(count)s product(s) rejected.")
-            % {
-                "count": updated,
-            },
+            _("%(count)s product(s) rejected.") % {"count": count},
             level=messages.WARNING,
         )
 
-    # ------------------------------------------------------------------------
-    # Bulk action: reset to pending
-    # ------------------------------------------------------------------------
-
-    @admin.action(
-        description=_("Return selected products to pending review"),
-    )
+    @admin.action(description=_("Return selected products to pending review"))
     def reset_products_to_pending(self, request, queryset):
-        """
-        Return selected products to the moderation queue.
-        """
-
-        updated = queryset.exclude(
-            status=Product.STATUS_PENDING,
-        ).update(
-            status=Product.STATUS_PENDING,
-            is_published=False,
-            published_at=None,
-        )
-
+        if not request.user.is_staff:
+            self.message_user(request, _("Staff is required."), level=messages.ERROR)
+            return
+        with transaction.atomic():
+            ids = list(queryset.values_list("pk", flat=True))
+            list(Product.objects.select_for_update().filter(pk__in=ids).values_list("pk", flat=True))
+            transition_publication(
+                actor=request.user, product_ids=ids, publish=False,
+                reason_code="PRODUCT_RESET", staff_revoke=True,
+            )
+            count = Product.objects.filter(pk__in=ids).exclude(
+                status=Product.STATUS_PENDING,
+            ).update(
+                status=Product.STATUS_PENDING, is_published=False, published_at=None,
+            )
         self.message_user(
             request,
-            _("%(count)s product(s) returned to pending review.")
-            % {
-                "count": updated,
-            },
+            _("%(count)s product(s) returned to pending review.") % {"count": count},
             level=messages.INFO,
         )
 
@@ -434,6 +406,11 @@ class ProductReviewAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = (
+        "product",
+        "moderator",
+        "decision",
+        "notes",
+        "quality_score",
         "reviewed_at",
     )
 
@@ -468,3 +445,12 @@ class ProductReviewAdmin(admin.ModelAdmin):
             },
         ),
     )
+    def has_add_permission(self, request):
+        # Canonical moderation lives in the staff review flow, not editable admin forms.
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
