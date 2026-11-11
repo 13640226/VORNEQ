@@ -2276,3 +2276,86 @@ msgstr "Ihre Anfrage öffnet die vorhandene Suchseite. Live-Antworten eines KI-C
 
 msgid "Platform principles"
 msgstr "Plattformprinzipien"
+
+# Homepage V2 — AI workspace
+
+msgid "AI answers · coming soon"
+msgstr "KI-Antworten · demnächst"
+
+msgid "AI workspace"
+msgstr "KI-Arbeitsbereich"
+
+msgid "Ask or search: a topic, document, product or source…"
+msgstr "Fragen oder suchen: ein Thema, Dokument, Produkt oder eine Quelle …"
+
+msgid "Browse public knowledge, media and products."
+msgstr "Öffentliches Wissen, Medien und Produkte durchsuchen."
+
+msgid "Create an account"
+msgstr "Konto erstellen"
+
+msgid "Digital products and services."
+msgstr "Digitale Produkte und Dienstleistungen."
+
+msgid "Documents about identity"
+msgstr "Dokumente zur Identität"
+
+msgid "Evidence and sources"
+msgstr "Nachweise und Quellen"
+
+msgid "Find records across VORNEQ."
+msgstr "Einträge in ganz VORNEQ finden."
+
+msgid "Go"
+msgstr "Los"
+
+msgid "Mode"
+msgstr "Modus"
+
+msgid "My workspace"
+msgstr "Mein Arbeitsbereich"
+
+msgid "New document"
+msgstr "Neues Dokument"
+
+msgid "New note"
+msgstr "Neue Notiz"
+
+msgid "Open marketplace"
+msgstr "Marktplatz öffnen"
+
+msgid "Quick actions"
+msgstr "Schnellaktionen"
+
+msgid "Quick notes linked to your work."
+msgstr "Schnelle Notizen zu Ihrer Arbeit."
+
+msgid "Recent and recently viewed documents."
+msgstr "Neue und zuletzt angesehene Dokumente."
+
+msgid "Search, documents, notes and marketplace in one VORNEQ workspace."
+msgstr "Suche, Dokumente, Notizen und Marktplatz in einem VORNEQ-Arbeitsbereich."
+
+msgid "Sign in to create documents and notes and to share them with exactly the people you choose."
+msgstr "Melden Sie sich an, um Dokumente und Notizen zu erstellen und sie genau mit den Personen zu teilen, die Sie auswählen."
+
+msgid "Use your own workspace"
+msgstr "Ihren eigenen Arbeitsbereich nutzen"
+
+msgid "VORNEQ AI workspace"
+msgstr "VORNEQ KI-Arbeitsbereich"
+
+msgid "Welcome back. What do you need?"
+msgstr "Willkommen zurück. Was brauchen Sie?"
+
+msgid "What do you need today?"
+msgstr "Was brauchen Sie heute?"
+
+msgid "Your private and shared documents."
+msgstr "Ihre privaten und geteilten Dokumente."
+
+msgid "Your text opens the Search page. AI answers are not enabled yet. Do not enter personal or confidential data."
+msgstr "Ihr Text öffnet die Suchseite. KI-Antworten sind noch nicht aktiviert. Bitte keine persönlichen oder vertraulichen Daten eingeben."
+
+msgid "Your tools"
+msgstr "Ihre Werkzeuge"

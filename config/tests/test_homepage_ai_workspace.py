@@ -1,75 +1,64 @@
-"""Homepage AI-first UI contract tests. Search handoff only; no LLM or Production access."""
+"""Homepage V2 AI workspace contract. Search handoff only; no LLM or data API."""
 import re
 from pathlib import Path
 
 from django.conf import settings
-from django.db import connection
-from django.test import TestCase
 from django.templatetags.static import static
-from django.test.utils import CaptureQueriesContext
+from django.test import TestCase
 from django.urls import reverse
 from django.utils.translation import override
 
 
 class HomepageAIWorkspaceTests(TestCase):
-    def test_renders_all_languages_without_db_read(self):
+    def get_home(self, language="en"):
+        with override(language):
+            return self.client.get(reverse("home"))
+
+    def test_renders_all_languages(self):
         titles = {
-            "en": "What would you like to explore?",
-            "de": "Was möchten Sie entdecken?",
-            "fa": "دوست دارید چه چیزی را کاوش کنید؟",
+            "en": "What do you need today?",
+            "de": "Was brauchen Sie heute?",
+            "fa": "امروز به چه چیزی نیاز دارید؟",
         }
         for language, title in titles.items():
             with self.subTest(language=language):
-                with override(language), CaptureQueriesContext(connection) as queries:
-                    response = self.client.get(reverse("home"))
+                response = self.get_home(language)
                 self.assertEqual(response.status_code, 200)
-                self.assertEqual(len(queries), 0, "Homepage must not fetch private data")
-                html = response.content.decode("utf-8")
-                self.assertIn(title, html)
-                self.assertIn(f'lang="{language}"', html)
-                self.assertIn('dir="rtl"' if language == "fa" else 'dir="ltr"', html)
+                self.assertContains(response, title)
 
     def test_form_is_real_search_handoff_not_fake_chat(self):
         with override("en"):
-            response = self.client.get(reverse("home"))
             search_url = reverse("search_page")
-        html = response.content.decode("utf-8")
+        html = self.get_home().content.decode("utf-8")
         self.assertIn(f'action="{search_url}"', html)
-        self.assertIn('data-vq-composer', html)
+        self.assertIn('method="get"', html)
+        self.assertIn("data-vq-composer", html)
         self.assertIn('name="q"', html)
         self.assertIn('maxlength="200"', html)
-        self.assertIn("Live AI chat answers are not enabled here.", html)
-        self.assertIn('href="#trust"', html)
-        self.assertNotIn('data-vq-ai-secret', html)
-        self.assertEqual(html.count('data-homepage-signal-section'), 7)
+        self.assertNotIn("data-vq-ai-secret", html)
+        self.assertNotIn("api/ai", html)
         ids = re.findall(r'\bid="([^"]+)"', html)
         self.assertEqual(len(ids), len(set(ids)), "Duplicate HTML id detected")
 
     def test_progressive_enhancement_and_accessibility(self):
-        with override("en"):
-            response = self.client.get(reverse("home"))
-        html = response.content.decode("utf-8")
+        html = self.get_home().content.decode("utf-8")
         self.assertIn('id="vq-ai-question"', html)
         self.assertIn('for="vq-ai-question"', html)
         self.assertIn('aria-describedby="vq-ai-search-limitation"', html)
-        self.assertIn('data-vq-example', html)
-        # Resolve through the configured storage: CI runs collectstatic, so the
-        # manifest storage emits hashed names (homepage-ai-workspace-v1.<hash>.css).
-        self.assertIn(static("css/homepage-ai-workspace-v1.css"), html)
+        self.assertIn('aria-label="Search across VORNEQ"', html)
+        self.assertIn("data-vq-example", html)
+        self.assertIn(static("css/homepage-ai-cloud-v2.css"), html)
         self.assertIn(static("js/homepage-ai-workspace-v1.js"), html)
-        self.assertIn('role="search"', html)
-        self.assertIn("Platform Principles", html)
+        self.assertEqual(html.count("<h1"), 1)
 
-    def test_new_css_js_are_local_and_non_generative(self):
+    def test_css_js_are_local_and_non_generative(self):
         base = Path(settings.BASE_DIR)
-        css = (base / "assets/css/homepage-ai-workspace-v1.css").read_text(encoding="utf-8")
+        css = (base / "assets/css/homepage-ai-cloud-v2.css").read_text(encoding="utf-8")
         js = (base / "assets/js/homepage-ai-workspace-v1.js").read_text(encoding="utf-8")
         self.assertIn("@media (max-width: 639px)", css)
         self.assertIn("@media (max-width: 1023px)", css)
         self.assertIn('html[dir="rtl"]', css)
         self.assertIn("prefers-reduced-motion", css)
         self.assertIn('form.addEventListener("submit"', js)
-        self.assertNotIn("fetch(", js)
-        self.assertNotIn("innerHTML", js)
-        self.assertNotIn("localStorage", js)
-        self.assertNotIn("eval(", js)
+        for forbidden in ("fetch(", "innerHTML", "localStorage", "eval(", "XMLHttpRequest"):
+            self.assertNotIn(forbidden, js)

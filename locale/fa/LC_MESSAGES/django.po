@@ -1991,3 +1991,86 @@ msgstr "پرسش شما به صفحه جست‌وجوی موجود ارسال م
 
 msgid "Platform principles"
 msgstr "اصول پلتفرم"
+
+# Homepage V2 — AI workspace
+
+msgid "AI answers · coming soon"
+msgstr "پاسخ هوش مصنوعی · به‌زودی"
+
+msgid "AI workspace"
+msgstr "فضای کار هوش مصنوعی"
+
+msgid "Ask or search: a topic, document, product or source…"
+msgstr "بپرسید یا جست‌وجو کنید: یک موضوع، سند، محصول یا منبع…"
+
+msgid "Browse public knowledge, media and products."
+msgstr "مرور دانش، رسانه و محصولات عمومی."
+
+msgid "Create an account"
+msgstr "ساخت حساب کاربری"
+
+msgid "Digital products and services."
+msgstr "محصولات و خدمات دیجیتال."
+
+msgid "Documents about identity"
+msgstr "اسناد دربارهٔ هویت"
+
+msgid "Evidence and sources"
+msgstr "شواهد و منابع"
+
+msgid "Find records across VORNEQ."
+msgstr "یافتن رکوردها در سراسر VORNEQ."
+
+msgid "Go"
+msgstr "برو"
+
+msgid "Mode"
+msgstr "حالت"
+
+msgid "My workspace"
+msgstr "فضای کار من"
+
+msgid "New document"
+msgstr "سند جدید"
+
+msgid "New note"
+msgstr "یادداشت جدید"
+
+msgid "Open marketplace"
+msgstr "باز کردن بازار"
+
+msgid "Quick actions"
+msgstr "کارهای سریع"
+
+msgid "Quick notes linked to your work."
+msgstr "یادداشت‌های سریع مرتبط با کارتان."
+
+msgid "Recent and recently viewed documents."
+msgstr "اسناد جدید و اخیراً دیده‌شده."
+
+msgid "Search, documents, notes and marketplace in one VORNEQ workspace."
+msgstr "جست‌وجو، اسناد، یادداشت‌ها و بازار در یک فضای کار VORNEQ."
+
+msgid "Sign in to create documents and notes and to share them with exactly the people you choose."
+msgstr "وارد شوید تا سند و یادداشت بسازید و آن‌ها را فقط با افرادی که خودتان انتخاب می‌کنید به اشتراک بگذارید."
+
+msgid "Use your own workspace"
+msgstr "از فضای کار شخصی خود استفاده کنید"
+
+msgid "VORNEQ AI workspace"
+msgstr "فضای کار هوش مصنوعی VORNEQ"
+
+msgid "Welcome back. What do you need?"
+msgstr "خوش برگشتید. به چه چیزی نیاز دارید؟"
+
+msgid "What do you need today?"
+msgstr "امروز به چه چیزی نیاز دارید؟"
+
+msgid "Your private and shared documents."
+msgstr "اسناد خصوصی و اشتراکی شما."
+
+msgid "Your text opens the Search page. AI answers are not enabled yet. Do not enter personal or confidential data."
+msgstr "متن شما صفحهٔ جست‌وجو را باز می‌کند. پاسخ‌های هوش مصنوعی هنوز فعال نیستند. اطلاعات شخصی یا محرمانه وارد نکنید."
+
+msgid "Your tools"
+msgstr "ابزارهای شما"

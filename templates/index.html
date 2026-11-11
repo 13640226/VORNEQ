@@ -1,359 +1,217 @@
 {% extends "base.html" %}
-{% load static i18n %}
+{% load i18n static %}
 
-{% block title %}VORNEQ — {% trans "Precision Digital Infrastructure" %}{% endblock %}
+{# AI-first homepage: presentation and search handoff only. No inference, private queries or new API calls. #}
+{% block title %}VORNEQ — {% trans "AI workspace" %}{% endblock %}
 
 {% block meta %}
 <link rel="canonical" href="{% url 'home' %}">
 {% language 'fa' %}<link rel="alternate" hreflang="fa" href="{% url 'home' %}">{% endlanguage %}
-{% language 'en' %}<link rel="alternate" hreflang="en" href="{% url 'home' %}">{% endlanguage %}
 {% language 'de' %}<link rel="alternate" hreflang="de" href="{% url 'home' %}">{% endlanguage %}
+{% language 'en' %}<link rel="alternate" hreflang="en" href="{% url 'home' %}">{% endlanguage %}
 {% language 'en' %}<link rel="alternate" hreflang="x-default" href="{% url 'home' %}">{% endlanguage %}
-{% if request.LANGUAGE_CODE == 'de' %}
-<meta name="description" content="VORNEQ verbindet Entdeckung, Evidenz, Herkunft und strukturierte Datensätze, damit Informationen im Kontext geprüft werden können.">
-{% elif request.LANGUAGE_CODE == 'fa' %}
-<meta name="description" content="VORNEQ کشف اطلاعات، شواهد، منشأ و رکوردهای ساختاریافته را به هم پیوند می‌دهد تا اطلاعات در زمینهٔ خود بررسی شوند.">
-{% else %}
-<meta name="description" content="VORNEQ connects discovery, evidence, provenance, and structured records so information can be inspected in context.">
-{% endif %}
-<meta property="og:title" content="VORNEQ — {% trans 'Precision Digital Infrastructure' %}">
-<meta property="og:description" content="{% trans 'Dependable digital infrastructure for clarity, resilience, and long-term trust.' %}">
+<meta name="description" content="{% trans 'Search, documents, notes and marketplace in one VORNEQ workspace.' %}">
 <meta property="og:type" content="website">
+<meta property="og:title" content="VORNEQ — {% trans 'AI workspace' %}">
+<meta property="og:description" content="{% trans 'Search, documents, notes and marketplace in one VORNEQ workspace.' %}">
 <meta name="twitter:card" content="summary">
 {% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/homepage.css' %}">
-<link rel="stylesheet" href="{% static 'css/homepage-redesign.css' %}">
-<link rel="stylesheet" href="{% static 'css/homepage-signal-nav-v2.css' %}">
-<link rel="stylesheet" href="{% static 'css/homepage-modern-v2.css' %}">
-<link rel="stylesheet" href="{% static 'css/how-it-works-upgrade.css' %}">
-<link rel="stylesheet" href="{% static 'css/homepage-ai-workspace-v1.css' %}">
+<link rel="stylesheet" href="{% static 'css/homepage-ai-cloud-v2.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="world-home world-home--layout-v3">
-  <svg class="world-icon-sprite" aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
-    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></symbol>
-    <symbol id="icon-graph" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><circle cx="18" cy="18" r="2.5"></circle><path d="m7.3 10.9 8.4-3.8M7.3 13.1l8.4 3.8"></path></symbol>
-    <symbol id="icon-evidence" viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z"></path><path d="M15 3v5h5M10 13l2 2 4-4"></path></symbol>
-    <symbol id="icon-market" viewBox="0 0 24 24"><path d="M4 9h16l-1-5H5zM5 9v11h14V9M9 20v-6h6v6"></path></symbol>
-    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"></path></symbol>
-    <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.8 2.9 8.2 7 10 4.1-1.8 7-5.2 7-10V6z"></path><path d="m9 12 2 2 4-4"></path></symbol>
-  </svg>
-  {% include "partials/_homepage_signal_nav.html" %}
+<div class="vq-home" data-vq-ai-workspace>
 
-  <main class="world-home__main">
-    <section id="home" class="world-hero" data-homepage-signal-section aria-labelledby="world-home-title">
-      <div class="world-hero__layout">
-      <div class="world-hero__copy vq-ai-hero" data-vq-ai-workspace>
-        <p class="vq-ai-hero__eyebrow">
-          <span class="vq-ai-hero__pulse" aria-hidden="true"></span>
-          {% trans "VORNEQ · CONNECTED DISCOVERY" %}
-        </p>
-        <h1 id="world-home-title" class="world-title vq-ai-hero__title">{% trans "What would you like to explore?" %}</h1>
-        <p class="world-subtitle vq-ai-hero__subtitle">
-          {% trans "Start with a question, topic, or keyword. Explore matching records, sources and evidence across VORNEQ." %}
-        </p>
+  {# One primary search handoff: the homepage deliberately never executes a query. #}
+  <section class="vq-home__hero" aria-labelledby="vq-home-title">
+    <p class="vq-home__badge">
+      <span class="vq-home__badge-dot" aria-hidden="true"></span>
+      {% trans "VORNEQ AI workspace" %}
+    </p>
 
-        <div class="vq-ai-composer">
-          <form method="get" action="{% url 'search_page' %}" role="search"
-                aria-label="{% trans 'Search connected VORNEQ records' %}"
-                data-vq-composer>
-            <label class="vq-ai-composer__label" for="vq-ai-question">
-              <svg class="vq-ai-composer__icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 3 14 9 21 12 14 15 12 21 9 15 3 12 9 9Z"></path>
-              </svg>
-              {% trans "Your question" %}
-            </label>
-            <textarea id="vq-ai-question" class="vq-ai-composer__input" name="q"
-                      maxlength="200" rows="2" required autocomplete="off"
-                      placeholder="{% trans 'Search by topic, document or source…' %}"
-                      aria-describedby="vq-ai-search-limitation"
-                      data-vq-composer-input></textarea>
-            <div class="vq-ai-composer__footer">
-              <span class="vq-ai-composer__mode">
-                <span class="vq-ai-composer__mode-icon" aria-hidden="true">⌕</span>
-                {% trans "Connected Search" %}
-              </span>
-              <span class="vq-ai-composer__end">
-                <output class="vq-ai-composer__count" data-vq-composer-count
-                        aria-label="{% trans 'Characters used' %}">0/200</output>
-                <button class="vq-ai-composer__send" type="submit">
-                  <span>{% trans "Explore" %}</span>
-                  <span class="vq-ai-composer__arrow" aria-hidden="true">↗</span>
-                </button>
-              </span>
-            </div>
-          </form>
+    <h1 class="vq-home__title" id="vq-home-title">
+      {% if user.is_authenticated %}
+        {% trans "Welcome back. What do you need?" %}
+      {% else %}
+        {% trans "What do you need today?" %}
+      {% endif %}
+    </h1>
+
+    <form
+      class="vq-composer"
+      method="get"
+      action="{% url 'search_page' %}"
+      role="search"
+      aria-label="{% trans 'Search across VORNEQ' %}"
+      data-vq-composer
+    >
+      <label class="vq-sr-only" for="vq-ai-question">
+        {% trans "Search across VORNEQ" %}
+      </label>
+      <textarea
+        id="vq-ai-question"
+        class="vq-composer__input"
+        name="q"
+        rows="2"
+        maxlength="200"
+        required
+        autocomplete="off"
+        aria-describedby="vq-ai-search-limitation"
+        placeholder="{% trans 'Ask or search: a topic, document, product or source…' %}"
+        data-vq-composer-input
+      ></textarea>
+
+      <div class="vq-composer__bar">
+        <div class="vq-composer__modes" role="group" aria-label="{% trans 'Mode' %}">
+          <span class="vq-mode vq-mode--active" aria-current="true">
+            {% trans "Search" %}
+          </span>
+          <span class="vq-mode vq-mode--soon" aria-disabled="true">
+            {% trans "AI answers · coming soon" %}
+          </span>
         </div>
 
-        <div class="vq-ai-prompt-area">
-          <span class="vq-ai-prompt-area__label">{% trans "Try a starting point" %}</span>
-          <div class="vq-ai-prompts" role="group" aria-label="{% trans 'Suggested searches' %}">
-            <button type="button" class="vq-ai-prompt" data-vq-example
-                    data-vq-prompt="{% trans 'Find documents about identity' %}">
-              <span class="vq-ai-prompt__icon" aria-hidden="true">◇</span>
-              {% trans "Find documents" %}
-            </button>
-            <button type="button" class="vq-ai-prompt" data-vq-example
-                    data-vq-prompt="{% trans 'Explore available evidence' %}">
-              <span class="vq-ai-prompt__icon" aria-hidden="true">◈</span>
-              {% trans "Explore evidence" %}
-            </button>
-            <button type="button" class="vq-ai-prompt" data-vq-example
-                    data-vq-prompt="{% trans 'Discover connected public records' %}">
-              <span class="vq-ai-prompt__icon" aria-hidden="true">⌁</span>
-              {% trans "Discover sources" %}
-            </button>
-          </div>
+        <div class="vq-composer__end">
+          <output
+            class="vq-composer__count"
+            aria-label="{% trans 'Characters used' %}"
+            data-vq-composer-count
+          >0/200</output>
+          <button class="vq-composer__send" type="submit">
+            {% trans "Go" %}<span aria-hidden="true"> →</span>
+          </button>
         </div>
-
-        <p id="vq-ai-search-limitation" class="vq-ai-hero__disclaimer">
-          {% trans "This sends your question to the existing Search page. Live AI chat answers are not enabled here." %}
-        </p>
-        <nav class="vq-ai-shortcuts" aria-label="{% trans 'Explore VORNEQ' %}">
-          <a href="{% url 'discover' %}">{% trans "Discover" %} ↗</a>
-          <a href="{% url 'marketplace:index' %}">{% trans "Marketplace" %} ↗</a>
-          <a href="{% url 'orientation' %}">{% trans "Platform principles" %} ↗</a>
-        </nav>
       </div>
+    </form>
 
-      <aside class="world-evidence-panel" aria-label="{% trans 'Evidence and knowledge overview' %}">
-        <div class="world-evidence-panel__head">
-          <p class="world-evidence-panel__title">{% trans "Evidence Signal" %}</p>
-          
-        </div>
-        <p class="world-evidence-panel__disclaimer">{% trans "Conceptual illustration — no live data" %}</p>
-        <div class="world-evidence-panel__graph world-evidence-panel__graph--v23" data-evidence-signal-v23>
-          <div class="world-evidence-panel__steps" role="group" aria-label="{% trans 'Evidence process steps' %}">
-            <button class="world-evidence-step" type="button" data-evidence-step="source" aria-pressed="true" aria-expanded="true" aria-controls="world-evidence-demo-source">
-              <svg class="world-icon" aria-hidden="true"><use href="#icon-search"></use></svg><span>{% trans "Source" %}</span>
-            </button>
-            <button class="world-evidence-step" type="button" data-evidence-step="evidence" aria-pressed="false" aria-expanded="false" aria-controls="world-evidence-demo-evidence">
-              <svg class="world-icon" aria-hidden="true"><use href="#icon-evidence"></use></svg><span>{% trans "Evidence" %}</span>
-            </button>
-            <button class="world-evidence-step" type="button" data-evidence-step="context" aria-pressed="false" aria-expanded="false" aria-controls="world-evidence-demo-context">
-              <svg class="world-icon" aria-hidden="true"><use href="#icon-graph"></use></svg><span>{% trans "Context" %}</span>
-            </button>
-            <button class="world-evidence-step" type="button" data-evidence-step="verification" aria-pressed="false" aria-expanded="false" aria-controls="world-evidence-demo-verification">
-              <svg class="world-icon" aria-hidden="true"><use href="#icon-shield"></use></svg><span>{% trans "Verification" %}</span>
-            </button>
-          </div>
-          <div class="world-evidence-panel__detail" data-evidence-detail>
-            <section class="world-evidence-demo-panel" id="world-evidence-demo-source" data-evidence-demo-panel="source" aria-labelledby="world-evidence-demo-title-source">
-              <p class="world-evidence-panel__demo-tag">DEMO DATA</p>
-              <h3 class="world-evidence-panel__demo-title" id="world-evidence-demo-title-source">{% trans "Sample source" %}</h3>
-              <p>{% trans "All content in this panel is fictional." %}</p>
-              <ul class="world-evidence-panel__demo-list">
-                <li>{% trans "Fictional source reference: DEMO-SRC-001." %}</li>
-              </ul>
-              <div class="world-evidence-panel__demo-actions">
-                <a class="world-evidence-panel__demo-action" href="#principles">{% trans "Read platform principles" %}</a>
-                <button class="world-evidence-panel__demo-action" type="button" data-evidence-close>{% trans "Close demo panel" %}</button>
-              </div>
-            </section>
-            <section class="world-evidence-demo-panel" id="world-evidence-demo-evidence" data-evidence-demo-panel="evidence" aria-labelledby="world-evidence-demo-title-evidence" hidden>
-              <p class="world-evidence-panel__demo-tag">DEMO DATA</p>
-              <h3 class="world-evidence-panel__demo-title" id="world-evidence-demo-title-evidence">{% trans "Sample evidence" %}</h3>
-              <p>{% trans "All content in this panel is fictional." %}</p>
-              <ul class="world-evidence-panel__demo-list">
-                <li>{% trans "Fictional supporting note: DEMO-EVD-001." %}</li>
-                <li>{% trans "Fictional attachment: DEMO-EVD-002." %}</li>
-              </ul>
-              <div class="world-evidence-panel__demo-actions">
-                <a class="world-evidence-panel__demo-action" href="#principles">{% trans "Read platform principles" %}</a>
-                <button class="world-evidence-panel__demo-action" type="button" data-evidence-close>{% trans "Close demo panel" %}</button>
-              </div>
-            </section>
-            <section class="world-evidence-demo-panel" id="world-evidence-demo-context" data-evidence-demo-panel="context" aria-labelledby="world-evidence-demo-title-context" hidden>
-              <p class="world-evidence-panel__demo-tag">DEMO DATA</p>
-              <h3 class="world-evidence-panel__demo-title" id="world-evidence-demo-title-context">{% trans "Sample context" %}</h3>
-              <p>{% trans "All content in this panel is fictional." %}</p>
-              <ul class="world-evidence-panel__demo-list">
-                <li>{% trans "Fictional condition: DEMO-CTX-001." %}</li>
-              </ul>
-              <div class="world-evidence-panel__demo-actions">
-                <a class="world-evidence-panel__demo-action" href="#how-it-works">{% trans "Read how VORNEQ works" %}</a>
-                <button class="world-evidence-panel__demo-action" type="button" data-evidence-close>{% trans "Close demo panel" %}</button>
-              </div>
-            </section>
-            <section class="world-evidence-demo-panel" id="world-evidence-demo-verification" data-evidence-demo-panel="verification" aria-labelledby="world-evidence-demo-title-verification" hidden>
-              <p class="world-evidence-panel__demo-tag">DEMO DATA</p>
-              <h3 class="world-evidence-panel__demo-title" id="world-evidence-demo-title-verification">{% trans "Sample verification" %}</h3>
-              <p>{% trans "All content in this panel is fictional." %}</p>
-              <ul class="world-evidence-panel__demo-list">
-                <li>{% trans "No verification was performed (DEMO-REV-001)." %}</li>
-              </ul>
-              <div class="world-evidence-panel__demo-actions">
-                <a class="world-evidence-panel__demo-action" href="#principles">{% trans "Read platform principles" %}</a>
-                <button class="world-evidence-panel__demo-action" type="button" data-evidence-close>{% trans "Close demo panel" %}</button>
-              </div>
-            </section>
-          </div>
-          <span class="world-evidence-panel__announcement" role="status" aria-atomic="true" data-evidence-announcement></span>
-        </div>
-      </aside>
-      </div>
-    </section>
+    <p class="vq-home__note" id="vq-ai-search-limitation">
+      {% trans "Your text opens the Search page. AI answers are not enabled yet. Do not enter personal or confidential data." %}
+    </p>
 
-    <section id="start" class="world-search-section world-home-band world-home-band--search" data-homepage-signal-section aria-labelledby="world-search-title">
-      <div class="world-section-head world-section-head--interactive">
-        <span class="world-status-led" aria-hidden="true"></span>
-        <h2 id="world-search-title" class="world-section-title">{% trans "Search" %}</h2>
-      </div>
-      <form method="get" action="{% url 'search_page' %}" class="world-search" role="search" aria-label="{% trans 'Search VORNEQ' %}">
-        <svg class="world-icon world-search__icon" aria-hidden="true"><use href="#icon-search"></use></svg>
-        <input type="search" name="q" maxlength="200" class="world-search__input" placeholder="{% trans 'Search across VORNEQ…' %}" aria-label="{% trans 'Search across VORNEQ' %}">
-        <button type="submit" class="world-search__submit">{% trans "Search" %}</button>
-      </form>
-      <p class="world-search__hint">{% trans "Search directly across VORNEQ when you know the topic, record, product, or source you need." %}</p>
-    </section>
+    <div class="vq-prompts" role="group" aria-label="{% trans 'Suggested searches' %}">
+      <button
+        class="vq-prompt"
+        type="button"
+        data-vq-example
+        data-vq-prompt="{% trans 'Documents about identity' %}"
+      >{% trans "Documents about identity" %}</button>
+      <button
+        class="vq-prompt"
+        type="button"
+        data-vq-example
+        data-vq-prompt="{% trans 'Evidence and sources' %}"
+      >{% trans "Evidence and sources" %}</button>
+      <button
+        class="vq-prompt"
+        type="button"
+        data-vq-example
+        data-vq-prompt="{% trans 'Digital products' %}"
+      >{% trans "Digital products" %}</button>
+    </div>
+  </section>
 
-    <section id="capabilities" class="world-capabilities world-home-band" data-homepage-signal-section aria-labelledby="world-capabilities-title">
-      <div class="world-section-head">
-        <h2 id="world-capabilities-title" class="world-section-title">{% trans "Capabilities" %}</h2>
-        <p class="world-home-v31__intro">{% trans "Independent applications. Connected possibilities. Permissions remain explicit." %}</p>
-      </div>
-      <ul class="world-capabilities__grid">
-        <li class="world-capability">
-          <a class="world-capability__surface" href="{% url 'search_page' %}">
-            <span class="world-capability__icon" aria-hidden="true"><svg class="world-icon"><use href="#icon-search"></use></svg></span>
-            <h3>{% trans "Search" %}</h3>
-            <p>{% trans "Find records across VORNEQ through a focused search surface." %}</p>
-            <span class="world-capability__link">{% trans "Open Search" %}</span>
-          </a>
-        </li>
-        <li class="world-capability">
-          <a class="world-capability__surface" href="{% url 'discover' %}">
-            <span class="world-capability__icon" aria-hidden="true"><svg class="world-icon"><use href="#icon-graph"></use></svg></span>
-            <h3>{% trans "Discover" %}</h3>
-            <p>{% trans "Explore public information through connected context, evidence, and relationships." %}</p>
-            <span class="world-capability__link">{% trans "Open Discover" %}</span>
-          </a>
-        </li>
-        <li class="world-capability">
-          <a class="world-capability__surface" href="{% url 'marketplace:index' %}">
-            <span class="world-capability__icon" aria-hidden="true"><svg class="world-icon"><use href="#icon-market"></use></svg></span>
-            <h3>{% trans "Marketplace" %}</h3>
-            <p>{% trans "Browse published offerings through VORNEQ's marketplace surface." %}</p>
-            <span class="world-capability__link">{% trans "Open Marketplace" %}</span>
-          </a>
-        </li>
-      </ul>
-    </section>
+  {# Public tools stay public. Private navigation is rendered only for a signed-in user. #}
+  <section class="vq-home__tools" aria-labelledby="vq-tools-title">
+    <h2 class="vq-home__heading" id="vq-tools-title">{% trans "Your tools" %}</h2>
+    <ul class="vq-tools">
+      <li>
+        <a class="vq-tool" href="{% url 'search_page' %}">
+          <span class="vq-tool__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+          </span>
+          <span class="vq-tool__name">{% trans "Search" %}</span>
+          <span class="vq-tool__desc">{% trans "Find records across VORNEQ." %}</span>
+        </a>
+      </li>
+      <li>
+        <a class="vq-tool" href="{% url 'discover' %}">
+          <span class="vq-tool__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="m15.6 8.4-2.3 5-4.9 2.2 2.3-5z"></path></svg>
+          </span>
+          <span class="vq-tool__name">{% trans "Discover" %}</span>
+          <span class="vq-tool__desc">{% trans "Browse public knowledge, media and products." %}</span>
+        </a>
+      </li>
+      <li>
+        <a class="vq-tool" href="{% url 'marketplace:index' %}">
+          <span class="vq-tool__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 9h16l-1-5H5L4 9z"></path><path d="M6 9v11h12V9"></path><path d="M10 20v-7h4v7"></path></svg>
+          </span>
+          <span class="vq-tool__name">{% trans "Marketplace" %}</span>
+          <span class="vq-tool__desc">{% trans "Digital products and services." %}</span>
+        </a>
+      </li>
 
-    <section id="how-it-works" class="world-flow world-home-band" data-homepage-signal-section aria-labelledby="world-flow-title">
-      <header class="world-flow__header">
-        <p class="world-eyebrow">{% trans "How VORNEQ works" %}</p>
-        <h2 id="world-flow-title" class="world-title world-title--md">{% trans "From source material to inspectable context." %}</h2>
-        <p class="world-flow__intro">{% trans "VORNEQ keeps records, evidence, provenance, and relationships connected so context remains visible as information moves through the platform." %}</p>
-      </header>
-      <p class="world-flow__notice">{% trans "These links open existing read-only views; they do not create sources, structured records, or verification decisions." %}</p>
-      <ol class="world-flow__steps">
-        <li class="world-flow__step">
-          <span class="world-flow__num" aria-hidden="true">01</span>
-          <h3>{% trans "Collect" %}</h3>
-          <p>{% trans "Bring supported records and source material into structured VORNEQ surfaces." %}</p>
-          <a class="world-flow__action" href="{% url 'search_page' %}">{% trans "Explore existing records" %}<span aria-hidden="true"> →</span></a>
-        </li>
-        <li class="world-flow__step">
-          <span class="world-flow__num" aria-hidden="true">02</span>
-          <h3>{% trans "Structure" %}</h3>
-          <p>{% trans "Represent information as clear records that can be referenced and inspected." %}</p>
-          <a class="world-flow__action" href="{% url 'orientation' %}">{% trans "Read about structured records" %}<span aria-hidden="true"> →</span></a>
-        </li>
-        <li class="world-flow__step">
-          <span class="world-flow__num" aria-hidden="true">03</span>
-          <h3>{% trans "Verify" %}</h3>
-          <p>{% trans "Associate claims with recorded evidence while preserving public context." %}</p>
-          <a class="world-flow__action" href="{% url 'inspect_entry' %}">{% trans "Inspect existing public context" %}<span aria-hidden="true"> →</span></a>
-        </li>
-        <li class="world-flow__step">
-          <span class="world-flow__num" aria-hidden="true">04</span>
-          <h3>{% trans "Connect" %}</h3>
-          <p>{% trans "Connect records, entities, sources, and evidence through explicit relationships." %}</p>
-        </li>
-        <li class="world-flow__step">
-          <span class="world-flow__num" aria-hidden="true">05</span>
-          <h3>{% trans "Discover" %}</h3>
-          <p>{% trans "Navigate connected public information through Search, Discover, Context, and Evidence Graph surfaces." %}</p>
-          <a class="world-flow__action" href="{% url 'discover' %}">{% trans "Explore VORNEQ" %}<span aria-hidden="true"> →</span></a>
-        </li>
-      </ol>
-    </section>
+      {% if user.is_authenticated %}
+      <li>
+        <a class="vq-tool" href="{% url 'documents:list' %}">
+          <span class="vq-tool__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v5h4M9 12h6M9 16h6"></path></svg>
+          </span>
+          <span class="vq-tool__name">{% trans "Documents" %}</span>
+          <span class="vq-tool__desc">{% trans "Your private and shared documents." %}</span>
+        </a>
+      </li>
+      <li>
+        <a class="vq-tool" href="{% url 'notes:list' %}">
+          <span class="vq-tool__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 20h16M5 16l10-10 4 4-10 10H5zM13 8l4 4"></path></svg>
+          </span>
+          <span class="vq-tool__name">{% trans "Notes" %}</span>
+          <span class="vq-tool__desc">{% trans "Quick notes linked to your work." %}</span>
+        </a>
+      </li>
+      <li>
+        <a class="vq-tool" href="{% url 'platform_shell:personal_home' %}">
+          <span class="vq-tool__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m3 11 9-8 9 8M5 10v11h14V10M9 21v-7h6v7"></path></svg>
+          </span>
+          <span class="vq-tool__name">{% trans "My workspace" %}</span>
+          <span class="vq-tool__desc">{% trans "Recent and recently viewed documents." %}</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </section>
 
-    <section id="trust" class="world-trust world-home-band world-home-band--soft" data-homepage-signal-section aria-labelledby="world-trust-title">
-      <header class="world-trust__header">
-        <p class="world-eyebrow">{% trans "Trust by architecture" %}</p>
-        <h2 id="world-trust-title" class="world-title world-title--md">{% trans "Context, evidence, and provenance remain visible." %}</h2>
-        <p class="world-trust__intro">{% trans "VORNEQ presents recorded context and relationships without turning them into a hidden trust score or a claim of truth." %}</p>
-      </header>
-      <div class="world-trust__grid">
-        <article class="world-trust__item">
-          <span class="world-trust__index" aria-hidden="true">01</span>
-          <h3>{% trans "Privacy by architecture" %}</h3>
-          <p>{% trans "Public views are bounded to information intended for disclosure; private data remains outside those public evidence surfaces." %}</p>
-        </article>
-        <article class="world-trust__item">
-          <span class="world-trust__index" aria-hidden="true">02</span>
-          <h3>{% trans "Auditability" %}</h3>
-          <p>{% trans "Recorded attribution, verification, and provenance provide inspectable context where those records are available." %}</p>
-        </article>
-        <article class="world-trust__item">
-          <span class="world-trust__index" aria-hidden="true">03</span>
-          <h3>{% trans "Evidence" %}</h3>
-          <p>{% trans "Public evidence relationships keep supporting material connected to the records and claims they contextualize." %}</p>
-        </article>
-        <article class="world-trust__item">
-          <span class="world-trust__index" aria-hidden="true">04</span>
-          <h3>{% trans "Resilience" %}</h3>
-          <p>{% trans "Platform infrastructure is organized around explicit records, boundaries, and operational continuity." %}</p>
-        </article>
-      </div>
-    </section>
-
-    <section id="principles" class="world-principles world-home-band" data-homepage-signal-section aria-labelledby="world-principles-title">
-      <div class="world-section-head">
-        <h2 id="world-principles-title" class="world-section-title">{% trans "Platform Principles" %}</h2>
-      </div>
-      <ul class="world-principles__grid">
-        <li class="world-principle">
-          <span class="world-item-index" aria-hidden="true">01</span>
-          <h3>{% trans "Context, not Score" %}</h3>
-          <p>{% trans "Information should be understood in context, not reduced to a single, opaque score." %}</p>
-        </li>
-        <li class="world-principle">
-          <span class="world-item-index" aria-hidden="true">02</span>
-          <h3>{% trans "Evidence, not Truth" %}</h3>
-          <p>{% trans "Expose sources, evidence, and perspectives so you can form your own conclusions." %}</p>
-        </li>
-        <li class="world-principle">
-          <span class="world-item-index" aria-hidden="true">03</span>
-          <h3>{% trans "Portable Identity" %}</h3>
-          <p>{% trans "Your identity is designed to travel across experiences, not be trapped in a single app." %}</p>
-        </li>
-      </ul>
-    </section>
-
-    <section id="explore" class="world-final-cta world-home-band" data-homepage-signal-section aria-labelledby="world-final-cta-title">
-      <div class="world-final-cta__content">
-        <p class="world-eyebrow">{% trans "Explore VORNEQ" %}</p>
-        <h2 id="world-final-cta-title" class="world-title world-title--lg">{% trans "Explore information with its context still attached." %}</h2>
-        <p class="world-final-cta__copy">{% trans "Move from search and discovery into recorded context, evidence relationships, provenance, documents, and marketplace surfaces." %}</p>
-        <a href="{% url 'discover' %}" class="world-cta">{% trans "Explore VORNEQ" %}</a>
-      </div>
-    </section>
-
-    <section class="world-closing" aria-label="{% trans 'VORNEQ positioning' %}">
-      <p>{% trans "One Platform. Many Applications. Connected Possibilities." %}</p>
-    </section>
-  </main>
+  {% if user.is_authenticated %}
+  <section class="vq-home__actions" aria-labelledby="vq-actions-title">
+    <h2 class="vq-home__heading" id="vq-actions-title">{% trans "Quick actions" %}</h2>
+    <div class="vq-actions">
+      <a class="vq-action" href="{% url 'documents:create' %}">
+        <span aria-hidden="true">+</span> {% trans "New document" %}
+      </a>
+      <a class="vq-action" href="{% url 'notes:create' %}">
+        <span aria-hidden="true">+</span> {% trans "New note" %}
+      </a>
+      <a class="vq-action" href="{% url 'marketplace:index' %}">
+        {% trans "Open marketplace" %}
+      </a>
+    </div>
+  </section>
+  {% else %}
+  <section class="vq-home__join" aria-labelledby="vq-join-title">
+    <h2 class="vq-home__heading" id="vq-join-title">
+      {% trans "Use your own workspace" %}
+    </h2>
+    <p class="vq-home__join-copy">
+      {% trans "Sign in to create documents and notes and to share them with exactly the people you choose." %}
+    </p>
+    <div class="vq-actions">
+      <a class="vq-action vq-action--primary" href="{% url 'account_login' %}">
+        {% trans "Sign in" %}
+      </a>
+      <a class="vq-action" href="{% url 'account_signup' %}">
+        {% trans "Create an account" %}
+      </a>
+    </div>
+  </section>
+  {% endif %}
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/homepage-signal-nav-v2.js' %}" defer></script>
-<script src="{% static 'js/evidence-signal-v2-3.js' %}" defer></script>
 <script src="{% static 'js/homepage-ai-workspace-v1.js' %}" defer></script>
 {% endblock %}
