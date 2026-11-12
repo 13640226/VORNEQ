@@ -1,0 +1,6 @@
+# OPTIONAL, isolated development-only SDK verification. NOT a production/CI lock.
+# Do not install into Render services, default CI, or shared Python environments.
+# Before activation, resolve/hash-lock and independently review the full graph.
+openai==3.49.0
+pydantic==2.14.3
+httpx2==2.16.0

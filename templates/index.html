@@ -68,9 +68,15 @@
           <span class="vq-mode vq-mode--active" aria-current="true">
             {% trans "Search" %}
           </span>
+          {% if phase_c_chat_enabled %}
+          <a class="vq-mode vq-mode--active" href="{% url 'ai_core:chat' %}?lang={{ request.LANGUAGE_CODE|slice:':2' }}" data-vq-phase-c-link>
+            {{ phase_c_chat_link_label }}
+          </a>
+          {% else %}
           <span class="vq-mode vq-mode--soon" aria-disabled="true">
             {% trans "AI answers · coming soon" %}
           </span>
+          {% endif %}
         </div>
 
         <div class="vq-composer__end">
@@ -87,7 +93,11 @@
     </form>
 
     <p class="vq-home__note" id="vq-ai-search-limitation">
-      {% trans "Your text opens the Search page. AI answers are not enabled yet. Do not enter personal or confidential data." %}
+      {% if phase_c_chat_enabled %}
+        {{ phase_c_chat_warning }}
+      {% else %}
+        {% trans "Your text opens the Search page. AI answers are not enabled yet. Do not enter personal or confidential data." %}
+      {% endif %}
     </p>
 
     <div class="vq-prompts" role="group" aria-label="{% trans 'Suggested searches' %}">

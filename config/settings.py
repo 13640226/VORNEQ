@@ -394,3 +394,11 @@ VORNEQ_AI_CORE_ENABLED = VORNEQ_ENV == "development" and env_bool("VORNEQ_AI_COR
 
 # Phase B opt-in, strictly development only; staging and production stay disabled.
 VORNEQ_AI_PHASE_B_ENABLED = VORNEQ_ENV == "development" and env_bool("VORNEQ_AI_PHASE_B_ENABLED", False)
+
+# Phase C preview is a separate, default-off development capability.
+# Never active for staging or production, even if both environment flags are set.
+VORNEQ_AI_PHASE_C_ENABLED = (
+    VORNEQ_ENV == "development"
+    and VORNEQ_AI_PHASE_B_ENABLED
+    and env_bool("VORNEQ_AI_PHASE_C_ENABLED", False)
+)

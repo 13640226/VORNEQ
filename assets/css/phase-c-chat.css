@@ -1,0 +1,29 @@
+/* Isolated, responsive Phase C preview. Inherits VORNEQ design tokens. */
+.vq-chat { max-width: 840px; margin: 0 auto; padding: clamp(20px,4vw,56px) 16px 70px; color: var(--color-text-primary); }
+.vq-chat__header { text-align: center; margin-bottom: 22px; }
+.vq-chat__kicker { color: var(--color-accent); font-size: .85rem; font-weight: 700; letter-spacing: .04em; }
+.vq-chat h1 { font-size: clamp(1.7rem,5vw,2.7rem); line-height: 1.15; margin: 10px 0 14px; }
+.vq-chat__header p { color: var(--color-text-secondary); }
+.vq-chat__warning { border: 1px solid var(--color-border); border-radius: 14px; padding: 12px 16px; background: var(--color-bg-surface); }
+.vq-chat__single { color: var(--color-text-muted); font-size: .9rem; }
+.vq-chat__log { border: 1px solid var(--color-border); border-radius: 18px; min-height: 200px; max-height: 480px; overflow-y: auto; padding: 14px; background: var(--color-bg-surface); display: grid; align-content: start; gap: 12px; }
+.vq-chat__message { max-width: min(94%, 620px); border: 1px solid var(--color-border); border-radius: 16px; padding: 10px 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.vq-chat__message p { white-space: pre-wrap; margin: 0; }
+.vq-chat__message--user { justify-self: end; background: var(--color-accent-subtle, var(--color-bg-elevated)); }
+.vq-chat__message--assistant { justify-self: start; background: var(--color-bg-elevated, var(--color-bg-surface)); }
+.vq-chat__message small { display: block; margin-top: 12px; color: var(--color-text-muted); }
+.vq-chat__message ul { margin-block-end: 0; padding-inline-start: 20px; }
+.vq-chat__message a { color: var(--color-accent); text-decoration: underline; }
+.vq-chat__status { min-height: 28px; font-size: .88rem; color: var(--color-text-secondary); }
+.vq-chat__form { border: 1px solid var(--color-border-strong, var(--color-border)); border-radius: 18px; padding: 16px; background: var(--color-bg-surface); }
+.vq-chat__form label { display: block; font-weight: 650; margin-bottom: 9px; }
+.vq-chat__form textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 90px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-bg-elevated, var(--color-bg-surface)); color: var(--color-text-primary); font: inherit; }
+.vq-chat__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px; }
+.vq-chat__count { margin-inline-end: auto; color: var(--color-text-muted); }
+.vq-chat__actions button { min-height: 42px; padding: 8px 16px; border: 1px solid var(--color-border); border-radius: 999px; font: inherit; cursor: pointer; background: var(--color-bg-elevated, var(--color-bg-surface)); color: var(--color-text-primary); }
+.vq-chat__actions button[type=submit] { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-text-on-accent, #fff); }
+.vq-chat__actions button:disabled { cursor: not-allowed; opacity: .5; }
+.vq-chat__form textarea:focus-visible, .vq-chat button:focus-visible, .vq-chat a:focus-visible { outline: 3px solid var(--color-focus-ring, var(--color-accent)); outline-offset: 2px; }
+.vq-chat__back { margin-top: 20px; text-align: center; }
+.vq-chat__back a { color: var(--color-accent); }
+@media (max-width: 600px) { .vq-chat__log { min-height: 160px; max-height: 50vh; } .vq-chat__message { max-width: 100%; } .vq-chat__actions { gap: 6px; } .vq-chat__actions button { padding-inline: 12px; } }

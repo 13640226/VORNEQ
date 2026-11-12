@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ chat_labels.title }} — VORNEQ{% endblock %}
+{% block meta %}
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="{{ chat_labels.intro }}">
+{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/phase-c-chat.css' %}">
+{% endblock %}
+{% block content %}
+<section class="vq-chat" aria-labelledby="vq-chat-title"
+  data-vq-chat
+  data-vq-language="{{ chat_language }}"
+  data-vq-loading="{{ chat_labels.loading }}"
+  data-vq-error="{{ chat_labels.error }}"
+  data-vq-empty="{{ chat_labels.empty }}"
+  data-vq-sources="{{ chat_labels.sources }}"
+  data-vq-status="{{ chat_labels.status }}">
+  <header class="vq-chat__header">
+    <p class="vq-chat__kicker">VORNEQ · Phase C · Development only</p>
+    <h1 id="vq-chat-title">{{ chat_labels.title }}</h1>
+    <p>{{ chat_labels.intro }}</p>
+  </header>
+  <aside class="vq-chat__warning" role="note">{{ chat_labels.warning }}</aside>
+  <p class="vq-chat__single">{{ chat_labels.single_turn }}</p>
+  <div class="vq-chat__log" id="vq-chat-log" data-vq-chat-log role="log"
+    aria-live="polite" aria-relevant="additions" aria-label="{{ chat_labels.title }}"></div>
+  <p class="vq-chat__status" data-vq-chat-status role="status" aria-live="polite"></p>
+  <form class="vq-chat__form" method="post" action="{{ chat_endpoint }}" data-vq-chat-form>
+    {% csrf_token %}
+    <label for="vq-chat-question">{{ chat_labels.question }}</label>
+    <textarea id="vq-chat-question" name="question" rows="3" maxlength="200"
+      required autocomplete="off" data-vq-chat-input
+      aria-describedby="vq-chat-limit" placeholder="{{ chat_labels.question }}"></textarea>
+    <div class="vq-chat__actions">
+      <span class="vq-chat__count" id="vq-chat-limit" data-vq-chat-count>0/200</span>
+      <button type="button" data-vq-chat-clear>{{ chat_labels.clear }}</button>
+      <button type="submit" data-vq-chat-send>{{ chat_labels.send }}</button>
+    </div>
+  </form>
+  <p class="vq-chat__back"><a href="{% url 'home' %}">{{ chat_labels.back }}</a></p>
+  <noscript><p>{{ chat_labels.error }}</p></noscript>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/phase-c-chat.js' %}" defer></script>
+{% endblock %}
