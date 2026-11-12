@@ -106,6 +106,7 @@
   cursor: pointer;
 }
 .vq-composer__send:hover { background: var(--color-accent-hover, var(--vq-accent)); }
+.vq-composer__send:disabled { opacity: .6; cursor: not-allowed; }
 .vq-composer__send:focus-visible,
 .vq-prompt:focus-visible,
 .vq-tool:focus-visible,
