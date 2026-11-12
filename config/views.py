@@ -2,12 +2,14 @@
 
 from decimal import Decimal, InvalidOperation
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import get_language
 
+from apps.ai_core.chat_strings import chat_labels
 from apps.core.models import Artifact, ContextualReputation, Entitlement
 from apps.core.services.public_graph import PublicGraphUnavailable, get_public_graph
 from apps.search.services import UnifiedSearch
@@ -81,8 +83,18 @@ def sitemap_xml(request):
 
 
 def home(request):
-    """Render Home as orientation and routing, without retrieval behavior."""
-    return render(request, "index.html")
+    """Keep public Search unchanged; show an isolated chat link only in development."""
+    chat_enabled = (
+        settings.VORNEQ_ENV == "development"
+        and getattr(settings, "VORNEQ_AI_PHASE_B_ENABLED", False)
+        and getattr(settings, "VORNEQ_AI_PHASE_C_ENABLED", False)
+        and request.user.is_authenticated
+    )
+    return render(request, "index.html", {
+        "phase_c_chat_enabled": chat_enabled,
+        "phase_c_chat_link_label": chat_labels(get_language())["entry"] if chat_enabled else "",
+        "phase_c_chat_warning": chat_labels(get_language())["warning"] if chat_enabled else "",
+    })
 
 
 def orientation(request):

@@ -1,0 +1,42 @@
+"""Owner-authorized development preview, never accessible in staging/production."""
+from django.conf import settings
+from django.http import Http404, HttpResponse
+from django.shortcuts import render
+from django.urls import reverse
+from django.utils.translation import get_language, override
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_GET
+
+from .chat_strings import chat_labels
+
+
+def is_chat_enabled():
+    return (
+        settings.VORNEQ_ENV == "development"
+        and getattr(settings, "VORNEQ_AI_PHASE_B_ENABLED", False)
+        and getattr(settings, "VORNEQ_AI_PHASE_C_ENABLED", False)
+    )
+
+
+@never_cache
+@require_GET
+def chat_page(request):
+    if not is_chat_enabled():
+        raise Http404("AI chat preview disabled")
+    if not request.user.is_authenticated:
+        response = HttpResponse("Authentication required", status=401)
+        response["Cache-Control"] = "no-store, private"
+        response["X-Robots-Tag"] = "noindex, nofollow"
+        return response
+    requested_language = request.GET.get("lang", "")
+    language = requested_language if requested_language in ("fa", "de", "en") else (get_language() or "en")[:2]
+    request.LANGUAGE_CODE = language
+    with override(language):
+        response = render(request, "ai_core/chat.html", {
+            "chat_labels": chat_labels(language),
+            "chat_language": language,
+            "chat_endpoint": reverse("ai_core:ask-grounded"),
+        })
+    response["Cache-Control"] = "no-store, private"
+    response["X-Robots-Tag"] = "noindex, nofollow"
+    return response
