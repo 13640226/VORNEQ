@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     "apps.notes.apps.NotesConfig",
     "apps.documents.apps.DocumentsConfig",
     "apps.search.apps.SearchConfig",
+    "apps.ai_core.apps.AICoreConfig",
 ]
 
 
@@ -386,3 +387,9 @@ LOGGING = {
         },
     },
 }
+
+# Phase A public Global AI: only development, never silently enabled on production.
+VORNEQ_AI_CORE_ENABLED = VORNEQ_ENV == "development" and env_bool("VORNEQ_AI_CORE_ENABLED", False)
+VORNEQ_AI_EXTERNAL_EGRESS_ENABLED = VORNEQ_AI_CORE_ENABLED and env_bool("VORNEQ_AI_EXTERNAL_EGRESS_ENABLED", False)
+VORNEQ_AI_MODEL = os.environ.get("VORNEQ_AI_MODEL", "")
+VORNEQ_AI_API_KEY = os.environ.get("VORNEQ_AI_API_KEY", "")
