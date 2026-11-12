@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     "apps.notes.apps.NotesConfig",
     "apps.documents.apps.DocumentsConfig",
     "apps.search.apps.SearchConfig",
+    "apps.ai_core.apps.AICoreConfig",
 ]
 
 
@@ -386,3 +387,7 @@ LOGGING = {
         },
     },
 }
+
+# Phase A Offline AI: public source citations only, no model/provider or egress configuration.
+# Disabled by default, and cannot be enabled in staging or production.
+VORNEQ_AI_CORE_ENABLED = VORNEQ_ENV == "development" and env_bool("VORNEQ_AI_CORE_ENABLED", False)

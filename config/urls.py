@@ -37,6 +37,7 @@ urlpatterns = [
     path("api/verification/", include("apps.verification.urls")),
     path("api/media/", include("apps.media.urls")),
     path("api/search/", include("apps.search.urls")),
+    path("api/ai/v1/", include("apps.ai_core.urls")),
     path("artifacts/<uuid:artifact_id>/graph/", public_graph_view, name="public_graph"),
     # CAP-ACTOR-02: empty list unless staging + flag + diagnostic Identity id.
     *diagnostics_urlpatterns(),
