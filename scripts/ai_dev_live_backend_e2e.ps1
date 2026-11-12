@@ -56,6 +56,11 @@ try {
     Write-Output 'Only synthetic public text is sent. No private VORNEQ records, no production databases.'
     Write-Output 'The provider may charge API usage even if output validation fails.'
     Write-Output 'Ensure your OpenAI project has suitable billing limits before proceeding.'
+    $limitConfirmation = Read-Host 'Confirm Enforce a hard limit is enabled in the OpenAI project (type LIMIT_CONFIRMED)'
+    if ($limitConfirmation.Trim() -cne 'LIMIT_CONFIRMED') {
+        Write-Output 'CANCELLED: project billing hard limit was not confirmed.'
+        exit 0
+    }
     $approval = Read-Host 'To authorize one billable live backend request, type YES'
     if ($approval.Trim() -ine 'YES') {
         Write-Output 'CANCELLED: no API request made.'
