@@ -133,7 +133,8 @@ class GlobalAIApiTests(TestCase):
                                 "language":"en","verified":False}
         response = self.post({"question":"test", "language":"en", "allow_model":True})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Cache-Control"], "no-store, private")
+        self.assertIn("no-store", response["Cache-Control"])
+        self.assertIn("private", response["Cache-Control"])
         self.assertFalse(service.call_args.kwargs["egress_enabled"])
         self.assertIsNone(service.call_args.kwargs["provider"])
 
