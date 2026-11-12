@@ -388,8 +388,6 @@ LOGGING = {
     },
 }
 
-# Phase A public Global AI: only development, never silently enabled on production.
+# Phase A Offline AI: public source citations only, no model/provider or egress configuration.
+# Disabled by default, and cannot be enabled in staging or production.
 VORNEQ_AI_CORE_ENABLED = VORNEQ_ENV == "development" and env_bool("VORNEQ_AI_CORE_ENABLED", False)
-VORNEQ_AI_EXTERNAL_EGRESS_ENABLED = VORNEQ_AI_CORE_ENABLED and env_bool("VORNEQ_AI_EXTERNAL_EGRESS_ENABLED", False)
-VORNEQ_AI_MODEL = os.environ.get("VORNEQ_AI_MODEL", "")
-VORNEQ_AI_API_KEY = os.environ.get("VORNEQ_AI_API_KEY", "")

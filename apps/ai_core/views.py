@@ -1,4 +1,4 @@
-"""Development-only, session-authenticated, CSRF-protected API."""
+"""Development-only Offline AI API; no external-provider code path."""
 import json
 
 from django.conf import settings
@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 
 from .gateway import InputError, ask_public
-from .provider import OpenAIResponsesProvider, ProviderUnavailable
+
 
 @never_cache
 @csrf_protect
@@ -33,23 +33,12 @@ def ask(request):
         data = json.loads(raw)
     except (ValueError, UnicodeDecodeError):
         return JsonResponse({"error": "invalid_json"}, status=400)
-    if not isinstance(data, dict) or set(data) - {"question", "language", "allow_model"}:
+    # Phase A explicitly rejects the former opt-in model interface.
+    if not isinstance(data, dict) or set(data) - {"question", "language"}:
         return JsonResponse({"error": "invalid_fields"}, status=400)
-    consent = data.get("allow_model", False)
-    if type(consent) is not bool:
-        return JsonResponse({"error": "invalid_consent"}, status=400)
     language = data.get("language", getattr(request, "LANGUAGE_CODE", "fa")[:2])
-    enabled = bool(settings.VORNEQ_AI_EXTERNAL_EGRESS_ENABLED)
-    provider = None
-    if enabled and consent:
-        try:
-            provider = OpenAIResponsesProvider(
-                api_key=settings.VORNEQ_AI_API_KEY, model=settings.VORNEQ_AI_MODEL)
-        except ProviderUnavailable:
-            pass
     try:
-        result = ask_public(data.get("question"), language, allow_model=consent,
-                            egress_enabled=enabled, provider=provider)
+        result = ask_public(data.get("question"), language)
     except InputError:
         return JsonResponse({"error": "invalid_question_or_language"}, status=400)
     response = JsonResponse(result)
