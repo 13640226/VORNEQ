@@ -62,3 +62,13 @@ class HomepageAIWorkspaceTests(TestCase):
         self.assertIn('form.addEventListener("submit"', js)
         for forbidden in ("fetch(", "innerHTML", "localStorage", "eval(", "XMLHttpRequest"):
             self.assertNotIn(forbidden, js)
+
+    def test_composer_keyboard_and_empty_submission_contract(self):
+        """The optional JavaScript must keep the native search handoff safe."""
+        base = Path(settings.BASE_DIR)
+        js = (base / "assets/js/homepage-ai-workspace-v1.js").read_text(encoding="utf-8")
+        self.assertIn('send.disabled = !input.value.trim()', js)
+        self.assertIn('event.isComposing || event.keyCode === 229', js)
+        self.assertIn('else if (send) send.click()', js)
+        self.assertIn('input.value = question.slice(0, limit)', js)
+        self.assertNotIn("form.submit()", js)
