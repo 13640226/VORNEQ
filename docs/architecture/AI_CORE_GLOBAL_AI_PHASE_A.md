@@ -1,6 +1,6 @@
 # VORNEQ — AI Core + Global AI Phase A
 
-**Base:** 89e046cdf61f1282a1c58a73f0d55dd4d03a90a8  
+**Base:** 89e046cdf61f1282a1c58a73f0d55dd4d03a90a8
 **Mode:** isolated development branch; no merge or deployment authorization.
 
 ## Implementation
