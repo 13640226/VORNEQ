@@ -32,7 +32,7 @@
     <label for="vq-chat-question">{{ chat_labels.question }}</label>
     <textarea id="vq-chat-question" name="question" rows="3" maxlength="200"
       required autocomplete="off" data-vq-chat-input
-      aria-describedby="vq-chat-limit">{{ chat_labels.question }}</textarea>
+      aria-describedby="vq-chat-limit" placeholder="{{ chat_labels.question }}"></textarea>
     <div class="vq-chat__actions">
       <span class="vq-chat__count" id="vq-chat-limit" data-vq-chat-count>0/200</span>
       <button type="button" data-vq-chat-clear>{{ chat_labels.clear }}</button>

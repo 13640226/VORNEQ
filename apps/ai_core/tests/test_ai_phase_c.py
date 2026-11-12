@@ -55,6 +55,8 @@ class ChatPageTests(TestCase):
         self.assertIn("no-store", response["Cache-Control"])
         self.assertIn("noindex", response["X-Robots-Tag"])
         self.assertContains(response, "VORNEQ KI-Chat")
+        self.assertContains(response, 'placeholder="Frage zu einer öffentlichen Quelle"')
+        self.assertNotContains(response, ">Frage zu einer öffentlichen Quelle</textarea>")
         self.assertContains(response, 'data-vq-language="de"')
         self.assertContains(response, reverse("ai_core:ask-grounded"))
         self.assertContains(response, 'name="csrfmiddlewaretoken"')
