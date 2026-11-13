@@ -109,7 +109,14 @@
           appendMessage(labels.error || "Request failed", "assistant");
         } else {
           const data = await response.json();
-          if (!data || data.verified !== false ||
+          if (data && data.mode === "insufficient_evidence" &&
+              data.verified === false && data.model_status === "not_called" &&
+              data.grounded_status === "insufficient_evidence" &&
+              data.error_code === "INSUFFICIENT_EVIDENCE" &&
+              data.answer === "" && Array.isArray(data.citations) &&
+              data.citations.length === 0) {
+            appendMessage(labels.empty || "Insufficient evidence", "assistant");
+          } else if (!data || data.verified !== false ||
               typeof data.answer !== "string" || data.answer.length > 1000 ||
               data.mode !== "grounded_draft" || !Array.isArray(data.citations)) {
             appendMessage(labels.error || "Invalid response", "assistant");
