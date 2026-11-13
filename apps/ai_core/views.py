@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 
 from .gateway import InputError, ask_public
-from .staging_policy import trial_enabled, actor_allowed
+from .staging_policy import trial_enabled, actor_allowed, hosted_runtime
 
 
 @never_cache
@@ -21,6 +21,8 @@ def ask(request):
         raise Http404("AI Core staging trial disabled")
     if settings.VORNEQ_ENV not in ("development", "staging"):
         raise Http404("AI Core disabled outside development/staging")
+    if settings.VORNEQ_ENV == "development" and hosted_runtime():
+        raise Http404("development AI path disabled on hosted runtime")
     if not request.user.is_authenticated:
         return JsonResponse({"error": "authentication_required"}, status=401)
     if settings.VORNEQ_ENV == "staging" and not actor_allowed(request.user):

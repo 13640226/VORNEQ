@@ -8,11 +8,13 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
 from .chat_strings import chat_labels
+from .staging_policy import hosted_runtime
 
 
 def is_chat_enabled():
     return (
         settings.VORNEQ_ENV == "development"
+        and not hosted_runtime()
         and getattr(settings, "VORNEQ_AI_PHASE_B_ENABLED", False)
         and getattr(settings, "VORNEQ_AI_PHASE_C_ENABLED", False)
     )
