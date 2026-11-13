@@ -109,7 +109,19 @@ def retrieve_public(question, language):
     editorial = UnifiedSearch(adapters=[ArticleAdapter(), LibraryItemAdapter()])
     payload = editorial.search(
         query="vorneq", filters={}, page=1, page_size=3, language=language)
-    return public_citations(payload)
+    if not isinstance(payload, dict):
+        return ()
+    # Defense in depth: a malformed search result must not inject products
+    # into the editorial-only fallback.
+    items = payload.get("results")
+    if not isinstance(items, list):
+        return ()
+    return public_citations({
+        "results": [item for item in items if isinstance(item, dict)
+                    and (item.get("type") == "article"
+                         or (item.get("type") in PUBLIC_LIBRARY_TYPES
+                             and str(item.get("key", "")).startswith("library:")))]
+    })
 
 
 def ask_public(question, language, *, retrieval=None):
