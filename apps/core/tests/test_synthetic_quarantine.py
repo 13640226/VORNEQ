@@ -553,3 +553,76 @@ class SyntheticQuarantineLocalTests(TestCase):
                 duplicate.save()
         saved.refresh_from_db()
         self.assertEqual(saved.state, "registered")
+
+# CI-only identity rules: unit tests do not connect to any real database.
+class CiEphemeralPostgresIdentityGuardTests(__import__("django.test", fromlist=["SimpleTestCase"]).SimpleTestCase):
+    def _fake_connection(self, *, host="postgres", user="vorneq",
+                         name="test_vorneq", address="172.18.0.2",
+                         actual_user="vorneq", port=5432):
+        from unittest.mock import MagicMock
+        conn = MagicMock()
+        conn.settings_dict = {
+            "HOST": host, "USER": user, "NAME": name, "PORT": "5432"
+        }
+        conn.cursor.return_value.__enter__.return_value.fetchone.return_value = (
+            actual_user, address, port
+        )
+        return conn
+
+    def test_exact_ci_disposable_database_allowed_with_scoped_marker(self):
+        from apps.core.synthetic_quarantine import _ci_ephemeral_postgres_test_identity
+        with patch.dict(os.environ, {
+            "VORNEQ_QUARANTINE_CI_DB_TEST_MODE": "DISPOSABLE_DJANGO_TEST_ONLY"
+        }):
+            self.assertEqual(
+                _ci_ephemeral_postgres_test_identity(
+                    self._fake_connection(), "test_vorneq"
+                ), "test_vorneq"
+            )
+
+    def test_ci_disposable_database_requires_scoped_marker(self):
+        from apps.core.synthetic_quarantine import _ci_ephemeral_postgres_test_identity
+        with patch.dict(os.environ, {
+            "VORNEQ_QUARANTINE_CI_DB_TEST_MODE": ""
+        }):
+            with self.assertRaisesRegex(QuarantineRejected, "EXPLICIT_OPT_IN"):
+                _ci_ephemeral_postgres_test_identity(
+                    self._fake_connection(), "test_vorneq"
+                )
+
+    def test_ci_guard_rejects_production_database_name(self):
+        from apps.core.synthetic_quarantine import _ci_ephemeral_postgres_test_identity
+        with patch.dict(os.environ, {
+            "VORNEQ_QUARANTINE_CI_DB_TEST_MODE": "DISPOSABLE_DJANGO_TEST_ONLY"
+        }):
+            with self.assertRaisesRegex(QuarantineRejected, "ISOLATED_CLONE"):
+                _ci_ephemeral_postgres_test_identity(
+                    self._fake_connection(name="vorneq_production_db"),
+                    "vorneq_production_db",
+                )
+
+    def test_ci_guard_rejects_noninternal_or_wrong_host(self):
+        from apps.core.synthetic_quarantine import _ci_ephemeral_postgres_test_identity
+        with patch.dict(os.environ, {
+            "VORNEQ_QUARANTINE_CI_DB_TEST_MODE": "DISPOSABLE_DJANGO_TEST_ONLY"
+        }):
+            with self.assertRaisesRegex(QuarantineRejected, "TARGET_CONFIGURATION"):
+                _ci_ephemeral_postgres_test_identity(
+                    self._fake_connection(host="production-db.example.invalid"),
+                    "test_vorneq",
+                )
+            with self.assertRaisesRegex(QuarantineRejected, "NETWORK_IDENTITY"):
+                _ci_ephemeral_postgres_test_identity(
+                    self._fake_connection(address="8.8.8.8"),
+                    "test_vorneq",
+                )
+
+    def test_ci_guard_rejects_wrong_postgres_role(self):
+        from apps.core.synthetic_quarantine import _ci_ephemeral_postgres_test_identity
+        with patch.dict(os.environ, {
+            "VORNEQ_QUARANTINE_CI_DB_TEST_MODE": "DISPOSABLE_DJANGO_TEST_ONLY"
+        }):
+            with self.assertRaisesRegex(QuarantineRejected, "NETWORK_IDENTITY"):
+                _ci_ephemeral_postgres_test_identity(
+                    self._fake_connection(actual_user="postgres"), "test_vorneq"
+                )

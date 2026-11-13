@@ -4,6 +4,7 @@ NOT a production migration/command/entry point. Explicit IDs plus a pinned
 manifest are required; no slug-only bulk update, no deletes, no external I/O.
 """
 import hashlib
+import ipaddress
 import json
 import os
 import uuid
@@ -69,10 +70,45 @@ def _identity(using):
         with conn.cursor() as cursor:
             cursor.execute("SELECT current_database()")
             actual = cursor.fetchone()[0]
-        if actual not in {LOCAL_DB_NAME, "test_vorneq_signed_lab_20261113"}:
-            raise QuarantineRejected("STOP_POSTGRES_NOT_ISOLATED_CLONE")
-        return actual
+        if actual in {LOCAL_DB_NAME, "test_vorneq_signed_lab_20261113"}:
+            return actual
+        return _ci_ephemeral_postgres_test_identity(conn, actual)
     raise QuarantineRejected("STOP_UNSUPPORTED_DATABASE_BACKEND")
+
+
+
+def _ci_ephemeral_postgres_test_identity(conn, actual):
+    """Allow ONLY the GitHub Actions disposable PostgreSQL test database.
+
+    This route requires a short-lived CI runner opt-in, exact database/role,
+    internal Docker alias, and private non-loopback server address.
+    It is not a general-purpose PostgreSQL or production bypass.
+    """
+    if actual != "test_vorneq":
+        raise QuarantineRejected("STOP_POSTGRES_NOT_ISOLATED_CLONE")
+    if os.environ.get("VORNEQ_QUARANTINE_CI_DB_TEST_MODE") != "DISPOSABLE_DJANGO_TEST_ONLY":
+        raise QuarantineRejected("STOP_CI_TEST_EXPLICIT_OPT_IN_REQUIRED")
+    cfg = conn.settings_dict
+    if (
+        str(cfg.get("NAME")) != "test_vorneq"
+        or cfg.get("HOST") != "postgres"
+        or cfg.get("USER") != "vorneq"
+        or str(cfg.get("PORT")) not in {"5432", ""}
+    ):
+        raise QuarantineRejected("STOP_CI_POSTGRES_TARGET_CONFIGURATION")
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT current_user, host(inet_server_addr()), inet_server_port()")
+        user, address, port = cursor.fetchone()
+    try:
+        addr = ipaddress.ip_address(address)
+    except (ValueError, TypeError) as exc:
+        raise QuarantineRejected("STOP_CI_POSTGRES_ADDRESS_UNKNOWN") from exc
+    if (
+        user != "vorneq" or port != 5432
+        or not addr.is_private or addr.is_loopback or addr.is_link_local
+    ):
+        raise QuarantineRejected("STOP_CI_POSTGRES_NETWORK_IDENTITY")
+    return actual
 
 
 def _actor(actor):
