@@ -9,6 +9,8 @@ from django.views.decorators.http import require_GET
 
 from .chat_strings import chat_labels
 from .staging_policy import hosted_runtime, trial_enabled, actor_allowed
+from .views_global import global_ai_available
+from .web_retrieval import WikipediaRetriever
 
 
 def is_chat_enabled():
@@ -37,11 +39,13 @@ def chat_page(request):
     requested_language = request.GET.get("lang", "")
     language = requested_language if requested_language in ("fa", "de", "en") else (get_language() or "en")[:2]
     request.LANGUAGE_CODE = language
+    global_ai = global_ai_available()
     with override(language):
         response = render(request, "ai_core/chat.html", {
             "chat_labels": chat_labels(language),
             "chat_language": language,
-            "chat_endpoint": reverse("ai_core:ask-grounded"),
+            "chat_endpoint": reverse("ai_core:ask-global" if global_ai else "ai_core:ask-grounded"),
+            "chat_source_hosts": " ".join(sorted(WikipediaRetriever.allowed_hosts)) if global_ai else "",
             "chat_staging": settings.VORNEQ_ENV == "staging",
         })
     response["Cache-Control"] = "no-store, private"

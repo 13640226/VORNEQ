@@ -37,3 +37,11 @@
   .vq-chat__message { min-width: 0; box-sizing: border-box; }
   .vq-chat__sources { padding-inline-start: 18px; }
 }
+
+/* Global AI V1: publisher label, touch-friendly source links, and on small
+   screens no nested scroll container that hides citations below the fold. */
+.vq-chat__publisher { color: var(--color-text-muted); font-size: .88em; }
+@media (max-width: 600px) {
+  .vq-chat__log { max-height: none; overflow-y: visible; }
+  .vq-chat__sources a { display: inline-block; min-height: 44px; padding-block: 10px; box-sizing: border-box; }
+}
