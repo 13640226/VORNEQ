@@ -3,7 +3,10 @@
 Dependency lock approval and explicit development-only activation are required.
 """
 import json
+import logging
 import os
+
+_logger = logging.getLogger(__name__)
 
 from .exceptions import ProviderInvalidResponse, ProviderTimeout, ProviderUnavailable
 
@@ -56,9 +59,19 @@ class OpenAIResponsesProvider:
             raise ProviderInvalidResponse("structured response invalid") from exc
         except (ValueError, TypeError) as exc:
             raise ProviderInvalidResponse("invalid structured response") from exc
-        if getattr(response, "status", None) != "completed":
+        status = getattr(response, "status", None)
+        if status != "completed":
+            # Do not log raw provider bodies, prompts, credentials or arbitrary
+            # provider error text. These enums are safe operational signals.
+            details = getattr(response, "incomplete_details", None)
+            reason = getattr(details, "reason", None)
+            safe_reason = reason if reason in {"max_output_tokens", "content_filter"} else "other"
+            _logger.warning("ai_provider_incomplete status=%s reason=%s",
+                            status if status in {"incomplete", "failed", "queued", "in_progress"} else "other",
+                            safe_reason)
             raise ProviderInvalidResponse("provider response incomplete")
         parsed = getattr(response, "output_parsed", None)
         if not isinstance(parsed, GroundedAnswerSchema):
+            _logger.warning("ai_provider_parse_missing")
             raise ProviderInvalidResponse("no parsed structured response")
         return parsed.model_dump()
