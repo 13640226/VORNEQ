@@ -56,4 +56,4 @@ fi
 
 python manage.py makemigrations --check --dry-run
 python manage.py collectstatic --noinput
-python manage.py test
+VORNEQ_QUARANTINE_CI_DB_TEST_MODE=DISPOSABLE_DJANGO_TEST_ONLY python manage.py test

@@ -119,3 +119,29 @@ def record_audit_event(
     event.full_clean()
     event.save()
     return event
+
+# P0 local quarantine audit schemas. No production command is exposed.
+for _suffix, _reason, _outcome in (
+    ("registered", "SYNTHETIC_QUARANTINE", AuditEvent.Outcome.CHANGED),
+    ("requested", "SYNTHETIC_QUARANTINE", AuditEvent.Outcome.CHANGED),
+    ("precheck_passed", "SYNTHETIC_QUARANTINE", AuditEvent.Outcome.CHANGED),
+    ("applied", "SYNTHETIC_QUARANTINE", AuditEvent.Outcome.CHANGED),
+    ("verified", "SYNTHETIC_QUARANTINE", AuditEvent.Outcome.SUCCEEDED),
+    ("revert_requested", "SYNTHETIC_REVERT", AuditEvent.Outcome.CHANGED),
+    ("reverted", "SYNTHETIC_REVERT", AuditEvent.Outcome.CHANGED),
+    ("revert_verified", "SYNTHETIC_REVERT", AuditEvent.Outcome.SUCCEEDED),
+):
+    EVENT_SCHEMAS["synthetic.quarantine." + _suffix] = {
+        "required_keys": {
+            "batch_id", "manifest_sha256", "row_count",
+            "authorization_reference",
+        },
+        "allowed_keys": {
+            "batch_id": str,
+            "manifest_sha256": str,
+            "row_count": int,
+            "authorization_reference": str,
+        },
+        "reason_codes": {_reason},
+        "outcomes": {_outcome},
+    }
