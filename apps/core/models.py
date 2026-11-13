@@ -716,3 +716,75 @@ class IdentityHandle(models.Model):
         from apps.core.constants.handles import HANDLE_DISPLAY_DOMAIN
 
         return f"{self.handle}@{HANDLE_DISPLAY_DOMAIN}"
+
+# P0 quarantine lab: durable signed-manifest batch, no production entrypoint.
+class SyntheticQuarantineBatchQuerySet(models.QuerySet):
+    IMMUTABLE = frozenset({
+        "manifest", "manifest_sha256", "signature_hex", "signing_key_id",
+        "signer_fingerprint", "authorization_reference", "owner_account",
+        "registered_at", "batch_id",
+    })
+
+    def update(self, **kwargs):
+        raise ValidationError(
+            "Bulk state/manifest changes are forbidden; use the signed batch service."
+        )
+
+    def delete(self):
+        raise ValidationError("SyntheticQuarantineBatch deletion is forbidden.")
+
+
+class SyntheticQuarantineBatch(models.Model):
+    """Append-preserved manifest with atomically updated state and external audit.
+
+    This Python-level immutability does not protect against a privileged SQL
+    writer. A DB role separation and independent provenance review are required
+    before any production adaptation.
+    """
+
+    class State(models.TextChoices):
+        REGISTERED = "registered", "Registered"
+        HELD = "held", "Held"
+        REVERTED = "reverted", "Reverted"
+
+    batch_id = models.UUIDField(primary_key=True, editable=False)
+    manifest = models.JSONField()
+    manifest_sha256 = models.CharField(max_length=64, unique=True)
+    signature_hex = models.CharField(max_length=128)
+    signing_key_id = models.CharField(max_length=100)
+    signer_fingerprint = models.CharField(max_length=64)
+    authorization_reference = models.CharField(max_length=200)
+    owner_account = models.CharField(max_length=100)
+    state = models.CharField(max_length=12, choices=State.choices, default=State.REGISTERED)
+    registered_at = models.DateTimeField(default=timezone.now, editable=False)
+    held_at = models.DateTimeField(null=True, blank=True)
+    reverted_at = models.DateTimeField(null=True, blank=True)
+
+    objects = models.Manager.from_queryset(SyntheticQuarantineBatchQuerySet)()
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(state__in=("registered", "held", "reverted")),
+                name="core_synth_quarantine_valid_state",
+            ),
+        ]
+
+    IMMUTABLE_FIELDS = SyntheticQuarantineBatchQuerySet.IMMUTABLE
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            if kwargs.get("force_update"):
+                raise ValidationError("Cannot force-update a new quarantine batch.")
+            kwargs["force_insert"] = True
+        else:
+            old = type(self).objects.using(self._state.db).get(pk=self.pk)
+            for field in self.IMMUTABLE_FIELDS:
+                if field == "batch_id":
+                    continue
+                if getattr(old, field) != getattr(self, field):
+                    raise ValidationError("Registered quarantine manifest is immutable.")
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError("SyntheticQuarantineBatch deletion is forbidden.")
