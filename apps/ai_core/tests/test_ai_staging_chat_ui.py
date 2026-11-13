@@ -62,3 +62,17 @@ class StagingOwnerChatUITests(TestCase):
         self.client.force_login(self.owner)
         with override_settings(VORNEQ_ENV="production"):
             self.assertEqual(self.client.get(self.url).status_code, 404)
+
+    def test_chat_static_assets_define_language_and_citation_guards(self):
+        """Offline source-contract checks; no browser, provider or network."""
+        from pathlib import Path
+        from django.conf import settings
+        js = (Path(settings.BASE_DIR) / "assets/js/phase-c-chat.js").read_text(encoding="utf-8")
+        css = (Path(settings.BASE_DIR) / "assets/css/phase-c-chat.css").read_text(encoding="utf-8")
+        self.assertIn("function questionLanguage(question)", js)
+        self.assertIn("language: questionLanguage(question)", js)
+        self.assertIn("entry.dir = textDirection", js)
+        self.assertIn("controller.abort(), 35000", js)
+        self.assertIn("candidate.origin === window.location.origin", js)
+        self.assertIn('link.textContent = titleText', js)
+        self.assertIn("vq-chat__sources", css)

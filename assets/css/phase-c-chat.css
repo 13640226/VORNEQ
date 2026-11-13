@@ -27,3 +27,13 @@
 .vq-chat__back { margin-top: 20px; text-align: center; }
 .vq-chat__back a { color: var(--color-accent); }
 @media (max-width: 600px) { .vq-chat__log { min-height: 160px; max-height: 50vh; } .vq-chat__message { max-width: 100%; } .vq-chat__actions { gap: 6px; } .vq-chat__actions button { padding-inline: 12px; } }
+
+/* Keep citation links readable on narrow screens and in mixed RTL/LTR text. */
+.vq-chat__message[dir="rtl"] { text-align: start; }
+.vq-chat__sources { max-width: 100%; min-width: 0; overflow-wrap: anywhere; }
+.vq-chat__sources li { margin-block: 6px; unicode-bidi: plaintext; }
+.vq-chat__sources a { display: inline; overflow-wrap: anywhere; word-break: break-word; }
+@media (max-width: 600px) {
+  .vq-chat__message { min-width: 0; box-sizing: border-box; }
+  .vq-chat__sources { padding-inline-start: 18px; }
+}

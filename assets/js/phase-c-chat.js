@@ -27,6 +27,18 @@
     };
     const language = ["fa", "de", "en"].includes(root.dataset.vqLanguage)
       ? root.dataset.vqLanguage : "en";
+    // Prefer the script of the question over the surrounding UI language.
+    // Mixed Latin brand names (e.g. VORNEQ) must not override Persian text.
+    function questionLanguage(question) {
+      if (/[\u0600-\u06FF]/u.test(question)) return "fa";
+      if (/[äöüßÄÖÜ]/u.test(question) ||
+          /\b(was|wie|warum|welche|welcher|welches|ist|sind|kann|über)\b/iu.test(question)) return "de";
+      if (/\b(what|how|why|which|where|is|are|can|does)\b/iu.test(question)) return "en";
+      return language;
+    }
+    function textDirection(text) {
+      return /[\u0600-\u06FF]/u.test(text) ? "rtl" : "ltr";
+    }
     const limit = 200;
     let busy = false;
 
@@ -39,6 +51,7 @@
     function appendMessage(text, role) {
       const entry = document.createElement("article");
       entry.className = "vq-chat__message vq-chat__message--" + role;
+      entry.dir = textDirection(String(text || ""));
       const p = document.createElement("p");
       p.textContent = String(text || "");
       entry.appendChild(p);
@@ -59,9 +72,11 @@
       title.textContent = labels.sources || "Sources";
       container.appendChild(title);
       const list = document.createElement("ul");
+      list.className = "vq-chat__sources";
       for (const source of citations.slice(0, 3)) {
         if (!source || typeof source !== "object") continue;
         const li = document.createElement("li");
+        li.dir = textDirection(String(source.title || ""));
         const titleText = String(source.title || source.source_key || source.source_id || "Source").slice(0, 140);
         const href = relativeUrl(source.url);
         if (href) {
@@ -88,7 +103,7 @@
       status.textContent = labels.loading || "Loading";
       appendMessage(question, "user");
       const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 22000);
+      const timeout = window.setTimeout(() => controller.abort(), 35000);
       try {
         const response = await fetch(form.action, {
           method: "POST",
@@ -100,7 +115,7 @@
             "Accept": "application/json",
             "X-CSRFToken": token.value,
           },
-          body: JSON.stringify({ question, language }),
+          body: JSON.stringify({ question, language: questionLanguage(question) }),
           signal: controller.signal,
         });
         if (response.status === 422) {
