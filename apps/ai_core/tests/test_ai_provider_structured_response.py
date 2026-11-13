@@ -16,7 +16,7 @@ HAS_PROVIDER_DEPS = bool(importlib.util.find_spec('openai') and importlib.util.f
 class ProviderStructuredResponseTests(SimpleTestCase):
     def setUp(self):
         self.provider = OpenAIResponsesProvider(
-            model="mock-only", timeout_s=5, max_output_tokens=512)
+            model="mock-only", timeout_s=5, max_output_tokens=2048)
         self.sources = [{"source_id": "S1", "source_key": "official:home",
                          "title": "Public", "excerpt": "A public excerpt",
                          "evidence_digest": "a" * 64, "url": "/en/"}]
@@ -41,7 +41,7 @@ class ProviderStructuredResponseTests(SimpleTestCase):
         result, call = self._generate(
             SimpleNamespace(status="completed", output_parsed=parsed))
         self.assertEqual(result["answer"], "پاسخ مستند")
-        self.assertEqual(call.kwargs["max_output_tokens"], 512)
+        self.assertEqual(call.kwargs["max_output_tokens"], 2048)
         self.assertFalse(call.kwargs["store"])
         self.assertEqual(call.kwargs["tools"], [])
 
@@ -54,6 +54,12 @@ class ProviderStructuredResponseTests(SimpleTestCase):
             with self.assertRaises(ProviderInvalidResponse):
                 self._generate(response)
         self.assertTrue(any("reason=max_output_tokens" in x for x in logs.output))
+
+    def test_provider_rejects_token_cap_above_2048(self):
+        from apps.ai_core.providers.exceptions import ProviderUnavailable
+        with self.assertRaises(ProviderUnavailable):
+            OpenAIResponsesProvider(
+                model="mock-only", timeout_s=5, max_output_tokens=2049)
 
     def test_completed_without_parsed_output_fails_closed(self):
         with self.assertLogs("apps.ai_core.providers.openai_responses", "WARNING") as logs:
