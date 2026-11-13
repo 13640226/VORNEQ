@@ -35,6 +35,13 @@ def authorized_context(sources):
     for source in sources:
         if not isinstance(source, Citation) or not _valid_key(source.key):
             raise EvidenceRejected("source is outside public allowlist")
+        if source.key.startswith("official:"):
+            # An official prefix alone is not authority. Only exact reviewed
+            # snapshots may pass; prevent spoofed URLs, titles or excerpts.
+            from apps.ai_core.official_public_sources import retrieve_official_public
+            trusted = {s.key: s for s in retrieve_official_public("VORNEQ", "en")}
+            if source.key not in trusted or source != trusted[source.key]:
+                raise EvidenceRejected("unreviewed official source")
         if source.key in keys:
             raise EvidenceRejected("duplicate source")
         keys.add(source.key)
