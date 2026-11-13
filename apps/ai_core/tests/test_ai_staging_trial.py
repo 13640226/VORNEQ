@@ -44,6 +44,23 @@ class StagingTrialPolicyTests(SimpleTestCase):
         env.start()
         self.addCleanup(env.stop)
 
+    def test_unmetered_staging_opt_in_keeps_identity_guards(self):
+        with override_settings(
+            VORNEQ_AI_STAGING_UNMETERED=True,
+            VORNEQ_AI_STAGING_DAILY_CAP_MICROUSD=0,
+            VORNEQ_AI_STAGING_RESERVE_MICROUSD=0,
+            VORNEQ_AI_STAGING_MAX_DAILY_REQUESTS=0,
+        ):
+            self.assertTrue(trial_enabled())
+            with override_settings(VORNEQ_ENV="production"):
+                self.assertFalse(trial_enabled())
+            with patch.dict(os.environ, {"RENDER_GIT_COMMIT": "f" * 40}):
+                self.assertFalse(trial_enabled())
+            with patch.dict(os.environ, {"OPENAI_API_KEY": ""}):
+                self.assertFalse(trial_enabled())
+            with override_settings(VORNEQ_AI_STAGING_ALLOWED_USER_IDS=""):
+                self.assertFalse(trial_enabled())
+
     def test_staging_contract_passes_with_all_guards(self):
         self.assertTrue(trial_enabled())
 
@@ -158,6 +175,30 @@ class StagingTrialDatabaseAndEndpointTests(TestCase):
             data=json.dumps({"question": "public sample", "language": "en"}),
             content_type="application/json",
         )
+
+    def test_unmetered_owner_requests_do_not_reserve_budget(self):
+        with override_settings(
+            VORNEQ_AI_STAGING_UNMETERED=True,
+            VORNEQ_AI_STAGING_DAILY_CAP_MICROUSD=0,
+            VORNEQ_AI_STAGING_RESERVE_MICROUSD=0,
+            VORNEQ_AI_STAGING_MAX_DAILY_REQUESTS=0,
+        ), patch("apps.ai_core.views_phase_b.OpenAIResponsesProvider") as provider, patch(
+            "apps.ai_core.views_phase_b.ask_grounded",
+            return_value={"mode": "insufficient_evidence", "verified": False},
+        ):
+            responses = [self.post() for _ in range(7)]
+        self.assertTrue(all(r.status_code == 200 for r in responses))
+        self.assertEqual(provider.call_count, 7)
+        self.assertFalse(StagingAIBudgetDay.objects.exists())
+
+    def test_unmetered_rejects_unauthorized_actor_without_provider(self):
+        with override_settings(
+            VORNEQ_AI_STAGING_UNMETERED=True,
+            VORNEQ_AI_STAGING_ALLOWED_USER_IDS="999999",
+        ), patch("apps.ai_core.views_phase_b.OpenAIResponsesProvider") as provider:
+            self.assertEqual(self.post().status_code, 403)
+            provider.assert_not_called()
+        self.assertFalse(StagingAIBudgetDay.objects.exists())
 
     def test_first_and_second_reservation_then_daily_cap_denies(self):
         reserve_staging_request()

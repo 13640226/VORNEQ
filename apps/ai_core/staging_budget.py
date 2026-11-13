@@ -18,6 +18,9 @@ def reserve_staging_request():
     """
     if not trial_enabled():
         raise BudgetExceeded("staging AI trial not authorized")
+    if getattr(settings, "VORNEQ_AI_STAGING_UNMETERED", False):
+        # No DB budget reservation in explicitly authorized unmetered staging.
+        return
     day = datetime.now(timezone.utc).date()
     cap = settings.VORNEQ_AI_STAGING_DAILY_CAP_MICROUSD
     per_request = settings.VORNEQ_AI_STAGING_RESERVE_MICROUSD

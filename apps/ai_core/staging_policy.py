@@ -69,6 +69,10 @@ def trial_enabled():
         return False
     if not _ids_from_setting():
         return False
+    if getattr(settings, "VORNEQ_AI_STAGING_UNMETERED", False):
+        # No internal per-day request/cost ceilings in explicit staging mode.
+        # All identity, owner, service, SHA and provider guards above still apply.
+        return True
     cap = getattr(settings, "VORNEQ_AI_STAGING_DAILY_CAP_MICROUSD", 0)
     reserve = getattr(settings, "VORNEQ_AI_STAGING_RESERVE_MICROUSD", 0)
     requests = getattr(settings, "VORNEQ_AI_STAGING_MAX_DAILY_REQUESTS", 0)
