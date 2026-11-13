@@ -63,7 +63,7 @@ def ask_phase_b(request):
         provider = OpenAIResponsesProvider(
             model=os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""),
             timeout_s=10 if settings.VORNEQ_ENV == "staging" else 15,
-            max_output_tokens=256 if settings.VORNEQ_ENV == "staging" else 512,
+            max_output_tokens=512,
         )
         response = ask_grounded(question, language, actor=request.user,
                                 provider=provider, enabled=True)
