@@ -1,0 +1,23 @@
+name: AI Staging SDK Preflight
+on:
+  pull_request:
+    paths:
+      - 'requirements-ai-staging.txt'
+      - 'scripts/build_ai_staging.sh'
+      - '.github/workflows/ai-staging-sdk-preflight.yml'
+  workflow_dispatch:
+jobs:
+  sdk-import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install staging dependency graph
+        run: python -m pip install -r requirements-ai-staging.txt
+      - name: Validate OpenAI SDK import
+        run: python -c "from openai import OpenAI; print('G01_SDK_IMPORT_OK')"
+      - name: Validate staging build script syntax
+        run: bash -n scripts/build_ai_staging.sh
