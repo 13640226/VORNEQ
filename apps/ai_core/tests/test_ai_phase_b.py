@@ -50,6 +50,52 @@ class FakeProvider:
         return data
 
 
+class PublicBrandRetrievalTests(SimpleTestCase):
+    """No database, external provider or network is used."""
+
+    @patch("apps.search.services.UnifiedSearch.search")
+    def test_persian_platform_question_retries_brand_only(self, search):
+        from apps.ai_core.gateway import retrieve_public
+        search.side_effect = [
+            {"results": []},
+            {"results": [{
+                "key": "article:7", "type": "article",
+                "title": "VORNEQ public overview",
+                "description": "Publicly published platform overview with useful details.",
+                "url": None,
+            }]},
+        ]
+        sources = retrieve_public("Vorneq چیست؟", "fa")
+        self.assertEqual(len(sources), 1)
+        self.assertEqual(sources[0].key, "article:7")
+        self.assertEqual(search.call_args.kwargs["query"], "vorneq")
+
+    @patch("apps.search.services.UnifiedSearch.search")
+    def test_non_brand_question_never_expands(self, search):
+        from apps.ai_core.gateway import retrieve_public
+        search.return_value = {"results": []}
+        self.assertEqual(retrieve_public("پلتفرم چیست؟", "fa"), ())
+        self.assertEqual(search.call_count, 1)
+
+    @patch("apps.search.services.UnifiedSearch.search")
+    def test_brand_fallback_rejects_marketplace_seed(self, search):
+        from apps.ai_core.gateway import retrieve_public
+        search.side_effect = [
+            {"results": []},
+            {"results": [{
+                "key": "product:3", "type": "product",
+                "title": "VORNEQ benchmark seed",
+                "description": "Synthetic benchmark product description.",
+                "url": "/marketplace/3/",
+            }]},
+        ]
+        # A search implementation should only return results from its
+        # explicitly supplied editorial adapters. Defensive check here:
+        # a malformed result must not be trusted as editorial evidence.
+        sources = retrieve_public("VORNEQ چیست؟", "fa")
+        self.assertEqual(sources, ())
+
+
 class EvidenceContractTests(SimpleTestCase):
     def setUp(self):
         self.actor = SimpleNamespace(is_authenticated=True)

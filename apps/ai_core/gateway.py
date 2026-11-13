@@ -83,13 +83,45 @@ def public_citations(payload):
 
 
 def retrieve_public(question, language):
-    # Explicit public allowlist; held media and private Documents are excluded.
+    """Find published evidence without treating conversational wording as a title.
+
+    The fallback is intentionally narrow: only an explicit VORNEQ name query
+    can use a shorter search term. No private documents, media or seed products.
+    """
+    import re
     from apps.search.services import (ArticleAdapter, ProductAdapter,
                                       LibraryItemAdapter, AudioItemAdapter, UnifiedSearch)
+
     adapters = [ArticleAdapter(), ProductAdapter(), LibraryItemAdapter(), AudioItemAdapter()]
-    payload = UnifiedSearch(adapters=adapters).search(
+    search = UnifiedSearch(adapters=adapters)
+    payload = search.search(
         query=question, filters={}, page=1, page_size=3, language=language)
-    return public_citations(payload)
+    citations = public_citations(payload)
+    if citations:
+        return citations
+
+    # A full natural-language question is rarely an exact substring of a
+    # published title or summary. Retry only for the explicit platform name.
+    if not re.search(r"(?i)(?<![a-z0-9])vorneq(?![a-z0-9])", question):
+        return ()
+    # Platform identity answers must come from published editorial/library
+    # material, not marketplace listings (which may include synthetic seeds).
+    editorial = UnifiedSearch(adapters=[ArticleAdapter(), LibraryItemAdapter()])
+    payload = editorial.search(
+        query="vorneq", filters={}, page=1, page_size=3, language=language)
+    if not isinstance(payload, dict):
+        return ()
+    # Defense in depth: a malformed search result must not inject products
+    # into the editorial-only fallback.
+    items = payload.get("results")
+    if not isinstance(items, list):
+        return ()
+    return public_citations({
+        "results": [item for item in items if isinstance(item, dict)
+                    and (item.get("type") == "article"
+                         or (item.get("type") in PUBLIC_LIBRARY_TYPES
+                             and str(item.get("key", "")).startswith("library:")))]
+    })
 
 
 def ask_public(question, language, *, retrieval=None):
