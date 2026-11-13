@@ -31,6 +31,11 @@ def _ids_from_setting():
     return parsed if len(parsed) == len(parts) and all(v > 0 for v in parsed) else set()
 
 
+def hosted_runtime():
+    """G-02: True on Render (or any runtime exposing RENDER/RENDER_SERVICE_ID)."""
+    return bool(os.environ.get("RENDER") or os.environ.get("RENDER_SERVICE_ID"))
+
+
 def trial_enabled():
     """Checks code/runtime identity + scoped approval + bounded spending.
 

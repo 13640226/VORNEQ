@@ -410,20 +410,25 @@ VORNEQ_AI_STAGING_DAILY_CAP_MICROUSD = _staging_int("VORNEQ_AI_STAGING_DAILY_CAP
 VORNEQ_AI_STAGING_RESERVE_MICROUSD = _staging_int("VORNEQ_AI_STAGING_RESERVE_MICROUSD")
 VORNEQ_AI_STAGING_MAX_DAILY_REQUESTS = _staging_int("VORNEQ_AI_STAGING_MAX_DAILY_REQUESTS")
 
+# G-02: a hosted runtime (Render sets RENDER / RENDER_SERVICE_ID) never uses the
+# development AI path, even if VORNEQ_ENV=development is configured there.
+_VORNEQ_HOSTED_RUNTIME = bool(os.environ.get("RENDER") or os.environ.get("RENDER_SERVICE_ID"))
+_VORNEQ_AI_DEV_PATH = VORNEQ_ENV == "development" and not _VORNEQ_HOSTED_RUNTIME
+
 # Offline Phase A and grounded Phase B are opt-in on development, or on
 # staging only after the separate trial flag and each component flag are set.
 # Production remains impossible even if all flags are supplied.
 VORNEQ_AI_CORE_ENABLED = (
-    VORNEQ_ENV == "development" or VORNEQ_AI_STAGING_TRIAL_ENABLED
+    _VORNEQ_AI_DEV_PATH or VORNEQ_AI_STAGING_TRIAL_ENABLED
 ) and env_bool("VORNEQ_AI_CORE_ENABLED", False)
 VORNEQ_AI_PHASE_B_ENABLED = (
-    VORNEQ_ENV == "development" or VORNEQ_AI_STAGING_TRIAL_ENABLED
+    _VORNEQ_AI_DEV_PATH or VORNEQ_AI_STAGING_TRIAL_ENABLED
 ) and env_bool("VORNEQ_AI_PHASE_B_ENABLED", False)
 
 # Phase C preview is a separate, default-off development capability.
 # Never active for staging or production, even if both environment flags are set.
 VORNEQ_AI_PHASE_C_ENABLED = (
-    VORNEQ_ENV == "development"
+    _VORNEQ_AI_DEV_PATH
     and VORNEQ_AI_PHASE_B_ENABLED
     and env_bool("VORNEQ_AI_PHASE_C_ENABLED", False)
 )
