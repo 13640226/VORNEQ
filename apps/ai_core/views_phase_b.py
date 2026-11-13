@@ -14,6 +14,8 @@ from apps.ai_core.engine.citation import EvidenceRejected
 from apps.ai_core.engine.grounded import PhaseBDisabled, ask_grounded
 from apps.ai_core.providers.exceptions import GatewayError, ProviderTimeout
 from apps.ai_core.providers.openai_responses import OpenAIResponsesProvider
+from apps.ai_core.staging_policy import trial_enabled, actor_allowed
+from apps.ai_core.staging_budget import reserve_staging_request
 
 
 def _strict_object(pairs):
@@ -29,10 +31,16 @@ def _strict_object(pairs):
 @csrf_protect
 @require_POST
 def ask_phase_b(request):
-    if settings.VORNEQ_ENV != "development" or not getattr(settings, "VORNEQ_AI_PHASE_B_ENABLED", False):
+    if not getattr(settings, "VORNEQ_AI_PHASE_B_ENABLED", False):
         raise Http404("Phase B disabled")
+    if settings.VORNEQ_ENV == "staging" and not trial_enabled():
+        raise Http404("Phase B staging trial disabled")
+    if settings.VORNEQ_ENV not in ("development", "staging"):
+        raise Http404("Phase B disabled outside development/staging")
     if not request.user.is_authenticated:
         return JsonResponse({"error": "authentication_required"}, status=401)
+    if settings.VORNEQ_ENV == "staging" and not actor_allowed(request.user):
+        return JsonResponse({"error": "forbidden"}, status=403)
     if request.content_type != "application/json":
         return JsonResponse({"error": "json_only"}, status=415)
     try:
@@ -46,11 +54,14 @@ def ask_phase_b(request):
     except (ValueError, TypeError, UnicodeDecodeError, InputError):
         return JsonResponse({"error": "invalid_input"}, status=400)
     try:
-        reserve_request(request.user.pk)
+        if settings.VORNEQ_ENV == "staging":
+            reserve_staging_request()
+        else:
+            reserve_request(request.user.pk)
         provider = OpenAIResponsesProvider(
             model=os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""),
-            timeout_s=15,
-            max_output_tokens=512,
+            timeout_s=10 if settings.VORNEQ_ENV == "staging" else 15,
+            max_output_tokens=256 if settings.VORNEQ_ENV == "staging" else 512,
         )
         response = ask_grounded(question, language, actor=request.user,
                                 provider=provider, enabled=True)
