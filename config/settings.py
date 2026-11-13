@@ -429,6 +429,11 @@ VORNEQ_AI_PHASE_B_ENABLED = (
     _VORNEQ_AI_DEV_PATH or VORNEQ_AI_STAGING_TRIAL_ENABLED
 ) and env_bool("VORNEQ_AI_PHASE_B_ENABLED", False)
 
+# Global AI V1 (public web retrieval + grounded answer). Default OFF, requires
+# Phase B (development path or authorized staging trial); Production impossible.
+# Has its own request quota and never inherits VORNEQ_AI_STAGING_UNMETERED.
+VORNEQ_GLOBAL_AI_ENABLED = VORNEQ_AI_PHASE_B_ENABLED and env_bool("VORNEQ_GLOBAL_AI_ENABLED", False)
+
 # Phase C preview is a separate, default-off development capability.
 # Never active for staging or production, even if both environment flags are set.
 VORNEQ_AI_PHASE_C_ENABLED = (

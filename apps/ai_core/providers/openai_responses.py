@@ -21,7 +21,8 @@ _SYSTEM_INSTRUCTIONS = (
 
 
 class OpenAIResponsesProvider:
-    def __init__(self, *, model: str, timeout_s: float, max_output_tokens: int):
+    def __init__(self, *, model: str, timeout_s: float, max_output_tokens: int,
+                 extra_instructions: str = ""):
         if not isinstance(model, str) or not model or len(model) > 100:
             raise ProviderUnavailable("model not configured")
         if not 1 <= timeout_s <= 30 or not 64 <= max_output_tokens <= 2048:
@@ -29,6 +30,10 @@ class OpenAIResponsesProvider:
         self.model = model
         self.timeout_s = timeout_s
         self.max_output_tokens = max_output_tokens
+        # Fixed, code-defined guidance only (never user or source text).
+        if not isinstance(extra_instructions, str) or len(extra_instructions) > 600:
+            raise ProviderUnavailable("invalid provider instructions")
+        self.instructions = (_SYSTEM_INSTRUCTIONS + " " + extra_instructions).strip()
 
     def generate(self, *, question: str, language: str, sources: list[dict]) -> dict:
         key = os.environ.get("OPENAI_API_KEY", "")
@@ -45,7 +50,7 @@ class OpenAIResponsesProvider:
         try:
             response = client.responses.parse(
                 model=self.model,
-                instructions=_SYSTEM_INSTRUCTIONS,
+                instructions=self.instructions,
                 input=[{"role": "user", "content": payload}],
                 text_format=GroundedAnswerSchema,
                 tools=[], store=False,

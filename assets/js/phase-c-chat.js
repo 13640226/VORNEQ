@@ -66,6 +66,20 @@
         return candidate.origin === window.location.origin ? candidate.pathname + candidate.search : null;
       } catch (_error) { return null; }
     }
+    // Global AI: absolute links only for the server-declared public source
+    // hosts (https, no credentials/port, /wiki/ path). Anything else stays text.
+    const sourceHosts = new Set(String(root.dataset.vqSourceHosts || "")
+      .split(/\s+/).filter((host) => /^[a-z0-9.-]{1,100}$/.test(host)));
+    function externalUrl(value) {
+      if (typeof value !== "string" || value.length > 400 || !sourceHosts.size) return null;
+      try {
+        const candidate = new URL(value);
+        if (candidate.protocol !== "https:" || !sourceHosts.has(candidate.hostname) ||
+            candidate.port || candidate.username || candidate.password ||
+            !candidate.pathname.startsWith("/wiki/") || candidate.search || candidate.hash) return null;
+        return candidate.href;
+      } catch (_error) { return null; }
+    }
     function showSources(container, citations) {
       if (!Array.isArray(citations) || !citations.length) return;
       const title = document.createElement("strong");
@@ -79,14 +93,22 @@
         li.dir = textDirection(String(source.title || ""));
         const titleText = String(source.title || source.source_key || source.source_id || "Source").slice(0, 140);
         const href = relativeUrl(source.url);
-        if (href) {
+        const external = href ? null : externalUrl(source.url);
+        if (href || external) {
           const link = document.createElement("a");
-          link.href = href;
-          link.rel = "noopener noreferrer";
+          link.href = href || external;
+          link.rel = external ? "noopener noreferrer external" : "noopener noreferrer";
+          if (external) link.target = "_blank";
           link.textContent = titleText;
           li.appendChild(link);
         } else {
           li.textContent = titleText;
+        }
+        if (typeof source.publisher === "string" && source.publisher) {
+          const publisher = document.createElement("span");
+          publisher.className = "vq-chat__publisher";
+          publisher.textContent = " — " + source.publisher.slice(0, 60);
+          li.appendChild(publisher);
         }
         list.appendChild(li);
       }
@@ -102,6 +124,7 @@
       update();
       status.textContent = labels.loading || "Loading";
       appendMessage(question, "user");
+      let answerBubble = null;
       const controller = new AbortController();
       const timeout = window.setTimeout(() => controller.abort(), 35000);
       try {
@@ -141,6 +164,7 @@
             note.textContent = labels.status || "Generated draft, not verified";
             bubble.appendChild(note);
             showSources(bubble, data.citations);
+            answerBubble = bubble;
           }
         }
       } catch (_error) {
@@ -151,8 +175,15 @@
         input.value = "";
         busy = false;
         update();
-        input.focus();
-        log.scrollTop = log.scrollHeight;
+        input.focus({ preventScroll: true });
+        // Show the START of the answer so its sources are not hidden below a
+        // nested scroll position (mobile citation discoverability).
+        if (answerBubble && typeof answerBubble.scrollIntoView === "function") {
+          const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          answerBubble.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+        } else {
+          log.scrollTop = log.scrollHeight;
+        }
       }
     });
     clear.addEventListener("click", () => {
