@@ -51,24 +51,17 @@ class FakeProvider:
 
 
 class PublicBrandRetrievalTests(SimpleTestCase):
-    """No database, external provider or network is used."""
+    """No real provider, external HTTP request or database write."""
 
     @patch("apps.search.services.UnifiedSearch.search")
-    def test_persian_platform_question_retries_brand_only(self, search):
+    def test_persian_platform_question_uses_official_source(self, search):
         from apps.ai_core.gateway import retrieve_public
-        search.side_effect = [
-            {"results": []},
-            {"results": [{
-                "key": "article:7", "type": "article",
-                "title": "VORNEQ public overview",
-                "description": "Publicly published platform overview with useful details.",
-                "url": None,
-            }]},
-        ]
+        search.return_value = {"results": []}
         sources = retrieve_public("Vorneq چیست؟", "fa")
-        self.assertEqual(len(sources), 1)
-        self.assertEqual(sources[0].key, "article:7")
-        self.assertEqual(search.call_args.kwargs["query"], "vorneq")
+        self.assertEqual([s.key for s in sources],
+                         ["official:home", "official:orientation"])
+        self.assertTrue(all(s.url.startswith("/en/") for s in sources))
+        self.assertTrue(all(len(s.excerpt) >= 8 for s in sources))
 
     @patch("apps.search.services.UnifiedSearch.search")
     def test_non_brand_question_never_expands(self, search):
@@ -78,22 +71,32 @@ class PublicBrandRetrievalTests(SimpleTestCase):
         self.assertEqual(search.call_count, 1)
 
     @patch("apps.search.services.UnifiedSearch.search")
-    def test_brand_fallback_rejects_marketplace_seed(self, search):
+    def test_brand_question_cannot_use_marketplace_seed(self, search):
         from apps.ai_core.gateway import retrieve_public
-        search.side_effect = [
-            {"results": []},
-            {"results": [{
-                "key": "product:3", "type": "product",
-                "title": "VORNEQ benchmark seed",
-                "description": "Synthetic benchmark product description.",
-                "url": "/marketplace/3/",
-            }]},
-        ]
-        # A search implementation should only return results from its
-        # explicitly supplied editorial adapters. Defensive check here:
-        # a malformed result must not be trusted as editorial evidence.
+        search.return_value = {"results": [{
+            "key": "product:3", "type": "product",
+            "title": "VORNEQ benchmark seed",
+            "description": "Synthetic benchmark product description.",
+            "url": "/marketplace/3/",
+        }]}
         sources = retrieve_public("VORNEQ چیست؟", "fa")
-        self.assertEqual(sources, ())
+        self.assertTrue(sources)
+        self.assertTrue(all(s.key.startswith("official:") for s in sources))
+
+    def test_official_source_authorized_with_digest(self):
+        from apps.ai_core.official_public_sources import retrieve_official_public
+        sources = authorized_context(retrieve_official_public("VORNEQ", "fa"))
+        self.assertEqual(len(sources), 2)
+        self.assertTrue(all(len(s["evidence_digest"]) == 64 for s in sources))
+
+    def test_unrelated_query_has_no_official_source(self):
+        from apps.ai_core.official_public_sources import retrieve_official_public
+        self.assertEqual(retrieve_official_public("کتاب چیست؟", "fa"), ())
+
+    def test_private_and_unapproved_official_keys_rejected(self):
+        with self.assertRaises(EvidenceRejected):
+            authorized_context((Citation("S1", "document:secret", "Private",
+                                         "Private document excerpt.", "/private/"),))
 
 
 class EvidenceContractTests(SimpleTestCase):

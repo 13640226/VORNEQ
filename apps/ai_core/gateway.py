@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-PUBLIC_PREFIXES = {"article": "article:", "product": "product:", "audio": "audio:"}
+PUBLIC_PREFIXES = {"article": "article:", "product": "product:", "audio": "audio:", "official": "official:"}
 PUBLIC_LIBRARY_TYPES = {"libraryitem", "book", "article", "document", "other"}
 MESSAGES = {
     "fa": ("{n} منبع عمومی مرتبط پیدا شد. ارجاعات را بررسی کنید؛ این پاسخ تأییدشدهٔ هوش مصنوعی نیست.",
@@ -97,6 +97,13 @@ def retrieve_public(question, language):
     payload = search.search(
         query=question, filters={}, page=1, page_size=3, language=language)
     citations = public_citations(payload)
+    # The public-site adapter is independent of database search. For an
+    # explicit VORNEQ platform question, prioritize reviewed official pages
+    # over potentially unrelated marketplace product search hits.
+    from apps.ai_core.official_public_sources import retrieve_official_public
+    official = retrieve_official_public(question, language)
+    if official:
+        return official
     if citations:
         return citations
 
