@@ -8,10 +8,12 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
 from .chat_strings import chat_labels
-from .staging_policy import hosted_runtime
+from .staging_policy import hosted_runtime, trial_enabled, actor_allowed
 
 
 def is_chat_enabled():
+    if settings.VORNEQ_ENV == "staging":
+        return trial_enabled()
     return (
         settings.VORNEQ_ENV == "development"
         and not hosted_runtime()
@@ -30,6 +32,8 @@ def chat_page(request):
         response["Cache-Control"] = "no-store, private"
         response["X-Robots-Tag"] = "noindex, nofollow"
         return response
+    if settings.VORNEQ_ENV == "staging" and not actor_allowed(request.user):
+        raise Http404("AI chat preview unavailable")
     requested_language = request.GET.get("lang", "")
     language = requested_language if requested_language in ("fa", "de", "en") else (get_language() or "en")[:2]
     request.LANGUAGE_CODE = language
@@ -38,6 +42,7 @@ def chat_page(request):
             "chat_labels": chat_labels(language),
             "chat_language": language,
             "chat_endpoint": reverse("ai_core:ask-grounded"),
+            "chat_staging": settings.VORNEQ_ENV == "staging",
         })
     response["Cache-Control"] = "no-store, private"
     response["X-Robots-Tag"] = "noindex, nofollow"

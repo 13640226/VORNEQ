@@ -18,7 +18,7 @@
   data-vq-sources="{{ chat_labels.sources }}"
   data-vq-status="{{ chat_labels.status }}">
   <header class="vq-chat__header">
-    <p class="vq-chat__kicker">VORNEQ · Phase C · Development only</p>
+    <p class="vq-chat__kicker">VORNEQ · AI · {% if chat_staging %}Authorized staging trial{% else %}Development preview{% endif %}</p>
     <h1 id="vq-chat-title">{{ chat_labels.title }}</h1>
     <p>{{ chat_labels.intro }}</p>
   </header>
