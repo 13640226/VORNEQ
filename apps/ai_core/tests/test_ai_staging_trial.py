@@ -270,7 +270,7 @@ class StagingTrialDatabaseAndEndpointTests(TestCase):
         self.assertEqual((first.status_code, second.status_code, third.status_code), (200, 200, 429))
         self.assertEqual(provider.call_count, 2)
         self.assertEqual(provider.call_args.kwargs["max_output_tokens"], 2048)
-        self.assertEqual(provider.call_args.kwargs["timeout_s"], 10)
+        self.assertEqual(provider.call_args.kwargs["timeout_s"], 30)
         self.assertIn("no-store", first["Cache-Control"])
         row = StagingAIBudgetDay.objects.get()
         self.assertEqual(row.reserved_micro_usd, 100000)
