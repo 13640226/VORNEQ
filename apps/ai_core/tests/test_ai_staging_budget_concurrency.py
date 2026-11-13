@@ -3,12 +3,11 @@
 Run with a dedicated PostgreSQL test database:
 python manage.py test apps.ai_core.tests.test_ai_staging_budget_concurrency
 """
-import os
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 from unittest.mock import patch
 
-from django.db import close_old_connections, connection
+from django.db import connection, connections
 from django.test import TransactionTestCase, override_settings
 
 from apps.ai_core.engine.budget import BudgetExceeded
@@ -32,7 +31,9 @@ class StagingBudgetConcurrencyTests(TransactionTestCase):
         barrier = Barrier(workers)
 
         def reserve(_index):
-            close_old_connections()
+            # A new worker thread owns its own connection. Always close it,
+            # including when CONN_MAX_AGE keeps connections persistent.
+            connections.close_all()
             try:
                 barrier.wait(timeout=20)
                 reserve_staging_request()
@@ -40,7 +41,7 @@ class StagingBudgetConcurrencyTests(TransactionTestCase):
             except BudgetExceeded:
                 return "denied"
             finally:
-                close_old_connections()
+                connections.close_all()
 
         # Only bypass authorization in the isolated test; never call a provider.
         with patch("apps.ai_core.staging_budget.trial_enabled", return_value=True):
