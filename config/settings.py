@@ -409,6 +409,10 @@ def _staging_int(name):
 VORNEQ_AI_STAGING_DAILY_CAP_MICROUSD = _staging_int("VORNEQ_AI_STAGING_DAILY_CAP_MICROUSD")
 VORNEQ_AI_STAGING_RESERVE_MICROUSD = _staging_int("VORNEQ_AI_STAGING_RESERVE_MICROUSD")
 VORNEQ_AI_STAGING_MAX_DAILY_REQUESTS = _staging_int("VORNEQ_AI_STAGING_MAX_DAILY_REQUESTS")
+# Explicit owner-only STAGING opt-in. Never enabled in production or by default.
+VORNEQ_AI_STAGING_UNMETERED = (
+    VORNEQ_ENV == "staging" and env_bool("VORNEQ_AI_STAGING_UNMETERED", False)
+)
 
 # G-02: a hosted runtime (Render sets RENDER / RENDER_SERVICE_ID) never uses the
 # development AI path, even if VORNEQ_ENV=development is configured there.
