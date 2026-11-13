@@ -1,15 +1,18 @@
 """Offline provider response-contract tests; never contact OpenAI."""
 import os
+import importlib.util
 from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.test import SimpleTestCase
+from unittest import skipUnless
 
 from apps.ai_core.providers.exceptions import ProviderInvalidResponse
 from apps.ai_core.providers.openai_responses import OpenAIResponsesProvider
-from apps.ai_core.schemas.response import GroundedAnswerSchema
+HAS_PROVIDER_DEPS = bool(importlib.util.find_spec('openai') and importlib.util.find_spec('pydantic'))
 
 
+@skipUnless(HAS_PROVIDER_DEPS, 'optional OpenAI/Pydantic dependencies not installed in base CI')
 class ProviderStructuredResponseTests(SimpleTestCase):
     def setUp(self):
         self.provider = OpenAIResponsesProvider(
@@ -28,6 +31,7 @@ class ProviderStructuredResponseTests(SimpleTestCase):
             return result, factory.return_value.responses.parse.call_args
 
     def test_completed_structured_response_parses_offline(self):
+        from apps.ai_core.schemas.response import GroundedAnswerSchema
         parsed = GroundedAnswerSchema(
             answer="پاسخ مستند", language="fa", citations=[{
                 "source_id": "S1", "evidence_digest": "a" * 64,
