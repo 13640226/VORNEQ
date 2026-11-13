@@ -388,12 +388,37 @@ LOGGING = {
     },
 }
 
-# Phase A Offline AI: public source citations only, no model/provider or egress configuration.
-# Disabled by default, and cannot be enabled in staging or production.
-VORNEQ_AI_CORE_ENABLED = VORNEQ_ENV == "development" and env_bool("VORNEQ_AI_CORE_ENABLED", False)
+# Staging owner-approved, SHA-pinned trial, default OFF. A separate
+# runtime guard enforces owner account, authorized commit/service, actor ID,
+# exact model and a durable PostgreSQL cost-reservation budget.
+# No setting here is itself an owner authorization or Production permission.
+VORNEQ_AI_STAGING_TRIAL_ENABLED = (
+    VORNEQ_ENV == "staging" and env_bool("VORNEQ_AI_STAGING_TRIAL_ENABLED", False)
+)
+VORNEQ_AI_STAGING_OWNER_AUTH = os.environ.get("VORNEQ_AI_STAGING_OWNER_AUTH", "")
+VORNEQ_AI_STAGING_AUTHORIZED_SHA = os.environ.get("VORNEQ_AI_STAGING_AUTHORIZED_SHA", "")
+VORNEQ_AI_STAGING_APPROVED_MODEL = os.environ.get("VORNEQ_AI_STAGING_APPROVED_MODEL", "")
+VORNEQ_AI_STAGING_ALLOWED_USER_IDS = os.environ.get("VORNEQ_AI_STAGING_ALLOWED_USER_IDS", "")
 
-# Phase B opt-in, strictly development only; staging and production stay disabled.
-VORNEQ_AI_PHASE_B_ENABLED = VORNEQ_ENV == "development" and env_bool("VORNEQ_AI_PHASE_B_ENABLED", False)
+
+def _staging_int(name):
+    value = os.environ.get(name, "")
+    return int(value) if value.isascii() and value.isdecimal() and len(value) <= 9 else 0
+
+
+VORNEQ_AI_STAGING_DAILY_CAP_MICROUSD = _staging_int("VORNEQ_AI_STAGING_DAILY_CAP_MICROUSD")
+VORNEQ_AI_STAGING_RESERVE_MICROUSD = _staging_int("VORNEQ_AI_STAGING_RESERVE_MICROUSD")
+VORNEQ_AI_STAGING_MAX_DAILY_REQUESTS = _staging_int("VORNEQ_AI_STAGING_MAX_DAILY_REQUESTS")
+
+# Offline Phase A and grounded Phase B are opt-in on development, or on
+# staging only after the separate trial flag and each component flag are set.
+# Production remains impossible even if all flags are supplied.
+VORNEQ_AI_CORE_ENABLED = (
+    VORNEQ_ENV == "development" or VORNEQ_AI_STAGING_TRIAL_ENABLED
+) and env_bool("VORNEQ_AI_CORE_ENABLED", False)
+VORNEQ_AI_PHASE_B_ENABLED = (
+    VORNEQ_ENV == "development" or VORNEQ_AI_STAGING_TRIAL_ENABLED
+) and env_bool("VORNEQ_AI_PHASE_B_ENABLED", False)
 
 # Phase C preview is a separate, default-off development capability.
 # Never active for staging or production, even if both environment flags are set.

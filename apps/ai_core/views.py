@@ -8,16 +8,23 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 
 from .gateway import InputError, ask_public
+from .staging_policy import trial_enabled, actor_allowed
 
 
 @never_cache
 @csrf_protect
 @require_POST
 def ask(request):
-    if settings.VORNEQ_ENV != "development" or not settings.VORNEQ_AI_CORE_ENABLED:
+    if not settings.VORNEQ_AI_CORE_ENABLED:
         raise Http404("AI Core disabled")
+    if settings.VORNEQ_ENV == "staging" and not trial_enabled():
+        raise Http404("AI Core staging trial disabled")
+    if settings.VORNEQ_ENV not in ("development", "staging"):
+        raise Http404("AI Core disabled outside development/staging")
     if not request.user.is_authenticated:
         return JsonResponse({"error": "authentication_required"}, status=401)
+    if settings.VORNEQ_ENV == "staging" and not actor_allowed(request.user):
+        return JsonResponse({"error": "forbidden"}, status=403)
     if request.content_type != "application/json":
         return JsonResponse({"error": "json_only"}, status=415)
     try:
