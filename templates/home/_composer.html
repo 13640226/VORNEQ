@@ -1,0 +1,81 @@
+{% load i18n %}
+{# One primary Search handoff: the homepage itself never executes a query or an AI call. #}
+<section class="vq-home__hero" aria-labelledby="vq-home-title">
+  <p class="vq-home__badge">
+    <span class="vq-led" aria-hidden="true"></span>
+    {% trans "VORNEQ AI workspace" %}
+  </p>
+
+  <h1 class="vq-home__title" id="vq-home-title">
+    {% if user.is_authenticated %}
+      {% trans "Welcome back. What do you need?" %}
+    {% else %}
+      {% trans "What do you need today?" %}
+    {% endif %}
+  </h1>
+
+  <form
+    class="vq-composer"
+    method="get"
+    action="{% url 'search_page' %}"
+    role="search"
+    aria-label="{% trans 'Search across VORNEQ' %}"
+    data-vq-composer
+  >
+    <label class="vq-sr-only" for="vq-ai-question">{% trans "Search across VORNEQ" %}</label>
+    <textarea
+      id="vq-ai-question"
+      class="vq-composer__input"
+      name="q"
+      rows="2"
+      maxlength="200"
+      required
+      enterkeyhint="search"
+      autocomplete="off"
+      aria-describedby="vq-ai-search-limitation"
+      placeholder="{% trans 'Ask or search: a topic, document, product or source…' %}"
+      data-vq-composer-input
+    ></textarea>
+
+    <div class="vq-composer__bar">
+      <div class="vq-composer__modes" role="group" aria-label="{% trans 'Mode' %}">
+        <span class="vq-mode vq-mode--active" aria-current="true">
+          <svg class="vq-icon vq-icon--sm" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+          {% trans "Search" %}
+        </span>
+        {% if phase_c_chat_enabled %}
+        <a class="vq-mode vq-mode--link" href="{% url 'ai_core:chat' %}?lang={{ request.LANGUAGE_CODE|slice:':2' }}" data-vq-phase-c-link>
+          <span class="vq-led vq-led--sm" aria-hidden="true"></span>
+          {% trans "Open AI chat" %}
+        </a>
+        {% else %}
+        <span class="vq-mode vq-mode--soon" aria-disabled="true">
+          {% trans "AI answers · coming soon" %}
+        </span>
+        {% endif %}
+      </div>
+
+      <div class="vq-composer__end">
+        <output class="vq-composer__count" aria-label="{% trans 'Characters used' %}" data-vq-composer-count>0/200</output>
+        <button class="vq-composer__send" type="submit">
+          {% trans "Go" %}<span class="vq-composer__arrow" aria-hidden="true"> →</span>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <p class="vq-home__note" id="vq-ai-search-limitation">
+    {% if phase_c_chat_enabled %}
+      {% trans "This box opens Search. AI chat is a separate page; its answers are drafts whose source quotes are checked, not verified facts. Do not enter personal or confidential data." %}
+    {% else %}
+      {% trans "Your text opens the Search page. AI answers are not enabled yet. Do not enter personal or confidential data." %}
+    {% endif %}
+  </p>
+  <p class="vq-home__hint" id="vq-composer-hint">{% trans "Press Ctrl + Enter to search." %}</p>
+
+  <div class="vq-prompts" role="group" aria-label="{% trans 'Suggested searches' %}">
+    <button class="vq-prompt" type="button" data-vq-example data-vq-prompt="{% trans 'Documents about identity' %}">{% trans "Documents about identity" %}</button>
+    <button class="vq-prompt" type="button" data-vq-example data-vq-prompt="{% trans 'Evidence and sources' %}">{% trans "Evidence and sources" %}</button>
+    <button class="vq-prompt" type="button" data-vq-example data-vq-prompt="{% trans 'Digital products' %}">{% trans "Digital products" %}</button>
+  </div>
+</section>
