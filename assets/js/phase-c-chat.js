@@ -24,6 +24,7 @@
       empty: root.dataset.vqEmpty,
       sources: root.dataset.vqSources,
       status: root.dataset.vqStatus,
+      timeout: root.dataset.vqTimeout,
     };
     const language = ["fa", "de", "en"].includes(root.dataset.vqLanguage)
       ? root.dataset.vqLanguage : "en";
@@ -110,6 +111,16 @@
           publisher.textContent = " — " + source.publisher.slice(0, 60);
           li.appendChild(publisher);
         }
+        // A verbatim quote checked by the server against this source's excerpt.
+        // Treat it as untrusted text, never as HTML or factual verification.
+        if (typeof source.evidence_quote === "string" && source.evidence_quote.length >= 8 &&
+            source.evidence_quote.length <= 300) {
+          const quote = document.createElement("blockquote");
+          quote.className = "vq-chat__quote";
+          quote.dir = textDirection(source.evidence_quote);
+          quote.textContent = source.evidence_quote;
+          li.appendChild(quote);
+        }
         list.appendChild(li);
       }
       container.appendChild(list);
@@ -122,9 +133,11 @@
       if (!question) { input.focus(); return; }
       busy = true;
       update();
+      form.setAttribute("aria-busy", "true");
       status.textContent = labels.loading || "Loading";
       appendMessage(question, "user");
       let answerBubble = null;
+      let completed = false;
       const controller = new AbortController();
       const timeout = window.setTimeout(() => controller.abort(), 35000);
       try {
@@ -143,6 +156,7 @@
         });
         if (response.status === 422) {
           appendMessage(labels.empty || "Insufficient evidence", "assistant");
+          completed = true;
         } else if (!response.ok) {
           appendMessage(labels.error || "Request failed", "assistant");
         } else {
@@ -154,6 +168,7 @@
               data.answer === "" && Array.isArray(data.citations) &&
               data.citations.length === 0) {
             appendMessage(labels.empty || "Insufficient evidence", "assistant");
+            completed = true;
           } else if (!data || data.verified !== false ||
               typeof data.answer !== "string" || data.answer.length > 1000 ||
               data.mode !== "grounded_draft" || !Array.isArray(data.citations)) {
@@ -165,14 +180,20 @@
             bubble.appendChild(note);
             showSources(bubble, data.citations);
             answerBubble = bubble;
+            completed = true;
           }
         }
-      } catch (_error) {
-        appendMessage(labels.error || "Request failed", "assistant");
+      } catch (error) {
+        // The provider might have finished even if this browser timed out;
+        // warn before retry to avoid charging for a duplicate request.
+        const timedOut = error && error.name === "AbortError";
+        appendMessage(timedOut ? (labels.timeout || labels.error || "Request timed out") :
+          (labels.error || "Request failed"), "assistant");
       } finally {
         window.clearTimeout(timeout);
         status.textContent = "";
-        input.value = "";
+        if (completed) input.value = "";
+        form.removeAttribute("aria-busy");
         busy = false;
         update();
         input.focus({ preventScroll: true });
