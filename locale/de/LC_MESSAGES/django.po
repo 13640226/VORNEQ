@@ -2359,3 +2359,67 @@ msgstr "Ihr Text öffnet die Suchseite. KI-Antworten sind noch nicht aktiviert. 
 
 msgid "Your tools"
 msgstr "Ihre Werkzeuge"
+
+# Homepage V3 (templates/home/*.html)
+msgid "AI answers are generated on the server, only from cited public sources. Quotes are checked; factual claims are not verified."
+msgstr "KI-Antworten entstehen nur auf dem Server und nur aus zitierten öffentlichen Quellen. Zitate werden geprüft; Sachaussagen werden nicht verifiziert."
+
+msgid "AI chat"
+msgstr "KI-Chat"
+
+msgid "Articles, library items and audio."
+msgstr "Artikel, Bibliothekseinträge und Audio."
+
+msgid "Available"
+msgstr "Verfügbar"
+
+msgid "Available for your account"
+msgstr "Für Ihr Konto verfügbar"
+
+msgid "Inspect an artifact"
+msgstr "Ein Artefakt prüfen"
+
+msgid "No AI answer is generated on this page."
+msgstr "Auf dieser Seite wird keine KI-Antwort erzeugt."
+
+msgid "Not enabled"
+msgstr "Nicht aktiviert"
+
+msgid "Open AI chat"
+msgstr "KI-Chat öffnen"
+
+msgid "Open the public context of a known artifact."
+msgstr "Öffentlichen Kontext eines bekannten Artefakts öffnen."
+
+msgid "Press Ctrl + Enter to search."
+msgstr "Mit Strg + Enter suchen."
+
+msgid "Private"
+msgstr "Privat"
+
+msgid "Private workspace"
+msgstr "Privater Arbeitsbereich"
+
+msgid "Public"
+msgstr "Öffentlich"
+
+msgid "Public knowledge"
+msgstr "Öffentliches Wissen"
+
+msgid "Sign in required"
+msgstr "Anmeldung erforderlich"
+
+msgid "Signed in"
+msgstr "Angemeldet"
+
+msgid "Terms for evidence, provenance and context."
+msgstr "Begriffe für Belege, Herkunft und Kontext."
+
+msgid "This box opens Search. AI chat is a separate page; its answers are drafts whose source quotes are checked, not verified facts. Do not enter personal or confidential data."
+msgstr "Dieses Feld öffnet die Suche. Der KI-Chat ist eine eigene Seite; seine Antworten sind Entwürfe mit geprüften Quellenzitaten, keine verifizierten Fakten. Bitte keine persönlichen oder vertraulichen Daten eingeben."
+
+msgid "Workspace context"
+msgstr "Arbeitsbereich-Kontext"
+
+msgid "Workspace status"
+msgstr "Status des Arbeitsbereichs"

@@ -2074,3 +2074,67 @@ msgstr "متن شما صفحهٔ جست‌وجو را باز می‌کند. پا
 
 msgid "Your tools"
 msgstr "ابزارهای شما"
+
+# Homepage V3 (templates/home/*.html)
+msgid "AI answers are generated on the server, only from cited public sources. Quotes are checked; factual claims are not verified."
+msgstr "پاسخ‌های هوش مصنوعی فقط روی سرور و فقط از منابع عمومیِ استنادشده ساخته می‌شوند. نقل‌قول‌ها بررسی می‌شوند؛ ادعاهای واقعی تأیید نمی‌شوند."
+
+msgid "AI chat"
+msgstr "گفت‌وگوی هوش مصنوعی"
+
+msgid "Articles, library items and audio."
+msgstr "مقاله‌ها، آثار کتابخانه و صوت."
+
+msgid "Available"
+msgstr "در دسترس"
+
+msgid "Available for your account"
+msgstr "برای حساب شما فعال است"
+
+msgid "Inspect an artifact"
+msgstr "بررسی یک اثر"
+
+msgid "No AI answer is generated on this page."
+msgstr "در این صفحه هیچ پاسخ هوش مصنوعی ساخته نمی‌شود."
+
+msgid "Not enabled"
+msgstr "فعال نیست"
+
+msgid "Open AI chat"
+msgstr "گشودن گفت‌وگوی هوش مصنوعی"
+
+msgid "Open the public context of a known artifact."
+msgstr "زمینهٔ عمومی یک اثر شناخته‌شده را باز کنید."
+
+msgid "Press Ctrl + Enter to search."
+msgstr "برای جست‌وجو Ctrl + Enter را بزنید."
+
+msgid "Private"
+msgstr "خصوصی"
+
+msgid "Private workspace"
+msgstr "فضای کاری خصوصی"
+
+msgid "Public"
+msgstr "عمومی"
+
+msgid "Public knowledge"
+msgstr "دانش عمومی"
+
+msgid "Sign in required"
+msgstr "نیازمند ورود"
+
+msgid "Signed in"
+msgstr "وارد شده‌اید"
+
+msgid "Terms for evidence, provenance and context."
+msgstr "اصطلاحات شواهد، منشأ و زمینه."
+
+msgid "This box opens Search. AI chat is a separate page; its answers are drafts whose source quotes are checked, not verified facts. Do not enter personal or confidential data."
+msgstr "این کادر جست‌وجو را باز می‌کند. گفت‌وگوی هوش مصنوعی صفحهٔ جداگانه‌ای است؛ پاسخ‌های آن پیش‌نویس‌اند و نقل‌قول‌های منبعشان بررسی می‌شود، نه اینکه واقعیت تأییدشده باشند. اطلاعات شخصی یا محرمانه وارد نکنید."
+
+msgid "Workspace context"
+msgstr "زمینهٔ فضای کاری"
+
+msgid "Workspace status"
+msgstr "وضعیت فضای کاری"

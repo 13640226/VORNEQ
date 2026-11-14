@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% load i18n static %}
 
-{# AI-first homepage: presentation and search handoff only. No inference, private queries or new API calls. #}
+{# AI-first workspace V3: presentation, Search handoff and gated navigation only. #}
+{# No inference, no private queries and no API calls are made from this page. #}
 {% block title %}VORNEQ — {% trans "AI workspace" %}{% endblock %}
 
 {% block meta %}
@@ -23,202 +24,19 @@
 
 {% block content %}
 <div class="vq-home" data-vq-ai-workspace>
-
-  {# One primary search handoff: the homepage deliberately never executes a query. #}
-  <section class="vq-home__hero" aria-labelledby="vq-home-title">
-    <p class="vq-home__badge">
-      <span class="vq-home__badge-dot" aria-hidden="true"></span>
-      {% trans "VORNEQ AI workspace" %}
-    </p>
-
-    <h1 class="vq-home__title" id="vq-home-title">
-      {% if user.is_authenticated %}
-        {% trans "Welcome back. What do you need?" %}
-      {% else %}
-        {% trans "What do you need today?" %}
-      {% endif %}
-    </h1>
-
-    <form
-      class="vq-composer"
-      method="get"
-      action="{% url 'search_page' %}"
-      role="search"
-      aria-label="{% trans 'Search across VORNEQ' %}"
-      data-vq-composer
-    >
-      <label class="vq-sr-only" for="vq-ai-question">
-        {% trans "Search across VORNEQ" %}
-      </label>
-      <textarea
-        id="vq-ai-question"
-        class="vq-composer__input"
-        name="q"
-        rows="2"
-        maxlength="200"
-        required
-        autocomplete="off"
-        aria-describedby="vq-ai-search-limitation"
-        placeholder="{% trans 'Ask or search: a topic, document, product or source…' %}"
-        data-vq-composer-input
-      ></textarea>
-
-      <div class="vq-composer__bar">
-        <div class="vq-composer__modes" role="group" aria-label="{% trans 'Mode' %}">
-          <span class="vq-mode vq-mode--active" aria-current="true">
-            {% trans "Search" %}
-          </span>
-          {% if phase_c_chat_enabled %}
-          <a class="vq-mode vq-mode--active" href="{% url 'ai_core:chat' %}?lang={{ request.LANGUAGE_CODE|slice:':2' }}" data-vq-phase-c-link>
-            {{ phase_c_chat_link_label }}
-          </a>
-          {% else %}
-          <span class="vq-mode vq-mode--soon" aria-disabled="true">
-            {% trans "AI answers · coming soon" %}
-          </span>
-          {% endif %}
-        </div>
-
-        <div class="vq-composer__end">
-          <output
-            class="vq-composer__count"
-            aria-label="{% trans 'Characters used' %}"
-            data-vq-composer-count
-          >0/200</output>
-          <button class="vq-composer__send" type="submit">
-            {% trans "Go" %}<span aria-hidden="true"> →</span>
-          </button>
-        </div>
-      </div>
-    </form>
-
-    <p class="vq-home__note" id="vq-ai-search-limitation">
-      {% if phase_c_chat_enabled %}
-        {{ phase_c_chat_warning }}
-      {% else %}
-        {% trans "Your text opens the Search page. AI answers are not enabled yet. Do not enter personal or confidential data." %}
-      {% endif %}
-    </p>
-
-    <div class="vq-prompts" role="group" aria-label="{% trans 'Suggested searches' %}">
-      <button
-        class="vq-prompt"
-        type="button"
-        data-vq-example
-        data-vq-prompt="{% trans 'Documents about identity' %}"
-      >{% trans "Documents about identity" %}</button>
-      <button
-        class="vq-prompt"
-        type="button"
-        data-vq-example
-        data-vq-prompt="{% trans 'Evidence and sources' %}"
-      >{% trans "Evidence and sources" %}</button>
-      <button
-        class="vq-prompt"
-        type="button"
-        data-vq-example
-        data-vq-prompt="{% trans 'Digital products' %}"
-      >{% trans "Digital products" %}</button>
+  <div class="vq-shell">
+    {# DOM order = keyboard order: workspace first, then destinations, then context. #}
+    {# The grid places the rail visually at the inline start on wide screens.        #}
+    <div class="vq-main">
+      {% include "home/_composer.html" %}
+      {% include "home/_tools.html" %}
+      {% include "home/_account.html" %}
     </div>
-  </section>
 
-  {# Public tools stay public. Private navigation is rendered only for a signed-in user. #}
-  <section class="vq-home__tools" aria-labelledby="vq-tools-title">
-    <h2 class="vq-home__heading" id="vq-tools-title">{% trans "Your tools" %}</h2>
-    <ul class="vq-tools">
-      <li>
-        <a class="vq-tool" href="{% url 'search_page' %}">
-          <span class="vq-tool__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
-          </span>
-          <span class="vq-tool__name">{% trans "Search" %}</span>
-          <span class="vq-tool__desc">{% trans "Find records across VORNEQ." %}</span>
-        </a>
-      </li>
-      <li>
-        <a class="vq-tool" href="{% url 'discover' %}">
-          <span class="vq-tool__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="m15.6 8.4-2.3 5-4.9 2.2 2.3-5z"></path></svg>
-          </span>
-          <span class="vq-tool__name">{% trans "Discover" %}</span>
-          <span class="vq-tool__desc">{% trans "Browse public knowledge, media and products." %}</span>
-        </a>
-      </li>
-      <li>
-        <a class="vq-tool" href="{% url 'marketplace:index' %}">
-          <span class="vq-tool__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 9h16l-1-5H5L4 9z"></path><path d="M6 9v11h12V9"></path><path d="M10 20v-7h4v7"></path></svg>
-          </span>
-          <span class="vq-tool__name">{% trans "Marketplace" %}</span>
-          <span class="vq-tool__desc">{% trans "Digital products and services." %}</span>
-        </a>
-      </li>
+    {% include "home/_rail.html" %}
 
-      {% if user.is_authenticated %}
-      <li>
-        <a class="vq-tool" href="{% url 'documents:list' %}">
-          <span class="vq-tool__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v5h4M9 12h6M9 16h6"></path></svg>
-          </span>
-          <span class="vq-tool__name">{% trans "Documents" %}</span>
-          <span class="vq-tool__desc">{% trans "Your private and shared documents." %}</span>
-        </a>
-      </li>
-      <li>
-        <a class="vq-tool" href="{% url 'notes:list' %}">
-          <span class="vq-tool__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 20h16M5 16l10-10 4 4-10 10H5zM13 8l4 4"></path></svg>
-          </span>
-          <span class="vq-tool__name">{% trans "Notes" %}</span>
-          <span class="vq-tool__desc">{% trans "Quick notes linked to your work." %}</span>
-        </a>
-      </li>
-      <li>
-        <a class="vq-tool" href="{% url 'platform_shell:personal_home' %}">
-          <span class="vq-tool__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m3 11 9-8 9 8M5 10v11h14V10M9 21v-7h6v7"></path></svg>
-          </span>
-          <span class="vq-tool__name">{% trans "My workspace" %}</span>
-          <span class="vq-tool__desc">{% trans "Recent and recently viewed documents." %}</span>
-        </a>
-      </li>
-      {% endif %}
-    </ul>
-  </section>
-
-  {% if user.is_authenticated %}
-  <section class="vq-home__actions" aria-labelledby="vq-actions-title">
-    <h2 class="vq-home__heading" id="vq-actions-title">{% trans "Quick actions" %}</h2>
-    <div class="vq-actions">
-      <a class="vq-action" href="{% url 'documents:create' %}">
-        <span aria-hidden="true">+</span> {% trans "New document" %}
-      </a>
-      <a class="vq-action" href="{% url 'notes:create' %}">
-        <span aria-hidden="true">+</span> {% trans "New note" %}
-      </a>
-      <a class="vq-action" href="{% url 'marketplace:index' %}">
-        {% trans "Open marketplace" %}
-      </a>
-    </div>
-  </section>
-  {% else %}
-  <section class="vq-home__join" aria-labelledby="vq-join-title">
-    <h2 class="vq-home__heading" id="vq-join-title">
-      {% trans "Use your own workspace" %}
-    </h2>
-    <p class="vq-home__join-copy">
-      {% trans "Sign in to create documents and notes and to share them with exactly the people you choose." %}
-    </p>
-    <div class="vq-actions">
-      <a class="vq-action vq-action--primary" href="{% url 'account_login' %}">
-        {% trans "Sign in" %}
-      </a>
-      <a class="vq-action" href="{% url 'account_signup' %}">
-        {% trans "Create an account" %}
-      </a>
-    </div>
-  </section>
-  {% endif %}
+    {% include "home/_context.html" %}
+  </div>
 </div>
 {% endblock %}
 

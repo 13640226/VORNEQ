@@ -1,0 +1,53 @@
+{% load i18n %}
+{# Context panel: only factual, server-derived state. No simulated answers or fake activity. #}
+<aside class="vq-context" aria-labelledby="vq-context-title">
+  <h2 class="vq-sr-only" id="vq-context-title">{% trans "Workspace context" %}</h2>
+
+  <section class="vq-panel" aria-labelledby="vq-status-title">
+    <h3 class="vq-panel__title" id="vq-status-title">{% trans "Workspace status" %}</h3>
+    <dl class="vq-status">
+      <div class="vq-status__row">
+        <dt>{% trans "Search" %}</dt>
+        <dd><span class="vq-led vq-led--sm" aria-hidden="true"></span>{% trans "Available" %}</dd>
+      </div>
+      <div class="vq-status__row">
+        <dt>{% trans "AI chat" %}</dt>
+        {% if phase_c_chat_enabled %}
+        <dd><span class="vq-led vq-led--sm" aria-hidden="true"></span>{% trans "Available for your account" %}</dd>
+        {% else %}
+        <dd class="vq-status__off"><span class="vq-dot" aria-hidden="true"></span>{% trans "Not enabled" %}</dd>
+        {% endif %}
+      </div>
+      <div class="vq-status__row">
+        <dt>{% trans "Private workspace" %}</dt>
+        {% if user.is_authenticated %}
+        <dd><span class="vq-led vq-led--sm" aria-hidden="true"></span>{% trans "Signed in" %}</dd>
+        {% else %}
+        <dd class="vq-status__off"><span class="vq-dot" aria-hidden="true"></span>{% trans "Sign in required" %}</dd>
+        {% endif %}
+      </div>
+    </dl>
+    <p class="vq-panel__copy">
+      {% if phase_c_chat_enabled %}
+        {% trans "AI answers are generated on the server, only from cited public sources. Quotes are checked; factual claims are not verified." %}
+      {% else %}
+        {% trans "No AI answer is generated on this page." %}
+      {% endif %}
+    </p>
+  </section>
+
+  <section class="vq-panel" aria-labelledby="vq-evidence-title">
+    <h3 class="vq-panel__title" id="vq-evidence-title">{% trans "Evidence and sources" %}</h3>
+    <ul class="vq-links">
+      <li><a href="{% url 'orientation' %}">
+        <span class="vq-links__name">{% trans "Evidence vocabulary" %}</span>
+        <span class="vq-links__desc">{% trans "Terms for evidence, provenance and context." %}</span></a></li>
+      <li><a href="{% url 'inspect_entry' %}">
+        <span class="vq-links__name">{% trans "Inspect an artifact" %}</span>
+        <span class="vq-links__desc">{% trans "Open the public context of a known artifact." %}</span></a></li>
+      <li><a href="{% url 'discover_knowledge' %}">
+        <span class="vq-links__name">{% trans "Public knowledge" %}</span>
+        <span class="vq-links__desc">{% trans "Articles, library items and audio." %}</span></a></li>
+    </ul>
+  </section>
+</aside>

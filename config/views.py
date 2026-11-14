@@ -82,18 +82,36 @@ def sitemap_xml(request):
     return HttpResponse(body, content_type="application/xml")
 
 
+def _ai_chat_available_for(user):
+    """Mirror the AI chat page's own server-side gates; never weaker.
+
+    Anonymous visitors never reach the policy checks (keeps the public homepage
+    free of AI configuration lookups and database queries). The link is a
+    navigation hint only: the chat page and its API re-check every gate.
+    """
+    if not getattr(user, "is_authenticated", False):
+        return False
+    from apps.ai_core.chat_page import is_chat_enabled
+    if not is_chat_enabled():
+        return False
+    environment = getattr(settings, "VORNEQ_ENV", "")
+    if environment == "staging":
+        from apps.ai_core.staging_policy import actor_allowed
+        return actor_allowed(user)
+    if environment == "production":
+        from apps.ai_core.production_policy import production_actor_allowed
+        return production_actor_allowed(user)
+    return environment == "development"
+
+
 def home(request):
-    """Keep public Search unchanged; show an isolated chat link only in development."""
-    chat_enabled = (
-        settings.VORNEQ_ENV == "development"
-        and getattr(settings, "VORNEQ_AI_PHASE_B_ENABLED", False)
-        and getattr(settings, "VORNEQ_AI_PHASE_C_ENABLED", False)
-        and request.user.is_authenticated
-    )
+    """AI-first workspace: Search handoff plus an AI chat link only when allowed."""
+    chat_enabled = _ai_chat_available_for(request.user)
+    labels = chat_labels(get_language()) if chat_enabled else {}
     return render(request, "index.html", {
         "phase_c_chat_enabled": chat_enabled,
-        "phase_c_chat_link_label": chat_labels(get_language())["entry"] if chat_enabled else "",
-        "phase_c_chat_warning": chat_labels(get_language())["warning"] if chat_enabled else "",
+        "phase_c_chat_link_label": labels.get("entry", ""),
+        "phase_c_chat_warning": labels.get("warning", ""),
     })
 
 

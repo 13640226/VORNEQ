@@ -1,0 +1,41 @@
+{% load i18n %}
+{# Public tools stay public. Private tools are rendered only for a signed-in user. #}
+<section class="vq-home__tools" aria-labelledby="vq-tools-title">
+  <div class="vq-section-head">
+    <h2 class="vq-home__heading" id="vq-tools-title">{% trans "Your tools" %}</h2>
+  </div>
+  <ul class="vq-tools">
+    <li><a class="vq-tool" href="{% url 'search_page' %}">
+      <span class="vq-tool__icon" aria-hidden="true"><svg class="vq-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg></span>
+      <span class="vq-tool__body"><span class="vq-tool__name">{% trans "Search" %}</span>
+      <span class="vq-tool__desc">{% trans "Find records across VORNEQ." %}</span></span>
+      <span class="vq-tag">{% trans "Public" %}</span></a></li>
+    <li><a class="vq-tool" href="{% url 'discover' %}">
+      <span class="vq-tool__icon" aria-hidden="true"><svg class="vq-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="m15.6 8.4-2.3 5-4.9 2.2 2.3-5z"></path></svg></span>
+      <span class="vq-tool__body"><span class="vq-tool__name">{% trans "Discover" %}</span>
+      <span class="vq-tool__desc">{% trans "Browse public knowledge, media and products." %}</span></span>
+      <span class="vq-tag">{% trans "Public" %}</span></a></li>
+    <li><a class="vq-tool" href="{% url 'marketplace:index' %}">
+      <span class="vq-tool__icon" aria-hidden="true"><svg class="vq-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9h16l-1-5H5L4 9z"></path><path d="M6 9v11h12V9"></path><path d="M10 20v-7h4v7"></path></svg></span>
+      <span class="vq-tool__body"><span class="vq-tool__name">{% trans "Marketplace" %}</span>
+      <span class="vq-tool__desc">{% trans "Digital products and services." %}</span></span>
+      <span class="vq-tag">{% trans "Public" %}</span></a></li>
+    {% if user.is_authenticated %}
+    <li><a class="vq-tool" href="{% url 'documents:list' %}">
+      <span class="vq-tool__icon" aria-hidden="true"><svg class="vq-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v5h4M9 12h6M9 16h6"></path></svg></span>
+      <span class="vq-tool__body"><span class="vq-tool__name">{% trans "Documents" %}</span>
+      <span class="vq-tool__desc">{% trans "Your private and shared documents." %}</span></span>
+      <span class="vq-tag vq-tag--private">{% trans "Private" %}</span></a></li>
+    <li><a class="vq-tool" href="{% url 'notes:list' %}">
+      <span class="vq-tool__icon" aria-hidden="true"><svg class="vq-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20h16M5 16l10-10 4 4-10 10H5zM13 8l4 4"></path></svg></span>
+      <span class="vq-tool__body"><span class="vq-tool__name">{% trans "Notes" %}</span>
+      <span class="vq-tool__desc">{% trans "Quick notes linked to your work." %}</span></span>
+      <span class="vq-tag vq-tag--private">{% trans "Private" %}</span></a></li>
+    <li><a class="vq-tool" href="{% url 'platform_shell:personal_home' %}">
+      <span class="vq-tool__icon" aria-hidden="true"><svg class="vq-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m3 11 9-8 9 8M5 10v11h14V10M9 21v-7h6v7"></path></svg></span>
+      <span class="vq-tool__body"><span class="vq-tool__name">{% trans "My workspace" %}</span>
+      <span class="vq-tool__desc">{% trans "Recent and recently viewed documents." %}</span></span>
+      <span class="vq-tag vq-tag--private">{% trans "Private" %}</span></a></li>
+    {% endif %}
+  </ul>
+</section>
