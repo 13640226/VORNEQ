@@ -24,7 +24,8 @@ from apps.ai_core.providers.exceptions import GatewayError, ProviderTimeout
 from apps.ai_core.providers.openai_responses import OpenAIResponsesProvider
 from apps.ai_core.staging_budget import reserve_staging_request
 from apps.ai_core.staging_policy import actor_allowed, hosted_runtime, trial_enabled
-from apps.ai_core.web_retrieval import RetrievalError, RetrievalTimeout, default_retriever
+from apps.ai_core.retrieval_registry import default_retriever
+from apps.ai_core.web_retrieval import RetrievalError, RetrievalTimeout
 
 
 def _strict_object(pairs):

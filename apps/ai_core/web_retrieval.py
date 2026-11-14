@@ -34,7 +34,7 @@ USER_AGENT = "VORNEQ-GlobalAI/1.0 (grounded citations; contact via repository 13
 
 # Invisible bidi/format controls common in Persian web text. ZWNJ (U+200C) is
 # a legitimate Persian character and is kept.
-_INVISIBLE = re.compile("[​‎‏‪-‮⁠-⁤⁦-⁩﻿­]")
+_INVISIBLE = re.compile("[\u200b\u200e\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff\u00ad]")
 
 
 class RetrievalError(RuntimeError):
@@ -63,7 +63,7 @@ def clean_text(value, maximum: int) -> str:
         return ""
     value = unicodedata.normalize("NFC", _INVISIBLE.sub("", value))
     value = "".join(
-        ch if ch == "‌" or not unicodedata.category(ch).startswith("C") else " "
+        ch if ch == "\u200c" or not unicodedata.category(ch).startswith("C") else " "
         for ch in value
     )
     value = " ".join(value.split())
@@ -161,6 +161,8 @@ class WikipediaRetriever(PublicWebRetriever):
     """
 
     name = "wikipedia"
+    source_type = "encyclopedia"
+    licence = "CC BY-SA 4.0 (text); attribution via linked page"
     HOSTS = {"fa": "fa.wikipedia.org", "de": "de.wikipedia.org", "en": "en.wikipedia.org"}
     allowed_hosts = frozenset(HOSTS.values())
     _KEY = re.compile(r"web:wikipedia:(fa|de|en):[1-9][0-9]{0,11}\Z")
