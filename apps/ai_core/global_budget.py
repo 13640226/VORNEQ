@@ -23,8 +23,12 @@ def _limit(name):
     return value
 
 
-def reserve_global_request(user_id: int):
-    """Reserve one Global AI request BEFORE any external search or model call."""
+def reserve_global_request(user_id: int, *, burst_only: bool = False):
+    """Reserve one Global AI request BEFORE any external search or model call.
+
+    ``burst_only`` (used only while the shared prepaid ledger governs cost):
+    no fixed daily/global counts, only the per-user per-minute abuse throttle.
+    """
     if type(user_id) is not int or user_id <= 0:
         raise BudgetExceeded("invalid actor for global quota")
     # Explicit staging-only bypass; never inferred from the older UNMETERED flag.
@@ -34,11 +38,11 @@ def reserve_global_request(user_id: int):
         return
     now = datetime.now(timezone.utc)
     minute, day = now.strftime("%Y%m%d%H%M"), now.strftime("%Y%m%d")
-    for key, ttl, limit in (
-        (f"global-ai:user:{user_id}:minute:{minute}", 80, _limit("per_minute")),
-        (f"global-ai:user:{user_id}:day:{day}", 90000, _limit("per_day")),
-        (f"global-ai:global:day:{day}", 90000, _limit("global_per_day")),
-    ):
+    windows = [(f"global-ai:user:{user_id}:minute:{minute}", 80, _limit("per_minute"))]
+    if not burst_only:
+        windows += [(f"global-ai:user:{user_id}:day:{day}", 90000, _limit("per_day")),
+                    (f"global-ai:global:day:{day}", 90000, _limit("global_per_day"))]
+    for key, ttl, limit in windows:
         try:
             cache.add(key, 0, timeout=ttl)
             count = cache.incr(key)

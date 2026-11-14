@@ -107,6 +107,7 @@ INSTALLED_APPS = [
     "apps.documents.apps.DocumentsConfig",
     "apps.search.apps.SearchConfig",
     "apps.ai_core.apps.AICoreConfig",
+    "apps.ai_ledger.apps.AILedgerConfig",
 ]
 
 
@@ -162,6 +163,28 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
+
+def ai_ledger_database_config(default, *, ssl_require=False):
+    """Shared prepaid AI ledger: a SEPARATE database shared by Staging and
+    Production (VORNEQ_AI_LEDGER_DATABASE_URL). Without that variable a
+    distinct placeholder alias exists only so tests can create a disposable
+    ledger database; the ledger itself stays disabled (fail closed)."""
+    url = os.environ.get("VORNEQ_AI_LEDGER_DATABASE_URL")
+    if url:
+        return dj_database_url.parse(url, conn_max_age=0, ssl_require=ssl_require)
+    config = dict(default)
+    name = str(config.get("NAME") or "vorneq")
+    if config.get("ENGINE", "").endswith("sqlite3"):
+        config["NAME"] = str(BASE_DIR / "ai_ledger.sqlite3")
+    else:
+        config["NAME"] = name + "_ai_ledger"
+    config["CONN_MAX_AGE"] = 0
+    return config
+
+
+DATABASES["ai_ledger"] = ai_ledger_database_config(DATABASES["default"])
+DATABASE_ROUTERS = ["apps.ai_ledger.router.AILedgerRouter"]
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -433,6 +456,25 @@ VORNEQ_AI_PHASE_B_ENABLED = (
 # Phase B (development path or authorized staging trial); Production impossible.
 # Has its own request quota and never inherits VORNEQ_AI_STAGING_UNMETERED.
 VORNEQ_GLOBAL_AI_ENABLED = VORNEQ_AI_PHASE_B_ENABLED and env_bool("VORNEQ_GLOBAL_AI_ENABLED", False)
+# Shared prepaid budget ledger (one authority for Staging AND Production).
+# Disabled unless explicitly configured; never inferred from other flags.
+VORNEQ_AI_LEDGER_ENABLED = (
+    VORNEQ_ENV in ("staging", "production") and env_bool("VORNEQ_AI_LEDGER_ENABLED", False)
+    and bool(os.environ.get("VORNEQ_AI_LEDGER_DATABASE_URL"))
+)
+VORNEQ_AI_LEDGER_ID = os.environ.get("VORNEQ_AI_LEDGER_ID", "")
+VORNEQ_AI_LEDGER_DB_NAME = os.environ.get("VORNEQ_AI_LEDGER_DB_NAME", "")
+# Kill switch: blocks every new model call in Staging and Production.
+VORNEQ_AI_EMERGENCY_STOP = env_bool("VORNEQ_AI_EMERGENCY_STOP", False)
+# Explicit Production policy (apps/ai_core/production_policy.py). Default OFF.
+VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED = (
+    VORNEQ_ENV == "production" and env_bool("VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED", False)
+)
+VORNEQ_AI_PRODUCTION_AUTHORIZED_SHA = os.environ.get("VORNEQ_AI_PRODUCTION_AUTHORIZED_SHA", "")
+VORNEQ_AI_PRODUCTION_OWNER_AUTH = os.environ.get("VORNEQ_AI_PRODUCTION_OWNER_AUTH", "")
+VORNEQ_AI_PRODUCTION_APPROVED_MODEL = os.environ.get("VORNEQ_AI_PRODUCTION_APPROVED_MODEL", "")
+VORNEQ_AI_PRODUCTION_ALLOWED_USER_IDS = os.environ.get("VORNEQ_AI_PRODUCTION_ALLOWED_USER_IDS", "")
+VORNEQ_AI_PRODUCTION_ACTOR_POLICY = os.environ.get("VORNEQ_AI_PRODUCTION_ACTOR_POLICY", "allowlist")
 # Separate, default-off owner opt-in; never applies to Production or local development.
 VORNEQ_GLOBAL_AI_UNLIMITED_STAGING = (
     VORNEQ_ENV == "staging" and env_bool("VORNEQ_GLOBAL_AI_UNLIMITED_STAGING", False)

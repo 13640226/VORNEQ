@@ -34,6 +34,7 @@ class OpenAIResponsesProvider:
         if not isinstance(extra_instructions, str) or len(extra_instructions) > 600:
             raise ProviderUnavailable("invalid provider instructions")
         self.instructions = (_SYSTEM_INSTRUCTIONS + " " + extra_instructions).strip()
+        self.last_usage = None
 
     def generate(self, *, question: str, language: str, sources: list[dict]) -> dict:
         key = os.environ.get("OPENAI_API_KEY", "")
@@ -64,6 +65,10 @@ class OpenAIResponsesProvider:
             raise ProviderInvalidResponse("structured response invalid") from exc
         except (ValueError, TypeError) as exc:
             raise ProviderInvalidResponse("invalid structured response") from exc
+        usage = getattr(response, "usage", None)
+        tokens = (getattr(usage, "input_tokens", None), getattr(usage, "output_tokens", None))
+        # Authoritative provider token counts for the shared ledger (None if absent).
+        self.last_usage = tokens if all(type(t) is int and t >= 0 for t in tokens) else None
         status = getattr(response, "status", None)
         if status != "completed":
             # Do not log raw provider bodies, prompts, credentials or arbitrary

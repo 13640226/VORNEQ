@@ -23,7 +23,10 @@ from apps.ai_core.global_router import UNSUPPORTED, route_question
 from apps.ai_core.providers.exceptions import GatewayError, ProviderTimeout
 from apps.ai_core.providers.openai_responses import OpenAIResponsesProvider
 from apps.ai_core.staging_budget import reserve_staging_request
+from apps.ai_core.budgeted_provider import BudgetedProvider
+from apps.ai_core.production_policy import production_actor_allowed, production_enabled
 from apps.ai_core.staging_policy import actor_allowed, hosted_runtime, trial_enabled
+from apps.ai_ledger.service import ledger_enabled
 from apps.ai_core.retrieval_registry import default_retriever
 from apps.ai_core.web_retrieval import RetrievalError, RetrievalTimeout
 
@@ -39,6 +42,10 @@ def _strict_object(pairs):
 
 def global_ai_available():
     """Cheap, side-effect-free availability check (no search, no model)."""
+    if getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", False):
+        return False
+    if settings.VORNEQ_ENV == "production":
+        return production_enabled()
     if not getattr(settings, "VORNEQ_GLOBAL_AI_ENABLED", False):
         return False
     if not getattr(settings, "VORNEQ_AI_PHASE_B_ENABLED", False):
@@ -58,6 +65,8 @@ def ask_global_view(request):
         return JsonResponse({"error": "authentication_required"}, status=401)
     if settings.VORNEQ_ENV == "staging" and not actor_allowed(request.user):
         return JsonResponse({"error": "forbidden"}, status=403)
+    if settings.VORNEQ_ENV == "production" and not production_actor_allowed(request.user):
+        return JsonResponse({"error": "forbidden"}, status=403)
     if request.content_type != "application/json":
         return JsonResponse({"error": "json_only"}, status=415)
     try:
@@ -73,17 +82,25 @@ def ask_global_view(request):
     # Deterministic local routing first: unsupported input costs no quota.
     if route_question(question, language).kind == UNSUPPORTED:
         return JsonResponse({"error": "UNSUPPORTED_QUESTION"}, status=422)
-    staging = settings.VORNEQ_ENV == "staging"
+    hosted = settings.VORNEQ_ENV in ("staging", "production")
+    # Shared prepaid ledger: mandatory in production, optional in staging. While
+    # it governs cost, fixed daily counts are replaced by per-call money
+    # reservations (a per-minute abuse throttle remains).
+    shared_budget = hosted and ledger_enabled()
     try:
-        reserve_global_request(request.user.pk)
-        if staging:
+        reserve_global_request(request.user.pk, burst_only=shared_budget)
+        if settings.VORNEQ_ENV == "staging" and not shared_budget:
             reserve_staging_request()
         provider = OpenAIResponsesProvider(
             model=os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""),
-            timeout_s=30 if staging else 15,
-            max_output_tokens=1024 if staging else 512,
+            timeout_s=30 if hosted else 15,
+            max_output_tokens=1024 if hosted else 512,
             extra_instructions=GLOBAL_INSTRUCTIONS,
         )
+        if shared_budget:
+            provider = BudgetedProvider(provider, actor_id=request.user.pk)
+        elif settings.VORNEQ_ENV == "production":
+            raise BudgetExceeded("production requires the shared prepaid ledger")
         response = ask_global(question, language, actor=request.user, provider=provider,
                               retriever=default_retriever(), enabled=True)
     except BudgetExceeded:
