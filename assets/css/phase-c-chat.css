@@ -45,3 +45,69 @@
   .vq-chat__log { max-height: none; overflow-y: visible; }
   .vq-chat__sources a { display: inline-block; min-height: 44px; padding-block: 10px; box-sizing: border-box; }
 }
+
+
+/* AI chat only: mobile shell must not cover a generated answer or its sources.
+   Compact the header without reducing the 44px touch targets. Other pages
+   retain the canonical sticky platform navigation. */
+.vq-chat__quote {
+  margin: 6px 0 8px;
+  padding: 4px 10px;
+  border-inline-start: 2px solid var(--color-border-strong, var(--color-border));
+  color: var(--color-text-secondary);
+  font-size: .9em;
+  font-style: normal;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 639px) {
+  .vq-chat-page .standalone-nav {
+    position: static;
+    min-height: 0;
+  }
+  .vq-chat-page .standalone-nav__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    grid-template-areas: "brand actions" "menu menu";
+    min-height: 0;
+    align-items: center;
+    gap: 2px 6px;
+    padding-block: 4px;
+  }
+  .vq-chat-page .standalone-nav__brand { grid-area: brand; min-width: 0; }
+  .vq-chat-page .standalone-nav__symbol {
+    inline-size: 24px;
+    block-size: 24px;
+    flex-basis: 24px;
+    margin-inline-end: 4px;
+  }
+  .vq-chat-page .standalone-nav__wordmark { font-size: 1rem; }
+  .vq-chat-page .standalone-nav__actions {
+    grid-area: actions;
+    margin-inline-start: 0;
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: nowrap;
+    gap: 2px;
+  }
+  .vq-chat-page .standalone-nav__language-trigger { padding-inline: 2px; min-block-size: 44px; }
+  .vq-chat-page .standalone-nav__action {
+    min-block-size: 44px;
+    padding: 4px 5px;
+    font-size: .8rem;
+  }
+  .vq-chat-page .standalone-nav__menu {
+    grid-area: menu;
+    order: initial;
+    min-width: 0;
+    width: 100%;
+  }
+  .vq-chat-page .standalone-nav__list { gap: var(--space-3); padding-block: 0; }
+  .vq-chat-page .standalone-nav__link { min-block-size: 44px; padding-block: 0; }
+  .vq-chat-page .vq-chat { padding-block-start: 12px; }
+  .vq-chat-page .vq-chat__message { scroll-margin-block-start: 12px; }
+}
+@media (max-width: 360px) {
+  .vq-chat-page .standalone-nav__wordmark { font-size: .9rem; }
+  .vq-chat-page .standalone-nav__action { font-size: .72rem; padding-inline: 3px; }
+}
