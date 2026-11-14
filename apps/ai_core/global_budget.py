@@ -27,6 +27,11 @@ def reserve_global_request(user_id: int):
     """Reserve one Global AI request BEFORE any external search or model call."""
     if type(user_id) is not int or user_id <= 0:
         raise BudgetExceeded("invalid actor for global quota")
+    # Explicit staging-only bypass; never inferred from the older UNMETERED flag.
+    # The endpoint must still pass trial_enabled() and actor_allowed().
+    if (getattr(settings, "VORNEQ_ENV", None) == "staging"
+            and getattr(settings, "VORNEQ_GLOBAL_AI_UNLIMITED_STAGING", False)):
+        return
     now = datetime.now(timezone.utc)
     minute, day = now.strftime("%Y%m%d%H%M"), now.strftime("%Y%m%d")
     for key, ttl, limit in (
