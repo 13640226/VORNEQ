@@ -1,0 +1,3 @@
+# Dedicated production AI SDK dependencies; do not enable AI features by installing packages.
+-r requirements.txt
+openai==3.49.0
