@@ -31,6 +31,18 @@ from apps.ai_core.retrieval_registry import default_retriever
 from apps.ai_core.web_retrieval import RetrievalError, RetrievalTimeout
 
 
+STAGING_BRIEF_INSTRUCTIONS = (
+    "Third-party public excerpts are not VORNEQ claims. Never add numbers, dates or "
+    "facts absent from cited excerpts. Preserve uncertainty and disagreements; "
+    "keep source titles unchanged."
+)
+
+
+def _output_cap_for_environment(environment):
+    """Raise Staging only; keep Production and development limits unchanged."""
+    return 2048 if environment == "staging" else 1024 if environment == "production" else 512
+
+
 def _strict_object(pairs):
     result = {}
     for key, value in pairs:
@@ -94,8 +106,10 @@ def ask_global_view(request):
         provider = OpenAIResponsesProvider(
             model=os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""),
             timeout_s=30 if hosted else 15,
-            max_output_tokens=1024 if hosted else 512,
-            extra_instructions=GLOBAL_INSTRUCTIONS,
+            max_output_tokens=_output_cap_for_environment(settings.VORNEQ_ENV),
+            extra_instructions=(STAGING_BRIEF_INSTRUCTIONS if settings.VORNEQ_ENV == "staging"
+                                else GLOBAL_INSTRUCTIONS),
+            compact_sources=settings.VORNEQ_ENV == "staging",
         )
         if shared_budget:
             provider = BudgetedProvider(provider, actor_id=request.user.pk)

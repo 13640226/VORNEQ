@@ -3,9 +3,8 @@
 The reservation happens immediately before the (single, max_retries=0)
 provider call; retrieval-only paths (insufficient evidence) cost nothing.
 """
-import json
-
 from apps.ai_core.providers.exceptions import GatewayError
+from apps.ai_core.providers.openai_responses import build_request_payload
 from apps.ai_ledger import service as ledger
 
 
@@ -16,8 +15,8 @@ class BudgetedProvider:
         self.last_reservation = None
 
     def generate(self, *, question, language, sources):
-        payload = json.dumps({"question": question, "language": language, "sources": sources},
-                             ensure_ascii=False)
+        payload = build_request_payload(question, language, sources,
+                                        compact_sources=(getattr(self.inner, "compact_sources", False) is True))
         input_bytes = len(getattr(self.inner, "instructions", "").encode("utf-8")) + len(payload.encode("utf-8"))
         reservation = ledger.reserve(actor_id=self.actor_id, model=self.inner.model,
                                      input_bytes=input_bytes,
