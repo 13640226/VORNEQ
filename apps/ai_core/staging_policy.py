@@ -41,6 +41,8 @@ def trial_enabled():
 
     No third-party calls, DB writes or secret values are logged by this guard.
     """
+    if getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", False):
+        return False
     if (
         getattr(settings, "VORNEQ_ENV", None) != "staging"
         or getattr(settings, "DEBUG", True)

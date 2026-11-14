@@ -23,6 +23,9 @@ DATABASES = {
 if not os.environ.get("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is required for Render staging")
 
+# Shared prepaid AI ledger alias (separate database; see config/settings.py).
+DATABASES["ai_ledger"] = ai_ledger_database_config(DATABASES["default"], ssl_require=True)  # noqa: F405
+
 
 # Optional production object storage. Local development continues to use the
 # FileSystemStorage configured in config.settings.
