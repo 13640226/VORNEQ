@@ -26,13 +26,13 @@ DEV = dict(VORNEQ_ENV="development", VORNEQ_AI_CORE_ENABLED=True, VORNEQ_AI_PHAS
            VORNEQ_AI_PHASE_C_ENABLED=True, VORNEQ_GLOBAL_AI_ENABLED=True)
 
 EXCERPTS = {
-    "fa": "[SYNTHETIC] برآوردها نشان می‌دهد که جهان قابل مشاهده دست‌کم صدها میلیارد کهکشان دارد.",
+    "fa": "[SYNTHETIC] برآوردها نشان می\u200cدهد که جهان قابل مشاهده دست\u200cکم صدها میلیارد کهکشان دارد.",
     "de": "[SYNTHETIC] Sterne entstehen, wenn dichte Molekülwolken unter ihrer eigenen Schwerkraft kollabieren.",
     "en": "[SYNTHETIC] Quantum computing uses qubits that can exist in superpositions of states.",
 }
 QUESTIONS = {"fa": "جهان چند کهکشان دارد؟", "de": "Wie entstehen Sterne?",
              "en": "What is quantum computing?"}
-ANSWERS = {"fa": "به گفتهٔ منبع، دست‌کم صدها میلیارد کهکشان برآورد می‌شود.",
+ANSWERS = {"fa": "به گفتهٔ منبع، دست\u200cکم صدها میلیارد کهکشان برآورد می\u200cشود.",
            "de": "Laut Quelle entstehen Sterne durch den Kollaps dichter Molekülwolken.",
            "en": "According to the source, quantum computers use qubits in superposition."}
 

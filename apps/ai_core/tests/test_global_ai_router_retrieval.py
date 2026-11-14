@@ -221,11 +221,11 @@ class WikipediaRetrieverTests(SimpleTestCase):
         self.assertEqual(self.retriever(bad).search("q", "en"), ())
 
     def test_persian_bidi_controls_removed_zwnj_kept(self):
-        text = "‏[SYNTHETIC] کهکشان‌ها سامانه‌های بزرگ ستاره‌ای هستند و " * 3
-        item = self.retriever([synthetic_page(11, "‎کهکشان", text, lang="fa")]).search("کهکشان", "fa")[0]
-        self.assertNotIn("‏", item.excerpt)
-        self.assertNotIn("‎", item.title)
-        self.assertIn("‌", item.excerpt)
+        text = "\u200f[SYNTHETIC] کهکشان\u200cها سامانه\u200cهای بزرگ ستاره\u200cای هستند و " * 3
+        item = self.retriever([synthetic_page(11, "\u200eکهکشان", text, lang="fa")]).search("کهکشان", "fa")[0]
+        self.assertNotIn("\u200f", item.excerpt)
+        self.assertNotIn("\u200e", item.title)
+        self.assertIn("\u200c", item.excerpt)
 
     def test_personal_data_never_sent_to_search(self):
         calls = []

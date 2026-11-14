@@ -12,6 +12,7 @@ import re
 from urllib.parse import urlsplit
 
 from apps.ai_core.engine.citation import EvidenceRejected, validate_generated
+from apps.ai_core.engine.evidence_ranking import SCORE_SEMANTICS, rank_evidence, unsupported_numbers
 from apps.ai_core.engine.grounded import ask_grounded
 from apps.ai_core.global_router import GENERAL_PUBLIC, OFFICIAL_VORNEQ, route_question
 from apps.ai_core.providers.exceptions import ProviderUnavailable
@@ -23,10 +24,15 @@ class GlobalUnsupported(ValueError):
     code = "UNSUPPORTED_QUESTION"
 
 
+class UnsupportedNumericClaim(EvidenceRejected):
+    """The generated answer contains a number absent from every cited excerpt."""
+
+
 GLOBAL_INSTRUCTIONS = (
     "The excerpts are third-party public web pages (for example an encyclopedia), "
     "not VORNEQ statements. State uncertainty, estimates or ranges exactly as the "
-    "excerpts do; never add numbers, dates or facts that are absent from them."
+    "excerpts do; never add numbers, dates or facts that are absent from them. "
+    "If excerpts disagree, say so and cite each side. Keep source titles untranslated."
 )
 
 
@@ -98,7 +104,9 @@ def ask_global(question, fallback_language, *, actor, provider, retriever, enabl
         raise GlobalUnsupported(route.reason)
     language = route.language
     evidence = retriever.search(question, language, limit=MAX_RESULTS)
-    sources = authorized_web_context(evidence, allowed_hosts=retriever.allowed_hosts)
+    source_types = _source_types(retriever)
+    ranked, assessments = rank_evidence(question, language, evidence, source_types=source_types)
+    sources = authorized_web_context(ranked, allowed_hosts=retriever.allowed_hosts)
     if not sources:
         return _insufficient(language, GENERAL_PUBLIC)
     if provider is None:
@@ -107,10 +115,27 @@ def ask_global(question, fallback_language, *, actor, provider, retriever, enabl
                                language=language, sources=sources)
     result = validate_generated(output, sources=sources, language=language)
     trusted = {s["source_id"]: s for s in sources}
+    cited = [trusted[c["source_id"]]["excerpt"] for c in result["citations"]]
+    if unsupported_numbers(result["answer"], cited, question):
+        raise UnsupportedNumericClaim("answer contains numbers absent from cited evidence")
     for citation in result["citations"]:
         source = trusted[citation["source_id"]]
         citation["publisher"] = source["publisher"]
         citation["retrieved_at"] = source["retrieved_at"]
         citation["source_class"] = "public_web"
     result["route"] = GENERAL_PUBLIC
+    by_key = {a["source_key"]: a for a in assessments}
+    result["evidence_assessment"] = {
+        "score_semantics": SCORE_SEMANTICS,
+        "sources_considered": len(sources),
+        "providers": [{"name": n, "status": st} for n, st in getattr(retriever, "last_status", ())],
+        "cited": [{k: by_key[c["source_key"]][k] for k in ("source_key", "relevance", "completeness", "score")}
+                  for c in result["citations"] if c["source_key"] in by_key],
+        "independent_verification": False,
+    }
     return result
+
+
+def _source_types(retriever):
+    members = getattr(retriever, "retrievers", (retriever,))
+    return {getattr(r, "name", ""): getattr(r, "source_type", "unknown") for r in members}
