@@ -433,6 +433,11 @@ VORNEQ_AI_PHASE_B_ENABLED = (
 # Phase B (development path or authorized staging trial); Production impossible.
 # Has its own request quota and never inherits VORNEQ_AI_STAGING_UNMETERED.
 VORNEQ_GLOBAL_AI_ENABLED = VORNEQ_AI_PHASE_B_ENABLED and env_bool("VORNEQ_GLOBAL_AI_ENABLED", False)
+# Separate, default-off owner opt-in; never applies to Production or local development.
+VORNEQ_GLOBAL_AI_UNLIMITED_STAGING = (
+    VORNEQ_ENV == "staging" and env_bool("VORNEQ_GLOBAL_AI_UNLIMITED_STAGING", False)
+)
+
 
 # Phase C preview is a separate, default-off development capability.
 # Never active for staging or production, even if both environment flags are set.
