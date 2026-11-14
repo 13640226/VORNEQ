@@ -123,6 +123,7 @@ def ask_global(question, fallback_language, *, actor, provider, retriever, enabl
         raise UnsupportedNumericClaim("answer contains numbers absent from cited evidence")
     for citation in result["citations"]:
         source = trusted[citation["source_id"]]
+        citation["evidence_quote"] = checked_quotes[citation["source_id"]]
         citation["publisher"] = source["publisher"]
         citation["retrieved_at"] = source["retrieved_at"]
         citation["source_class"] = "public_web"
