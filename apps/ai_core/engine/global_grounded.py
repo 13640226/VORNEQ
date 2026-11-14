@@ -114,12 +114,16 @@ def ask_global(question, fallback_language, *, actor, provider, retriever, enabl
     output = provider.generate(question=screen_and_redact(question, limit=200),
                                language=language, sources=sources)
     result = validate_generated(output, sources=sources, language=language)
+    # Preserve only the quote that the deterministic citation validator checked.
+    # It is data, not markup, and does not imply independent factual verification.
+    checked_quotes = {c["source_id"]: c["evidence_quote"] for c in output["citations"]}
     trusted = {s["source_id"]: s for s in sources}
     cited = [trusted[c["source_id"]]["excerpt"] for c in result["citations"]]
     if unsupported_numbers(result["answer"], cited, question):
         raise UnsupportedNumericClaim("answer contains numbers absent from cited evidence")
     for citation in result["citations"]:
         source = trusted[citation["source_id"]]
+        citation["evidence_quote"] = checked_quotes[citation["source_id"]]
         citation["publisher"] = source["publisher"]
         citation["retrieved_at"] = source["retrieved_at"]
         citation["source_class"] = "public_web"
