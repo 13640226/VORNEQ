@@ -28,7 +28,7 @@ from apps.ai_core.engine.budget import BudgetExceeded
 LEDGER_ALIAS = "ai_ledger"
 INPUT_OVERHEAD_TOKENS = 2000     # message framing + structured-output schema (conservative)
 SAFETY_FACTOR_NUM, SAFETY_FACTOR_DEN = 5, 4   # x1.25 on the worst-case estimate
-MAX_TOTAL_MICRO = 100_000_000    # 100 USD: refuse obviously wrong provisioning
+MAX_TOTAL_MICRO = 9_223_372_036_854_775_807  # PostgreSQL bigint bound; no fixed business spend cap
 EXPECTED_SERVICES = {"staging": "srv-dbm7dvc9v7es7393g70g", "production": "srv-dadn07eq1p3s73eccau0"}
 _SHA = re.compile(r"[0-9a-f]{40}\Z")
 _DB_NAME = re.compile(r"[A-Za-z0-9_]{1,63}\Z")
@@ -144,8 +144,8 @@ def reserve_with_config(config: LedgerConfig, *, environment, service_id, git_sh
                 raise LedgerUnavailable("environment not allowed by ledger")
             if account.model_id != model:
                 raise LedgerUnavailable("model not approved by ledger")
-            if account.total_allowance_micro > MAX_TOTAL_MICRO:
-                raise LedgerUnavailable("ledger allowance outside sanity bound")
+            if account.total_allowance_micro <= 0 or account.total_allowance_micro > MAX_TOTAL_MICRO:
+                raise LedgerUnavailable("invalid ledger allowance")
             amount = worst_case_cost_micro(
                 input_bytes=input_bytes, max_output_tokens=max_output_tokens,
                 input_price=account.input_price_micro_per_mtok,

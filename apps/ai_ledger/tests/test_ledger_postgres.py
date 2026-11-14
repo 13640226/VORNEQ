@@ -74,6 +74,13 @@ class SharedLedgerPostgresTests(TransactionTestCase):
         self.assertGreaterEqual(acc.remaining_micro(), 0)
         return acc
 
+    def test_allowance_above_legacy_100_usd_still_reserves_and_enforces_balance(self):
+        h.provision(1, extra=150_000_000)
+        reservation = do_reserve()
+        self.assertGreater(account().total_allowance_micro, 100_000_000)
+        self.assertEqual(account().reserved_micro, reservation.amount_micro)
+        self.assert_invariants()
+
     def test_c01_twenty_simultaneous_only_three_affordable(self):
         h.provision(3, extra=h.COST - 1)
         results = race(20, lambda i: do_reserve())
