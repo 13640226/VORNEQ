@@ -16,7 +16,7 @@ class BudgetedProvider:
 
     def generate(self, *, question, language, sources):
         payload = build_request_payload(question, language, sources,
-                                        compact_sources=getattr(self.inner, "compact_sources", False))
+                                        compact_sources=(getattr(self.inner, "compact_sources", False) is True))
         input_bytes = len(getattr(self.inner, "instructions", "").encode("utf-8")) + len(payload.encode("utf-8"))
         reservation = ledger.reserve(actor_id=self.actor_id, model=self.inner.model,
                                      input_bytes=input_bytes,
