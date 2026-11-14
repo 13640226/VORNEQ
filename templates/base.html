@@ -33,7 +33,7 @@
 
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <a href="#main-content" class="skip-link">
         {% trans "Skip to main content" %}
     </a>

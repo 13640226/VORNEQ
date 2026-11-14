@@ -36,6 +36,8 @@ class StagingOwnerChatUITests(TestCase):
             response = self.client.get(self.url + "?lang=fa")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Authorized staging trial")
+        self.assertContains(response, 'class="vq-chat-page"')
+        self.assertContains(response, "data-vq-timeout=")
         self.assertContains(response, reverse("ai_core:ask-grounded"))
         self.assertIn("no-store", response["Cache-Control"])
         self.assertIn("noindex", response["X-Robots-Tag"])
@@ -76,3 +78,26 @@ class StagingOwnerChatUITests(TestCase):
         self.assertIn("candidate.origin === window.location.origin", js)
         self.assertIn('link.textContent = titleText', js)
         self.assertIn("vq-chat__sources", css)
+
+    def test_mobile_header_and_validated_citation_rendering_contract(self):
+        """Chat-only responsive rules, escaped source evidence, and timeout UX."""
+        from pathlib import Path
+        from django.conf import settings
+        base = Path(settings.BASE_DIR)
+        nav = (base / "templates/base.html").read_text(encoding="utf-8")
+        css = (base / "assets/css/phase-c-chat.css").read_text(encoding="utf-8")
+        js = (base / "assets/js/phase-c-chat.js").read_text(encoding="utf-8")
+        self.assertIn('<body class="{% block body_class %}{% endblock %}">', nav)
+        self.assertIn(".vq-chat-page .standalone-nav", css)
+        self.assertIn("position: static;", css)
+        self.assertIn("grid-template-areas:", css)
+        self.assertIn("min-block-size: 44px;", css)
+        self.assertIn("scroll-margin-block-start:", css)
+        self.assertIn(".vq-chat__quote", css)
+        self.assertIn('quote.textContent = source.evidence_quote;', js)
+        self.assertIn("source.evidence_quote.length <= 300", js)
+        self.assertIn('form.setAttribute("aria-busy", "true")', js)
+        self.assertIn('form.removeAttribute("aria-busy")', js)
+        self.assertIn('if (completed) input.value = "";', js)
+        self.assertIn('error.name === "AbortError"', js)
+        self.assertNotIn("innerHTML", js)

@@ -210,6 +210,7 @@ class GlobalApiTests(NoNetworkMixin, TestCase):
             self.assertIs(data["verified"], False)
             self.assertEqual(data["grounded_status"], "citation_and_quote_checked_claims_unverified")
             self.assertEqual(data["citations"][0]["publisher"], f"Wikipedia ({lang})")
+            self.assertEqual(data["citations"][0]["evidence_quote"], EXCERPTS[lang][:60])
             self.assertEqual(data["citations"][0]["source_class"], "public_web")
             self.assertTrue(data["citations"][0]["url"].startswith(f"https://{lang}.wikipedia.org/wiki/"))
             self.assertEqual(retriever.calls[0][1], lang)
