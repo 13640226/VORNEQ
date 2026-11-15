@@ -4,7 +4,7 @@
 LOCAL/CI utility, not a Production Django migration command.
 No secrets in output. No HTTP write methods. Does not prove TLS backend identity.
 Example:
-  RENDER_API_KEY=<secret> python scripts/c02_tests/verify_render_control_plane.py \
+  RENDER_API_KEY=<secret> python -m scripts.c02_tests.verify_render_control_plane \
       --snapshot c02-runtime.json --expected-sha <sha>
 
 The snapshot must come from the Render Production shell c02_runtime_observation
