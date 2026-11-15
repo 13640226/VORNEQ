@@ -17,7 +17,6 @@ import sys
 from pathlib import Path
 from unittest import mock
 
-import yaml
 from django.test import SimpleTestCase, override_settings
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -45,37 +44,67 @@ C02_DISABLED_WORKFLOWS = (
 OWNER_LOGIN = "13640226"
 
 
-def _load(name: str) -> dict:
-    return yaml.safe_load((WORKFLOWS / name).read_text(encoding="utf-8"))
+def _workflow(name: str) -> str:
+    """Read the actual workflow; no optional YAML dependency in CI."""
+    return (WORKFLOWS / name).read_text(encoding="utf-8")
 
 
-def _triggers(workflow: dict) -> dict:
-    # PyYAML parses the bare key ``on`` as boolean True.
-    return workflow.get("on", workflow.get(True)) or {}
+def _section(text: str, heading: str, indent: int) -> str:
+    """Extract an indentation-bounded YAML mapping; fail closed if absent."""
+    lines = text.splitlines()
+    marker = " " * indent + heading + ":"
+    starts = [i for i, line in enumerate(lines) if line == marker]
+    if len(starts) != 1:
+        raise AssertionError(f"expected exactly one YAML section: {heading}")
+    start = starts[0] + 1
+    end = next((i for i in range(start, len(lines))
+                if lines[i].strip() and not lines[i].lstrip().startswith("#")
+                and len(lines[i]) - len(lines[i].lstrip()) <= indent), len(lines))
+    return "\n".join(lines[start:end])
+
+
+def _mapping_keys(text: str, indent: int) -> list[str]:
+    return [m.group(1) for line in text.splitlines()
+            if (m := re.fullmatch(r" {" + str(indent) + r"}([A-Za-z_][A-Za-z0-9_-]*):(?:.*)", line))]
+
+
+def _jobs(name: str) -> dict[str, str]:
+    text = _section(_workflow(name), "jobs", 0)
+    names = _mapping_keys(text, 2)
+    if not names:
+        raise AssertionError(f"{name}: missing jobs")
+    return {job: _section(text, job, 2) for job in names}
+
+
+def _steps(name: str, job: str) -> list[str]:
+    text = _section(_jobs(name)[job], "steps", 4)
+    chunks = re.split(r"(?m)^      - ", text)
+    return [chunk for chunk in chunks[1:] if chunk.strip()]
 
 
 class C02DatabaseWorkflowHardStopTests(SimpleTestCase):
     def test_database_writing_workflows_stay_disabled(self):
         for name in C02_DISABLED_WORKFLOWS:
             with self.subTest(workflow=name):
-                jobs = _load(name)["jobs"]
-                self.assertTrue(jobs)
-                for job_name, job in jobs.items():
+                for job_name, job in _jobs(name).items():
+                    # Require the job-level guard, not a comment or step-level if.
+                    guards = [line.split("#", 1)[0].strip() for line in job.splitlines()
+                              if line.startswith("    if:")]
                     self.assertEqual(
-                        str(job.get("if", "")).replace(" ", ""),
-                        "${{false}}",
+                        guards, ["if: ${{ false }}"],
                         f"{name}:{job_name} must remain disabled (C02 hard stop)",
                     )
 
     def test_database_workflows_have_no_automatic_trigger(self):
         for name in (*C02_DISABLED_WORKFLOWS, "migrate-production.yml"):
             with self.subTest(workflow=name):
-                self.assertEqual(set(_triggers(_load(name))), {"workflow_dispatch"})
+                triggers = _section(_workflow(name), "on", 0)
+                self.assertEqual(_mapping_keys(triggers, 2), ["workflow_dispatch"])
 
 
 class ProductionMigrationSafeHoldTests(SimpleTestCase):
     def setUp(self):
-        self.steps = _load("migrate-production.yml")["jobs"]["migrate"]["steps"]
+        self.steps = _steps("migrate-production.yml", "migrate")
 
     def _index(self, predicate) -> int:
         for index, step in enumerate(self.steps):
@@ -84,15 +113,14 @@ class ProductionMigrationSafeHoldTests(SimpleTestCase):
         self.fail("expected step not found")
 
     def test_fail_closed_guard_runs_before_any_django_command(self):
-        guard = self._index(lambda s: "db_target_guard.py guard" in str(s.get("run", "")))
-        first_django = self._index(lambda s: "manage.py" in str(s.get("run", "")))
+        guard = self._index(lambda s: "db_target_guard.py guard" in s)
+        first_django = self._index(lambda s: "manage.py" in s)
         self.assertLess(guard, first_django)
 
     def test_guard_step_never_allows_production_target(self):
-        guard = self.steps[self._index(lambda s: "db_target_guard.py guard" in str(s.get("run", "")))]
-        self.assertEqual(str(guard["env"]["ALLOW_PRODUCTION_TARGET"]).lower(), "false")
-        self.assertNotIn("continue-on-error", guard)
-        self.assertNotIn("if", guard)
+        guard = self.steps[self._index(lambda s: "db_target_guard.py guard" in s)]
+        self.assertRegex(guard, r"(?m)^          ALLOW_PRODUCTION_TARGET: ['\\\"]?false['\\\"]? *$")
+        self.assertNotRegex(guard, r"(?m)^        (?:continue-on-error|if):")
 
 
 class DbTargetGuardFailClosedTests(SimpleTestCase):
