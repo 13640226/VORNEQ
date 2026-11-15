@@ -86,6 +86,12 @@ def current_checkout_sha():
         ["git", "rev-parse", "HEAD"], cwd=str(root),
         check=True, capture_output=True, text=True, timeout=10,
     )
+    status = subprocess.run(
+        ["git", "status", "--porcelain"], cwd=str(root),
+        check=True, capture_output=True, text=True, timeout=10,
+    )
+    if status.stdout.strip():
+        raise LabGateError("C02 LAB CHECKOUT DIRTY OR UNTRACKED FILES")
     return result.stdout.strip()
 
 
@@ -190,6 +196,8 @@ def run_lab(expected_sha):
 
             after = snapshot()
             verify_same_write_transaction(before, after, first_driver, connection)
+            if current_checkout_sha() != actual_sha:
+                raise LabGateError("C02 LAB SOURCE SHA DRIFT AFTER DDL")
             if counts() != (2, 2):
                 raise LabGateError("C02 LAB POST MIGRATION SCHEMA/HISTORY MISMATCH")
             if MigrationExecutor(connection).migration_plan([TARGET]):
