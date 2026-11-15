@@ -1,6 +1,6 @@
 # C02 — independent Render control-plane metadata & TOCTOU evidence V1
 
-**Mode:** GITHUB BRANCH ONLY / NO PROD CHANGE / NO MIGRATION / NO DEPLOY
+**Mode:** GITHUB BRANCH ONLY / NO PRODUCTION CHANGE / NO PRODUCTION MIGRATION / NO DEPLOY
 
 **Production baseline recorded 2026-11-15:** `c0bb89c4c3e53a53fa4e6b577c0c78561e678a0d` (Render live before this PR).
 Do not presume this SHA remains current later.
@@ -92,7 +92,20 @@ runs **both actual ai_core.0001 and ai_core.0002** using Django's
   confirm zero ai_core tables and zero ai_core migration rows persisted.
 
 Observed in independent local lab on **2026-11-15**, using throwaway PG18 with
-loopback-only `127.0.0.1:15432`:
+loopback-only `127.0.0.1:15432` (local environment only):
+```powershell
+$env:C02_TEST_LOOPBACK="1"
+$env:VORNEQ_ENV="development"
+python -m scripts.c02_tests.postgres_toctou_lock_negative
+python -m scripts.c02_tests.ai_core_atomic_migration_rehearsal
+```
+The short-lived test DB must be created separately with the exact
+`isolated_c02_test` database and `c02test` user; its Docker port must be
+published only on `127.0.0.1`, never a public interface. Destroy the lab
+container after the experiment. These commands must NEVER be used with
+Production connection strings.
+
+Results:
 ```text
 PASS: exact ai_core 0001/0002 plan under transaction-scoped recorder lock
 PASS: real 0001/0002 DDL and migration history in SAME isolated transaction
