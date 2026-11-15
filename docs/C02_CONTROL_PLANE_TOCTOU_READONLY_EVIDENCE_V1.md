@@ -81,12 +81,36 @@ The script intentionally creates/drops **only** a test table there and proves:
 - A replaced PostgreSQL driver/backend is rejected by
   `postgres_session_guard.assert_same_session`.
 
-This demonstrates a *possible* serialization primitive for a future
-single-transaction guarded migration executor. It does **not** show that
-Django's actual `ai_core.0001` and `0002` DDL, its migration recorder and
-the production routing run atomically in a locked, stable session. A rogue
-schema writer can also ignore an advisory/app lock; arbitrary DDL is not
-blocked by the tested lock on the unrelated test table.
+The separate `scripts/c02_tests/ai_core_atomic_migration_rehearsal.py`
+runs **both actual ai_core.0001 and ai_core.0002** using Django's
+`MigrationExecutor` in a single transaction on the disposable PG18 database:
+- `django_migrations` is locked in `SHARE ROW EXCLUSIVE MODE NOWAIT`;
+- both exact ai_core migrations apply and their recorder rows become visible
+  before commit, on the same driver and backend PID;
+- the plan is empty after their application in that same transaction;
+- a **deliberate exception rolls back** both DDL and history; subsequent reads
+  confirm zero ai_core tables and zero ai_core migration rows persisted.
+
+Observed in independent local lab on **2026-11-15**, using throwaway PG18 with
+loopback-only `127.0.0.1:15432`:
+```text
+PASS: exact ai_core 0001/0002 plan under transaction-scoped recorder lock
+PASS: real 0001/0002 DDL and migration history in SAME isolated transaction
+PASS: stable PostgreSQL driver/backend PID and empty post-apply plan
+PASS: intentional rollback of ALL ai_core DDL and migration records
+PASS: no ai_core schema or migration records persisted
+C02_ISOLATED_AI_CORE_ATOMIC_REHEARSAL_PASS
+```
+
+The lock contention script in the same disposable database also returned
+`C02_ISOLATED_TOCTOU_LOCK_TESTS_PASS`. Both runs exited with code 0.
+
+**Critical scope distinction:** These are actual isolated migration and
+concurrency proofs, not evidence that the Production migration runner is wired
+to the same guarded transaction; the Production `--apply` path is still
+disabled. A rogue schema writer can also bypass a cooperative lock.
+Deployment/service identity needs authenticated backend-bound attestation
+before any Production GO.
 
 ## 4. Approval boundary
 
@@ -96,7 +120,7 @@ blocked by the tested lock on the unrelated test table.
   No Render token or Production credentials in CI.
 - `C02 = OPEN`, `PRODUCTION_MIGRATION = NO_GO`, `AI_PAID_PRODUCTION = OFF`.
 - Future Production migration needs a **new explicit SHA-bound owner decision**
-  after independently verified resource identity, successful same-session
-  actual `ai_core` migration lifecycle in disposable PostgreSQL, backup
-  restore evidence, lock budget and concurrency safety, and final runtime SHA
-  + database + migration plan re-check immediately before use.
+  after independently verified backend resource identity, a production-grade
+  executor that makes plan check and apply atomic in one guarded transaction,
+  backup restore evidence, lock budget and concurrency safety, and final
+  runtime SHA + database + migration plan re-check immediately before use.
