@@ -14,6 +14,7 @@ class GuardedIntegrationTests(TestCase):
         conn = MagicMock()
         conn.vendor = "postgresql"
         conn.connection = object()
+        conn.settings_dict = {"HOST": module.EXPECTED_RENDER_DB_RESOURCE + ".internal"}
         cursor = conn.cursor.return_value.__enter__.return_value
         identity = ("vorneq_production_db", False, "on")
         session = (123, "vorneq_production_db", "vorneq_production_db_user",
@@ -27,7 +28,9 @@ class GuardedIntegrationTests(TestCase):
         ]
         with patch.object(module, "connection", conn), patch.object(
             module, "MigrationExecutor", return_value=executor
-        ), patch.dict(os.environ, {
+        ), patch.object(module.socket, "getaddrinfo", return_value=[
+            (2, 1, 6, "", ("10.0.0.1", 5432))
+        ]), patch.dict(os.environ, {
             "VORNEQ_ENV": "production",
             "RENDER_SERVICE_ID": module.EXPECTED_SERVICE,
             "RENDER_GIT_COMMIT": "a" * 40,
