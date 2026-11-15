@@ -32,6 +32,13 @@ Render docs: Internal URLs are for same-region Render services and are not
 subject to the external IP allowlist; the external URL requires TLS.
 https://render.com/docs/postgresql-creating-connecting
 
+A fresh external **read-only** query via the hosted Render connector was
+attempted and rejected because `ipAllowList=[]` blocks all external clients;
+the hosted connector reports that its IPs are not available for allowlisting.
+**Do not change the firewall/allowlist for this audit.** This limitation is
+recorded as `INDEPENDENT_POSTGRES_SQL=BLOCKED_BY_NETWORK`, not a database
+fault and not a failed or successful backend identity attestation.
+
 **Provider-dependent requirement:** Obtain a backend-bound, independently
 authenticated mapping from the Render database resource ID to the PostgreSQL
 server instance/session. A signed provider attestation, supported immutable
@@ -123,10 +130,9 @@ docker exec vorneq-c02-v2-lab psql -U c02test -d isolated_c02_test -X `
 docker rm -f vorneq-c02-v2-lab
 ```
 
-**Observed 2026-11-15 local run**, before final source-tree-cleanliness
-hardening (rerun final HEAD to obtain formal evidence):
+**Observed 2026-11-15 local run, including final source-tree-cleanliness and SHA recheck guards**, on exact SHA `dfe7c11a9fdaa1a34454224c944b47978857876f` (before this documentation-only update):
 ```text
-14 unit tests PASS
+14 unit tests PASS (Exit Code 0)
 PASS: SHA, lab DB identity, recorder and advisory locks, exact migration plan
 PASS: actual 0001/0002 DDL under same locked transaction and backend
 PASS: deliberate rollback of both ai_core DDL migrations
