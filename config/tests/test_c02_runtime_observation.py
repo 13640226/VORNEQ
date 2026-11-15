@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
-from django.core.management.base import CommandError
+from django.core.management.base import CommandError, OutputWrapper
 from apps.core.management.commands import c02_runtime_observation as module
 
 SHA = "c" * 40
@@ -24,7 +24,8 @@ class C02RuntimeSnapshotTests(TestCase):
             server_port=5432, replica=False, readonly="on", backend_pid=455,
         )
         command = module.Command()
-        command.stdout = io.StringIO()
+        buffer = io.StringIO()
+        command.stdout = OutputWrapper(buffer)
         with patch.object(module, "connection", db), patch.object(
             module, "capture_session", return_value=observed
         ), patch.object(module, "assert_same_session") as continuity, patch.dict(os.environ, {
@@ -41,7 +42,7 @@ class C02RuntimeSnapshotTests(TestCase):
         self.assertEqual(cur.execute.call_args_list[0].args[0], "BEGIN TRANSACTION READ ONLY")
         self.assertEqual(cur.execute.call_args_list[-1].args[0], "ROLLBACK")
         continuity.assert_called_once()
-        result = json.loads(command.stdout.getvalue().splitlines()[0])
+        result = json.loads(buffer.getvalue().splitlines()[0])
         self.assertEqual(result["deploy_sha"], SHA)
         self.assertEqual(result["postgres_major"], 18)
         self.assertNotIn("password", result)
