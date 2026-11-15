@@ -12,6 +12,7 @@ from .staging_policy import hosted_runtime, trial_enabled, actor_allowed
 from .production_policy import production_actor_allowed
 from .views_global import global_ai_available
 from .web_retrieval import WikipediaRetriever
+from .request_recovery import enabled as recovery_enabled
 
 
 def is_chat_enabled():
@@ -53,6 +54,8 @@ def chat_page(request):
             "chat_source_hosts": " ".join(sorted(WikipediaRetriever.allowed_hosts)) if global_ai else "",
             "chat_staging": settings.VORNEQ_ENV == "staging",
             "chat_production": settings.VORNEQ_ENV == "production",
+            "chat_recovery_enabled": global_ai and recovery_enabled(),
+            "chat_recovery_endpoint": reverse("ai_core:request-status"),
         })
     response["Cache-Control"] = "no-store, private"
     response["X-Robots-Tag"] = "noindex, nofollow"

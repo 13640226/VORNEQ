@@ -6,12 +6,13 @@ strict JSON). Global AI adds its own feature flag and its own quota.
 """
 import json
 import os
+import logging
 
 from django.conf import settings
 from django.http import Http404, JsonResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from apps.ai_core.engine.budget import BudgetExceeded
 from apps.ai_core.engine.citation import EvidenceRejected
@@ -29,6 +30,39 @@ from apps.ai_core.staging_policy import actor_allowed, hosted_runtime, trial_ena
 from apps.ai_ledger.service import ledger_enabled
 from apps.ai_core.retrieval_registry import default_retriever
 from apps.ai_core.web_retrieval import RetrievalError, RetrievalTimeout
+from apps.ai_core import request_recovery
+
+_log = logging.getLogger(__name__)
+
+
+def _respond(data, *, status=200, request=None, request_id=None):
+    if request_id is not None and request is not None:
+        try:
+            request_recovery.finish(request, request_id, http_status=status, response=data)
+        except (request_recovery.RecoveryUnavailable, request_recovery.RecoveryNotFound):
+            # The guard remains (or the Redis connection is down). Never try the model again.
+            _log.warning("ai_chat_recovery_result_unavailable")
+    reply = JsonResponse(data, status=status)
+    reply["Cache-Control"] = "private, no-store"
+    return reply
+
+
+@never_cache
+@require_GET
+def recovery_status_view(request):
+    if not request_recovery.enabled() or not global_ai_available():
+        raise Http404("Recovery disabled")
+    if not actor_allowed(request.user):
+        raise Http404("Request unavailable")
+    try:
+        state = request_recovery.status(request, request.GET.get("request_id", ""))
+    except request_recovery.RecoveryInvalid:
+        return _respond({"error": "invalid_request_id"}, status=400)
+    except request_recovery.RecoveryNotFound:
+        return _respond({"error": "not_found"}, status=404)
+    except request_recovery.RecoveryUnavailable:
+        return _respond({"error": "recovery_unavailable"}, status=503)
+    return _respond(state)
 
 
 STAGING_BRIEF_INSTRUCTIONS = (
@@ -91,9 +125,30 @@ def ask_global_view(request):
         question, language = validate(body.get("question"), body.get("language", "fa"))
     except (ValueError, TypeError, UnicodeDecodeError, InputError):
         return JsonResponse({"error": "invalid_input"}, status=400)
-    # Deterministic local routing first: unsupported input costs no quota.
+    # Bind the request ID before routing, including deterministic cost-free 422s,
+    # so Refresh can recover even a rejected request without a ghost status.
+    request_id = None
+    if request_recovery.enabled():
+        request_id = request.headers.get("X-VQ-Request-ID", "")
+        try:
+            prior = request_recovery.claim(request, request_id, question=question, language=language)
+        except request_recovery.RecoveryInvalid:
+            return _respond({"error": "invalid_request_id"}, status=400)
+        except request_recovery.RecoveryNotFound:
+            return _respond({"error": "not_found"}, status=404)
+        except request_recovery.RecoveryConflict:
+            return _respond({"error": "request_id_conflict"}, status=409)
+        except request_recovery.RecoveryUnavailable:
+            return _respond({"error": "recovery_unavailable"}, status=503)
+        if prior["status"] in ("completed", "failed"):
+            return _respond(prior["response"], status=prior["http_status"])
+        if prior["status"] != "claimed":
+            return _respond({"status": prior["status"], "request_id": request_id},
+                            status=202 if prior["status"] == "running" else 409)
+    # Unsupported input is rejected before quota, retrieval, or provider work.
     if route_question(question, language).kind == UNSUPPORTED:
-        return JsonResponse({"error": "UNSUPPORTED_QUESTION"}, status=422)
+        return _respond({"error": "UNSUPPORTED_QUESTION"}, status=422,
+                        request=request, request_id=request_id)
     hosted = settings.VORNEQ_ENV in ("staging", "production")
     # Shared prepaid ledger: mandatory in production, optional in staging. While
     # it governs cost, fixed daily counts are replaced by per-call money
@@ -118,19 +173,17 @@ def ask_global_view(request):
         response = ask_global(question, language, actor=request.user, provider=provider,
                               retriever=default_retriever(), enabled=True)
     except BudgetExceeded:
-        return JsonResponse({"error": "rate_limited"}, status=429)
+        return _respond({"error": "rate_limited"}, status=429, request=request, request_id=request_id)
     except GlobalUnsupported:
-        return JsonResponse({"error": "UNSUPPORTED_QUESTION"}, status=422)
+        return _respond({"error": "UNSUPPORTED_QUESTION"}, status=422, request=request, request_id=request_id)
     except (EvidenceRejected, PhaseBDisabled):
-        return JsonResponse({"error": "INSUFFICIENT_EVIDENCE"}, status=422)
+        return _respond({"error": "INSUFFICIENT_EVIDENCE"}, status=422, request=request, request_id=request_id)
     except RetrievalTimeout:
-        return JsonResponse({"error": "search_timeout"}, status=504)
+        return _respond({"error": "search_timeout"}, status=504, request=request, request_id=request_id)
     except RetrievalError:
-        return JsonResponse({"error": "search_unavailable"}, status=503)
+        return _respond({"error": "search_unavailable"}, status=503, request=request, request_id=request_id)
     except ProviderTimeout:
-        return JsonResponse({"error": "provider_timeout"}, status=504)
+        return _respond({"error": "provider_timeout"}, status=504, request=request, request_id=request_id)
     except GatewayError:
-        return JsonResponse({"error": "provider_unavailable"}, status=503)
-    result = JsonResponse(response)
-    result["Cache-Control"] = "private, no-store"
-    return result
+        return _respond({"error": "provider_unavailable"}, status=503, request=request, request_id=request_id)
+    return _respond(response, request=request, request_id=request_id)

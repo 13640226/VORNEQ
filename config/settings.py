@@ -456,6 +456,10 @@ VORNEQ_AI_PHASE_B_ENABLED = (
 # Phase B (development path or authorized staging trial); Production impossible.
 # Has its own request quota and never inherits VORNEQ_AI_STAGING_UNMETERED.
 VORNEQ_GLOBAL_AI_ENABLED = VORNEQ_AI_PHASE_B_ENABLED and env_bool("VORNEQ_GLOBAL_AI_ENABLED", False)
+# Staging-only request recovery. Default OFF, requires shared Redis and separate rollout approval.
+VORNEQ_AI_CHAT_RECOVERY_ENABLED = (
+    VORNEQ_ENV == "staging" and env_bool("VORNEQ_AI_CHAT_RECOVERY_ENABLED", False)
+)
 # Shared prepaid budget ledger (one authority for Staging AND Production).
 # Disabled unless explicitly configured; never inferred from other flags.
 VORNEQ_AI_LEDGER_ENABLED = (

@@ -16,10 +16,15 @@
   data-vq-loading="{{ chat_labels.loading }}"
   data-vq-error="{{ chat_labels.error }}"
   data-vq-timeout="{{ chat_labels.timeout }}"
+  data-vq-recovery-checking="{{ chat_labels.recoveryChecking }}"
+  data-vq-recovery-uncertain="{{ chat_labels.recoveryUncertain }}"
+  data-vq-recovery-expired="{{ chat_labels.recoveryExpired }}"
   data-vq-empty="{{ chat_labels.empty }}"
   data-vq-sources="{{ chat_labels.sources }}"
   data-vq-status="{{ chat_labels.status }}"
-  data-vq-source-hosts="{{ chat_source_hosts }}">
+  data-vq-source-hosts="{{ chat_source_hosts }}"
+  data-vq-recovery-enabled="{{ chat_recovery_enabled|yesno:'true,false' }}"
+  data-vq-recovery-endpoint="{{ chat_recovery_endpoint }}">
   <header class="vq-chat__header">
     <p class="vq-chat__kicker">VORNEQ · AI · {% if chat_production %}Generated drafts · claims not verified{% elif chat_staging %}Authorized staging trial{% else %}Development preview{% endif %}</p>
     <h1 id="vq-chat-title">{{ chat_labels.title }}</h1>
