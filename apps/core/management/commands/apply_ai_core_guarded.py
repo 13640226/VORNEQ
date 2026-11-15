@@ -9,6 +9,10 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
 
+from apps.core.management.commands.postgres_session_guard import (
+    assert_same_session, capture_session,
+)
+
 TARGET = ("ai_core", "0002_aichatrequestguard")
 EXPECTED = (("ai_core", "0001_initial"), ("ai_core", "0002_aichatrequestguard"))
 EXPECTED_SERVICE = "srv-dadn07eq1p3s73eccau0"
@@ -60,12 +64,14 @@ class Command(BaseCommand):
                     os.environ.get("RENDER_SERVICE_ID"), db, replica, readonly,
                     options["expected_sha"], os.environ.get("RENDER_GIT_COMMIT", "")
                 )
+                baseline_session = capture_session(connection)
                 executor = MigrationExecutor(connection)
                 executor.loader.check_consistent_history(connection)
                 if executor.loader.detect_conflicts():
                     raise CommandError("Migration conflicts")
                 plan = executor.migration_plan([TARGET])
                 verify_plan(plan)
+                assert_same_session(connection, baseline_session)
                 self.stdout.write("PREFLIGHT_PLAN_PASS: exactly ai_core.0001 and ai_core.0002")
                 self.stdout.write("C02_INDEPENDENT_RESOURCE_ATTESTATION: UNKNOWN")
                 self.stdout.write("MIGRATION_GO: NO; no SQL writes performed")
