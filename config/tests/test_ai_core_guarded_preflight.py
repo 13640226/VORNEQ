@@ -1,5 +1,6 @@
 """Negative tests for fail-closed ai_core preflight policy."""
 from unittest import TestCase
+from unittest.mock import patch
 
 from django.core.management.base import CommandError
 
@@ -7,6 +8,8 @@ from apps.core.management.commands.apply_ai_core_guarded import (
     EXPECTED,
     verify_observation,
     verify_plan,
+    verify_render_host_binding,
+    EXPECTED_RENDER_DB_RESOURCE,
 )
 
 
@@ -90,3 +93,50 @@ class GuardedPreflightTests(TestCase):
         from apps.core.management.commands.apply_ai_core_guarded import Command
         with self.assertRaisesRegex(CommandError, "write path deliberately disabled"):
             Command().handle(expected_sha="a"*40, apply=True)
+
+
+class RenderHostBindingTests(TestCase):
+    HOST = EXPECTED_RENDER_DB_RESOURCE + ".internal"
+
+    def test_matching_host_user_ip_port(self):
+        with patch(
+            "apps.core.management.commands.apply_ai_core_guarded.socket.getaddrinfo",
+            return_value=[(2, 1, 6, "", ("10.21.80.49", 5432))],
+        ):
+            self.assertTrue(verify_render_host_binding(
+                self.HOST, "vorneq_production_db_user", "10.21.80.49", 5432
+            ))
+
+    def test_wrong_resource_rejected(self):
+        with self.assertRaises(CommandError):
+            verify_render_host_binding(
+                "dpg-wrong-a.internal", "vorneq_production_db_user", "10.21.80.49", 5432
+            )
+
+    def test_ip_not_in_dns_rejected(self):
+        with patch(
+            "apps.core.management.commands.apply_ai_core_guarded.socket.getaddrinfo",
+            return_value=[(2, 1, 6, "", ("10.21.80.50", 5432))],
+        ), self.assertRaises(CommandError):
+            verify_render_host_binding(
+                self.HOST, "vorneq_production_db_user", "10.21.80.49", 5432
+            )
+
+    def test_wrong_db_user_rejected(self):
+        with self.assertRaises(CommandError):
+            verify_render_host_binding(self.HOST, "other", "10.21.80.49", 5432)
+
+    def test_wrong_port_rejected(self):
+        with self.assertRaises(CommandError):
+            verify_render_host_binding(
+                self.HOST, "vorneq_production_db_user", "10.21.80.49", 15432
+            )
+
+    def test_dns_failure_rejected(self):
+        with patch(
+            "apps.core.management.commands.apply_ai_core_guarded.socket.getaddrinfo",
+            side_effect=OSError("unavailable"),
+        ), self.assertRaises(CommandError):
+            verify_render_host_binding(
+                self.HOST, "vorneq_production_db_user", "10.21.80.49", 5432
+            )
