@@ -52,7 +52,13 @@ def _respond(data, *, status=200, request=None, request_id=None):
 def recovery_status_view(request):
     if not request_recovery.enabled() or not global_ai_available():
         raise Http404("Recovery disabled")
-    if not actor_allowed(request.user):
+    if settings.VORNEQ_ENV == "production":
+        allowed = production_actor_allowed(request.user)
+    elif settings.VORNEQ_ENV == "staging":
+        allowed = actor_allowed(request.user)
+    else:
+        allowed = False
+    if not allowed:
         raise Http404("Request unavailable")
     try:
         state = request_recovery.status(request, request.GET.get("request_id", ""))

@@ -460,6 +460,12 @@ VORNEQ_GLOBAL_AI_ENABLED = VORNEQ_AI_PHASE_B_ENABLED and env_bool("VORNEQ_GLOBAL
 VORNEQ_AI_CHAT_RECOVERY_ENABLED = (
     VORNEQ_ENV == "staging" and env_bool("VORNEQ_AI_CHAT_RECOVERY_ENABLED", False)
 )
+# Production requires its own owner-approved opt-in and a migrated durable guard.
+# The staging trial flag cannot enable recovery in Production.
+VORNEQ_AI_CHAT_RECOVERY_PRODUCTION_ENABLED = (
+    VORNEQ_ENV == "production"
+    and env_bool("VORNEQ_AI_CHAT_RECOVERY_PRODUCTION_ENABLED", False)
+)
 # Shared prepaid budget ledger (one authority for Staging AND Production).
 # Disabled unless explicitly configured; never inferred from other flags.
 VORNEQ_AI_LEDGER_ENABLED = (

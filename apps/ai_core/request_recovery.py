@@ -1,4 +1,4 @@
-"""Staging-only AI request recovery with durable PostgreSQL idempotency.
+"""Staging recovery and opt-in Production recovery with durable idempotency.
 
 The default application database is the authoritative, unique request guard.
 Redis is an ephemeral 15-minute response cache and 24-hour convenience guard.
@@ -24,6 +24,7 @@ RESPONSE_TTL_SECONDS = 15 * 60
 GUARD_TTL_SECONDS = 24 * 60 * 60
 RUNNING_GRACE_SECONDS = 120
 STORE_KEY_PREFIX = "vq:ai:staging:recovery:v1"
+PRODUCTION_KEY_PREFIX = "vq:ai:production:recovery:v1"
 
 
 class RecoveryUnavailable(Exception):
@@ -43,10 +44,12 @@ class RecoveryNotFound(Exception):
 
 
 def enabled():
-    return (
-        getattr(settings, "VORNEQ_ENV", None) == "staging"
-        and getattr(settings, "VORNEQ_AI_CHAT_RECOVERY_ENABLED", False) is True
-    )
+    env = getattr(settings, "VORNEQ_ENV", None)
+    if env == "staging":
+        return getattr(settings, "VORNEQ_AI_CHAT_RECOVERY_ENABLED", False) is True
+    if env == "production":
+        return getattr(settings, "VORNEQ_AI_CHAT_RECOVERY_PRODUCTION_ENABLED", False) is True
+    return False
 
 
 def parse_id(value):
@@ -62,7 +65,7 @@ def parse_id(value):
 
 
 def _require_shared_redis():
-    """Hosted Staging must never use process-local cache for deduplication."""
+    """Hosted AI must never use process-local cache for paid deduplication."""
     conf = settings.CACHES.get("default", {})
     if (conf.get("BACKEND") != "django.core.cache.backends.redis.RedisCache"
             or not getattr(settings, "REDIS_URL", None)):
@@ -81,7 +84,9 @@ def _identity(request):
 
 
 def _keys(request_id):
-    base = f"{STORE_KEY_PREFIX}:{request_id}"
+    # Never reuse a Staging Redis namespace for Production idempotency.
+    prefix = PRODUCTION_KEY_PREFIX if settings.VORNEQ_ENV == "production" else STORE_KEY_PREFIX
+    base = f"{prefix}:{request_id}"
     return base + ":guard", base + ":result"
 
 

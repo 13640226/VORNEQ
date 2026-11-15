@@ -6,6 +6,7 @@ import json
 import os
 import subprocess
 import sys
+import uuid
 from unittest.mock import MagicMock, patch
 
 from django.conf import settings
@@ -25,6 +26,7 @@ from apps.ai_ledger.service import (LEDGER_ALIAS, EmergencyStop, LedgerUnavailab
 from apps.ai_ledger.tests import helpers as h
 
 PROD = dict(VORNEQ_ENV="production", DEBUG=False, VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED=True,
+            VORNEQ_AI_CHAT_RECOVERY_PRODUCTION_ENABLED=True,
             VORNEQ_AI_PRODUCTION_AUTHORIZED_SHA=h.SHA,
             VORNEQ_AI_PRODUCTION_OWNER_AUTH="OWNER-AUTH-AI-PRODUCTION-TEST-01",
             VORNEQ_AI_PRODUCTION_APPROVED_MODEL=h.MODEL, VORNEQ_AI_LEDGER_ENABLED=True,
@@ -110,6 +112,7 @@ class ProductionPolicyTests(SimpleTestCase):
 
     def test_every_guard_is_required(self):
         for s in ({"VORNEQ_ENV": "staging"}, {"DEBUG": True}, {"VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED": False},
+                  {"VORNEQ_AI_CHAT_RECOVERY_PRODUCTION_ENABLED": False},
                   {"VORNEQ_AI_EMERGENCY_STOP": True}, {"VORNEQ_AI_PRODUCTION_AUTHORIZED_SHA": "b" * 40},
                   {"VORNEQ_AI_PRODUCTION_AUTHORIZED_SHA": "short"}, {"VORNEQ_AI_PRODUCTION_OWNER_AUTH": "yes"},
                   {"VORNEQ_AI_PRODUCTION_APPROVED_MODEL": "other-model"}, {"VORNEQ_AI_LEDGER_ENABLED": False}):
@@ -198,6 +201,9 @@ class ProductionEndpointGuardTests(TestCase):
         p.start()
         self.addCleanup(p.stop)
         self.client.force_login(self.user)
+        guard = patch("apps.ai_core.request_recovery._require_shared_redis", return_value=None)
+        guard.start()
+        self.addCleanup(guard.stop)
 
     def post(self):
         with patch("apps.ai_core.views_global.default_retriever") as retr, \
@@ -226,7 +232,8 @@ class ProductionEndpointGuardTests(TestCase):
             retr.return_value = FakeRetriever(evidence("en"))
             r = self.client.post(reverse("ai_core:ask-global"),
                                  data=json.dumps({"question": "What is quantum computing?", "language": "en"}),
-                                 content_type="application/json")
+                                 content_type="application/json",
+                                 HTTP_X_VQ_REQUEST_ID=str(uuid.uuid4()))
         # Ledger alias in tests is unprovisioned -> LedgerUnavailable -> 429, model never called.
         self.assertEqual(r.status_code, 429)
         gen.assert_not_called()

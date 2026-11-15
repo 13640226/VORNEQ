@@ -13,6 +13,7 @@ import re
 from django.conf import settings
 
 from apps.ai_ledger.service import EXPECTED_SERVICES, ledger_enabled
+from apps.ai_core.request_recovery import enabled as recovery_enabled
 
 EXPECTED_PRODUCTION_SERVICE_ID = EXPECTED_SERVICES["production"]
 _SHA = re.compile(r"[0-9a-f]{40}\Z")
@@ -36,6 +37,8 @@ def production_enabled() -> bool:
         getattr(settings, "VORNEQ_ENV", None) != "production"
         or getattr(settings, "DEBUG", True)
         or not getattr(settings, "VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED", False)
+        # Paid Production traffic MUST have an opt-in durable PostgreSQL guard.
+        or not recovery_enabled()
         or getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", False)
         or os.environ.get("RENDER_SERVICE_ID") != EXPECTED_PRODUCTION_SERVICE_ID
     ):
@@ -51,6 +54,8 @@ def production_enabled() -> bool:
             or os.environ.get("VORNEQ_AI_PHASE_B_MODEL", "") != model
             or not os.environ.get("OPENAI_API_KEY", "")):
         return False
+    # request_recovery.claim() independently requires a real shared Redis
+    # backend and the durable PostgreSQL guard before any provider/ledger work.
     return ledger_enabled()
 
 
