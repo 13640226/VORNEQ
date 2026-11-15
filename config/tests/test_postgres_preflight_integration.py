@@ -10,7 +10,7 @@ from apps.core.management.commands import apply_ai_core_guarded as module
 
 
 class GuardedIntegrationTests(TestCase):
-    def run_command(self, change_session=False):
+    def run_command(self, change_session=False, dns_ip="10.0.0.1"):
         conn = MagicMock()
         conn.vendor = "postgresql"
         conn.connection = object()
@@ -29,7 +29,7 @@ class GuardedIntegrationTests(TestCase):
         with patch.object(module, "connection", conn), patch.object(
             module, "MigrationExecutor", return_value=executor
         ), patch.object(module.socket, "getaddrinfo", return_value=[
-            (2, 1, 6, "", ("10.0.0.1", 5432))
+            (2, 1, 6, "", (dns_ip, 5432))
         ]), patch.dict(os.environ, {
             "VORNEQ_ENV": "production",
             "RENDER_SERVICE_ID": module.EXPECTED_SERVICE,
@@ -53,5 +53,10 @@ class GuardedIntegrationTests(TestCase):
 
     def test_preflight_rejects_changed_backend(self):
         cursor, executor = self.run_command(change_session=True)
+        self.assertEqual(cursor.execute.call_args_list[-1].args[0], "ROLLBACK")
+        executor.migrate.assert_not_called()
+
+    def test_mismatched_dns_is_readonly_diagnostic(self):
+        cursor, executor = self.run_command(dns_ip="10.1.99.88")
         self.assertEqual(cursor.execute.call_args_list[-1].args[0], "ROLLBACK")
         executor.migrate.assert_not_called()
