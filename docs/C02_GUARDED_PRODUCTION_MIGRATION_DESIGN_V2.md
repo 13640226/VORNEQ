@@ -32,6 +32,16 @@ Render docs: Internal URLs are for same-region Render services and are not
 subject to the external IP allowlist; the external URL requires TLS.
 https://render.com/docs/postgresql-creating-connecting
 
+Source-level config inspection: repository `render.yaml` currently describes
+a **staging** service, not the live VORNEQ Production service, and its
+`DATABASE_URL` entry is `sync: false`, not a `fromDatabase` control-plane
+reference. `config/settings_render.py` consumes `DATABASE_URL` with
+`dj_database_url`. Consequently this repository file does NOT provide
+provider-managed resource-to-connection provenance for the current Production
+service. A future `fromDatabase` Blueprint binding could strengthen
+control-plane provenance but would require separate review and a Production
+config authorization, and would still need runtime/backend validation.
+
 A fresh external **read-only** query via the hosted Render connector was
 attempted and rejected because `ipAllowList=[]` blocks all external clients;
 the hosted connector reports that its IPs are not available for allowlisting.
