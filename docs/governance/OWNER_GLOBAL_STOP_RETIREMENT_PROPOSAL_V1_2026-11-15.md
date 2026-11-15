@@ -1,6 +1,6 @@
 # VORNEQ — Prospective Global Architecture STOP Retirement Proposal V1
 
-**Status:** OWNER-DIRECTED PROSPECTIVE POLICY AMENDMENT / DRAFT PR / NOT YET MERGED  
+**Status:** OWNER-DIRECTED PROSPECTIVE POLICY AMENDMENT / MERGED (PR #620, `321af35ed86654b4b76472845a79d9cc8e08f22f`) / EFFECTIVE PROSPECTIVELY — see §8
 **Date:** 2026-11-15  
 **Repository:** `13640226/VORNEQ`  
 **Source:** [Issue #340](https://github.com/13640226/VORNEQ/issues/340)  
@@ -57,3 +57,23 @@ C02 = OPEN_CRITICAL
 MIGRATION_GO = NO
 PRODUCTION_PAID_AI = OFF
 ```
+
+## 8. Inkrafttreten (Nachtrag nach dem Merge)
+
+Abschnitt 7 gibt den Stand **vor** dem Merge wieder und bleibt unverändert als Nachweis erhalten.
+
+- PR [#620](https://github.com/13640226/VORNEQ/pull/620) wurde am 2026-11-15 um 13:22:26 UTC vom Eigentümerkonto `13640226` gemergt.
+- Merge-Commit auf `main`: `321af35ed86654b4b76472845a79d9cc8e08f22f`, Parent `6cd03395bacbde762055076f4722555f097d612a`. Der Inhalt ist mit dem PR-Head `77c9236172c32c4bebf47a005ba8fb8dec1dc066` identisch (Blob `889202b4`).
+- CI und Security Audit auf diesem Merge-Commit: `success`.
+- Gemäß §3 gilt die Regel damit prospektiv für gewöhnliche Entwicklung.
+
+```text
+GLOBAL_STOP_RELEASE = EFFECTIVE_PROSPECTIVELY (für gewöhnliche Entwicklung)
+HISTORICAL_STOP_340 = PRESERVED
+TECHNICAL_CONTROLS = UNCHANGED (siehe §4)
+C02 = OPEN_CRITICAL
+MIGRATION_GO = NO
+PRODUCTION_PAID_AI = OFF
+```
+
+Die Bestandsaufnahme aller Verweise nach §6 Nr. 1 steht in `GOVERNANCE_STOP_REFERENCE_INVENTORY_2026-11-15.md`.

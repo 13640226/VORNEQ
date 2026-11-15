@@ -1,3 +1,7 @@
-# Proposed repository-wide code owner.
-# Effective after this change is merged into the default branch.
-* @hamidrezaasadian7-boop
+# Repository-wide code owner: the repository owner.
+# VORNEQ is a one-person project; there is no mandatory independent reviewer
+# for ordinary pull requests (OWNER_DIRECT_MERGE_POLICY_V1_2026-11-06,
+# OWNER_GLOBAL_STOP_RETIREMENT_PROPOSAL_V1_2026-11-15). Previously this file
+# listed the account hamidrezaasadian7-boop, which caused automatic review requests to
+# an account that is not an independent reviewer.
+* @13640226
