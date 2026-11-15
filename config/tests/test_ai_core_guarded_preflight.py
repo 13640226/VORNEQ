@@ -103,9 +103,11 @@ class RenderHostBindingTests(TestCase):
             "apps.core.management.commands.apply_ai_core_guarded.socket.getaddrinfo",
             return_value=[(2, 1, 6, "", ("10.21.80.49", 5432))],
         ):
-            self.assertTrue(verify_render_host_binding(
+            evidence = verify_render_host_binding(
                 self.HOST, "vorneq_production_db_user", "10.21.80.49", 5432
-            ))
+            )
+            self.assertTrue(evidence.dns_server_ip_match)
+            self.assertEqual(evidence.dns_address_count, 1)
 
     def test_wrong_resource_rejected(self):
         with self.assertRaises(CommandError):
@@ -113,11 +115,47 @@ class RenderHostBindingTests(TestCase):
                 "dpg-wrong-a.internal", "vorneq_production_db_user", "10.21.80.49", 5432
             )
 
-    def test_ip_not_in_dns_rejected(self):
+    def test_dns_backend_ip_mismatch_is_diagnostic_not_authorization(self):
         with patch(
             "apps.core.management.commands.apply_ai_core_guarded.socket.getaddrinfo",
             return_value=[(2, 1, 6, "", ("10.21.80.50", 5432))],
-        ), self.assertRaises(CommandError):
+        ):
+            evidence = verify_render_host_binding(
+                self.HOST, "vorneq_production_db_user", "10.21.80.49", 5432
+            )
+        self.assertFalse(evidence.dns_server_ip_match)
+        self.assertEqual(evidence.dns_address_count, 1)
+
+    def test_postgresql_inet_cidr_suffix_normalized(self):
+        with patch(
+            "apps.core.management.commands.apply_ai_core_guarded.socket.getaddrinfo",
+            return_value=[(2, 1, 6, "", ("10.21.80.49", 5432))],
+        ):
+            evidence = verify_render_host_binding(
+                self.HOST, "vorneq_production_db_user", "10.21.80.49/32", 5432
+            )
+        self.assertTrue(evidence.dns_server_ip_match)
+
+    def test_malformed_server_ip_rejected(self):
+        with self.assertRaisesRegex(CommandError, "Invalid PostgreSQL server address"):
+            verify_render_host_binding(
+                self.HOST, "vorneq_production_db_user", "not-an-ip", 5432
+            )
+
+    def test_empty_dns_rejected(self):
+        with patch(
+            "apps.core.management.commands.apply_ai_core_guarded.socket.getaddrinfo",
+            return_value=[],
+        ), self.assertRaisesRegex(CommandError, "DNS has no IP records"):
+            verify_render_host_binding(
+                self.HOST, "vorneq_production_db_user", "10.21.80.49", 5432
+            )
+
+    def test_malformed_dns_ip_rejected(self):
+        with patch(
+            "apps.core.management.commands.apply_ai_core_guarded.socket.getaddrinfo",
+            return_value=[(2, 1, 6, "", ("not-an-ip", 5432))],
+        ), self.assertRaisesRegex(CommandError, "Cannot validate"):
             verify_render_host_binding(
                 self.HOST, "vorneq_production_db_user", "10.21.80.49", 5432
             )
