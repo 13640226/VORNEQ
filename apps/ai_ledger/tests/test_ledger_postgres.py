@@ -33,6 +33,20 @@ def do_reserve(environment="production", **kw):
                        input_bytes=h.INPUT_BYTES, max_output_tokens=h.MAX_OUT)
 
 
+def do_reserve_explicit(environment="production", **kw):
+    """Thread-safe ledger reservation without patching process-wide os.environ.
+
+    Parallel tests must pass identity explicitly: patch.dict(os.environ) in
+    multiple workers can restore another worker's RENDER_* values.
+    """
+    config = LedgerConfig(h.LEDGER_ID, connections[LEDGER_ALIAS].settings_dict["NAME"])
+    return reserve_with_config(
+        config, environment=environment, service_id=h.runtime(environment)["RENDER_SERVICE_ID"],
+        git_sha=h.SHA, actor_id=kw.get("actor", 7), model=kw.get("model", h.MODEL),
+        input_bytes=h.INPUT_BYTES, max_output_tokens=h.MAX_OUT,
+    )
+
+
 def account():
     return BudgetAccount.objects.using(LEDGER_ALIAS).get(ledger_id=h.LEDGER_ID)
 
@@ -83,14 +97,14 @@ class SharedLedgerPostgresTests(TransactionTestCase):
 
     def test_c01_twenty_simultaneous_only_three_affordable(self):
         h.provision(3, extra=h.COST - 1)
-        results = race(20, lambda i: do_reserve())
+        results = race(20, lambda i: do_reserve_explicit())
         self.assertEqual(sum(1 for r in results if not isinstance(r, str)), 3, results)
         self.assertEqual(results.count("exhausted"), 17)
         self.assertEqual(self.assert_invariants().reserved_micro, 3 * h.COST)
 
     def test_c02_staging_and_production_share_one_cap(self):
         h.provision(4)
-        results = race(12, lambda i: do_reserve("staging" if i % 2 else "production"))
+        results = race(12, lambda i: do_reserve_explicit("staging" if i % 2 else "production"))
         accepted = [r for r in results if not isinstance(r, str)]
         self.assertEqual(len(accepted), 4, results)
         envs = set(BudgetReservation.objects.using(LEDGER_ALIAS).values_list("environment", flat=True))
