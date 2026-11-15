@@ -22,7 +22,12 @@ from apps.core.management.commands.postgres_session_guard import (
 if os.environ.get("VORNEQ_ENV") == "production":
     raise RuntimeError("PRODUCTION ACCESS FORBIDDEN")
 
-DSN = "host=vorneq-c02-db port=5432 dbname=isolated_c02_test user=c02test password=localonly"
+# Explicit Windows host-side lab mode: still only a disposable, loopback-only DB.
+# All other host, port, username and database combinations are forbidden.
+if os.environ.get("C02_TEST_LOOPBACK") == "1":
+    DSN = "host=127.0.0.1 port=15432 dbname=isolated_c02_test user=c02test password=localonly"
+else:
+    DSN = "host=vorneq-c02-db port=5432 dbname=isolated_c02_test user=c02test password=localonly"
 TABLE = "c02_isolated_fence_probe"
 
 
@@ -37,9 +42,14 @@ class Wrapper:
 
 
 with psycopg.connect(DSN) as setup:
-    (database,) = setup.execute("SELECT current_database()").fetchone()
-    if database != "isolated_c02_test":
-        raise RuntimeError("Unsafe database target")
+    database, username, major, replica = setup.execute(
+        "SELECT current_database(), current_user, "
+        "current_setting('server_version_num')::int / 10000, pg_is_in_recovery()"
+    ).fetchone()
+    if (database, username, int(major), replica) != (
+        "isolated_c02_test", "c02test", 18, False
+    ):
+        raise RuntimeError("Unsafe isolated database target identity")
     setup.execute("CREATE TABLE IF NOT EXISTS c02_isolated_fence_probe (id bigint PRIMARY KEY)")
 print("PASS: disposable database identity")
 
