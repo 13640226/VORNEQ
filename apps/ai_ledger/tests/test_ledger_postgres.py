@@ -282,6 +282,7 @@ class ProductionEndpointLedgerTests(TransactionTestCase):
                "VORNEQ_AI_PHASE_B_MODEL": h.MODEL, "OPENAI_API_KEY": "sk-synthetic-never-use"}
         for p in (patch.dict(os.environ, env, clear=True),
                   override_settings(VORNEQ_ENV="production", DEBUG=False, VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED=True,
+                                    VORNEQ_AI_CHAT_RECOVERY_PRODUCTION_ENABLED=True,
                                     VORNEQ_AI_PRODUCTION_AUTHORIZED_SHA=h.SHA,
                                     VORNEQ_AI_PRODUCTION_OWNER_AUTH="OWNER-AUTH-AI-PRODUCTION-TEST-01",
                                     VORNEQ_AI_PRODUCTION_APPROVED_MODEL=h.MODEL,
@@ -290,6 +291,9 @@ class ProductionEndpointLedgerTests(TransactionTestCase):
             p.enable() if hasattr(p, "enable") else p.start()
             self.addCleanup(p.disable if hasattr(p, "disable") else p.stop)
         self.client.force_login(self.user)
+        redis_guard = patch("apps.ai_core.request_recovery._require_shared_redis", return_value=None)
+        redis_guard.start()
+        self.addCleanup(redis_guard.stop)
         from django.core.cache import cache
         cache.clear()
 
@@ -303,7 +307,8 @@ class ProductionEndpointLedgerTests(TransactionTestCase):
                       side_effect=generate) as gen:
             r = self.client.post(reverse("ai_core:ask-global"),
                                  data=json.dumps({"question": "What is quantum computing?", "language": "en"}),
-                                 content_type="application/json")
+                                 content_type="application/json",
+                                 HTTP_X_VQ_REQUEST_ID=str(uuid.uuid4()))
         return r, gen.call_count
 
     def test_budget_governs_production_calls(self):
