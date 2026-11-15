@@ -3,8 +3,10 @@
 C02 requires independently verified Render resource identity and same-context
 attestation; neither a caller-provided IP nor Django's database name proves it.
 """
+import ipaddress
 import os
 import socket
+from dataclasses import dataclass
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
@@ -38,27 +40,44 @@ def verify_observation(service, database, replica, readonly, expected_sha, actua
         raise CommandError("Deployed SHA mismatch")
 
 
-def verify_render_host_binding(host, username, server_address, server_port):
-    """Defence in depth: verify configured Render host and live socket endpoint.
+@dataclass(frozen=True)
+class HostBindingEvidence:
+    """Advisory DNS comparison; not independent Render resource attestation."""
 
-    The caller must independently attest the Render resource ID; DNS and
-    environment variables alone are not independent proof of resource identity.
+    dns_server_ip_match: bool
+    dns_address_count: int
+
+
+def verify_render_host_binding(host, username, server_address, server_port):
+    """Validate expected host/user/port and collect non-authoritative DNS evidence.
+
+    PostgreSQL inet_server_addr() may identify a backend behind a network
+    proxy or NAT, while DNS resolves the connection frontend. Requiring equal
+    IPs incorrectly rejects valid connections; equality does not prove Render
+    resource identity either. This function only supports a READ-ONLY
+    preflight; the migration write path remains disabled.
     """
     if not isinstance(host, str) or host.split(".")[0].lower() != EXPECTED_RENDER_DB_RESOURCE:
         raise CommandError("Configured PostgreSQL hostname does not match expected Render resource")
     if username != EXPECTED_DATABASE_USER or server_port != 5432 or not server_address:
         raise CommandError("PostgreSQL user, port or server address mismatch")
     try:
+        observed = ipaddress.ip_interface(server_address).ip
+    except (ValueError, TypeError) as exc:
+        raise CommandError("Invalid PostgreSQL server address") from exc
+    try:
         addresses = {
-            item[4][0] for item in socket.getaddrinfo(
-                host, server_port, type=socket.SOCK_STREAM
-            )
+            ipaddress.ip_address(item[4][0])
+            for item in socket.getaddrinfo(host, server_port, type=socket.SOCK_STREAM)
         }
-    except OSError as exc:
-        raise CommandError("Cannot resolve configured PostgreSQL host") from exc
-    if server_address not in addresses:
-        raise CommandError("Connected PostgreSQL server IP differs from configured host")
-    return True
+    except (OSError, ValueError, TypeError, IndexError) as exc:
+        raise CommandError("Cannot validate configured PostgreSQL host DNS") from exc
+    if not addresses:
+        raise CommandError("Configured PostgreSQL host DNS has no IP records")
+    return HostBindingEvidence(
+        dns_server_ip_match=observed in addresses,
+        dns_address_count=len(addresses),
+    )
 
 
 class Command(BaseCommand):
@@ -91,7 +110,7 @@ class Command(BaseCommand):
                     options["expected_sha"], os.environ.get("RENDER_GIT_COMMIT", "")
                 )
                 baseline_session = capture_session(connection)
-                verify_render_host_binding(
+                host_evidence = verify_render_host_binding(
                     connection.settings_dict.get("HOST", ""),
                     baseline_session.username,
                     baseline_session.server_address,
@@ -105,7 +124,16 @@ class Command(BaseCommand):
                 verify_plan(plan)
                 assert_same_session(connection, baseline_session)
                 self.stdout.write("PREFLIGHT_PLAN_PASS: exactly ai_core.0001 and ai_core.0002")
-                self.stdout.write("C02_RENDER_HOST_BINDING: VERIFIED_IN_SESSION")
+                self.stdout.write("C02_CONFIGURED_RENDER_HOST_POLICY: PASS")
+                self.stdout.write(
+                    "C02_DNS_SERVER_IP_MATCH: "
+                    + ("YES" if host_evidence.dns_server_ip_match else "NO")
+                    + " (DIAGNOSTIC_ONLY)"
+                )
+                self.stdout.write(
+                    "C02_ROUTE_REVIEW_REQUIRED: "
+                    + ("NO" if host_evidence.dns_server_ip_match else "YES")
+                )
                 self.stdout.write("C02_INDEPENDENT_RESOURCE_ATTESTATION: UNKNOWN")
                 self.stdout.write("MIGRATION_GO: NO; no SQL writes performed")
             finally:
