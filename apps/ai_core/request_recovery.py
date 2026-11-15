@@ -1,8 +1,9 @@
-"""Staging-only idempotent AI request recovery.
+"""Staging-only AI request recovery with durable PostgreSQL idempotency.
 
-One POST may claim a UUID once per Redis cache retention window. Every later
-request with that UUID reads status or the cached result, never calls the model.
-This is a bounded safety guard, not an exactly-once guarantee after Redis loss.
+The default application database is the authoritative, unique request guard.
+Redis is an ephemeral 15-minute response cache and 24-hour convenience guard.
+A Redis eviction/restart cannot re-authorize an already accepted request.
+This does not guarantee exactly-once if the database itself loses rows.
 """
 from __future__ import annotations
 
@@ -14,6 +15,10 @@ import uuid
 
 from django.conf import settings
 from django.core.cache import cache
+from django.db import DatabaseError, IntegrityError, transaction
+from django.utils import timezone
+
+from apps.ai_core.models import AIChatRequestGuard
 
 RESPONSE_TTL_SECONDS = 15 * 60
 GUARD_TTL_SECONDS = 24 * 60 * 60
@@ -93,19 +98,35 @@ def _checked_get(key):
         raise RecoveryUnavailable("Redis read failed") from exc
 
 
+def _durable_guard(request_id):
+    """Read the authoritative guard. Database errors always fail closed."""
+    try:
+        return AIChatRequestGuard.objects.using("default").get(request_id=request_id)
+    except AIChatRequestGuard.DoesNotExist as exc:
+        raise RecoveryNotFound("durable request guard not found") from exc
+    except DatabaseError as exc:
+        raise RecoveryUnavailable("durable request guard unavailable") from exc
+
+
 def _snapshot(request, request_id):
+    """A Redis miss must never erase the PostgreSQL duplicate-request guard."""
     _require_shared_redis()
     user_id, session_digest = _identity(request)
-    guard_key, result_key = _keys(request_id)
-    record = _checked_get(guard_key)
-    if not isinstance(record, dict):
-        raise RecoveryNotFound("request not found")
-    if record.get("actor") != user_id or not hmac.compare_digest(
-        str(record.get("session", "")), session_digest
+    durable = _durable_guard(request_id)
+    if durable.actor_id != user_id or not hmac.compare_digest(
+        durable.session_digest, session_digest
     ):
         raise RecoveryNotFound("request not owned by session")
-    if record.get("state") not in ("running", "finished"):
-        raise RecoveryUnavailable("malformed recovery guard")
+    if durable.state not in ("running", "finished"):
+        raise RecoveryUnavailable("malformed durable guard")
+    record = {
+        "actor": durable.actor_id,
+        "session": durable.session_digest,
+        "fingerprint": durable.fingerprint,
+        "state": durable.state,
+        "created_at": int(durable.created_at.timestamp()),
+    }
+    _, result_key = _keys(request_id)
     result = _checked_get(result_key)
     if result is not None:
         if (not isinstance(result, dict) or result.get("status") not in ("completed", "failed")
@@ -113,9 +134,9 @@ def _snapshot(request, request_id):
                 or not isinstance(result.get("response"), dict)):
             raise RecoveryUnavailable("malformed response cache")
         return result, record
-    if record["state"] == "finished":
+    if durable.state == "finished":
         return {"status": "expired"}, record
-    age = max(0, int(time.time()) - int(record.get("created_at", 0)))
+    age = max(0, int(time.time()) - int(durable.created_at.timestamp()))
     if age > RUNNING_GRACE_SECONDS:
         return {"status": "uncertain"}, record
     return {"status": "running"}, record
@@ -135,16 +156,39 @@ def claim(request, request_id, *, question, language):
         "state": "running",
         "created_at": int(time.time()),
     }
+    # A Redis connectivity failure must prevent a new provider request.
+    _checked_get("__vq_ai_recovery_connection_check__")
+    # PRIMARY AUTHORITY: PostgreSQL/SQL unique UUID insert, transactionally
+    # committed *before* any budget, retrieval, ledger, or provider action.
+    # Never DELETE this row to retry an uncertain or completed request.
+    try:
+        with transaction.atomic(using="default"):
+            AIChatRequestGuard.objects.using("default").create(
+                request_id=request_id,
+                actor_id=actor,
+                session_digest=session,
+                fingerprint=fingerprint,
+                state="running",
+            )
+    except IntegrityError:
+        # The earlier request's durable row survives Redis eviction or
+        # complete Redis restart. Read only; never issue a new provider call.
+        snapshot, original = _snapshot(request, request_id)
+        if not hmac.compare_digest(str(original.get("fingerprint", "")), fingerprint):
+            raise RecoveryConflict("same request id used for different content")
+        return snapshot
+    except DatabaseError as exc:
+        raise RecoveryUnavailable("durable idempotency claim unavailable") from exc
     try:
         created = cache.add(guard_key, record, timeout=GUARD_TTL_SECONDS)
     except Exception as exc:
+        # An orphaned durable row is intentional and safe: no provider called.
         raise RecoveryUnavailable("Redis atomic claim failed") from exc
-    if created:
-        return {"status": "claimed"}
-    snapshot, original = _snapshot(request, request_id)
-    if not hmac.compare_digest(str(original.get("fingerprint", "")), fingerprint):
-        raise RecoveryConflict("same request id used for different content")
-    return snapshot
+    if not created:
+        # Existing Redis guard without a corresponding historical DB row:
+        # fail closed rather than trust an ambiguous cache-only signal.
+        raise RecoveryUnavailable("Redis guard already existed before durable claim")
+    return {"status": "claimed"}
 
 
 def status(request, request_id):
@@ -162,12 +206,12 @@ def finish(request, request_id, *, http_status, response):
     _require_shared_redis()
     _identity(request)
     guard_key, result_key = _keys(request_id)
-    original = _checked_get(guard_key)
-    if not isinstance(original, dict):
-        raise RecoveryUnavailable("claim disappeared")
+    durable = _durable_guard(request_id)
     actor, session = _identity(request)
-    if original.get("actor") != actor or original.get("session") != session:
+    if durable.actor_id != actor or not hmac.compare_digest(durable.session_digest, session):
         raise RecoveryNotFound("different principal")
+    if durable.state != "running":
+        raise RecoveryUnavailable("durable guard is not running")
     if not isinstance(response, dict) or not 100 <= http_status <= 599:
         raise RecoveryUnavailable("invalid result")
     value = {
@@ -176,15 +220,35 @@ def finish(request, request_id, *, http_status, response):
         "response": response,
     }
     try:
-        # Persist result FIRST: a crash before the guard update remains recoverable.
+        # Persist response before marking the durable guard finalized.
+        # A cache failure leaves a permanent running guard and blocks replay.
         cache.set(result_key, value, timeout=RESPONSE_TTL_SECONDS)
         if _checked_get(result_key) != value:
             raise RecoveryUnavailable("Redis result write not confirmed")
-        finished = dict(original, state="finished")
-        cache.set(guard_key, finished, timeout=GUARD_TTL_SECONDS)
-        if _checked_get(guard_key) != finished:
-            raise RecoveryUnavailable("Redis guard write not confirmed")
     except RecoveryUnavailable:
         raise
     except Exception as exc:
         raise RecoveryUnavailable("Redis result write failed") from exc
+    try:
+        updated = AIChatRequestGuard.objects.using("default").filter(
+            request_id=request_id,
+            actor_id=actor,
+            session_digest=session,
+            state="running",
+        ).update(state="finished", finished_at=timezone.now())
+        if updated != 1:
+            raise RecoveryUnavailable("durable guard transition not confirmed")
+    except DatabaseError as exc:
+        raise RecoveryUnavailable("durable guard transition failed") from exc
+    # Redis is convenience state only; PostgreSQL remains authoritative.
+    try:
+        cache.set(guard_key, {
+            "actor": actor,
+            "session": session,
+            "fingerprint": durable.fingerprint,
+            "state": "finished",
+            "created_at": int(durable.created_at.timestamp()),
+        }, timeout=GUARD_TTL_SECONDS)
+    except Exception:
+        # The DB is safely finalized; recovery can still use the cached result.
+        pass

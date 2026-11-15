@@ -7,7 +7,11 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from django.test import Client, TestCase, override_settings
+from django.db import DatabaseError, connection, connections
+from django.test import Client, TestCase, TransactionTestCase, override_settings
+from django.utils import timezone
+from datetime import timedelta
+from apps.ai_core.models import AIChatRequestGuard
 from django.urls import reverse
 
 from apps.ai_core import request_recovery as recovery
@@ -117,15 +121,15 @@ class RecoveryEndpointTests(TestCase):
         session = self.client.session
         return SimpleNamespace(user=self.owner, session=session)
 
-    def test_parallel_claims_have_one_owner_only(self):
-        from concurrent.futures import ThreadPoolExecutor
+    def test_repeated_claims_have_one_owner_only(self):
+        # SQLite TestCase uses a wrapping transaction, not shared across
+        # threads. Real PostgreSQL concurrency is tested separately below.
         request = self._request_with_session()
-        def attempt(_):
-            return recovery.claim(
-                request, self.id, question="What is quantum computing?", language="en"
-            )["status"]
-        with ThreadPoolExecutor(max_workers=8) as pool:
-            outcomes = list(pool.map(attempt, range(8)))
+        outcomes = [
+            recovery.claim(request, self.id,
+                           question="What is quantum computing?", language="en")["status"]
+            for _ in range(8)
+        ]
         self.assertEqual(outcomes.count("claimed"), 1)
         self.assertEqual(outcomes.count("running"), 7)
         self.generator.assert_not_called()
@@ -133,9 +137,9 @@ class RecoveryEndpointTests(TestCase):
     def test_stale_running_request_is_uncertain_not_replayed(self):
         request = self._request_with_session()
         recovery.claim(request, self.id, question="What is quantum computing?", language="en")
-        key, _ = recovery._keys(self.id)
-        record = cache.get(key)
-        cache.set(key, dict(record, created_at=int(time.time()) - 130), timeout=86400)
+        AIChatRequestGuard.objects.filter(request_id=self.id).update(
+            created_at=timezone.now() - timedelta(seconds=130)
+        )
         self.assertEqual(self.get_status().json()["status"], "uncertain")
         self.assertEqual(self.post().status_code, 409)
         self.generator.assert_not_called()
@@ -184,6 +188,7 @@ class RecoveryEndpointTests(TestCase):
     def test_cache_claim_failure_fails_closed(self):
         with patch.object(recovery.cache, "add", side_effect=ConnectionError("offline")):
             self.assertEqual(self.post().status_code, 503)
+        self.assertTrue(AIChatRequestGuard.objects.filter(request_id=self.id).exists())
         self.generator.assert_not_called()
 
     def test_redis_policy_denies_local_cache_in_hosted_staging(self):
@@ -205,3 +210,82 @@ class RecoveryEndpointTests(TestCase):
         result = self.post(client=strict)
         self.assertEqual(result.status_code, 403)
         self.generator.assert_not_called()
+
+    def test_durable_guard_survives_total_redis_cache_loss(self):
+        """A 200 response must never be charged twice after Redis reset."""
+        self.assertEqual(self.post().status_code, 200)
+        self.assertEqual(self.generator.call_count, 1)
+        self.assertEqual(AIChatRequestGuard.objects.get(request_id=self.id).state, "finished")
+        cache.clear()
+        self.assertEqual(self.get_status().json()["status"], "expired")
+        repeat = self.post()
+        self.assertEqual(repeat.status_code, 409)
+        self.assertEqual(repeat.json()["status"], "expired")
+        self.generator.assert_called_once()
+
+    def test_redis_outage_after_durable_insert_fails_closed(self):
+        request = self._request_with_session()
+        with patch.object(recovery.cache, "add", side_effect=ConnectionError("offline")):
+            with self.assertRaises(recovery.RecoveryUnavailable):
+                recovery.claim(request, self.id,
+                               question="What is quantum computing?", language="en")
+        self.assertTrue(AIChatRequestGuard.objects.filter(request_id=self.id).exists())
+        cache.clear()
+        # Never re-claim the UUID after losing the Redis guard.
+        self.assertEqual(recovery.claim(
+            request, self.id, question="What is quantum computing?", language="en"
+        )["status"], "running")
+        self.generator.assert_not_called()
+
+    def test_database_unavailable_never_invokes_provider(self):
+        with patch.object(recovery.AIChatRequestGuard.objects, "using",
+                          side_effect=DatabaseError("synthetic database outage")):
+            self.assertEqual(self.post().status_code, 503)
+        self.generator.assert_not_called()
+
+    def test_durable_row_is_missing_no_cache_only_replay(self):
+        request = self._request_with_session()
+        key, _ = recovery._keys(self.id)
+        cache.add(key, {"actor": self.owner.pk}, timeout=86400)
+        with self.assertRaises(recovery.RecoveryUnavailable):
+            recovery.claim(request, self.id,
+                           question="What is quantum computing?", language="en")
+        self.assertTrue(AIChatRequestGuard.objects.filter(request_id=self.id).exists())
+        self.generator.assert_not_called()
+
+
+@override_settings(VORNEQ_ENV="staging", VORNEQ_AI_CHAT_RECOVERY_ENABLED=True)
+class DurableGuardPostgresConcurrencyTests(TransactionTestCase):
+    """Runs on CI's disposable Postgres database, never production."""
+
+    databases = {"default"}
+
+    def test_postgres_unique_claim_with_eight_workers(self):
+        if connection.vendor != "postgresql":
+            self.skipTest("real PostgreSQL concurrency is only checked on PostgreSQL CI")
+        from concurrent.futures import ThreadPoolExecutor
+        from types import SimpleNamespace
+
+        request_id = str(uuid.uuid4())
+        user = SimpleNamespace(pk=7777, is_authenticated=True, is_active=True)
+        request = SimpleNamespace(
+            user=user, session=SimpleNamespace(session_key="synthetic-session")
+        )
+
+        def attempt(_):
+            try:
+                return recovery.claim(
+                    request, request_id,
+                    question="What is quantum computing?", language="en"
+                )["status"]
+            finally:
+                connections.close_all()
+
+        with patch.object(recovery, "_require_shared_redis", return_value=None):
+            with ThreadPoolExecutor(max_workers=8) as pool:
+                observed = list(pool.map(attempt, range(8)))
+        self.assertEqual(observed.count("claimed"), 1, observed)
+        self.assertEqual(observed.count("running"), 7, observed)
+        self.assertEqual(AIChatRequestGuard.objects.filter(
+            request_id=request_id
+        ).count(), 1)
