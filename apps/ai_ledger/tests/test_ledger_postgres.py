@@ -225,13 +225,23 @@ class SharedLedgerPostgresTests(TransactionTestCase):
     def test_c15_concurrent_reserve_and_settle_no_overspend(self):
         h.provision(10)
         first = [do_reserve() for _ in range(5)]
+        config = LedgerConfig(h.LEDGER_ID, connections[LEDGER_ALIAS].settings_dict["NAME"])
+
+        def reserve_without_shared_env_mutation():
+            # patch.dict(os.environ) inside parallel do_reserve() calls races:
+            # one thread can restore the Render identity while another reads it.
+            return reserve_with_config(
+                config, environment="production", service_id=h.runtime()["RENDER_SERVICE_ID"],
+                git_sha=h.SHA, actor_id=7, model=h.MODEL,
+                input_bytes=h.INPUT_BYTES, max_output_tokens=h.MAX_OUT,
+            )
 
         def work(i):
             if i < 5:
                 settle(first[i], usage=(100 * i, 50), outcome="completed") if i % 2 else \
                     settle(first[i], usage=None, outcome="timeout")
                 return "settled"
-            return do_reserve()
+            return reserve_without_shared_env_mutation()
         results = race(16, work)
         accepted = [r for r in results if not isinstance(r, str)]
         # Settled-below-reservation amounts legitimately free room; what must
@@ -241,7 +251,22 @@ class SharedLedgerPostgresTests(TransactionTestCase):
         committed = acc.safety_reserve_micro + acc.consumed_before_micro + acc.reserved_micro \
             + acc.finalized_micro + acc.uncertain_micro
         self.assertLessEqual(committed, acc.total_allowance_micro)
-        self.assertLess(acc.remaining_micro(), h.COST)  # no affordable request left unclaimed
+
+        # A contended batch need not consume all affordable slots: legitimate
+        # fail-closed reservations can be rejected, and some settlements may
+        # finish after competing reservations. Drain only after workers join.
+        for _ in range(11):  # 10 original slots, plus possible settled savings
+            acc = self.assert_invariants()
+            if acc.remaining_micro() < h.COST:
+                break
+            reservation = reserve_without_shared_env_mutation()
+            self.assertEqual(reservation.amount_micro, h.COST)
+        else:
+            self.fail("serial budget drain did not reach exhaustion")
+
+        with self.assertRaises(BudgetExhausted):
+            reserve_without_shared_env_mutation()
+        self.assertLess(self.assert_invariants().remaining_micro(), h.COST)
 
 
 @skipUnless(IS_PG, "real PostgreSQL row locking required")
