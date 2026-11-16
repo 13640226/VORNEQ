@@ -16,7 +16,7 @@ from apps.core import c02_stage_c_runner as runner
 
 SHA = "a" * 40
 OTHER_SHA = "b" * 40
-INTERNAL_URL = ("postgresql://vorneq_production_db_user:synthetic@dpg-dagru1h42hec73eqr960-a"
+INTERNAL_URL = ("postgresql://vorneq_prod_app_rot_20261116:synthetic@dpg-dagru1h42hec73eqr960-a"
                 "/vorneq_production_db")
 
 
@@ -103,10 +103,13 @@ class FutureProductionGateSpecificationTests(SimpleTestCase):
         self.assertEqual((target.database, target.user, target.pg_major),
                          ("vorneq_production_db", "vorneq_production_db_user", 18))
         self.assertEqual(target.release_id, "TEST-0001")
+        self.assertEqual(target.login_user, "vorneq_prod_app_rot_20261116")
 
     def test_each_missing_condition_is_refused(self):
         external = INTERNAL_URL.replace("-a/", "-a.oregon-postgres.render.com/")
+        old_url = INTERNAL_URL.replace("vorneq_prod_app_rot_20261116", "vorneq_production_db_user")
         cases = {
+            "retired login": (_prod_env(DATABASE_URL=old_url), _prod_settings(old_url), SHA),
             "env": (_prod_env(VORNEQ_ENV="staging"), _prod_settings(), SHA),
             "service": (_prod_env(RENDER_SERVICE_ID="srv-other"), _prod_settings(), SHA),
             "deployed sha": (_prod_env(RENDER_GIT_COMMIT=OTHER_SHA), _prod_settings(), SHA),
@@ -125,6 +128,58 @@ class FutureProductionGateSpecificationTests(SimpleTestCase):
             with self.subTest(case=label), self.assertRaises(runner.RunnerRefused):
                 runner.authorize("production", env, SHA, settings, source)
 
+
+class ProductionLoginAndRoleIdentityTests(SimpleTestCase):
+    """Fail-closed identity matrix; strictly mocked, no Production access."""
+
+    TARGET = runner.Target(
+        "production", "vorneq_production_db", "vorneq_production_db_user", 18,
+        "ISOLATED-TEST", login_user="vorneq_prod_app_rot_20261116",
+    )
+    # pid, database, current_user, pg_major, read_only, replica, txid, session_user
+    SNAPSHOT = (
+        1234, "vorneq_production_db", "vorneq_production_db_user",
+        18, "off", False, 5678, "vorneq_prod_app_rot_20261116",
+    )
+
+    def test_rotated_login_with_legacy_execution_role_is_accepted(self):
+        runner._check_identity(self.SNAPSHOT, self.TARGET, runner.RunnerRefused)
+
+    def test_old_login_rejected_even_with_valid_execution_role(self):
+        row = self.SNAPSHOT[:7] + ("vorneq_production_db_user",)
+        with self.assertRaisesRegex(runner.RunnerRefused, "authenticated login"):
+            runner._check_identity(row, self.TARGET, runner.RunnerRefused)
+
+    def test_new_login_rejected_if_execution_role_drifts(self):
+        row = self.SNAPSHOT[:2] + ("vorneq_prod_app_rot_20261116",) + self.SNAPSHOT[3:]
+        with self.assertRaisesRegex(runner.RunnerRefused, "execution-role"):
+            runner._check_identity(row, self.TARGET, runner.RunnerRefused)
+
+    def test_missing_login_expectation_denied(self):
+        target = runner.Target(
+            "production", "vorneq_production_db", "vorneq_production_db_user", 18, "ISOLATED-TEST",
+        )
+        with self.assertRaisesRegex(runner.RunnerRefused, "authenticated login"):
+            runner._check_identity(self.SNAPSHOT, target, runner.RunnerRefused)
+
+    def test_readonly_replica_database_and_version_checks_remain_fail_closed(self):
+        cases = [
+            self.SNAPSHOT[:4] + ("on",) + self.SNAPSHOT[5:],
+            self.SNAPSHOT[:5] + (True,) + self.SNAPSHOT[6:],
+            self.SNAPSHOT[:1] + ("wrong_db",) + self.SNAPSHOT[2:],
+            self.SNAPSHOT[:3] + (17,) + self.SNAPSHOT[4:],
+        ]
+        for row in cases:
+            with self.subTest(row=row), self.assertRaises(runner.RunnerRefused):
+                runner._check_identity(row, self.TARGET, runner.RunnerRefused)
+
+    def test_snapshot_captures_both_identities(self):
+        fake = mock.MagicMock()
+        fake.cursor.return_value.__enter__.return_value.fetchone.return_value = self.SNAPSHOT
+        self.assertEqual(runner._snapshot(fake), self.SNAPSHOT)
+        sql = fake.cursor.return_value.__enter__.return_value.execute.call_args.args[0]
+        self.assertIn("session_user", sql)
+        self.assertIn("current_user", sql)
 
 class LabAuthorizationTests(SimpleTestCase):
     def test_lab_target_accepts_only_disposable_local_test_database(self):
@@ -259,7 +314,7 @@ class StageCRunnerPostgresTests(TransactionTestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
         target = runner.Target("production", self.target.database, self.target.user,
-                               None, "ISOLATED-REPLAY-TEST-001")
+                               None, "ISOLATED-REPLAY-TEST-001", login_user=self.target.user)
         with mock.patch.object(runner, "_verify_schema",
                                side_effect=runner.RunnerAborted("injected failure")):
             with self.assertRaisesRegex(runner.RunnerAborted, "injected failure"):
@@ -273,7 +328,7 @@ class StageCRunnerPostgresTests(TransactionTestCase):
 
     def test_one_use_receipt_rejects_replay_on_new_connection_and_sha(self):
         target = runner.Target("production", self.target.database, self.target.user,
-                               None, "ISOLATED-REPLAY-TEST-002")
+                               None, "ISOLATED-REPLAY-TEST-002", login_user=self.target.user)
         runner._consume_one_use_release(connection, target, SHA)
         with self.assertRaisesRegex(runner.RunnerAborted, "release already consumed"):
             runner._consume_one_use_release(connection, target, SHA)
@@ -285,7 +340,7 @@ class StageCRunnerPostgresTests(TransactionTestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
         target = runner.Target("production", self.target.database, self.target.user,
-                               None, "ISOLATED-TOCTOU-TEST-003")
+                               None, "ISOLATED-TOCTOU-TEST-003", login_user=self.target.user)
         with self.assertRaisesRegex(runner.RunnerAborted, "source SHA drift after release"):
             runner.run(connection, target, SHA, commit=True,
                        source_sha=lambda: OTHER_SHA, out=self.lines.append)
@@ -302,7 +357,7 @@ class StageCRunnerPostgresTests(TransactionTestCase):
 
         barrier = threading.Barrier(2, timeout=10)
         target = runner.Target("production", self.target.database, self.target.user,
-                               None, "ISOLATED-CONCURRENT-TEST-004")
+                               None, "ISOLATED-CONCURRENT-TEST-004", login_user=self.target.user)
 
         def consume(_worker):
             other = thread_connections["default"]
