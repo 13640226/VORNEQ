@@ -14,9 +14,9 @@ from apps.core import c02_operational_binding as binding
 ROOT = Path(__file__).resolve().parents[2]
 NONCE = "0123456789abcdef" * 4
 PASSWORD = "synthetic-Pa55word-not-real"
-INTERNAL_URL = f"postgresql://vorneq_production_db_user:{PASSWORD}@dpg-dagru1h42hec73eqr960-a/vorneq_production_db"
+INTERNAL_URL = f"postgresql://vorneq_prod_app_rot_20261116:{PASSWORD}@dpg-dagru1h42hec73eqr960-a/vorneq_production_db"
 EXTERNAL_URL = (
-    f"postgresql://vorneq_production_db_user:{PASSWORD}@dpg-dagru1h42hec73eqr960-a.oregon-postgres.render.com"
+    f"postgresql://vorneq_prod_app_rot_20261116:{PASSWORD}@dpg-dagru1h42hec73eqr960-a.oregon-postgres.render.com"
     "/vorneq_production_db?sslmode=require"
 )
 
@@ -98,6 +98,15 @@ class ReportTests(SimpleTestCase):
         drift = binding.binding_report({"DATABASE_URL": INTERNAL_URL}, _settings(EXTERNAL_URL), NONCE)
         self.assertFalse(drift["C02_DJANGO_SETTINGS_FROM_DATABASE_URL"])
         self.assertFalse(drift["C02_OPERATIONAL_PRECHECK"])
+
+    def test_retired_login_is_rejected_after_rotation(self):
+        legacy = INTERNAL_URL.replace("vorneq_prod_app_rot_20261116", "vorneq_production_db_user")
+        report = binding.binding_report({"DATABASE_URL": legacy}, _settings(legacy), NONCE)
+        self.assertFalse(report["C02_LOGICAL_TARGET_MATCH"])
+        self.assertFalse(report["C02_OPERATIONAL_PRECHECK"])
+        self.assertEqual(binding.EXPECTED_DATABASE_USER, "vorneq_prod_app_rot_20261116")
+        self.assertEqual(binding.EXPECTED_EXECUTION_ROLE, "vorneq_production_db_user")
+        self.assertNotIn(PASSWORD, repr(report))
 
     def test_missing_url_is_refused(self):
         with self.assertRaises(binding.BindingError):
