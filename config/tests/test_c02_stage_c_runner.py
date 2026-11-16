@@ -46,16 +46,28 @@ LAB_ENV = {"VORNEQ_ENV": "development", "C02_STAGE_C_LAB": "YES"}
 
 class ProductionWritePathGuardTests(SimpleTestCase):
     def test_explicit_production_gate_requires_all_runtime_controls(self):
-        self.assertIs(runner.PRODUCTION_WRITE_ENABLED, True)
-        with self.assertRaisesRegex(runner.RunnerRefused, "SHA-bound owner authorization missing"):
-            runner.authorize(
-                "production", _prod_env(VORNEQ_C02_MIGRATION_AUTH=None),
-                SHA, _prod_settings(), SHA,
-            )
+        self.assertIs(runner.PRODUCTION_WRITE_ENABLED, False)
+        with mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True):
+            with self.assertRaisesRegex(runner.RunnerRefused, "SHA-bound owner authorization missing"):
+                runner.authorize(
+                    "production", _prod_env(VORNEQ_C02_MIGRATION_AUTH=None),
+                    SHA, _prod_settings(), SHA,
+                )
+
+    def test_direct_run_refuses_disabled_production_before_any_sql(self):
+        fake = mock.MagicMock()
+        fake.vendor = "postgresql"
+        target = runner.Target("production", "vorneq_production_db",
+                               "vorneq_production_db_user", 18,
+                               "TEST-DIRECT-REFUSE")
+        with self.assertRaisesRegex(runner.RunnerRefused, "production write path disabled"):
+            runner.run(fake, target, SHA, commit=True, source_sha=lambda: SHA)
+        fake.cursor.assert_not_called()
 
     def test_command_refuses_production_rehearsal_before_sql(self):
         fake = mock.MagicMock()
-        with mock.patch("apps.core.management.commands.c02_stage_c_runner.connections", {"default": fake}), \
+        with mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True), \
+                mock.patch("apps.core.management.commands.c02_stage_c_runner.connections", {"default": fake}), \
                 mock.patch.dict("os.environ", _prod_env()):
             with self.assertRaisesRegex(CommandError, "requires explicit --commit"):
                 call_command("c02_stage_c_runner", "--target", "production", "--expected-sha", SHA,
@@ -65,7 +77,8 @@ class ProductionWritePathGuardTests(SimpleTestCase):
     def test_command_refuses_production_without_fresh_auth_before_sql(self):
         fake = mock.MagicMock()
         fake.settings_dict = _prod_settings()
-        with mock.patch("apps.core.management.commands.c02_stage_c_runner.connections", {"default": fake}), \
+        with mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True), \
+                mock.patch("apps.core.management.commands.c02_stage_c_runner.connections", {"default": fake}), \
                 mock.patch.dict("os.environ", _prod_env(VORNEQ_C02_MIGRATION_AUTH=None)):
             with self.assertRaisesRegex(CommandError, "SHA-bound owner authorization missing"):
                 call_command("c02_stage_c_runner", "--target", "production", "--expected-sha", SHA, "--commit",
@@ -89,6 +102,7 @@ class FutureProductionGateSpecificationTests(SimpleTestCase):
         target = runner.authorize("production", _prod_env(), SHA, _prod_settings(), SHA)
         self.assertEqual((target.database, target.user, target.pg_major),
                          ("vorneq_production_db", "vorneq_production_db_user", 18))
+        self.assertEqual(target.release_id, "TEST-0001")
 
     def test_each_missing_condition_is_refused(self):
         external = INTERNAL_URL.replace("-a/", "-a.oregon-postgres.render.com/")
@@ -238,6 +252,80 @@ class StageCRunnerPostgresTests(TransactionTestCase):
             self.run_runner(commit=True)
         other.rollback()
         self.assertEqual(self.state(), (0, 0))
+
+    def test_one_use_receipt_persists_after_migration_rollback(self):
+        """Only local disposable Django test database is touched."""
+        patcher = mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        target = runner.Target("production", self.target.database, self.target.user,
+                               None, "ISOLATED-REPLAY-TEST-001")
+        with mock.patch.object(runner, "_verify_schema",
+                               side_effect=runner.RunnerAborted("injected failure")):
+            with self.assertRaisesRegex(runner.RunnerAborted, "injected failure"):
+                runner.run(connection, target, SHA, commit=True,
+                           source_sha=lambda: SHA, out=self.lines.append)
+        self.assertEqual(self.state(), (0, 0))
+        with self.assertRaisesRegex(runner.RunnerAborted, "release already consumed"):
+            runner.run(connection, target, SHA, commit=True,
+                       source_sha=lambda: SHA, out=self.lines.append)
+        self.assertEqual(self.state(), (0, 0))
+
+    def test_one_use_receipt_rejects_replay_on_new_connection_and_sha(self):
+        target = runner.Target("production", self.target.database, self.target.user,
+                               None, "ISOLATED-REPLAY-TEST-002")
+        runner._consume_one_use_release(connection, target, SHA)
+        with self.assertRaisesRegex(runner.RunnerAborted, "release already consumed"):
+            runner._consume_one_use_release(connection, target, SHA)
+        with self.assertRaisesRegex(runner.RunnerAborted, "release already consumed"):
+            runner._consume_one_use_release(connection, target, OTHER_SHA)
+
+    def test_source_sha_drift_after_consumption_denies_and_spends_release(self):
+        patcher = mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        target = runner.Target("production", self.target.database, self.target.user,
+                               None, "ISOLATED-TOCTOU-TEST-003")
+        with self.assertRaisesRegex(runner.RunnerAborted, "source SHA drift after release"):
+            runner.run(connection, target, SHA, commit=True,
+                       source_sha=lambda: OTHER_SHA, out=self.lines.append)
+        self.assertEqual(self.state(), (0, 0))
+        with self.assertRaisesRegex(runner.RunnerAborted, "release already consumed"):
+            runner.run(connection, target, SHA, commit=True,
+                       source_sha=lambda: SHA, out=self.lines.append)
+
+    def test_concurrent_one_use_consumption_allows_only_one(self):
+        """Independent connections contend on the unique AuditEvent event_id."""
+        import threading
+        from concurrent.futures import ThreadPoolExecutor
+        from django.db import connections as thread_connections
+
+        barrier = threading.Barrier(2, timeout=10)
+        target = runner.Target("production", self.target.database, self.target.user,
+                               None, "ISOLATED-CONCURRENT-TEST-004")
+
+        def consume(_worker):
+            other = thread_connections["default"]
+            try:
+                barrier.wait()
+                try:
+                    runner._consume_one_use_release(other, target, SHA)
+                    return "consumed"
+                except runner.RunnerAborted as error:
+                    return str(error)
+            finally:
+                other.close()
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            outcomes = list(pool.map(consume, [0, 1]))
+        self.assertEqual(outcomes.count("consumed"), 1, outcomes)
+        self.assertEqual(sum("release already consumed" in result for result in outcomes),
+                         1, outcomes)
+
+    def test_one_use_receipt_requires_release_id(self):
+        target = runner.Target("production", self.target.database, self.target.user, None)
+        with self.assertRaisesRegex(runner.RunnerAborted, "release ID missing"):
+            runner._consume_one_use_release(connection, target, SHA)
 
     def test_command_lab_rehearsal_end_to_end(self):
         out = io.StringIO()

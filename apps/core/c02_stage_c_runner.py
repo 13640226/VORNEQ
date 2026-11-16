@@ -24,7 +24,9 @@ emitted: the write scope is exactly the two migrations.
 from __future__ import annotations
 
 import hmac
+import json
 import re
+import uuid
 from dataclasses import dataclass
 from typing import Callable
 
@@ -34,7 +36,7 @@ from django.db.migrations.recorder import MigrationRecorder
 
 from apps.core import c02_operational_binding as binding
 
-PRODUCTION_WRITE_ENABLED = True
+PRODUCTION_WRITE_ENABLED = False  # C02 open: separate authorization needed
 
 EXPECTED_PLAN = (("ai_core", "0001_initial"), ("ai_core", "0002_aichatrequestguard"))
 TARGET = EXPECTED_PLAN[-1]
@@ -72,6 +74,7 @@ class Target:
     database: str
     user: str
     pg_major: int | None
+    release_id: str | None = None
 
 
 def _require(condition: bool, message: str, error=RunnerRefused):
@@ -101,7 +104,7 @@ def authorize(target_name: str, environ, expected_sha: str, settings_dict: dict,
         _require(binding.settings_match_url(settings_dict, url), "Django settings do not derive from DATABASE_URL")
         _require(settings_dict.get("NAME") == binding.EXPECTED_DATABASE
                  and settings_dict.get("USER") == binding.EXPECTED_DATABASE_USER, "logical database mismatch")
-        return Target("production", binding.EXPECTED_DATABASE, binding.EXPECTED_DATABASE_USER, PRODUCTION_PG_MAJOR)
+        return Target("production", binding.EXPECTED_DATABASE, binding.EXPECTED_DATABASE_USER, PRODUCTION_PG_MAJOR, auth.group("id"))
     if target_name == "lab":
         _require(environ.get("VORNEQ_ENV") == "development", "lab requires VORNEQ_ENV=development")
         _require(environ.get("C02_STAGE_C_LAB") == "YES", "lab requires explicit C02_STAGE_C_LAB=YES")
@@ -179,9 +182,66 @@ def _exact_plan(connection):
     return executor
 
 
+def _consume_one_use_release(connection, target: Target, expected_sha: str) -> None:
+    """Spend release once in an independent durable autocommit connection.
+
+    The existing AuditEvent.event_id UNIQUE constraint provides atomic replay
+    prevention across processes, including after migration rollback. This
+    only enforces consumption; owner issuance must be verified separately.
+    """
+    _require(target.name == "production" and bool(target.release_id),
+             "production release ID missing", RunnerAborted)
+    _require(bool(SHA40.fullmatch(expected_sha)), "expected SHA malformed", RunnerAborted)
+    receipt_id = uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        f"https://github.com/13640226/VORNEQ/c02-owner-release/{target.release_id}",
+    )
+    ledger = connection.copy(alias="c02_one_use_receipt")
+    try:
+        ledger.ensure_connection()
+        _require(ledger.get_autocommit(), "one-use ledger must use autocommit", RunnerAborted)
+        _check_identity(_snapshot(ledger), target, RunnerAborted)
+        with ledger.cursor() as cur:
+            cur.execute("SELECT to_regclass('audit_auditevent')")
+            _require(cur.fetchone()[0] is not None,
+                     "one-use audit ledger table missing", RunnerAborted)
+            cur.execute(
+                """
+                INSERT INTO audit_auditevent
+                    (event_id, schema_version, event_name, actor, target, outcome,
+                     reason_code, correlation_id, metadata, retention_class, timestamp)
+                VALUES (%s, 1, 'c02.production_migration_release_consumed',
+                        %s::jsonb, %s::jsonb, 'granted',
+                        'C02_ONE_USE_CONSUMED', %s, %s::jsonb, 'security', now())
+                ON CONFLICT (event_id) DO NOTHING RETURNING event_id
+                """,
+                [
+                    receipt_id,
+                    json.dumps({"kind": "owner", "source": "sha_bound_release"}),
+                    json.dumps({"service": PRODUCTION_SERVICE_ID, "database": target.database}),
+                    str(receipt_id),
+                    json.dumps({"sha": expected_sha, "release_id": target.release_id}),
+                ],
+            )
+            _require(cur.fetchone() is not None,
+                     "one-use release already consumed; retry denied", RunnerAborted)
+    except RunnerAborted:
+        raise
+    except Exception as exc:
+        # Lost acknowledgements may mean the receipt committed; never auto-retry.
+        raise RunnerAborted(f"one-use ledger unavailable ({type(exc).__name__}); fail closed") from None
+    finally:
+        ledger.close()
+
+
 def run(connection, target: Target, expected_sha: str, *, commit: bool,
         source_sha: Callable[[], str], out: Callable[[str], None] = print) -> dict:
     """Execute the guarded migration for an already *authorized* target."""
+    if target.name == "production":
+        _require(PRODUCTION_WRITE_ENABLED,
+                 "C02 OPEN: production write path disabled", RunnerRefused)
+        _require(bool(target.release_id),
+                 "production one-use authorization missing", RunnerRefused)
     _require(connection.vendor == "postgresql", "PostgreSQL required")
     _require(not connection.in_atomic_block, "runner must own the outermost transaction")
     _require(MigrationRecorder(connection).has_table(), "django_migrations table missing")
@@ -211,6 +271,13 @@ def run(connection, target: Target, expected_sha: str, *, commit: bool,
                          f"session or transaction changed ({label})", RunnerAborted)
 
             same_session("before migrate")
+            if target.name == "production":
+                _consume_one_use_release(connection, target, expected_sha)
+                # The release stays consumed even when this migration rolls back.
+                same_session("after release consumption")
+                _require(hmac.compare_digest(source_sha(), expected_sha),
+                         "source SHA drift after release consumption", RunnerAborted)
+                out("C02_STAGE_C: ONE_USE_RELEASE_CONSUMED")
             out("C02_STAGE_C: SHA, identity, locks and exact plan verified")
             executor.migrate([TARGET])
             same_session("after migrate")
