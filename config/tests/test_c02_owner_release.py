@@ -209,9 +209,11 @@ class OwnerReleaseAuthenticationTests(SimpleTestCase):
             "VORNEQ_C02_BACKUP_SHA256": BACKUP_SHA,
             "VORNEQ_C02_BACKUP_EVIDENCE": "restore-proof-20261116:verified",
         }
+        original_validate = rel.validate_github_comment
+        def at_fixed_time(*args, **kwargs):
+            return original_validate(*args, **kwargs, now=NOW)
         with mock.patch.object(rel, "fetch_github_comment", return_value=comment()) as fetch, \
-                mock.patch.object(rel, "datetime", wraps=datetime) as clock:
-            clock.now.return_value = NOW
+                mock.patch.object(rel, "validate_github_comment", side_effect=at_fixed_time):
             proof = rel.verify_live_owner_release(env, expected_sha=SHA, release_id=RELEASE_ID)
             self.assertEqual(proof.comment_id, ID)
             fetch.assert_called_once_with(ID, "synthetic-read-token")
