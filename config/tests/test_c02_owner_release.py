@@ -210,7 +210,7 @@ class OwnerReleaseAuthenticationTests(SimpleTestCase):
             "VORNEQ_C02_BACKUP_EVIDENCE": "restore-proof-20261116:verified",
         }
         with mock.patch.object(rel, "fetch_github_comment", return_value=comment()) as fetch, \
-                mock.patch.object(rel, "datetime") as clock:
+                mock.patch.object(rel, "datetime", wraps=datetime) as clock:
             clock.now.return_value = NOW
             proof = rel.verify_live_owner_release(env, expected_sha=SHA, release_id=RELEASE_ID)
             self.assertEqual(proof.comment_id, ID)
