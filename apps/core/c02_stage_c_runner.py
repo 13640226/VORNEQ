@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import hmac
 import json
+import os
 import re
 import uuid
 from dataclasses import dataclass
@@ -35,6 +36,7 @@ from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.recorder import MigrationRecorder
 
 from apps.core import c02_operational_binding as binding
+from apps.core import c02_owner_release as owner_release
 
 PRODUCTION_WRITE_ENABLED = False  # C02 open: separate authorization needed
 
@@ -76,6 +78,7 @@ class Target:
     pg_major: int | None
     release_id: str | None = None
     login_user: str | None = None  # Authenticated session_user (required for Production).
+    owner_proof: owner_release.VerifiedOwnerRelease | None = None
 
 
 def _require(condition: bool, message: str, error=RunnerRefused):
@@ -96,6 +99,8 @@ def authorize(target_name: str, environ, expected_sha: str, settings_dict: dict,
         _require(bool(auth) and auth.group("sha") == expected_sha, "SHA-bound owner authorization missing")
         _require(bool(BACKUP_EVIDENCE.fullmatch(environ.get("VORNEQ_C02_BACKUP_EVIDENCE", ""))),
                  "point-of-use backup evidence reference missing")
+        _require(bool(re.fullmatch(r"[0-9a-f]{64}", environ.get("VORNEQ_C02_BACKUP_SHA256", ""))),
+                 "point-of-use backup SHA256 missing")
         _require(str(environ.get("VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED", "")).lower() in _FALSY,
                  "AI must stay disabled during migration")
         url = environ.get("DATABASE_URL", "")
@@ -105,8 +110,17 @@ def authorize(target_name: str, environ, expected_sha: str, settings_dict: dict,
         _require(binding.settings_match_url(settings_dict, url), "Django settings do not derive from DATABASE_URL")
         _require(settings_dict.get("NAME") == binding.EXPECTED_DATABASE
                  and settings_dict.get("USER") == binding.EXPECTED_DATABASE_USER, "logical database mismatch")
+        # The SHA-bearing env string is only a locator, NOT owner-issued approval.
+        # Independently authenticate a fresh, unedited GitHub owner comment.
+        try:
+            owner_proof = owner_release.verify_live_owner_release(
+                environ, expected_sha=expected_sha, release_id=auth.group("id")
+            )
+        except owner_release.OwnerReleaseDenied as exc:
+            raise RunnerRefused(f"independent GitHub owner issuance denied: {exc}") from None
         return Target("production", binding.EXPECTED_DATABASE, binding.EXPECTED_EXECUTION_ROLE,
-                      PRODUCTION_PG_MAJOR, auth.group("id"), login_user=binding.EXPECTED_DATABASE_USER)
+                      PRODUCTION_PG_MAJOR, auth.group("id"), login_user=binding.EXPECTED_DATABASE_USER,
+                      owner_proof=owner_proof)
     if target_name == "lab":
         _require(environ.get("VORNEQ_ENV") == "development", "lab requires VORNEQ_ENV=development")
         _require(environ.get("C02_STAGE_C_LAB") == "YES", "lab requires explicit C02_STAGE_C_LAB=YES")
@@ -249,6 +263,10 @@ def run(connection, target: Target, expected_sha: str, *, commit: bool,
                  "C02 OPEN: production write path disabled", RunnerRefused)
         _require(bool(target.release_id),
                  "production one-use authorization missing", RunnerRefused)
+        _require(isinstance(target.owner_proof, owner_release.VerifiedOwnerRelease)
+                 and target.owner_proof.release_id == target.release_id
+                 and target.owner_proof.sha == expected_sha,
+                 "independent GitHub owner proof missing", RunnerRefused)
     _require(connection.vendor == "postgresql", "PostgreSQL required")
     _require(not connection.in_atomic_block, "runner must own the outermost transaction")
     _require(MigrationRecorder(connection).has_table(), "django_migrations table missing")
@@ -279,6 +297,21 @@ def run(connection, target: Target, expected_sha: str, *, commit: bool,
 
             same_session("before migrate")
             if target.name == "production":
+                # Re-fetch immediately before spending the one-use receipt.
+                # Do not trust a previously cached or caller-supplied manifest.
+                def attest_owner_release(label):
+                    try:
+                        fresh = owner_release.verify_live_owner_release(
+                            os.environ, expected_sha=expected_sha,
+                            release_id=target.release_id,
+                        )
+                    except owner_release.OwnerReleaseDenied as exc:
+                        raise RunnerAborted(f"GitHub owner issuance denied ({label}): {exc}") from None
+                    _require(fresh == target.owner_proof,
+                             f"GitHub owner authorization changed ({label})", RunnerAborted)
+
+                attest_owner_release("before one-use consumption")
+                same_session("after GitHub owner proof")
                 _consume_one_use_release(connection, target, expected_sha)
                 # The release stays consumed even when this migration rolls back.
                 same_session("after release consumption")
@@ -293,6 +326,9 @@ def run(connection, target: Target, expected_sha: str, *, commit: bool,
             _require(not MigrationExecutor(connection).migration_plan([TARGET]),
                      "migration plan not empty before commit", RunnerAborted)
             same_session("pre-commit")
+            if target.name == "production":
+                attest_owner_release("pre-commit")
+                same_session("after pre-commit owner proof")
             out("C02_STAGE_C: PRE_COMMIT_VERIFICATION PASS")
             if not commit:
                 raise _Rehearsal()
