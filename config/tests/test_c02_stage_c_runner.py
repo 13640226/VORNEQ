@@ -13,6 +13,7 @@ from django.db import connection
 from django.test import SimpleTestCase, TransactionTestCase
 
 from apps.core import c02_stage_c_runner as runner
+from apps.core import c02_owner_release as owner_release
 
 SHA = "a" * 40
 OTHER_SHA = "b" * 40
@@ -33,6 +34,7 @@ def _prod_env(**overrides):
         "RENDER_GIT_COMMIT": SHA,
         "VORNEQ_C02_MIGRATION_AUTH": f"OWNER-AUTH-C02-MIGRATION-TEST-0001 @ {SHA}",
         "VORNEQ_C02_BACKUP_EVIDENCE": "render-backup:2026-11-15T21:00Z",
+        "VORNEQ_C02_BACKUP_SHA256": "c" * 64,
         "VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED": "false",
         "DATABASE_URL": INTERNAL_URL,
     }
@@ -99,7 +101,14 @@ class FutureProductionGateSpecificationTests(SimpleTestCase):
         self.addCleanup(patcher.stop)
 
     def test_complete_inputs_yield_the_production_target(self):
-        target = runner.authorize("production", _prod_env(), SHA, _prod_settings(), SHA)
+        proof = owner_release.VerifiedOwnerRelease(
+            "TEST-0001", 1234, SHA, "a" * 64, "c" * 64,
+            "render-backup:2026-11-15T21:00Z",
+            __import__("datetime").datetime(2026, 11, 16, tzinfo=__import__("datetime").timezone.utc),
+        )
+        with mock.patch.object(owner_release, "verify_live_owner_release", return_value=proof):
+            target = runner.authorize("production", _prod_env(), SHA, _prod_settings(), SHA)
+        self.assertIs(target.owner_proof, proof)
         self.assertEqual((target.database, target.user, target.pg_major),
                          ("vorneq_production_db", "vorneq_production_db_user", 18))
         self.assertEqual(target.release_id, "TEST-0001")
@@ -308,20 +317,30 @@ class StageCRunnerPostgresTests(TransactionTestCase):
         other.rollback()
         self.assertEqual(self.state(), (0, 0))
 
+    def _synthetic_release_target(self, release_id):
+        from datetime import datetime, timezone
+        proof = owner_release.VerifiedOwnerRelease(
+            release_id, 123456, SHA, "a" * 64, "c" * 64,
+            "isolated-synthetic-backup", datetime(2099, 1, 1, tzinfo=timezone.utc),
+        )
+        return runner.Target("production", self.target.database, self.target.user,
+                             None, release_id, login_user=self.target.user, owner_proof=proof)
+
     def test_one_use_receipt_persists_after_migration_rollback(self):
         """Only local disposable Django test database is touched."""
         patcher = mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True)
         patcher.start()
         self.addCleanup(patcher.stop)
-        target = runner.Target("production", self.target.database, self.target.user,
-                               None, "ISOLATED-REPLAY-TEST-001", login_user=self.target.user)
-        with mock.patch.object(runner, "_verify_schema",
+        target = self._synthetic_release_target("ISOLATED-REPLAY-TEST-001")
+        with mock.patch.object(owner_release, "verify_live_owner_release", return_value=target.owner_proof), \
+                mock.patch.object(runner, "_verify_schema",
                                side_effect=runner.RunnerAborted("injected failure")):
             with self.assertRaisesRegex(runner.RunnerAborted, "injected failure"):
                 runner.run(connection, target, SHA, commit=True,
                            source_sha=lambda: SHA, out=self.lines.append)
         self.assertEqual(self.state(), (0, 0))
-        with self.assertRaisesRegex(runner.RunnerAborted, "release already consumed"):
+        with mock.patch.object(owner_release, "verify_live_owner_release", return_value=target.owner_proof), \
+                self.assertRaisesRegex(runner.RunnerAborted, "release already consumed"):
             runner.run(connection, target, SHA, commit=True,
                        source_sha=lambda: SHA, out=self.lines.append)
         self.assertEqual(self.state(), (0, 0))
@@ -339,13 +358,14 @@ class StageCRunnerPostgresTests(TransactionTestCase):
         patcher = mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True)
         patcher.start()
         self.addCleanup(patcher.stop)
-        target = runner.Target("production", self.target.database, self.target.user,
-                               None, "ISOLATED-TOCTOU-TEST-003", login_user=self.target.user)
-        with self.assertRaisesRegex(runner.RunnerAborted, "source SHA drift after release"):
+        target = self._synthetic_release_target("ISOLATED-TOCTOU-TEST-003")
+        with mock.patch.object(owner_release, "verify_live_owner_release", return_value=target.owner_proof), \
+                self.assertRaisesRegex(runner.RunnerAborted, "source SHA drift after release"):
             runner.run(connection, target, SHA, commit=True,
                        source_sha=lambda: OTHER_SHA, out=self.lines.append)
         self.assertEqual(self.state(), (0, 0))
-        with self.assertRaisesRegex(runner.RunnerAborted, "release already consumed"):
+        with mock.patch.object(owner_release, "verify_live_owner_release", return_value=target.owner_proof), \
+                self.assertRaisesRegex(runner.RunnerAborted, "release already consumed"):
             runner.run(connection, target, SHA, commit=True,
                        source_sha=lambda: SHA, out=self.lines.append)
 
