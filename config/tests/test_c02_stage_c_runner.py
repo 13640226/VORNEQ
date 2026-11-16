@@ -345,6 +345,40 @@ class StageCRunnerPostgresTests(TransactionTestCase):
                        source_sha=lambda: SHA, out=self.lines.append)
         self.assertEqual(self.state(), (0, 0))
 
+    def test_owner_comment_revoked_before_consumption_refuses_without_receipt(self):
+        """Isolated PostgreSQL: remote proof failure cannot consume release or run DDL."""
+        patcher = mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        target = self._synthetic_release_target("ISOLATED-REVOKED-TEST-005")
+        with mock.patch.object(owner_release, "verify_live_owner_release",
+                               side_effect=owner_release.OwnerReleaseDenied("GitHub comment deleted")), \
+                mock.patch.object(runner, "_consume_one_use_release") as spend:
+            with self.assertRaisesRegex(runner.RunnerAborted, "GitHub owner issuance denied"):
+                runner.run(connection, target, SHA, commit=True,
+                           source_sha=lambda: SHA, out=self.lines.append)
+            spend.assert_not_called()
+        self.assertEqual(self.state(), (0, 0))
+
+    def test_owner_comment_revoked_precommit_rolls_back_but_spends_release(self):
+        """Isolated PostgreSQL: revocation after receipt means rollback and no reuse."""
+        patcher = mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        target = self._synthetic_release_target("ISOLATED-REVOKED-TEST-006")
+        with mock.patch.object(owner_release, "verify_live_owner_release",
+                               side_effect=[target.owner_proof,
+                                            owner_release.OwnerReleaseDenied("GitHub comment deleted")]):
+            with self.assertRaisesRegex(runner.RunnerAborted, "GitHub owner issuance denied"):
+                runner.run(connection, target, SHA, commit=True,
+                           source_sha=lambda: SHA, out=self.lines.append)
+        self.assertEqual(self.state(), (0, 0))
+        with mock.patch.object(owner_release, "verify_live_owner_release", return_value=target.owner_proof):
+            with self.assertRaisesRegex(runner.RunnerAborted, "release already consumed"):
+                runner.run(connection, target, SHA, commit=True,
+                           source_sha=lambda: SHA, out=self.lines.append)
+        self.assertEqual(self.state(), (0, 0))
+
     def test_one_use_receipt_rejects_replay_on_new_connection_and_sha(self):
         target = runner.Target("production", self.target.database, self.target.user,
                                None, "ISOLATED-REPLAY-TEST-002", login_user=self.target.user)
