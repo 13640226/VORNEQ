@@ -30,6 +30,8 @@ def _prod_settings(url=INTERNAL_URL):
 def _prod_env(**overrides):
     env = {
         "VORNEQ_ENV": "production",
+        "VORNEQ_C02_STAGE_C_WRITE_MODE": runner.PRODUCTION_ARM_MODE,
+        "VORNEQ_C02_STAGE_C_ARMED_SHA": SHA,
         "RENDER_SERVICE_ID": runner.PRODUCTION_SERVICE_ID,
         "RENDER_GIT_COMMIT": SHA,
         "VORNEQ_C02_MIGRATION_AUTH": f"OWNER-AUTH-C02-MIGRATION-TEST-0001 @ {SHA}",
@@ -87,6 +89,54 @@ class ProductionWritePathGuardTests(SimpleTestCase):
                              stdout=io.StringIO())
         fake.cursor.assert_not_called()
 
+    def test_conditional_arm_off_by_default_and_not_bypassable_by_legacy_constant(self):
+        self.assertIs(runner.PRODUCTION_WRITE_ENABLED, False)
+        self.assertFalse(runner.production_write_gate_open({}, SHA))
+        self.assertFalse(runner.production_write_gate_open(_prod_env(
+            VORNEQ_C02_STAGE_C_ARMED_SHA=None), SHA))
+        with mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True):
+            self.assertFalse(runner.production_write_gate_open({}, SHA))
+        self.assertTrue(runner.production_write_gate_open(_prod_env(), SHA))
+
+    def test_arm_fail_closed_matrix_without_owner_network_or_sql(self):
+        variants = {
+            "unset mode": {"VORNEQ_C02_STAGE_C_WRITE_MODE": None},
+            "mode false": {"VORNEQ_C02_STAGE_C_WRITE_MODE": "false"},
+            "generic yes": {"VORNEQ_C02_STAGE_C_WRITE_MODE": "YES"},
+            "unknown mode": {"VORNEQ_C02_STAGE_C_WRITE_MODE": "ONE_USE"},
+            "unset sha": {"VORNEQ_C02_STAGE_C_ARMED_SHA": None},
+            "sha mismatch": {"VORNEQ_C02_STAGE_C_ARMED_SHA": OTHER_SHA},
+            "generic wildcard": {"VORNEQ_C02_STAGE_C_ARMED_SHA": "*"},
+            "staging environment": {"VORNEQ_ENV": "staging"},
+            "wrong service": {"RENDER_SERVICE_ID": "srv-other"},
+            "wrong deploy": {"RENDER_GIT_COMMIT": OTHER_SHA},
+        }
+        with mock.patch.object(owner_release, "verify_live_owner_release") as verify:
+            for title, values in variants.items():
+                env = _prod_env(**values)
+                self.assertFalse(runner.production_write_gate_open(env, SHA), title)
+                with self.subTest(title=title), self.assertRaisesRegex(
+                    runner.RunnerRefused, "production write path disabled"
+                ):
+                    runner.authorize("production", env, SHA, _prod_settings(), SHA)
+            verify.assert_not_called()
+
+    def test_direct_run_refuses_missing_arm_even_with_owner_proof_without_sql(self):
+        from datetime import datetime, timezone
+        fake = mock.MagicMock()
+        target = runner.Target(
+            "production", "vorneq_production_db", "vorneq_production_db_user",
+            18, "TEST-DIRECT-REFUSE", login_user="vorneq_prod_app_rot_20261116",
+            owner_proof=owner_release.VerifiedOwnerRelease(
+                "TEST-DIRECT-REFUSE", 123, SHA, "a" * 64, "c" * 64,
+                "synthetic-restore-proof", datetime(2099, 1, 1, tzinfo=timezone.utc),
+            ),
+        )
+        with mock.patch.dict("os.environ", {}, clear=True):
+            with self.assertRaisesRegex(runner.RunnerRefused, "production write path disabled"):
+                runner.run(fake, target, SHA, commit=True, source_sha=lambda: SHA)
+        fake.cursor.assert_not_called()
+
     def test_apply_ai_core_guarded_write_path_still_disabled(self):
         with self.assertRaisesRegex(CommandError, "C02 OPEN"):
             call_command("apply_ai_core_guarded", "--expected-sha", SHA, "--apply", stdout=io.StringIO())
@@ -96,7 +146,7 @@ class FutureProductionGateSpecificationTests(SimpleTestCase):
     """Specifies the gate that would apply once a separate PR enables the flag."""
 
     def setUp(self):
-        patcher = mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True)
+        patcher = mock.patch.dict("os.environ", _prod_env(), clear=True)
         patcher.start()
         self.addCleanup(patcher.stop)
 
@@ -328,7 +378,7 @@ class StageCRunnerPostgresTests(TransactionTestCase):
 
     def test_one_use_receipt_persists_after_migration_rollback(self):
         """Only local disposable Django test database is touched."""
-        patcher = mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True)
+        patcher = mock.patch.dict("os.environ", _prod_env(), clear=True)
         patcher.start()
         self.addCleanup(patcher.stop)
         target = self._synthetic_release_target("ISOLATED-REPLAY-TEST-001")
@@ -347,7 +397,7 @@ class StageCRunnerPostgresTests(TransactionTestCase):
 
     def test_owner_comment_revoked_before_consumption_refuses_without_receipt(self):
         """Isolated PostgreSQL: remote proof failure cannot consume release or run DDL."""
-        patcher = mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True)
+        patcher = mock.patch.dict("os.environ", _prod_env(), clear=True)
         patcher.start()
         self.addCleanup(patcher.stop)
         target = self._synthetic_release_target("ISOLATED-REVOKED-TEST-005")
@@ -362,7 +412,7 @@ class StageCRunnerPostgresTests(TransactionTestCase):
 
     def test_owner_comment_revoked_precommit_rolls_back_but_spends_release(self):
         """Isolated PostgreSQL: revocation after receipt means rollback and no reuse."""
-        patcher = mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True)
+        patcher = mock.patch.dict("os.environ", _prod_env(), clear=True)
         patcher.start()
         self.addCleanup(patcher.stop)
         target = self._synthetic_release_target("ISOLATED-REVOKED-TEST-006")
@@ -389,7 +439,7 @@ class StageCRunnerPostgresTests(TransactionTestCase):
             runner._consume_one_use_release(connection, target, OTHER_SHA)
 
     def test_source_sha_drift_after_consumption_denies_and_spends_release(self):
-        patcher = mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True)
+        patcher = mock.patch.dict("os.environ", _prod_env(), clear=True)
         patcher.start()
         self.addCleanup(patcher.stop)
         target = self._synthetic_release_target("ISOLATED-TOCTOU-TEST-003")
