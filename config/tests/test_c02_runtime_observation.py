@@ -13,14 +13,16 @@ SHA = "c" * 40
 
 
 class C02RuntimeSnapshotTests(TestCase):
-    def run_snapshot(self, user="vorneq_production_db_user", service="srv-dadn07eq1p3s73eccau0"):
+    def run_snapshot(self, user="vorneq_production_db_user",
+                     login_user="vorneq_prod_app_rot_20261116",
+                     service="srv-dadn07eq1p3s73eccau0"):
         db = MagicMock()
         db.vendor = "postgresql"
         db.settings_dict = {"HOST": "dpg-dagru1h42hec73eqr960-a.internal"}
         cur = db.cursor.return_value.__enter__.return_value
         cur.fetchone.return_value = ("vorneq_production_db", False, "on", 180006)
         observed = SimpleNamespace(
-            database="vorneq_production_db", username=user,
+            database="vorneq_production_db", username=user, login_user=login_user,
             server_port=5432, replica=False, readonly="on", backend_pid=455,
         )
         command = module.Command()
@@ -45,6 +47,8 @@ class C02RuntimeSnapshotTests(TestCase):
         result = json.loads(buffer.getvalue().splitlines()[0])
         self.assertEqual(result["deploy_sha"], SHA)
         self.assertEqual(result["postgres_major"], 18)
+        self.assertEqual(result["session_user"], login_user)
+        self.assertEqual(result["current_role"], user)
         self.assertNotIn("password", result)
         self.assertNotIn("token", result)
         return result
@@ -53,8 +57,16 @@ class C02RuntimeSnapshotTests(TestCase):
         self.assertEqual(self.run_snapshot()["database"], "vorneq_production_db")
 
     def test_wrong_user_rejected(self):
-        with self.assertRaisesRegex(CommandError, "Unexpected Production PostgreSQL user"):
+        with self.assertRaisesRegex(CommandError, "login or execution role"):
             self.run_snapshot(user="unrelated")
+
+    def test_retired_login_rejected(self):
+        with self.assertRaisesRegex(CommandError, "login or execution role"):
+            self.run_snapshot(login_user="vorneq_production_db_user")
+
+    def test_missing_login_rejected(self):
+        with self.assertRaisesRegex(CommandError, "login or execution role"):
+            self.run_snapshot(login_user="")
 
     def test_wrong_service_rejected(self):
         with self.assertRaisesRegex(CommandError, "Service or database identity mismatch"):
