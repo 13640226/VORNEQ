@@ -10,7 +10,7 @@ SHA = "a" * 40
 DB = {
     "id": "dpg-dagru1h42hec73eqr960-a",
     "databaseName": "vorneq_production_db",
-    "databaseUser": "vorneq_production_db_user",
+    "databaseUser": "vorneq_prod_app_rot_20261116",
     "environmentId": "evm-da71gna6iojc7385it9g",
     "region": "oregon",
     "role": "primary",
@@ -29,7 +29,9 @@ RUNTIME = {
     "service_id": SERVICE["id"],
     "deploy_sha": SHA,
     "database": DB["databaseName"],
-    "username": DB["databaseUser"],
+    "username": "vorneq_production_db_user",
+    "current_role": "vorneq_production_db_user",
+    "session_user": DB["databaseUser"],
     "configured_host": DB["id"] + ".oregon-postgres.render.com",
     "server_port": 5432,
     "postgres_major": 18,
@@ -110,6 +112,24 @@ class CrossSourceRenderEvidenceTests(TestCase):
     def test_wrong_runtime_user_rejected(self):
         runtime = deepcopy(RUNTIME)
         runtime["username"] = "other_user"
+        with self.assertRaises(CommandError):
+            self.verify(runtime=runtime)
+
+    def test_retired_authenticated_login_rejected(self):
+        runtime = deepcopy(RUNTIME)
+        runtime["session_user"] = "vorneq_production_db_user"
+        with self.assertRaises(CommandError):
+            self.verify(runtime=runtime)
+
+    def test_execution_role_drift_rejected(self):
+        runtime = deepcopy(RUNTIME)
+        runtime["current_role"] = "vorneq_prod_app_rot_20261116"
+        with self.assertRaises(CommandError):
+            self.verify(runtime=runtime)
+
+    def test_missing_authenticated_login_rejected(self):
+        runtime = deepcopy(RUNTIME)
+        runtime.pop("session_user")
         with self.assertRaises(CommandError):
             self.verify(runtime=runtime)
 
