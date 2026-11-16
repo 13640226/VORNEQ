@@ -2,9 +2,11 @@
 
     python manage.py c02_stage_c_runner --target lab --expected-sha <sha> [--commit]
 
-``--target production`` is refused before any SQL while
-``apps.core.c02_stage_c_runner.PRODUCTION_WRITE_ENABLED`` is False.
-Without ``--commit`` the migration is executed and deliberately rolled back.
+``--target production`` requires ``--commit`` and all SHA-bound owner and
+point-of-use Production guards. No production invocation is authorized merely
+by merging/deploying this source.
+Without ``--commit`` an explicitly authorized *lab* rehearsal deliberately
+rolls back the migration.
 """
 import os
 import subprocess
@@ -33,7 +35,7 @@ def deployed_sha() -> str:
 
 
 class Command(BaseCommand):
-    help = "C02 Stage C guarded ai_core migration runner (production write path disabled)"
+    help = "C02 Stage C guarded ai_core migration runner (requires explicit owner/SHA/backup authorization)"
 
     def add_arguments(self, parser):
         parser.add_argument("--target", choices=("lab", "production"), required=True)
@@ -42,8 +44,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         target_name = options["target"]
-        if target_name == "production" and not runner.PRODUCTION_WRITE_ENABLED:
-            raise CommandError("C02 OPEN: production write path disabled (PRODUCTION_WRITE_ENABLED=False)")
+        if target_name == "production":
+            if not runner.PRODUCTION_WRITE_ENABLED:
+                raise CommandError("C02 OPEN: production write path disabled (PRODUCTION_WRITE_ENABLED=False)")
+            if not options["commit"]:
+                raise CommandError("C02 production requires explicit --commit; rehearsal is lab-only")
         source = deployed_sha if target_name == "production" else checkout_sha
         connection = connections["default"]
         try:

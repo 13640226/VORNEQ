@@ -44,19 +44,30 @@ LAB_SETTINGS = {"ENGINE": "django.db.backends.postgresql", "HOST": "127.0.0.1", 
 LAB_ENV = {"VORNEQ_ENV": "development", "C02_STAGE_C_LAB": "YES"}
 
 
-class ProductionWritePathDisabledTests(SimpleTestCase):
-    def test_tripwire_production_write_path_is_disabled(self):
-        self.assertIs(runner.PRODUCTION_WRITE_ENABLED, False)
+class ProductionWritePathGuardTests(SimpleTestCase):
+    def test_explicit_production_gate_requires_all_runtime_controls(self):
+        self.assertIs(runner.PRODUCTION_WRITE_ENABLED, True)
+        with self.assertRaisesRegex(runner.RunnerRefused, "SHA-bound owner authorization missing"):
+            runner.authorize(
+                "production", _prod_env(VORNEQ_C02_MIGRATION_AUTH=None),
+                SHA, _prod_settings(), SHA,
+            )
 
-    def test_production_refused_even_with_complete_valid_inputs(self):
-        with self.assertRaisesRegex(runner.RunnerRefused, "C02 OPEN"):
-            runner.authorize("production", _prod_env(), SHA, _prod_settings(), SHA)
-
-    def test_command_refuses_production_before_any_sql(self):
+    def test_command_refuses_production_rehearsal_before_sql(self):
         fake = mock.MagicMock()
         with mock.patch("apps.core.management.commands.c02_stage_c_runner.connections", {"default": fake}), \
                 mock.patch.dict("os.environ", _prod_env()):
-            with self.assertRaisesRegex(CommandError, "C02 OPEN"):
+            with self.assertRaisesRegex(CommandError, "requires explicit --commit"):
+                call_command("c02_stage_c_runner", "--target", "production", "--expected-sha", SHA,
+                             stdout=io.StringIO())
+        fake.cursor.assert_not_called()
+
+    def test_command_refuses_production_without_fresh_auth_before_sql(self):
+        fake = mock.MagicMock()
+        fake.settings_dict = _prod_settings()
+        with mock.patch("apps.core.management.commands.c02_stage_c_runner.connections", {"default": fake}), \
+                mock.patch.dict("os.environ", _prod_env(VORNEQ_C02_MIGRATION_AUTH=None)):
+            with self.assertRaisesRegex(CommandError, "SHA-bound owner authorization missing"):
                 call_command("c02_stage_c_runner", "--target", "production", "--expected-sha", SHA, "--commit",
                              stdout=io.StringIO())
         fake.cursor.assert_not_called()
