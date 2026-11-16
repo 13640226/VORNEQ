@@ -8,11 +8,13 @@ matching metadata does not prove actual PostgreSQL backend resource identity.
 import re
 
 from django.core.management.base import CommandError
+from apps.core import c02_operational_binding as binding
 
 EXPECTED_POSTGRES_ID = "dpg-dagru1h42hec73eqr960-a"
 EXPECTED_SERVICE_ID = "srv-dadn07eq1p3s73eccau0"
 EXPECTED_DATABASE_NAME = "vorneq_production_db"
-EXPECTED_DATABASE_USER = "vorneq_production_db_user"
+EXPECTED_DATABASE_USER = binding.EXPECTED_DATABASE_USER
+EXPECTED_EXECUTION_ROLE = binding.EXPECTED_EXECUTION_ROLE
 EXPECTED_POSTGRES_MAJOR = 18
 
 _SHA40 = re.compile(r"^[0-9a-f]{40}$")
@@ -53,7 +55,9 @@ def reconcile_render_metadata(postgres, service, runtime, expected_sha):
     )
     _require(runtime.get("service_id"), EXPECTED_SERVICE_ID, "runtime service")
     _require(runtime.get("database"), EXPECTED_DATABASE_NAME, "runtime database")
-    _require(runtime.get("username"), EXPECTED_DATABASE_USER, "runtime database user")
+    _require(runtime.get("username"), EXPECTED_EXECUTION_ROLE, "runtime current_user legacy field")
+    _require(runtime.get("current_role"), EXPECTED_EXECUTION_ROLE, "runtime current_user")
+    _require(runtime.get("session_user"), EXPECTED_DATABASE_USER, "runtime authenticated session_user")
     host = runtime.get("configured_host")
     if not isinstance(host, str) or host.split(".")[0].lower() != EXPECTED_POSTGRES_ID:
         raise CommandError("Configured runtime PostgreSQL host differs from Render resource prefix")
