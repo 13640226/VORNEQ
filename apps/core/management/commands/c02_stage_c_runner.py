@@ -45,8 +45,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         target_name = options["target"]
         if target_name == "production":
-            if not runner.PRODUCTION_WRITE_ENABLED:
-                raise CommandError("C02 OPEN: production write path disabled (PRODUCTION_WRITE_ENABLED=False)")
+            if not runner.production_write_gate_open(os.environ, options["expected_sha"]):
+                raise CommandError("C02 OPEN: production write path disabled (SHA-bound arm missing or mismatched)")
             if not options["commit"]:
                 raise CommandError("C02 production requires explicit --commit; rehearsal is lab-only")
         source = deployed_sha if target_name == "production" else checkout_sha
