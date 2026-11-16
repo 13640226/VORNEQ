@@ -1,9 +1,9 @@
 """C02 Stage C: guarded runner for exactly ai_core.0001 and ai_core.0002.
 
-PRODUCTION WRITE PATH: DISABLED. ``PRODUCTION_WRITE_ENABLED`` is ``False`` and
-a regression test pins it. Enabling it requires a separate pull request bound
-to an owner decision on C02 acceptance; merging or deploying this module does
-not authorize any Production migration.
+PRODUCTION WRITE PATH: PROPOSED FOR CONDITIONAL ENABLEMENT IN THIS BRANCH.
+A guarded Production invocation still requires exact deployed SHA, explicit
+SHA-bound one-use owner authorization, backup evidence and live session checks.
+Merging or deploying this module by itself does not authorize a migration.
 
 The runner executes, in one PostgreSQL transaction on one backend session:
 
@@ -34,7 +34,7 @@ from django.db.migrations.recorder import MigrationRecorder
 
 from apps.core import c02_operational_binding as binding
 
-PRODUCTION_WRITE_ENABLED = False
+PRODUCTION_WRITE_ENABLED = True
 
 EXPECTED_PLAN = (("ai_core", "0001_initial"), ("ai_core", "0002_aichatrequestguard"))
 TARGET = EXPECTED_PLAN[-1]
