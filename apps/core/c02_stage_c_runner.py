@@ -72,9 +72,10 @@ class _Rehearsal(Exception):
 class Target:
     name: str
     database: str
-    user: str
+    user: str  # SQL execution role (current_user).
     pg_major: int | None
     release_id: str | None = None
+    login_user: str | None = None  # Authenticated session_user (required for Production).
 
 
 def _require(condition: bool, message: str, error=RunnerRefused):
@@ -104,7 +105,8 @@ def authorize(target_name: str, environ, expected_sha: str, settings_dict: dict,
         _require(binding.settings_match_url(settings_dict, url), "Django settings do not derive from DATABASE_URL")
         _require(settings_dict.get("NAME") == binding.EXPECTED_DATABASE
                  and settings_dict.get("USER") == binding.EXPECTED_DATABASE_USER, "logical database mismatch")
-        return Target("production", binding.EXPECTED_DATABASE, binding.EXPECTED_DATABASE_USER, PRODUCTION_PG_MAJOR, auth.group("id"))
+        return Target("production", binding.EXPECTED_DATABASE, binding.EXPECTED_EXECUTION_ROLE,
+                      PRODUCTION_PG_MAJOR, auth.group("id"), login_user=binding.EXPECTED_DATABASE_USER)
     if target_name == "lab":
         _require(environ.get("VORNEQ_ENV") == "development", "lab requires VORNEQ_ENV=development")
         _require(environ.get("C02_STAGE_C_LAB") == "YES", "lab requires explicit C02_STAGE_C_LAB=YES")
@@ -124,14 +126,19 @@ def _snapshot(connection):
             "SELECT pg_backend_pid(), current_database(), current_user, "
             "current_setting('server_version_num')::int / 10000, "
             "current_setting('transaction_read_only'), pg_is_in_recovery(), "
-            "txid_current_if_assigned()"
+            "txid_current_if_assigned(), session_user"
         )
         return cursor.fetchone()
 
 
 def _check_identity(snapshot, target: Target, error):
-    _, database, user, major, read_only, replica, _ = snapshot
-    _require(database == target.database and user == target.user, "live session identity mismatch", error)
+    _, database, role, major, read_only, replica, _, login = snapshot
+    _require(database == target.database and role == target.user,
+             "live execution-role or database identity mismatch", error)
+    # current_user can differ from the actual login after role selection.
+    if target.name == "production":
+        _require(bool(target.login_user) and login == target.login_user,
+                 "live authenticated login identity mismatch", error)
     _require(target.pg_major is None or major == target.pg_major, "PostgreSQL major mismatch", error)
     _require(replica is False and read_only == "off", "writable primary session required", error)
 

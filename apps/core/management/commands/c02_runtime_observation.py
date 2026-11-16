@@ -9,8 +9,9 @@ import os
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
 
+from apps.core import c02_operational_binding as binding
 from apps.core.management.commands.apply_ai_core_guarded import (
-    verify_observation, EXPECTED_DATABASE_USER,
+    verify_observation, EXPECTED_EXECUTION_ROLE,
 )
 from apps.core.management.commands.postgres_session_guard import (
     capture_session, assert_same_session,
@@ -46,14 +47,17 @@ class Command(BaseCommand):
                     os.environ.get("RENDER_GIT_COMMIT", ""),
                 )
                 initial = capture_session(connection)
-                if initial.username != EXPECTED_DATABASE_USER:
-                    raise CommandError("Unexpected Production PostgreSQL user")
+                if (initial.username != EXPECTED_EXECUTION_ROLE
+                        or initial.login_user != binding.EXPECTED_DATABASE_USER):
+                    raise CommandError("Unexpected Production PostgreSQL login or execution role")
                 assert_same_session(connection, initial)
                 snapshot = {
                     "service_id": os.environ.get("RENDER_SERVICE_ID"),
                     "deploy_sha": os.environ.get("RENDER_GIT_COMMIT"),
                     "database": initial.database,
-                    "username": initial.username,
+                    "username": initial.username,  # Legacy key; represents current_user.
+                    "current_role": initial.username,
+                    "session_user": initial.login_user,
                     "configured_host": connection.settings_dict.get("HOST", ""),
                     "server_port": initial.server_port,
                     "postgres_major": version_num // 10000,

@@ -12,6 +12,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
 
+from apps.core import c02_operational_binding as binding
 from apps.core.management.commands.postgres_session_guard import (
     assert_same_session, capture_session,
 )
@@ -20,7 +21,8 @@ TARGET = ("ai_core", "0002_aichatrequestguard")
 EXPECTED = (("ai_core", "0001_initial"), ("ai_core", "0002_aichatrequestguard"))
 EXPECTED_SERVICE = "srv-dadn07eq1p3s73eccau0"
 EXPECTED_DATABASE = "vorneq_production_db"
-EXPECTED_DATABASE_USER = "vorneq_production_db_user"
+EXPECTED_EXECUTION_ROLE = binding.EXPECTED_EXECUTION_ROLE
+EXPECTED_DATABASE_USER = EXPECTED_EXECUTION_ROLE  # Legacy alias: current_user, NOT session_user.
 EXPECTED_RENDER_DB_RESOURCE = "dpg-dagru1h42hec73eqr960-a"
 
 
@@ -59,7 +61,7 @@ def verify_render_host_binding(host, username, server_address, server_port):
     """
     if not isinstance(host, str) or host.split(".")[0].lower() != EXPECTED_RENDER_DB_RESOURCE:
         raise CommandError("Configured PostgreSQL hostname does not match expected Render resource")
-    if username != EXPECTED_DATABASE_USER or server_port != 5432 or not server_address:
+    if username != EXPECTED_EXECUTION_ROLE or server_port != 5432 or not server_address:
         raise CommandError("PostgreSQL user, port or server address mismatch")
     try:
         observed = ipaddress.ip_interface(server_address).ip
@@ -110,6 +112,8 @@ class Command(BaseCommand):
                     options["expected_sha"], os.environ.get("RENDER_GIT_COMMIT", "")
                 )
                 baseline_session = capture_session(connection)
+                if baseline_session.login_user != binding.EXPECTED_DATABASE_USER:
+                    raise CommandError("Unexpected authenticated Production PostgreSQL login")
                 host_evidence = verify_render_host_binding(
                     connection.settings_dict.get("HOST", ""),
                     baseline_session.username,

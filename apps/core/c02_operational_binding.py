@@ -27,7 +27,9 @@ from urllib.parse import unquote, urlsplit
 
 EXPECTED_RESOURCE_ID = "dpg-dagru1h42hec73eqr960-a"
 EXPECTED_DATABASE = "vorneq_production_db"
-EXPECTED_DATABASE_USER = "vorneq_production_db_user"
+# Login identity from DATABASE_URL, distinct from the Render execution/owner role.
+EXPECTED_DATABASE_USER = "vorneq_prod_app_rot_20261116"
+EXPECTED_EXECUTION_ROLE = "vorneq_production_db_user"
 EXPECTED_PORT = 5432
 
 _NONCE = re.compile(r"[0-9a-f]{32,128}\Z")

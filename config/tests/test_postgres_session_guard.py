@@ -10,7 +10,7 @@ from apps.core.management.commands.postgres_session_guard import (
 
 
 def fake_connection(row=(123, "vorneq_production_db", "vorneq_production_db_user",
-                         "10.0.0.1", 5432, "on", False)):
+                         "10.0.0.1", 5432, "on", False, "vorneq_prod_app_rot_20261116")):
     conn = MagicMock()
     conn.vendor = "postgresql"
     conn.connection = object()
@@ -44,7 +44,7 @@ class PostgresSessionGuardTests(TestCase):
         baseline = capture_session(conn)
         cursor.fetchone.return_value = (124, "vorneq_production_db",
                                         "vorneq_production_db_user",
-                                        "10.0.0.1", 5432, "on", False)
+                                        "10.0.0.1", 5432, "on", False, "vorneq_prod_app_rot_20261116")
         with self.assertRaises(CommandError):
             assert_same_session(conn, baseline)
 
@@ -53,17 +53,37 @@ class PostgresSessionGuardTests(TestCase):
         baseline = capture_session(conn)
         cursor.fetchone.return_value = (123, "vorneq_production_db",
                                         "vorneq_production_db_user",
-                                        "10.0.0.2", 5432, "on", False)
+                                        "10.0.0.2", 5432, "on", False, "vorneq_prod_app_rot_20261116")
+        with self.assertRaises(CommandError):
+            assert_same_session(conn, baseline)
+
+    def test_session_user_change_detected_even_when_current_user_is_stable(self):
+        conn, cursor = fake_connection()
+        baseline = capture_session(conn)
+        cursor.fetchone.return_value = (
+            123, "vorneq_production_db", "vorneq_production_db_user",
+            "10.0.0.1", 5432, "on", False, "vorneq_production_db_user",
+        )
+        with self.assertRaises(CommandError):
+            assert_same_session(conn, baseline)
+
+    def test_execution_role_change_detected_even_when_login_is_stable(self):
+        conn, cursor = fake_connection()
+        baseline = capture_session(conn)
+        cursor.fetchone.return_value = (
+            123, "vorneq_production_db", "vorneq_prod_app_rot_20261116",
+            "10.0.0.1", 5432, "on", False, "vorneq_prod_app_rot_20261116",
+        )
         with self.assertRaises(CommandError):
             assert_same_session(conn, baseline)
 
     def test_writable_connection(self):
-        conn, _ = fake_connection((123, "db", "user", "10.0.0.1", 5432, "off", False))
+        conn, _ = fake_connection((123, "db", "user", "10.0.0.1", 5432, "off", False, "vorneq_prod_app_rot_20261116"))
         with self.assertRaises(CommandError):
             capture_session(conn)
 
     def test_replica(self):
-        conn, _ = fake_connection((123, "db", "user", "10.0.0.1", 5432, "on", True))
+        conn, _ = fake_connection((123, "db", "user", "10.0.0.1", 5432, "on", True, "vorneq_prod_app_rot_20261116"))
         with self.assertRaises(CommandError):
             capture_session(conn)
 
