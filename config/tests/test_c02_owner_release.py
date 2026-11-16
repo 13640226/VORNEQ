@@ -224,7 +224,15 @@ class OwnerReleaseAuthenticationTests(SimpleTestCase):
             18, RELEASE_ID, login_user="vorneq_prod_app_rot_20261116",
         )
         fake_connection = mock.MagicMock()
-        with mock.patch.object(runner, "PRODUCTION_WRITE_ENABLED", True):
+        # The new exact-SHA arm is required before the separate owner-proof gate.
+        env = {
+            "VORNEQ_C02_STAGE_C_WRITE_MODE": runner.PRODUCTION_ARM_MODE,
+            "VORNEQ_C02_STAGE_C_ARMED_SHA": SHA,
+            "VORNEQ_ENV": "production",
+            "RENDER_SERVICE_ID": runner.PRODUCTION_SERVICE_ID,
+            "RENDER_GIT_COMMIT": SHA,
+        }
+        with mock.patch.dict("os.environ", env, clear=True):
             with self.assertRaisesRegex(runner.RunnerRefused, "independent GitHub owner proof missing"):
                 runner.run(fake_connection, target, SHA, commit=True, source_sha=lambda: SHA)
         fake_connection.cursor.assert_not_called()

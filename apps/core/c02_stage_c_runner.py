@@ -1,9 +1,9 @@
 """C02 Stage C: guarded runner for exactly ai_core.0001 and ai_core.0002.
 
-PRODUCTION WRITE PATH: PROPOSED FOR CONDITIONAL ENABLEMENT IN THIS BRANCH.
-A guarded Production invocation still requires exact deployed SHA, explicit
-SHA-bound one-use owner authorization, backup evidence and live session checks.
-Merging or deploying this module by itself does not authorize a migration.
+PRODUCTION WRITE PATH: SHA-bound conditional arm, default OFF.
+A guarded Production invocation requires an explicit mode and exact live SHA
+arm, PLUS independent GitHub owner issuance, backup evidence, and continuous
+session/transaction identity. Code deployment does not arm or authorize it.
 
 The runner executes, in one PostgreSQL transaction on one backend session:
 
@@ -38,7 +38,10 @@ from django.db.migrations.recorder import MigrationRecorder
 from apps.core import c02_operational_binding as binding
 from apps.core import c02_owner_release as owner_release
 
-PRODUCTION_WRITE_ENABLED = False  # C02 open: separate authorization needed
+PRODUCTION_WRITE_ENABLED = False  # Legacy default remains OFF; never an override.
+PRODUCTION_ARM_MODE_KEY = "VORNEQ_C02_STAGE_C_WRITE_MODE"
+PRODUCTION_ARM_SHA_KEY = "VORNEQ_C02_STAGE_C_ARMED_SHA"
+PRODUCTION_ARM_MODE = "ONE_USE_OWNER_RELEASE"
 
 EXPECTED_PLAN = (("ai_core", "0001_initial"), ("ai_core", "0002_aichatrequestguard"))
 TARGET = EXPECTED_PLAN[-1]
@@ -86,12 +89,30 @@ def _require(condition: bool, message: str, error=RunnerRefused):
         raise error(message)
 
 
+def production_write_gate_open(environ, expected_sha: str) -> bool:
+    """A deploy does not arm Production: exact mode + SHA + Render identity required.
+
+    Do not allow a patched/overridden PRODUCTION_WRITE_ENABLED constant to
+    bypass this function. It is intentionally not a generic production toggle.
+    """
+    if not isinstance(expected_sha, str) or SHA40.fullmatch(expected_sha) is None:
+        return False
+    return (
+        environ.get(PRODUCTION_ARM_MODE_KEY) == PRODUCTION_ARM_MODE
+        and environ.get(PRODUCTION_ARM_SHA_KEY) == expected_sha
+        and environ.get("VORNEQ_ENV") == "production"
+        and environ.get("RENDER_SERVICE_ID") == PRODUCTION_SERVICE_ID
+        and environ.get("RENDER_GIT_COMMIT") == expected_sha
+    )
+
+
 def authorize(target_name: str, environ, expected_sha: str, settings_dict: dict, source_sha: str) -> Target:
     """Return the permitted target or raise RunnerRefused. Executes no SQL."""
     _require(isinstance(expected_sha, str) and bool(SHA40.fullmatch(expected_sha)), "expected SHA malformed")
     _require(isinstance(source_sha, str) and hmac.compare_digest(source_sha, expected_sha), "source SHA mismatch")
     if target_name == "production":
-        _require(PRODUCTION_WRITE_ENABLED, "C02 OPEN: production write path disabled (PRODUCTION_WRITE_ENABLED=False)")
+        _require(production_write_gate_open(environ, expected_sha),
+                 "C02 OPEN: production write path disabled (SHA-bound arm missing or mismatched)")
         _require(environ.get("VORNEQ_ENV") == "production", "production environment required")
         _require(environ.get("RENDER_SERVICE_ID") == PRODUCTION_SERVICE_ID, "Render service mismatch")
         _require(environ.get("RENDER_GIT_COMMIT", "") == expected_sha, "deployed SHA mismatch")
@@ -259,8 +280,9 @@ def run(connection, target: Target, expected_sha: str, *, commit: bool,
         source_sha: Callable[[], str], out: Callable[[str], None] = print) -> dict:
     """Execute the guarded migration for an already *authorized* target."""
     if target.name == "production":
-        _require(PRODUCTION_WRITE_ENABLED,
-                 "C02 OPEN: production write path disabled", RunnerRefused)
+        _require(production_write_gate_open(os.environ, expected_sha),
+                 "C02 OPEN: production write path disabled (SHA-bound arm missing or mismatched)",
+                 RunnerRefused)
         _require(bool(target.release_id),
                  "production one-use authorization missing", RunnerRefused)
         _require(isinstance(target.owner_proof, owner_release.VerifiedOwnerRelease)
@@ -310,6 +332,8 @@ def run(connection, target: Target, expected_sha: str, *, commit: bool,
                     _require(fresh == target.owner_proof,
                              f"GitHub owner authorization changed ({label})", RunnerAborted)
 
+                _require(production_write_gate_open(os.environ, expected_sha),
+                         "C02 SHA-bound arm revoked before one-use consumption", RunnerAborted)
                 attest_owner_release("before one-use consumption")
                 same_session("after GitHub owner proof")
                 _consume_one_use_release(connection, target, expected_sha)
@@ -327,6 +351,8 @@ def run(connection, target: Target, expected_sha: str, *, commit: bool,
                      "migration plan not empty before commit", RunnerAborted)
             same_session("pre-commit")
             if target.name == "production":
+                _require(production_write_gate_open(os.environ, expected_sha),
+                         "C02 SHA-bound arm revoked before commit", RunnerAborted)
                 attest_owner_release("pre-commit")
                 same_session("after pre-commit owner proof")
             out("C02_STAGE_C: PRE_COMMIT_VERIFICATION PASS")
