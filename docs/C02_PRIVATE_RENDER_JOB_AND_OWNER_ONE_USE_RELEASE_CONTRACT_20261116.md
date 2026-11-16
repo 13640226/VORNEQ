@@ -17,7 +17,7 @@
 | DNS vs backend IP | No equality, **DIAGNOSTIC_ONLY**; Render private IP mapping / proxy is a plausible explanation, not a cryptographic proof |
 | GitHub Actions `production` | Branch policy includes `main` only; **no required reviewers configured** |
 | GitHub source secret | `PRODUCTION_SOURCE_DATABASE_URL` rotated to the *external* Render URL 2026-11-16; external IP allowlist still empty; direct DB access from hosted runners deliberately blocked |
-| Render jobs | No existing One-Off Job returned for Production service during this review |
+| Render One-Off Job | Read-only PoC **SUCCEEDED** on Production base service; job `job-dbtlbq3rjlhs738l2ar0`, 2026-11-16T19:13:45Z–19:14:04Z |
 | Render API key in GitHub | No relevant `RENDER_API_KEY` secret visible in repository or Production Environment metadata; do not assume scoped key access is enabled |
 
 GitHub-hosted runners **do not** join Render's private network merely because they can authenticate to GitHub or call the Render API. Opening `0.0.0.0/0`, trusting ephemeral runner IP ranges or tunnelling a Production SQL connection through a public web endpoint is **not an approved solution**.
@@ -35,7 +35,7 @@ Render documentation: `https://render.com/docs/one-off-jobs` and `https://render
 
 A One-Off Job inherits its base service's latest successful **build artifact** and environment **at job creation time**, not necessarily the SHA or environment GitHub currently expects. Therefore the Job **must** fail closed if `RENDER_GIT_COMMIT != owner-authorized SHA`, the `DATABASE_URL` is not the authenticated internal URL, or either current role or session login changed. It must repeat the identity/TOCTOU controls in the same transaction. Job-created logs and job IDs become explicit audit evidence.
 
-**Current authorized operating mode:** GitHub may prepare and record a read-only attestation request; the owner can run an approved **read-only** Render Job manually through Render CLI/API with an exact hard-coded read-only command after separate execution approval. No production migration Job is authorized by this design.
+**Executed read-only PoC:** Owner-controlled Render CLI created One-Off Job `job-dbtlbq3rjlhs738l2ar0` with the exact existing `c02_runtime_observation --expected-sha 74c8eac8e0f4d7b0eae6e4de4bbe595ae477092f` command (no DDL). Status `succeeded`, duration 19 seconds. Render job resource logs show: service ID `srv-dadn07eq1p3s73eccau0`, live SHA equal expected, database `vorneq_production_db`, `session_user=vorneq_prod_app_rot_20261116`, `current_user=vorneq_production_db_user`, configured host exactly the internal DB hostname, PG18 primary, port 5432, `transaction_read_only=on`, and `C02_RUNTIME_SNAPSHOT_ONLY: NO MIGRATION GO`. This **demonstrates private in-Render connectivity**, not GitHub automated dispatch, a migration run, or cryptographic backend identity proof. One-Off Jobs are billable per second.\n\n**Current authorized operating mode:** GitHub may prepare and record a read-only attestation request; the owner can run an approved **read-only** Render Job manually through Render CLI/API with an exact hard-coded read-only command after separate execution approval. No production migration Job is authorized by this design.
 
 **Automation hold:** The Render API `POST /v1/services/{serviceId}/jobs` accepts an arbitrary `startCommand`; a general Render API key placed in GitHub would grant an unacceptable shell/exfiltration capability against a service that inherits Production credentials. Render Scoped API Keys are in early access, and their availability/per-action resource scoping has **not** been established for this account. Do not create or store a broad Render API key in GitHub Actions. For any later machine dispatch, first prove least-privilege scopes and use a separate restricted read-only verification service/credential; a scoped `jobs:create` permission alone does **not** constrain the startCommand's contents.
 
@@ -50,7 +50,7 @@ Use **separately obtained** Render control-plane metadata, current Production We
 
 Existing code: `apps/core/c02_operational_binding.py`, `apps/core/c02_resource_attestation.py`, `apps/core/management/commands/c02_runtime_observation.py` and `apps/core/c02_stage_c_runner.py`.
 
-**Current status:** Control-plane + owner Web Shell operational prechecks PASS. Independent job-run at the future point-of-use is **NOT RUN**. Acceptance of residual resource identity risk by the owner and release decision are **not issued**. Thus **not a migration GO**.
+**Current status:** Control-plane + owner Web Shell operational prechecks PASS, and a separate read-only Render One-Off Job has **PASS** for the current SHA/session. A *fresh point-of-use check before any future migration* is still required; this job is not reusable authorization. Owner acceptance of residual identity risk and release decision are **not issued**. Thus **not a migration GO**.
 
 ## 4. Owner one-use release: required proof and remaining implementation gap
 
@@ -83,7 +83,7 @@ Existing code: `apps/core/c02_operational_binding.py`, `apps/core/c02_resource_a
 PRIVATE_POSTGRES_PATH = VERIFIED_AVAILABLE
 PUBLIC_POSTGRES_INBOUND = BLOCKED / KEEP_BLOCKED
 GITHUB_DIRECT_POSTGRES = NOT_AUTHORIZED
-RENDER_ONE_OFF_JOB_TRANSPORT = DESIGN_SELECTED / NO_JOB_TRIGGERED
+RENDER_ONE_OFF_JOB_TRANSPORT = READ_ONLY_POC_SUCCEEDED / NO_GITHUB_DISPATCH
 RENDER_SCOPED_MACHINE_CREDENTIAL = NOT_VERIFIED / DO_NOT_INSTALL_BROAD_KEY
 OPERATIONAL_CONTROL_PLANE_HMAC = PASS (prior operator evidence)
 CRYPTOGRAPHIC_BACKEND_RESOURCE_IDENTITY = NOT_AVAILABLE
