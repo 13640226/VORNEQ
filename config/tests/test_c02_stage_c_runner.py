@@ -429,6 +429,55 @@ class StageCRunnerPostgresTests(TransactionTestCase):
                            source_sha=lambda: SHA, out=self.lines.append)
         self.assertEqual(self.state(), (0, 0))
 
+    def test_arm_revocation_before_one_use_receipt_denies_without_spending(self):
+        """A pre-consumption SHA arm removal must fail closed with no schema writes."""
+        import os
+
+        target = self._synthetic_release_target("ISOLATED-ARM-REVOKED-007")
+        original_plan = runner._exact_plan
+
+        def revoke_before_receipt(db):
+            plan = original_plan(db)
+            os.environ.pop(runner.PRODUCTION_ARM_SHA_KEY, None)
+            return plan
+
+        with mock.patch.dict("os.environ", _prod_env(), clear=True), \
+                mock.patch.object(runner, "_exact_plan", side_effect=revoke_before_receipt), \
+                mock.patch.object(runner, "_consume_one_use_release") as consume:
+            with self.assertRaisesRegex(runner.RunnerAborted, "arm revoked before one-use"):
+                runner.run(connection, target, SHA, commit=True,
+                           source_sha=lambda: SHA, out=self.lines.append)
+            consume.assert_not_called()
+        self.assertEqual(self.state(), (0, 0))
+
+    def test_arm_revocation_precommit_rolls_back_and_spends_receipt(self):
+        """Revocation after consumption rolls back DDL and prevents replay."""
+        import os
+
+        target = self._synthetic_release_target("ISOLATED-ARM-REVOKED-008")
+        original_verify = runner._verify_schema
+
+        def revoke_precommit(db):
+            original_verify(db)
+            os.environ.pop(runner.PRODUCTION_ARM_MODE_KEY, None)
+
+        with mock.patch.dict("os.environ", _prod_env(), clear=True), \
+                mock.patch.object(owner_release, "verify_live_owner_release",
+                                  return_value=target.owner_proof), \
+                mock.patch.object(runner, "_verify_schema", side_effect=revoke_precommit):
+            with self.assertRaisesRegex(runner.RunnerAborted, "arm revoked before commit"):
+                runner.run(connection, target, SHA, commit=True,
+                           source_sha=lambda: SHA, out=self.lines.append)
+        self.assertEqual(self.state(), (0, 0))
+
+        with mock.patch.dict("os.environ", _prod_env(), clear=True), \
+                mock.patch.object(owner_release, "verify_live_owner_release",
+                                  return_value=target.owner_proof):
+            with self.assertRaisesRegex(runner.RunnerAborted, "release already consumed"):
+                runner.run(connection, target, SHA, commit=True,
+                           source_sha=lambda: SHA, out=self.lines.append)
+        self.assertEqual(self.state(), (0, 0))
+
     def test_one_use_receipt_rejects_replay_on_new_connection_and_sha(self):
         target = runner.Target("production", self.target.database, self.target.user,
                                None, "ISOLATED-REPLAY-TEST-002", login_user=self.target.user)
