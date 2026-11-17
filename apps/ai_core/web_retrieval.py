@@ -153,7 +153,7 @@ class PublicWebRetriever:
 
 
 class WikipediaRetriever(PublicWebRetriever):
-    """Wikimedia Action API: one bounded request per question, no API key.
+    """Wikimedia Action API: one bounded request per search call, no API key.
 
     Chosen for V1 because it is public, multilingual (fa/de/en), keyless, has a
     fixed host per language and returns plain-text extracts. It is a tertiary
