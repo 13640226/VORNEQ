@@ -90,7 +90,7 @@ class OpenAIResponsesProvider:
                  extra_instructions: str = "", compact_sources: bool = False):
         if not isinstance(model, str) or not model or len(model) > 100:
             raise ProviderUnavailable("model not configured")
-        if not 1 <= timeout_s <= 30 or not 64 <= max_output_tokens <= 2048:
+        if type(timeout_s) not in (int, float) or not 1 <= timeout_s <= 90 or not 64 <= max_output_tokens <= 2048:
             raise ProviderUnavailable("invalid provider limits")
         self.model = model
         self.timeout_s = timeout_s

@@ -105,6 +105,15 @@ def _compact_sources_for_environment(environment):
     return environment in ("staging", "production")
 
 
+def _provider_timeout_for_environment(environment):
+    """Allow slow Staging inference without relaxing Production or adding retries.
+
+    The Staging gunicorn worker timeout is separately bounded at 100 seconds,
+    leaving headroom for retrieval, DB commits and response serialization.
+    """
+    return 60 if environment == "staging" else 30 if environment == "production" else 15
+
+
 def _strict_object(pairs):
     result = {}
     for key, value in pairs:
@@ -203,7 +212,7 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
             reserve_staging_request()
         provider = OpenAIResponsesProvider(
             model=os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""),
-            timeout_s=30 if hosted else 15,
+            timeout_s=_provider_timeout_for_environment(settings.VORNEQ_ENV),
             max_output_tokens=_output_cap_for_environment(settings.VORNEQ_ENV),
             extra_instructions=_instructions_for(settings.VORNEQ_ENV, bool(prior_turns)),
             compact_sources=_compact_sources_for_environment(settings.VORNEQ_ENV),
