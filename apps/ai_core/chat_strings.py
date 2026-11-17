@@ -64,5 +64,57 @@ LABELS = {
 }
 
 
-def chat_labels(language):
-    return LABELS.get((language or "en")[:2], LABELS["en"])
+# Production has its own factual status and recovery wording. Staging and
+# development retain their existing language packs and safety notices.
+PRODUCTION_LABELS = {
+    "en": {
+        "entry": "Open AI chat",
+        "warning": (
+            "Production AI pilot: do not enter personal or confidential data. "
+            "Answers are drafts, not independently verified facts."
+        ),
+        "single_turn": (
+            "Questions are independent. For Production request recovery, only a request ID "
+            "is kept in this tab; the response is temporarily cached on the server for up to "
+            "15 minutes. Refresh does not resend. Clearing chat cannot cancel an already "
+            "submitted request or undo its cost."
+        ),
+    },
+    "de": {
+        "entry": "KI-Chat öffnen",
+        "warning": (
+            "KI-Pilot in Production: Bitte keine persönlichen oder vertraulichen Daten "
+            "eingeben. Antworten sind Entwürfe, keine unabhängig verifizierten Fakten."
+        ),
+        "single_turn": (
+            "Fragen sind unabhängig. Zur Wiederherstellung von Production-Anfragen bleibt "
+            "nur eine Anfrage-ID in diesem Tab; die Antwort wird serverseitig bis zu "
+            "15 Minuten zwischengespeichert. Neuladen sendet nicht erneut. Das Löschen "
+            "des Chats bricht eine bereits gesendete Anfrage nicht ab und macht "
+            "keine Kosten rückgängig."
+        ),
+    },
+    "fa": {
+        "entry": "بازکردن گفت‌وگوی هوش مصنوعی",
+        "warning": (
+            "نسخه آزمایشی هوش مصنوعی Production: اطلاعات شخصی یا محرمانه وارد نکنید. "
+            "پاسخ‌ها پیش‌نویس‌اند و صحت آن‌ها مستقلاً تأیید نشده است."
+        ),
+        "single_turn": (
+            "پرسش‌ها مستقل‌اند. برای بازیابی درخواست در Production فقط شناسهٔ درخواست "
+            "در همین زبانه نگه‌داری می‌شود و پاسخ حداکثر ۱۵ دقیقه به‌طور موقت "
+            "در سرور ذخیره می‌شود. بارگذاری دوبارهٔ صفحه درخواست را تکرار نمی‌کند. "
+            "پاک‌کردن چت، درخواست ارسال‌شده یا هزینهٔ آن را لغو نمی‌کند."
+        ),
+    },
+}
+
+
+def chat_labels(language, *, environment="development"):
+    language = (language or "en")[:2]
+    if language not in LABELS:
+        language = "en"
+    labels = LABELS[language]
+    if environment == "production":
+        return {**labels, **PRODUCTION_LABELS[language]}
+    return labels
