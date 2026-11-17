@@ -149,6 +149,13 @@ ENVIRONMENT_LABELS = {
 # Chat UI V2 labels: shared by every environment.
 UI_LABELS = {
     "en": {
+        "unsupported": "This question cannot be processed. No model request was sent.",
+        "rejectedEvidence": "The generated answer failed source checks and was not shown. The model request may have been billed; check usage before trying again.",
+        "rejectedOutput": "The generated answer did not pass the response-format or safety checks. It was not shown; check usage before retrying.",
+        "citationIdentity": "The answer cited an unknown or invalid source identifier. The answer was blocked; check usage before retrying.",
+        "citationDigest": "The cited source fingerprint did not match the retrieved evidence. The answer was blocked; check usage before retrying.",
+        "citationQuote": "The answer's quote could not be matched verbatim to its cited source. The answer was blocked; check usage before retrying.",
+        "unsupportedNumber": "The answer contained a number absent from the cited evidence. The answer was blocked; check usage before retrying.",
         "single_turn": "Each question is answered on its own; earlier messages are not sent to the model.",
         "recovery_note": "If the page reloads, the answer is fetched again without a new model call, using only a request ID kept in this tab (up to 15 minutes). Clearing the chat does not cancel a request that was already sent.",
         "you": "You",
@@ -172,6 +179,13 @@ UI_LABELS = {
         "privacy_title": "Privacy",
     },
     "de": {
+        "unsupported": "Diese Frage kann nicht verarbeitet werden. Es wurde keine Modellanfrage gesendet.",
+        "rejectedEvidence": "Die generierte Antwort hat die Quellenprüfung nicht bestanden und wird nicht angezeigt. Die Modellanfrage kann Kosten verursacht haben; vor einer Wiederholung den Verbrauch prüfen.",
+        "rejectedOutput": "Die generierte Antwort hat die Format- oder Sicherheitsprüfung nicht bestanden. Sie wird nicht angezeigt; vor einer Wiederholung den Verbrauch prüfen.",
+        "citationIdentity": "Die Antwort enthält eine unbekannte oder ungültige Quellenkennung. Sie wurde blockiert; vor einer Wiederholung den Verbrauch prüfen.",
+        "citationDigest": "Der Prüffingerabdruck der Quelle stimmt nicht mit den abgerufenen Belegen überein. Die Antwort wurde blockiert; vor einer Wiederholung den Verbrauch prüfen.",
+        "citationQuote": "Das Zitat konnte nicht wortgetreu mit der angegebenen Quelle abgeglichen werden. Die Antwort wurde blockiert; vor einer Wiederholung den Verbrauch prüfen.",
+        "unsupportedNumber": "Die Antwort enthält eine Zahl, die durch die zitierten Quellen nicht belegt ist. Sie wurde blockiert; vor einer Wiederholung den Verbrauch prüfen.",
         "single_turn": "Jede Frage wird einzeln beantwortet; frühere Nachrichten werden nicht an das Modell gesendet.",
         "recovery_note": "Nach einem Neuladen wird die Antwort ohne neuen Modellaufruf erneut abgerufen; dafür bleibt nur eine Anfrage-ID in diesem Tab (bis zu 15 Minuten). Chat löschen bricht eine bereits gesendete Anfrage nicht ab.",
         "you": "Sie",
@@ -195,6 +209,13 @@ UI_LABELS = {
         "privacy_title": "Datenschutz",
     },
     "fa": {
+        "unsupported": "این پرسش قابل پردازش نیست. درخواستی به مدل ارسال نشد.",
+        "rejectedEvidence": "پاسخ تولیدشده از بررسی شواهد عبور نکرد و نمایش داده نشد. ممکن است درخواست مدل هزینه داشته باشد؛ پیش از تکرار، مصرف را بررسی کنید.",
+        "rejectedOutput": "ساختار یا وضعیت پاسخ تولیدشده معتبر نبود؛ پاسخ نمایش داده نشد. پیش از تکرار، مصرف درخواست را بررسی کنید.",
+        "citationIdentity": "شناسهٔ منبع در پاسخ نامعتبر یا ناشناخته بود؛ پاسخ مسدود شد. پیش از تکرار، مصرف درخواست را بررسی کنید.",
+        "citationDigest": "اثر انگشت استناد با منبع بازیابی‌شده مطابقت نداشت؛ پاسخ مسدود شد. پیش از تکرار، مصرف درخواست را بررسی کنید.",
+        "citationQuote": "نقل‌قول پاسخ عیناً با متن منبع مطابقت نداشت؛ پاسخ مسدود شد. پیش از تکرار، مصرف درخواست را بررسی کنید.",
+        "unsupportedNumber": "عدد ذکرشده در پاسخ، پشتوانه‌ای در شواهد استنادی نداشت؛ پاسخ مسدود شد. پیش از تکرار، مصرف درخواست را بررسی کنید.",
         "single_turn": "به هر پرسش جداگانه پاسخ داده می‌شود؛ پیام‌های قبلی برای مدل فرستاده نمی‌شوند.",
         "recovery_note": "اگر صفحه دوباره بارگذاری شود، پاسخ بدون فراخوانی دوبارهٔ مدل بازیابی می‌شود؛ برای این کار فقط یک شناسهٔ درخواست در همین زبانه نگه داشته می‌شود (حداکثر ۱۵ دقیقه). پاک‌کردن گفت‌وگو درخواستی را که فرستاده شده لغو نمی‌کند.",
         "you": "شما",

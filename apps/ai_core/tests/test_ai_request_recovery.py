@@ -185,6 +185,25 @@ class RecoveryEndpointTests(TestCase):
         self.assertEqual(second.status_code, 422)
         self.generator.assert_not_called()
 
+    def test_rejected_quote_is_recovered_without_second_provider_call(self):
+        def forged(self_, *, question, language, sources):
+            result = good_output(sources, language)
+            result["citations"][0]["evidence_quote"] = "PRIVATE_FAKED_QUOTE_SENTINEL"
+            return result
+        self.generator.side_effect = forged
+        with self.assertLogs("apps.ai_core.views_global", level="WARNING") as log:
+            first = self.post()
+        self.assertEqual(first.status_code, 422)
+        self.assertEqual(first.json(), {"error": "INSUFFICIENT_EVIDENCE",
+                                        "reason_code": "citation_quote_mismatch"})
+        self.assertNotIn("PRIVATE_FAKED_QUOTE_SENTINEL", " ".join(log.output))
+        state = self.get_status().json()
+        self.assertEqual(state["status"], "failed")
+        self.assertEqual(state["http_status"], 422)
+        self.assertEqual(state["response"], first.json())
+        self.assertEqual(self.post().json(), first.json())
+        self.generator.assert_called_once()
+
     def test_cache_claim_failure_fails_closed(self):
         with patch.object(recovery.cache, "add", side_effect=ConnectionError("offline")):
             self.assertEqual(self.post().status_code, 503)

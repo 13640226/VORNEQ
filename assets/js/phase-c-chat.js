@@ -22,6 +22,13 @@
       loading: root.dataset.vqLoading,
       error: root.dataset.vqError,
       empty: root.dataset.vqEmpty,
+      unsupported: root.dataset.vqUnsupported,
+      rejectedEvidence: root.dataset.vqRejectedEvidence,
+      rejectedOutput: root.dataset.vqRejectedOutput,
+      citationIdentity: root.dataset.vqCitationIdentity,
+      citationDigest: root.dataset.vqCitationDigest,
+      citationQuote: root.dataset.vqCitationQuote,
+      unsupportedNumber: root.dataset.vqUnsupportedNumber,
       sources: root.dataset.vqSources,
       status: root.dataset.vqStatus,
       timeout: root.dataset.vqTimeout,
@@ -184,6 +191,28 @@
       if (!recoveryEnabled) return;
       try { window.sessionStorage.removeItem(recoveryKey); } catch (_error) { /* no secrets */ }
     }
+    // Only fixed server error enums are recognized. Never render server-supplied
+    // reason text, prompt, model output or exception messages in failure bubbles.
+    function rejectionMessage(data) {
+      if (!data || typeof data !== "object") return labels.error || "Request failed";
+      if (data.error === "UNSUPPORTED_QUESTION") {
+        return labels.unsupported || "Question unsupported; no model request was sent.";
+      }
+      if (data.error !== "INSUFFICIENT_EVIDENCE") {
+        return labels.error || "Request failed";
+      }
+      const safeReasons = Object.freeze({
+        invalid_generated_output: labels.rejectedOutput,
+        citation_identity_rejected: labels.citationIdentity,
+        citation_digest_mismatch: labels.citationDigest,
+        citation_quote_mismatch: labels.citationQuote,
+        unsupported_numeric_claim: labels.unsupportedNumber,
+        evidence_rejected: labels.rejectedEvidence,
+      });
+      return Object.prototype.hasOwnProperty.call(safeReasons, data.reason_code)
+        ? (safeReasons[data.reason_code] || labels.rejectedEvidence)
+        : (labels.rejectedEvidence || "Answer failed evidence checks; check usage before retrying.");
+    }
     function renderData(data) {
       if (data && data.mode === "insufficient_evidence" &&
           data.verified === false && data.model_status === "not_called" &&
@@ -260,7 +289,7 @@
           if (data.status === "failed" && data.http_status === 422 &&
               data.response && (data.response.error === "UNSUPPORTED_QUESTION" ||
               data.response.error === "INSUFFICIENT_EVIDENCE")) {
-            appendMessage(labels.empty || "Insufficient evidence", "assistant");
+            appendMessage(rejectionMessage(data.response), "assistant");
             return { completed: true, answerBubble: null };
           }
           if (data.status === "completed" || data.status === "failed") {
@@ -359,7 +388,8 @@
           completed = state.completed;
           answerBubble = state.answerBubble;
         } else if (response.status === 422) {
-          appendMessage(labels.empty || "Insufficient evidence", "assistant");
+          const failure = await response.json();
+          appendMessage(rejectionMessage(failure), "assistant");
           completed = true;
         } else if (!response.ok) {
           appendMessage(labels.error || "Request failed", "assistant");
