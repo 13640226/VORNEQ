@@ -51,8 +51,12 @@ def _log_safe_api_status(exc):
     )
 
 
-def build_request_payload(question, language, sources, *, compact_sources=False):
+def build_request_payload(question, language, sources, *, compact_sources=False, prior_turns=()):
     """Serialize the exact payload sent to OpenAI and estimated by the ledger.
+
+    ``prior_turns`` (persistent conversations) is conversation context, not
+    evidence; the key is omitted when empty so single-question payloads stay
+    byte-identical to the pre-conversation format.
 
     Staging omits source metadata the model does not need. The full trusted
     source objects remain available separately to local citation validation.
@@ -62,10 +66,14 @@ def build_request_payload(question, language, sources, *, compact_sources=False)
             {field: source[field] for field in ("source_id", "title", "excerpt", "evidence_digest")}
             for source in sources
         ]
-        return json.dumps({"question": question, "language": language, "sources": sources},
-                          ensure_ascii=False, separators=(",", ":"))
-    return json.dumps({"question": question, "language": language, "sources": sources},
-                      ensure_ascii=False)
+        body = {"question": question, "language": language, "sources": sources}
+        if prior_turns:
+            body["prior_turns"] = list(prior_turns)
+        return json.dumps(body, ensure_ascii=False, separators=(",", ":"))
+    body = {"question": question, "language": language, "sources": sources}
+    if prior_turns:
+        body["prior_turns"] = list(prior_turns)
+    return json.dumps(body, ensure_ascii=False)
 
 _SYSTEM_INSTRUCTIONS = (
     "Answer briefly in the requested language, only from public source excerpts. "
@@ -94,7 +102,7 @@ class OpenAIResponsesProvider:
         self.compact_sources = compact_sources
         self.last_usage = None
 
-    def generate(self, *, question: str, language: str, sources: list[dict]) -> dict:
+    def generate(self, *, question: str, language: str, sources: list[dict], prior_turns=()) -> dict:
         key = os.environ.get("OPENAI_API_KEY", "")
         if not key:
             raise ProviderUnavailable("provider credential unavailable")
@@ -105,7 +113,8 @@ class OpenAIResponsesProvider:
         except ImportError as exc:
             raise ProviderUnavailable("optional provider dependencies unavailable") from exc
         client = OpenAI(api_key=key, timeout=self.timeout_s, max_retries=0)
-        payload = build_request_payload(question, language, sources, compact_sources=self.compact_sources)
+        payload = build_request_payload(question, language, sources, compact_sources=self.compact_sources,
+                                        prior_turns=prior_turns)
         try:
             response = client.responses.parse(
                 model=self.model,

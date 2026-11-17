@@ -14,9 +14,11 @@ class BudgetedProvider:
         self.actor_id = actor_id
         self.last_reservation = None
 
-    def generate(self, *, question, language, sources):
+    def generate(self, *, question, language, sources, prior_turns=()):
+        # The reservation covers the exact payload, including conversation context.
         payload = build_request_payload(question, language, sources,
-                                        compact_sources=(getattr(self.inner, "compact_sources", False) is True))
+                                        compact_sources=(getattr(self.inner, "compact_sources", False) is True),
+                                        prior_turns=prior_turns)
         input_bytes = len(getattr(self.inner, "instructions", "").encode("utf-8")) + len(payload.encode("utf-8"))
         reservation = ledger.reserve(actor_id=self.actor_id, model=self.inner.model,
                                      input_bytes=input_bytes,
@@ -24,7 +26,8 @@ class BudgetedProvider:
         self.last_reservation = reservation
         self.inner.last_usage = None
         try:
-            output = self.inner.generate(question=question, language=language, sources=sources)
+            extra = {"prior_turns": prior_turns} if prior_turns else {}
+            output = self.inner.generate(question=question, language=language, sources=sources, **extra)
         except GatewayError as exc:
             ledger.settle(reservation, usage=getattr(self.inner, "last_usage", None),
                           outcome=type(exc).__name__)

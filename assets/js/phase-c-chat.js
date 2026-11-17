@@ -1,6 +1,8 @@
-/* VORNEQ Phase C — development-only, in-memory, independent-turn chat.
- * No localStorage, cookies for chat history, third-party scripts, markdown HTML,
- * model tools, or direct browser-to-provider requests. Source URLs are rechecked.
+/* VORNEQ AI chat. Without the conversations flag every question is independent.
+ * With persistent conversations V1, history lives only on the server; the browser
+ * keeps no chat content (no localStorage, no chat cookies). No third-party scripts,
+ * markdown HTML, model tools, or direct browser-to-provider requests. Source URLs
+ * are rechecked.
  */
 (() => {
   "use strict";
@@ -336,11 +338,253 @@
       }
     }
 
+    // Persistent conversations V1: history lives on the server (PostgreSQL),
+    // never in browser storage. Only an opaque conversation UUID is in the URL.
+    const conv = root.dataset.vqConversations === "true" ? setupConversations() : null;
+    function setupConversations() {
+      const endpoint = root.dataset.vqConvEndpoint || "";
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+      if (!endpoint.startsWith("/") || endpoint.startsWith("//")) return null;
+      const panel = document.querySelector("[data-vq-conv-panel]");
+      const items = document.querySelector("[data-vq-conv-items]");
+      const emptyNote = document.querySelector("[data-vq-conv-empty]");
+      const search = document.querySelector("[data-vq-conv-search]");
+      const newButton = document.querySelector("[data-vq-conv-new]");
+      const trashButton = document.querySelector("[data-vq-conv-trash]");
+      const modeNote = document.querySelector("[data-vq-conv-mode]");
+      const bar = root.querySelector("[data-vq-conv-bar]");
+      const titleEl = root.querySelector("[data-vq-conv-title]");
+      const renameButton = root.querySelector("[data-vq-conv-rename]");
+      const renameForm = root.querySelector("[data-vq-conv-rename-form]");
+      const titleInput = root.querySelector("[data-vq-conv-title-input]");
+      const archiveButton = root.querySelector("[data-vq-conv-archive]");
+      const exportLink = root.querySelector("[data-vq-conv-export]");
+      const deleteButton = root.querySelector("[data-vq-conv-delete]");
+      if (!items || !newButton || !bar || !titleEl) return null;
+      let current = null;
+      let trashMode = false;
+      let searchTimer = null;
+      const initial = new URL(window.location.href).searchParams.get("c");
+      let activeId = initial && uuidPattern.test(initial) ? initial : null;
+
+      async function api(method, url, body) {
+        const headers = { "Accept": "application/json", "X-CSRFToken": token.value };
+        const options = { method, headers, credentials: "same-origin", cache: "no-store", redirect: "error" };
+        if (body !== undefined) {
+          headers["Content-Type"] = "application/json";
+          options.body = JSON.stringify(body);
+        }
+        const response = await fetch(url, options);
+        let data = null;
+        try { data = await response.json(); } catch (_error) { data = null; }
+        return { ok: response.ok, status: response.status, data };
+      }
+      function detailUrl(id) { return endpoint + id + "/"; }
+      function setUrl(id) {
+        const url = new URL(window.location.href);
+        if (id) url.searchParams.set("c", id); else url.searchParams.delete("c");
+        window.history.replaceState(null, "", url.pathname + url.search);
+      }
+      function showBar(conversation) {
+        current = conversation;
+        bar.hidden = !conversation;
+        if (!conversation) return;
+        titleEl.textContent = conversation.title || root.dataset.vqConvUntitled || "";
+        titleEl.dir = textDirection(titleEl.textContent);
+        if (archiveButton) {
+          archiveButton.textContent = conversation.archived
+            ? archiveButton.dataset.labelUnarchive : archiveButton.dataset.labelArchive;
+        }
+        if (exportLink) exportLink.href = detailUrl(conversation.id) + "export/";
+      }
+      function renderStored(messages) {
+        log.replaceChildren();
+        if (welcome) welcome.hidden = messages.length > 0;
+        for (const message of messages) {
+          if (!message || typeof message !== "object") continue;
+          if (message.role === "user") {
+            appendMessage(String(message.content || ""), "user");
+          } else if (message.status === "completed") {
+            renderData({ mode: "grounded_draft", verified: false, answer: String(message.content || ""),
+              citations: Array.isArray(message.citations) ? message.citations : [] });
+          } else if (message.status === "insufficient_evidence") {
+            const code = String(message.error_code || "");
+            if (code === "UNSUPPORTED_QUESTION") appendMessage(rejectionMessage({ error: code }), "assistant");
+            else if (code === "insufficient_evidence" || code === "INSUFFICIENT_EVIDENCE") appendMessage(labels.empty || "", "assistant");
+            else appendMessage(rejectionMessage({ error: "INSUFFICIENT_EVIDENCE", reason_code: code }), "assistant");
+          } else {
+            appendMessage(labels.error || "Request failed", "assistant");
+          }
+        }
+      }
+      function renderList(conversations) {
+        items.replaceChildren();
+        if (emptyNote) emptyNote.hidden = conversations.length > 0;
+        for (const item of conversations) {
+          if (!item || !uuidPattern.test(String(item.id))) continue;
+          const li = document.createElement("li");
+          li.className = "vq-chat__history-item";
+          const title = String(item.title || root.dataset.vqConvUntitled || "");
+          if (trashMode) {
+            const name = document.createElement("span");
+            name.className = "vq-chat__history-name";
+            name.textContent = title;
+            name.dir = textDirection(title);
+            const restore = document.createElement("button");
+            restore.type = "button";
+            restore.textContent = root.dataset.vqConvRestore || "Restore";
+            restore.addEventListener("click", async () => {
+              const result = await api("POST", detailUrl(item.id) + "restore/");
+              if (result.ok) refreshList();
+            });
+            const forever = document.createElement("button");
+            forever.type = "button";
+            forever.textContent = root.dataset.vqConvDeleteForever || "Delete forever";
+            forever.addEventListener("click", async () => {
+              if (!window.confirm(root.dataset.vqConvDeleteForeverConfirm || "Delete forever?")) return;
+              const result = await api("DELETE", detailUrl(item.id) + "?permanent=1");
+              if (result.ok) refreshList();
+            });
+            li.append(name, restore, forever);
+          } else {
+            const open = document.createElement("button");
+            open.type = "button";
+            open.className = "vq-chat__history-open";
+            open.textContent = title;
+            open.dir = textDirection(title);
+            if (item.id === activeId) open.setAttribute("aria-current", "true");
+            open.addEventListener("click", () => { if (!busy) openConversation(item.id); });
+            li.appendChild(open);
+          }
+          items.appendChild(li);
+        }
+      }
+      async function refreshList() {
+        const url = new URL(endpoint, window.location.origin);
+        if (trashMode) url.searchParams.set("trash", "1");
+        const query = search ? search.value.trim().slice(0, 100) : "";
+        if (query) url.searchParams.set("q", query);
+        try {
+          const result = await api("GET", url.pathname + url.search);
+          if (result.ok && result.data && Array.isArray(result.data.conversations)) renderList(result.data.conversations);
+        } catch (_error) { /* the list is a convenience; the chat keeps working */ }
+      }
+      async function openConversation(id) {
+        if (!uuidPattern.test(String(id))) return false;
+        try {
+          const result = await api("GET", detailUrl(id));
+          if (!result.ok || !result.data || !Array.isArray(result.data.messages)) {
+            if (result.status === 404) { startNew(); return false; }
+            status.textContent = root.dataset.vqConvLoadError || labels.error || "";
+            return false;
+          }
+          activeId = id;
+          setUrl(id);
+          showBar(result.data.conversation);
+          renderStored(result.data.messages);
+          refreshList();
+          if (panel && window.matchMedia && window.matchMedia("(max-width: 1023px)").matches) panel.open = false;
+          return result.data.messages;
+        } catch (_error) {
+          status.textContent = root.dataset.vqConvLoadError || labels.error || "";
+          return false;
+        }
+      }
+      function startNew() {
+        activeId = null;
+        setUrl(null);
+        showBar(null);
+        log.replaceChildren();
+        if (welcome) welcome.hidden = false;
+        refreshList();
+      }
+      async function ensure(question) {
+        if (activeId) return true;
+        const result = await api("POST", endpoint, { language: questionLanguage(question), title: question });
+        if (!result.ok || !result.data || !result.data.conversation ||
+            !uuidPattern.test(String(result.data.conversation.id))) {
+          appendMessage(result.status === 409 ? (root.dataset.vqConvFull || labels.error) : (labels.error || ""), "assistant");
+          return false;
+        }
+        activeId = result.data.conversation.id;
+        setUrl(activeId);
+        showBar(result.data.conversation);
+        return true;
+      }
+      newButton.addEventListener("click", () => { if (!busy) { startNew(); input.focus(); } });
+      if (search) search.addEventListener("input", () => {
+        window.clearTimeout(searchTimer);
+        searchTimer = window.setTimeout(refreshList, 250);
+      });
+      if (trashButton) trashButton.addEventListener("click", () => {
+        trashMode = !trashMode;
+        trashButton.textContent = trashMode ? trashButton.dataset.labelBack : trashButton.dataset.labelTrash;
+        if (modeNote) modeNote.hidden = !trashMode;
+        refreshList();
+      });
+      if (renameButton && renameForm && titleInput) {
+        renameButton.addEventListener("click", () => {
+          if (!current) return;
+          titleInput.value = current.title || "";
+          renameForm.hidden = false;
+          titleInput.focus();
+        });
+        renameForm.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const title = titleInput.value.trim().slice(0, 120);
+          if (!current || !title) return;
+          const result = await api("PATCH", detailUrl(current.id), { title });
+          if (result.ok && result.data) showBar(result.data.conversation);
+          renameForm.hidden = true;
+          refreshList();
+        });
+      }
+      if (archiveButton) archiveButton.addEventListener("click", async () => {
+        if (!current) return;
+        const result = await api("PATCH", detailUrl(current.id), { archived: !current.archived });
+        if (result.ok && result.data) { showBar(result.data.conversation); refreshList(); }
+      });
+      if (deleteButton) deleteButton.addEventListener("click", async () => {
+        if (!current || busy) return;
+        if (!window.confirm(root.dataset.vqConvDeleteConfirm || "Delete?")) return;
+        const result = await api("DELETE", detailUrl(current.id));
+        if (result.ok) startNew();
+      });
+      async function init() {
+        const saved = savedRecovery();
+        const messages = activeId ? await openConversation(activeId) : (refreshList(), []);
+        if (!saved) return;
+        const stored = Array.isArray(messages) && messages.some((m) => m && m.request_id === saved.id);
+        if (stored) { clearRecovery(); return; }
+        // An in-flight request from before the reload: poll (GET only), then reload history.
+        await restoreRecovery();
+        if (activeId) await openConversation(activeId);
+      }
+      return {
+        ensure,
+        init,
+        startNew,
+        refresh: refreshList,
+        messagesUrl: () => detailUrl(activeId) + "messages/",
+        fullLabel: () => root.dataset.vqConvFull || labels.error || "",
+      };
+    }
+
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (busy || recoveryBlocked) return;
       const question = input.value.trim().slice(0, limit);
       if (!question) { input.focus(); return; }
+      // Conversation mode: create the (cost-free) conversation before any billable request.
+      if (conv) {
+        busy = true;
+        update();
+        let ready = false;
+        try { ready = await conv.ensure(question); } catch (_error) { ready = false; }
+        busy = false;
+        update();
+        if (!ready) return;
+      }
       let requestId = null;
       if (recoveryEnabled) {
         // The request ID is persisted BEFORE the potentially billable POST.
@@ -374,7 +618,7 @@
           "X-CSRFToken": token.value,
         };
         if (requestId) headers["X-VQ-Request-ID"] = requestId;
-        const response = await fetch(form.action, {
+        const response = await fetch(conv ? conv.messagesUrl() : form.action, {
           method: "POST",
           credentials: "same-origin",
           cache: "no-store",
@@ -391,6 +635,9 @@
           const failure = await response.json();
           appendMessage(rejectionMessage(failure), "assistant");
           completed = true;
+        } else if (conv && response.status === 409) {
+          appendMessage(conv.fullLabel(), "assistant");
+          if (requestId) clearRecovery();
         } else if (!response.ok) {
           appendMessage(labels.error || "Request failed", "assistant");
           if (requestId) recoveryBlocked = true;
@@ -399,6 +646,10 @@
           const rendered = renderData(data);
           completed = rendered.completed;
           answerBubble = rendered.answerBubble;
+          // Conversation mode: never imply the answer is in the history if it is not.
+          if (conv && data && data.persisted === false) {
+            appendMessage(root.dataset.vqConvNotSaved || labels.error || "", "assistant");
+          }
           if (!completed && requestId) recoveryBlocked = true;
         }
       } catch (error) {
@@ -416,10 +667,16 @@
         update();
         input.focus({ preventScroll: true });
         focusAnswer(answerBubble);
+        if (conv) {
+          if (completed) clearRecovery();
+          conv.refresh();
+        }
       }
     });
     clear.addEventListener("click", () => {
       if (busy) return;
+      if (conv) { clearRecovery(); recoveryBlocked = false; input.value = ""; status.textContent = "";
+        conv.startNew(); update(); input.focus(); return; }
       log.replaceChildren();
       if (welcome) welcome.hidden = false;
       clearRecovery();
@@ -438,7 +695,8 @@
       }
     });
     update();
-    if (recoveryEnabled) restoreRecovery();
+    if (conv) conv.init();
+    else if (recoveryEnabled) restoreRecovery();
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start, { once: true });

@@ -257,3 +257,69 @@ def finish(request, request_id, *, http_status, response):
     except Exception:
         # The DB is safely finalized; recovery can still use the cached result.
         pass
+
+
+# --- Persistent conversations V1 -------------------------------------------
+# The legacy finish() writes Redis first, then the PostgreSQL guard; it cannot
+# be part of a caller's transaction. Conversations instead commit the final
+# assistant message AND the guard transition in ONE PostgreSQL transaction on
+# the "default" alias (finalize_guard_in_transaction), then update Redis as a
+# best-effort cache AFTER the commit (cache_result_best_effort). PostgreSQL and
+# Redis never share a transaction; PostgreSQL is authoritative.
+
+
+def finalize_guard_in_transaction(request, request_id):
+    """Mark the durable guard finished inside the caller's open transaction.
+
+    Raises RecoveryNotFound if the request is not owned by this session and
+    RecoveryUnavailable if the running->finished transition is not confirmed.
+    A DatabaseError propagates and rolls the caller's transaction back.
+    """
+    request_id = parse_id(request_id)
+    if not transaction.get_connection(using="default").in_atomic_block:
+        raise RecoveryUnavailable("guard finalization requires the caller's transaction")
+    actor, session = _identity(request)
+    updated = AIChatRequestGuard.objects.using("default").filter(
+        request_id=request_id, actor_id=actor, session_digest=session, state="running",
+    ).update(state="finished", finished_at=timezone.now())
+    if updated != 1:
+        raise RecoveryUnavailable("durable guard transition not confirmed")
+
+
+def cache_result_best_effort(request, request_id, *, http_status, response):
+    """After the PostgreSQL commit: cache the result for recovery polling.
+
+    Never raises. A failure only shortens convenience recovery; the committed
+    PostgreSQL message remains the authoritative, replayable result.
+    """
+    try:
+        request_id = parse_id(request_id)
+        _require_shared_redis()
+        actor, session = _identity(request)
+        durable = _durable_guard(request_id)
+        guard_key, result_key = _keys(request_id)
+        cache.set(result_key, {
+            "status": "completed" if 200 <= http_status < 400 else "failed",
+            "http_status": http_status,
+            "response": response,
+        }, timeout=RESPONSE_TTL_SECONDS)
+        cache.set(guard_key, {
+            "actor": actor, "session": session, "fingerprint": durable.fingerprint,
+            "state": durable.state, "created_at": int(durable.created_at.timestamp()),
+        }, timeout=GUARD_TTL_SECONDS)
+        return True
+    except Exception:  # noqa: BLE001 - cache is convenience state only
+        return False
+
+
+def peek_cached_result(request_id):
+    """Operator reconciliation only: the cached result for a request, or None."""
+    try:
+        _, result_key = _keys(parse_id(str(request_id)))
+        value = cache.get(result_key)
+    except Exception:  # noqa: BLE001
+        return None
+    if (isinstance(value, dict) and value.get("status") in ("completed", "failed")
+            and isinstance(value.get("http_status"), int) and isinstance(value.get("response"), dict)):
+        return value
+    return None

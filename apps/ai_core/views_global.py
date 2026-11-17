@@ -19,7 +19,7 @@ from apps.ai_core.engine.citation import (
     EvidenceRejected, GeneratedAnswerRejected, CitationIdentityRejected,
     CitationDigestRejected, CitationQuoteRejected,
 )
-from apps.ai_core.engine.global_grounded import GLOBAL_INSTRUCTIONS, GlobalUnsupported, UnsupportedNumericClaim, ask_global
+from apps.ai_core.engine.global_grounded import GLOBAL_INSTRUCTIONS, HISTORY_INSTRUCTIONS, GlobalUnsupported, UnsupportedNumericClaim, ask_global
 from apps.ai_core.engine.grounded import PhaseBDisabled
 from apps.ai_core.gateway import InputError, validate
 from apps.ai_core.global_budget import reserve_global_request
@@ -173,10 +173,25 @@ def ask_global_view(request):
         if prior["status"] != "claimed":
             return _respond({"status": prior["status"], "request_id": request_id},
                             status=202 if prior["status"] == "running" else 409)
+    data, status, _meta = run_global_pipeline(request, question, language)
+    return _respond(data, status=status, request=request, request_id=request_id)
+
+
+def _instructions_for(environment, with_history):
+    base = STAGING_BRIEF_INSTRUCTIONS if environment == "staging" else GLOBAL_INSTRUCTIONS
+    return (base + " " + HISTORY_INSTRUCTIONS) if with_history else base
+
+
+def run_global_pipeline(request, question, language, *, prior_turns=(), search_question=None):
+    """Shared Global AI pipeline after authentication, validation and recovery claim.
+
+    Returns ``(json_body, http_status, meta)``; the caller persists/finishes.
+    ``meta`` carries the ledger-wrapped provider (if any) and the model name.
+    """
+    meta = {"budgeted": None, "model": ""}
     # Unsupported input is rejected before quota, retrieval, or provider work.
     if route_question(question, language).kind == UNSUPPORTED:
-        return _respond({"error": "UNSUPPORTED_QUESTION"}, status=422,
-                        request=request, request_id=request_id)
+        return {"error": "UNSUPPORTED_QUESTION"}, 422, meta
     hosted = settings.VORNEQ_ENV in ("staging", "production")
     # Shared prepaid ledger: mandatory in production, optional in staging. While
     # it governs cost, fixed daily counts are replaced by per-call money
@@ -190,32 +205,33 @@ def ask_global_view(request):
             model=os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""),
             timeout_s=30 if hosted else 15,
             max_output_tokens=_output_cap_for_environment(settings.VORNEQ_ENV),
-            extra_instructions=(STAGING_BRIEF_INSTRUCTIONS if settings.VORNEQ_ENV == "staging"
-                                else GLOBAL_INSTRUCTIONS),
+            extra_instructions=_instructions_for(settings.VORNEQ_ENV, bool(prior_turns)),
             compact_sources=_compact_sources_for_environment(settings.VORNEQ_ENV),
         )
         if shared_budget:
             provider = BudgetedProvider(provider, actor_id=request.user.pk)
+            meta["budgeted"] = provider
         elif settings.VORNEQ_ENV == "production":
             raise BudgetExceeded("production requires the shared prepaid ledger")
+        meta["model"] = getattr(provider, "model", "") or getattr(getattr(provider, "inner", None), "model", "")
         response = ask_global(question, language, actor=request.user, provider=provider,
-                              retriever=default_retriever(), enabled=True)
+                              retriever=default_retriever(), enabled=True, prior_turns=prior_turns,
+                              search_question=search_question)
     except BudgetExceeded:
-        return _respond({"error": "rate_limited"}, status=429, request=request, request_id=request_id)
+        return {"error": "rate_limited"}, 429, meta
     except GlobalUnsupported:
-        return _respond({"error": "UNSUPPORTED_QUESTION"}, status=422, request=request, request_id=request_id)
+        return {"error": "UNSUPPORTED_QUESTION"}, 422, meta
     except (EvidenceRejected, PhaseBDisabled) as exc:
         reason_code = _evidence_rejection_code(exc)
         # Only a fixed enum, never raw prompt, response, citation or exception text.
         _log.warning("ai_evidence_rejected reason_code=%s", reason_code)
-        return _respond({"error": "INSUFFICIENT_EVIDENCE", "reason_code": reason_code},
-                        status=422, request=request, request_id=request_id)
+        return {"error": "INSUFFICIENT_EVIDENCE", "reason_code": reason_code}, 422, meta
     except RetrievalTimeout:
-        return _respond({"error": "search_timeout"}, status=504, request=request, request_id=request_id)
+        return {"error": "search_timeout"}, 504, meta
     except RetrievalError:
-        return _respond({"error": "search_unavailable"}, status=503, request=request, request_id=request_id)
+        return {"error": "search_unavailable"}, 503, meta
     except ProviderTimeout:
-        return _respond({"error": "provider_timeout"}, status=504, request=request, request_id=request_id)
+        return {"error": "provider_timeout"}, 504, meta
     except GatewayError:
-        return _respond({"error": "provider_unavailable"}, status=503, request=request, request_id=request_id)
-    return _respond(response, request=request, request_id=request_id)
+        return {"error": "provider_unavailable"}, 503, meta
+    return response, 200, meta

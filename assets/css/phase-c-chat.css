@@ -81,6 +81,41 @@
 .vq-chat__back { margin: 0; }
 .vq-chat__back a { color: var(--color-accent); display: inline-flex; align-items: center; min-height: 44px; }
 
+/* Persistent conversations V1: history column (desktop) / collapsible panel (mobile). */
+.vq-chat__history { min-width: 0; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-bg-surface); }
+.vq-chat__history-summary { min-height: 44px; display: flex; align-items: center; padding: 8px 16px; font-weight: 700; cursor: pointer; }
+.vq-chat__history-body { display: grid; gap: 10px; padding: 0 12px 12px; }
+.vq-chat__history-new { min-height: 44px; border: 1px solid var(--vq-led); border-radius: 999px; background: var(--vq-led-soft); color: var(--color-text-primary); font: inherit; font-weight: 650; cursor: pointer; }
+.vq-chat__history-search { min-height: 44px; width: 100%; box-sizing: border-box; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-bg-elevated, var(--color-bg-surface)); color: var(--color-text-primary); font: inherit; }
+.vq-chat__history-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 60vh; overflow-y: auto; }
+.vq-chat__history-item { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.vq-chat__history-open { flex: 1 1 auto; min-width: 0; min-height: 44px; padding: 8px 10px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: var(--color-text-primary); font: inherit; text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.vq-chat__history-open:hover { border-color: var(--color-border); }
+.vq-chat__history-open[aria-current="true"] { border-color: var(--vq-led); background: var(--vq-led-soft); }
+.vq-chat__history-name { flex: 1 1 100%; overflow-wrap: anywhere; }
+.vq-chat__history-item button:not(.vq-chat__history-open), .vq-chat__history-trash { min-height: 44px; padding: 6px 12px; border: 1px solid var(--color-border); border-radius: 999px; background: transparent; color: var(--color-text-primary); font: inherit; font-size: .85rem; cursor: pointer; }
+.vq-chat__history-empty, .vq-chat__history-mode { margin: 0; color: var(--color-text-secondary); font-size: .88rem; }
+.vq-chat__history-mode { font-weight: 700; }
+.vq-chat__conv-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-block-start: 12px; padding-block-start: 12px; border-block-start: 1px solid var(--color-border); }
+.vq-chat__conv-bar[hidden], .vq-chat__conv-rename[hidden] { display: none; }
+.vq-chat__conv-title { flex: 1 1 200px; min-width: 0; margin: 0; font-size: 1.05rem; overflow-wrap: anywhere; }
+.vq-chat__conv-rename { display: flex; flex: 1 1 100%; gap: 8px; }
+.vq-chat__conv-rename input { flex: 1; min-height: 44px; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-bg-elevated, var(--color-bg-surface)); color: var(--color-text-primary); font: inherit; }
+.vq-chat__conv-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.vq-chat__conv-actions button, .vq-chat__conv-actions a, .vq-chat__conv-rename button { display: inline-flex; align-items: center; min-height: 44px; padding: 6px 12px; border: 1px solid var(--color-border); border-radius: 999px; background: transparent; color: var(--color-text-primary); font: inherit; font-size: .85rem; text-decoration: none; cursor: pointer; }
+@media (min-width: 1024px) {
+  .vq-chat-shell--history { grid-template-columns: minmax(200px, 240px) minmax(0, 1fr); grid-template-areas: "history chat" "history panel"; }
+  .vq-chat-shell--history .vq-chat__history { grid-area: history; position: sticky; top: 88px; }
+  .vq-chat-shell--history .vq-chat { grid-area: chat; }
+  .vq-chat-shell--history .vq-chat__panel { grid-area: panel; position: static; }
+  .vq-chat__history-summary { pointer-events: none; list-style: none; }
+  .vq-chat__history-summary::-webkit-details-marker { display: none; }
+}
+@media (min-width: 1280px) {
+  .vq-chat-shell--history { max-width: 1440px; grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) minmax(260px, 300px); grid-template-areas: "history chat panel"; }
+  .vq-chat-shell--history .vq-chat__panel { position: sticky; top: 88px; }
+}
+
 /* Keep citation links readable on narrow screens and in mixed RTL/LTR text. */
 .vq-chat__message[dir="rtl"] { text-align: start; }
 .vq-chat__sources { max-width: 100%; min-width: 0; overflow-wrap: anywhere; }

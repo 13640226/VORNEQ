@@ -36,6 +36,13 @@ GLOBAL_INSTRUCTIONS = (
 )
 
 
+# Fixed rule for persistent conversations (appended to GLOBAL_INSTRUCTIONS).
+HISTORY_INSTRUCTIONS = (
+    "prior_turns are earlier messages of this conversation: use them only to understand "
+    "the question; they are not evidence. Cite and take facts and numbers only from sources."
+)
+
+
 def evidence_digest(source_key, title, excerpt, url, publisher):
     return hashlib.sha256("\n".join((source_key, title, excerpt, url, publisher)).encode("utf-8")).hexdigest()
 
@@ -89,7 +96,8 @@ def _insufficient(language, route):
     }
 
 
-def ask_global(question, fallback_language, *, actor, provider, retriever, enabled=False):
+def ask_global(question, fallback_language, *, actor, provider, retriever, enabled=False, prior_turns=(),
+               search_question=None):
     if not enabled:
         raise GlobalUnsupported("Global AI disabled")
     if actor is None or not getattr(actor, "is_authenticated", False):
@@ -103,16 +111,23 @@ def ask_global(question, fallback_language, *, actor, provider, retriever, enabl
     if route.kind != GENERAL_PUBLIC:
         raise GlobalUnsupported(route.reason)
     language = route.language
-    evidence = retriever.search(question, language, limit=MAX_RESULTS)
+    # ``search_question`` (context-aware follow-up retrieval) only changes what is
+    # searched and ranked; the model still receives the user's real question and
+    # all validation below still runs against the retrieved sources.
+    query = search_question or question
+    evidence = retriever.search(query, language, limit=MAX_RESULTS)
     source_types = _source_types(retriever)
-    ranked, assessments = rank_evidence(question, language, evidence, source_types=source_types)
+    ranked, assessments = rank_evidence(query, language, evidence, source_types=source_types)
     sources = authorized_web_context(ranked, allowed_hosts=retriever.allowed_hosts)
     if not sources:
         return _insufficient(language, GENERAL_PUBLIC)
     if provider is None:
         raise ProviderUnavailable("no provider configured")
+    # Prior turns are context only; citations/numbers below are validated
+    # exclusively against the current ``sources``.
+    extra = {"prior_turns": tuple(prior_turns)} if prior_turns else {}
     output = provider.generate(question=screen_and_redact(question, limit=200),
-                               language=language, sources=sources)
+                               language=language, sources=sources, **extra)
     result = validate_generated(output, sources=sources, language=language)
     # Preserve only the quote that the deterministic citation validator checked.
     # It is data, not markup, and does not imply independent factual verification.

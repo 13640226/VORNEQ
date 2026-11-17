@@ -10,7 +10,23 @@
 <link rel="stylesheet" href="{% static 'css/phase-c-chat.css' %}">
 {% endblock %}
 {% block content %}
-<div class="vq-chat-shell">
+<div class="vq-chat-shell{% if chat_conversations_enabled %} vq-chat-shell--history{% endif %}">
+{% if chat_conversations_enabled %}
+<details class="vq-chat__history" data-vq-conv-panel open>
+  <summary class="vq-chat__history-summary">{{ chat_labels.conv_title }}</summary>
+  <nav class="vq-chat__history-body" aria-label="{{ chat_labels.conv_title }}">
+    <button type="button" class="vq-chat__history-new" data-vq-conv-new>{{ chat_labels.conv_new }}</button>
+    <label class="sr-only" for="vq-conv-search">{{ chat_labels.conv_search }}</label>
+    <input id="vq-conv-search" class="vq-chat__history-search" type="search" maxlength="100"
+      placeholder="{{ chat_labels.conv_search }}" autocomplete="off" data-vq-conv-search>
+    <p class="vq-chat__history-mode" data-vq-conv-mode hidden>{{ chat_labels.conv_trash }}</p>
+    <ul class="vq-chat__history-list" data-vq-conv-items></ul>
+    <p class="vq-chat__history-empty" data-vq-conv-empty hidden>{{ chat_labels.conv_empty }}</p>
+    <button type="button" class="vq-chat__history-trash" data-vq-conv-trash
+      data-label-trash="{{ chat_labels.conv_trash }}" data-label-back="{{ chat_labels.conv_back }}">{{ chat_labels.conv_trash }}</button>
+  </nav>
+</details>
+{% endif %}
 <section class="vq-chat" aria-labelledby="vq-chat-title"
   data-vq-chat
   data-vq-language="{{ chat_language }}"
@@ -36,11 +52,38 @@
   data-vq-copied="{{ chat_labels.copied }}"
   data-vq-source-hosts="{{ chat_source_hosts }}"
   data-vq-recovery-enabled="{{ chat_recovery_enabled|yesno:'true,false' }}"
-  data-vq-recovery-endpoint="{{ chat_recovery_endpoint }}">
+  data-vq-recovery-endpoint="{{ chat_recovery_endpoint }}"{% if chat_conversations_enabled %}
+  data-vq-conversations="true"
+  data-vq-conv-endpoint="{{ chat_conversations_endpoint }}"
+  data-vq-conv-untitled="{{ chat_labels.conv_untitled }}"
+  data-vq-conv-delete-confirm="{{ chat_labels.conv_delete_confirm }}"
+  data-vq-conv-delete-forever-confirm="{{ chat_labels.conv_delete_forever_confirm }}"
+  data-vq-conv-restore="{{ chat_labels.conv_restore }}"
+  data-vq-conv-delete-forever="{{ chat_labels.conv_delete_forever }}"
+  data-vq-conv-load-error="{{ chat_labels.conv_load_error }}"
+  data-vq-conv-full="{{ chat_labels.conv_full }}"
+  data-vq-conv-not-saved="{{ chat_labels.conv_not_saved }}"{% endif %}>
   <header class="vq-chat__header">
     <p class="vq-chat__kicker"><span class="vq-chat__led" aria-hidden="true"></span>VORNEQ · AI · {% if chat_production %}Generated drafts · claims not verified{% elif chat_staging %}Authorized staging trial{% else %}Development preview{% endif %}</p>
     <h1 id="vq-chat-title">{{ chat_labels.title }}</h1>
     <p class="vq-chat__intro">{{ chat_labels.intro }}</p>
+    {% if chat_conversations_enabled %}
+    <div class="vq-chat__conv-bar" data-vq-conv-bar hidden>
+      <h2 class="vq-chat__conv-title" data-vq-conv-title></h2>
+      <form class="vq-chat__conv-rename" data-vq-conv-rename-form hidden>
+        <label class="sr-only" for="vq-conv-title-input">{{ chat_labels.conv_rename }}</label>
+        <input id="vq-conv-title-input" type="text" maxlength="120" required data-vq-conv-title-input>
+        <button type="submit">{{ chat_labels.conv_save }}</button>
+      </form>
+      <div class="vq-chat__conv-actions">
+        <button type="button" data-vq-conv-rename>{{ chat_labels.conv_rename }}</button>
+        <button type="button" data-vq-conv-archive data-label-archive="{{ chat_labels.conv_archive }}"
+          data-label-unarchive="{{ chat_labels.conv_unarchive }}">{{ chat_labels.conv_archive }}</button>
+        <a href="#" data-vq-conv-export download>{{ chat_labels.conv_export }}</a>
+        <button type="button" data-vq-conv-delete>{{ chat_labels.conv_delete }}</button>
+      </div>
+    </div>
+    {% endif %}
   </header>
 
   {% if chat_source_hosts %}
@@ -82,13 +125,14 @@
       <div><dt>{{ chat_labels.sources_label }}</dt><dd>{% if chat_source_hosts %}{{ chat_labels.sources_global }}{% else %}{{ chat_labels.sources_local }}{% endif %}</dd></div>
       <div><dt>{{ chat_labels.answers_label }}</dt><dd>{{ chat_labels.answers_value }}</dd></div>
       <div><dt>{{ chat_labels.quotes_label }}</dt><dd>{{ chat_labels.quotes_value }}</dd></div>
-      <div><dt>{{ chat_labels.memory_label }}</dt><dd>{{ chat_labels.memory_value }}</dd></div>
+      <div><dt>{{ chat_labels.memory_label }}</dt><dd>{% if chat_conversations_enabled %}{{ chat_labels.conv_memory_value }}{% else %}{{ chat_labels.memory_value }}{% endif %}</dd></div>
     </dl>
-    <p class="vq-chat__single">{{ chat_labels.single_turn }}</p>
+    <p class="vq-chat__single">{% if chat_conversations_enabled %}{{ chat_labels.conv_turns }}{% else %}{{ chat_labels.single_turn }}{% endif %}</p>
   </section>
   <section class="vq-chat__card" aria-labelledby="vq-chat-privacy-title">
     <h2 id="vq-chat-privacy-title">{{ chat_labels.privacy_title }}</h2>
     <p class="vq-chat__warning" role="note">{{ chat_labels.warning }}</p>
+    {% if chat_conversations_enabled %}<p class="vq-chat__single" data-vq-conv-notice>{{ chat_labels.conv_stored_notice }}</p>{% endif %}
     {% if chat_recovery_enabled %}<p class="vq-chat__single">{{ chat_labels.recovery_note }}</p>{% endif %}
   </section>
   <p class="vq-chat__back"><a href="{% url 'search_page' %}">{{ chat_labels.back }}</a></p>
