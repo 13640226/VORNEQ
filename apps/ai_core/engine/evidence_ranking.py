@@ -29,6 +29,17 @@ _STOP = {
               "of to in on for with by from can could will would there it its this that many "
               "much explain about".split()),
 }
+# Persian Wikipedia SEARCH only (not relevance scoring): interrogatives, light
+# verbs and request phrasing that rarely occur in article text. CirrusSearch
+# matches all terms, so leaving them in the query drops the main article.
+# Measured 2026-11-17 against fa.wikipedia (strict title hits, top 3):
+# raw question 5/20 and 13/20 (held-out) -> keywords 12/20 and 17/20.
+# See docs/ai/FA_RETRIEVAL_QUERY_V1.md and the fixture of measured queries.
+_FA_SEARCH_EXTRA = set(
+    "کیست کجاست چیستند چقدر چطوری چگونگی چیزی کسی کسانی مورد درباره دربارهٔ "
+    "توضیح بده بدهید بگو بگویید لطفا لطفاً شد شدند کرد کردند کند کنند کنید میکند میکنند "
+    "میشود میشوند میدهد میدهند داد دادند دهد بوده بودند باشد هستش رخ اتفاق افتاد "
+    "آمد آید نوشت نوشته سرود سروده".split())
 TYPE_WEIGHT = {"encyclopedia": 0.6, "reference": 0.6, "scientific_agency": 0.9,
                "peer_reviewed": 1.0, "unknown": 0.3}
 
@@ -46,6 +57,24 @@ def terms(text: str, language: str) -> list[str]:
         if len(token) >= 2 and token not in stop and token not in out:
             out.append(token)
     return out
+
+
+def search_keywords(question: str, language: str) -> str:
+    """Keyword query for public search (Persian only); other languages unchanged.
+
+    Keeps ZWNJ inside tokens because Persian Wikipedia titles use it. Falls back
+    to the whitespace-collapsed question when nothing would remain.
+    """
+    collapsed = " ".join(str(question).split())
+    if language != "fa":
+        return collapsed
+    stop = _STOP["fa"] | _FA_SEARCH_EXTRA | _STOP["en"]
+    out = []
+    for token in _TOKEN.findall(normalize_text(collapsed)):
+        bare = token.replace("\u200c", "")
+        if len(bare) >= 2 and bare not in stop and token not in stop and token not in out:
+            out.append(token)
+    return " ".join(out) or collapsed
 
 
 def _matches(term: str, words: set[str]) -> bool:
