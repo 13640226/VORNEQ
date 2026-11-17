@@ -1,4 +1,4 @@
-"""Staging-only output sizing and prepaid-ledger error settlement.
+"""Hosted output sizing, compact evidence and prepaid-ledger error settlement.
 
 SYNTHETIC ONLY: no actual network, provider key, billing, or persistent DB.
 """
@@ -14,7 +14,8 @@ from django.test import SimpleTestCase
 from apps.ai_core.budgeted_provider import BudgetedProvider
 from apps.ai_core.providers.exceptions import ProviderInvalidResponse
 from apps.ai_core.providers.openai_responses import OpenAIResponsesProvider, build_request_payload
-from apps.ai_core.views_global import STAGING_BRIEF_INSTRUCTIONS, _output_cap_for_environment
+from apps.ai_core.views_global import (STAGING_BRIEF_INSTRUCTIONS, _compact_sources_for_environment,
+                                       _output_cap_for_environment)
 
 HAS_PROVIDER_DEPS = bool(importlib.util.find_spec("openai") and importlib.util.find_spec("pydantic"))
 
@@ -31,10 +32,14 @@ SOURCES = [{
 
 
 class StagingPromptBudgetContractTests(SimpleTestCase):
-    def test_staging_only_cap(self):
-        self.assertEqual(_output_cap_for_environment("staging"), 2048)
-        self.assertEqual(_output_cap_for_environment("production"), 1024)
+    def test_hosted_output_cap_and_compaction_policy(self):
+        for environment in ("staging", "production"):
+            with self.subTest(environment=environment):
+                self.assertEqual(_output_cap_for_environment(environment), 2048)
+                self.assertTrue(_compact_sources_for_environment(environment))
         self.assertEqual(_output_cap_for_environment("development"), 512)
+        self.assertFalse(_compact_sources_for_environment("development"))
+        self.assertFalse(_compact_sources_for_environment("unexpected"))
 
     def test_compact_sources_preserve_trusted_citation_fields(self):
         full = build_request_payload("What is Berlin?", "en", SOURCES)
@@ -73,6 +78,40 @@ class StagingPromptBudgetContractTests(SimpleTestCase):
         self.assertEqual(reserve.call_args.kwargs["max_output_tokens"], 2048)
         settle.assert_called_once_with(reservation, usage=(100, 20), outcome="completed")
 
+
+    def test_production_budget_reserves_new_cap_against_exact_compact_input(self):
+        """Production reserves the higher cap before the single mock model call.
+
+        All tests remain offline: no API key, persistent DB or provider request.
+        """
+        class FakeProductionProvider:
+            model = "synthetic-model"
+            max_output_tokens = _output_cap_for_environment("production")
+            compact_sources = _compact_sources_for_environment("production")
+            instructions = "SYNTHETIC instructions"
+            last_usage = None
+
+            def generate(self, **kwargs):
+                self.last_usage = (609, 128)
+                return {"answer": "SYNTHETIC local answer"}
+
+        provider = FakeProductionProvider()
+        original_sources = [dict(item) for item in SOURCES]
+        with patch("apps.ai_core.budgeted_provider.ledger.reserve") as reserve, \
+                patch("apps.ai_core.budgeted_provider.ledger.settle") as settle:
+            result = BudgetedProvider(provider, actor_id=1).generate(
+                question="What is Berlin?", language="en", sources=SOURCES)
+        compact = build_request_payload("What is Berlin?", "en", SOURCES, compact_sources=True)
+        full = build_request_payload("What is Berlin?", "en", SOURCES, compact_sources=False)
+        self.assertEqual(result["answer"], "SYNTHETIC local answer")
+        self.assertEqual(provider.max_output_tokens, 2048)
+        self.assertLess(len(compact.encode("utf-8")), len(full.encode("utf-8")))
+        self.assertEqual(
+            reserve.call_args.kwargs["input_bytes"],
+            len(provider.instructions.encode("utf-8")) + len(compact.encode("utf-8")))
+        self.assertEqual(reserve.call_args.kwargs["max_output_tokens"], 2048)
+        self.assertEqual(SOURCES, original_sources)  # full trusted evidence stays local
+        settle.assert_called_once_with(reserve.return_value, usage=(609, 128), outcome="completed")
 
 @skipUnless(HAS_PROVIDER_DEPS, "OpenAI/Pydantic optional SDK unavailable")
 class IncompleteResponseLedgerTests(SimpleTestCase):
