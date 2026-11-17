@@ -5,8 +5,48 @@ Dependency lock approval and explicit development-only activation are required.
 import json
 import logging
 import os
+import re
 
 _logger = logging.getLogger(__name__)
+
+# Never log OpenAI exception messages, arbitrary JSON bodies, prompts, or headers.
+# A malicious upstream error is untrusted text, not an operational log string.
+_SAFE_ERROR_TOKEN = re.compile(r"[a-z][a-z0-9_.-]{0,63}\Z")
+_SAFE_REQUEST_ID = re.compile(r"req_[A-Za-z0-9_-]{1,128}\Z")
+
+
+def _safe_error_token(value):
+    return value if isinstance(value, str) and _SAFE_ERROR_TOKEN.fullmatch(value) else "unavailable"
+
+
+def _safe_request_id(value):
+    return value if isinstance(value, str) and _SAFE_REQUEST_ID.fullmatch(value) else "unavailable"
+
+
+def _log_safe_api_status(exc):
+    """Log bounded operational signals only; do not log the exception itself."""
+    body = getattr(exc, "body", None)
+    if isinstance(body, dict):
+        error = body.get("error")
+        details = error if isinstance(error, dict) else body
+    else:
+        details = {}
+    code = getattr(exc, "code", None) or details.get("code")
+    kind = getattr(exc, "type", None) or details.get("type")
+    status = getattr(exc, "status_code", None)
+    if type(status) is not int or not 400 <= status <= 599:
+        status = "unavailable"
+
+    request_id = getattr(exc, "request_id", None)
+    if not request_id:
+        headers = getattr(getattr(exc, "response", None), "headers", None)
+        if hasattr(headers, "get"):
+            request_id = headers.get("x-request-id")
+
+    _logger.warning(
+        "ai_provider_http_error http_status=%s error_code=%s error_type=%s openai_request_id=%s",
+        status, _safe_error_token(code), _safe_error_token(kind), _safe_request_id(request_id),
+    )
 
 from .exceptions import ProviderInvalidResponse, ProviderTimeout, ProviderUnavailable
 
@@ -59,7 +99,7 @@ class OpenAIResponsesProvider:
         if not key:
             raise ProviderUnavailable("provider credential unavailable")
         try:
-            from openai import OpenAI, APITimeoutError, APIConnectionError, APIError
+            from openai import OpenAI, APITimeoutError, APIConnectionError, APIStatusError, APIError
             from pydantic import ValidationError
             from apps.ai_core.schemas.response import GroundedAnswerSchema
         except ImportError as exc:
@@ -77,6 +117,9 @@ class OpenAIResponsesProvider:
             )
         except APITimeoutError as exc:
             raise ProviderTimeout("provider timed out") from exc
+        except APIStatusError as exc:
+            _log_safe_api_status(exc)
+            raise ProviderUnavailable("provider connection or API error") from exc
         except (APIConnectionError, APIError) as exc:
             raise ProviderUnavailable("provider connection or API error") from exc
         except ValidationError as exc:
