@@ -7,6 +7,8 @@ import logging
 import os
 import re
 
+from .exceptions import ProviderInvalidResponse, ProviderTimeout, ProviderUnavailable
+
 _logger = logging.getLogger(__name__)
 
 # Never log OpenAI exception messages, arbitrary JSON bodies, prompts, or headers.
@@ -47,8 +49,6 @@ def _log_safe_api_status(exc):
         "ai_provider_http_error http_status=%s error_code=%s error_type=%s openai_request_id=%s",
         status, _safe_error_token(code), _safe_error_token(kind), _safe_request_id(request_id),
     )
-
-from .exceptions import ProviderInvalidResponse, ProviderTimeout, ProviderUnavailable
 
 
 def build_request_payload(question, language, sources, *, compact_sources=False):
