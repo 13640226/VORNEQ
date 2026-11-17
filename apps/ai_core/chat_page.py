@@ -1,4 +1,4 @@
-"""Owner-authorized development preview, never accessible in staging/production."""
+"""Guarded Chat UI for authorized development, staging, and Production actors."""
 from django.conf import settings
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
@@ -48,7 +48,7 @@ def chat_page(request):
     global_ai = global_ai_available()
     with override(language):
         response = render(request, "ai_core/chat.html", {
-            "chat_labels": chat_labels(language),
+            "chat_labels": chat_labels(language, environment=settings.VORNEQ_ENV),
             "chat_language": language,
             "chat_endpoint": reverse("ai_core:ask-global" if global_ai else "ai_core:ask-grounded"),
             "chat_source_hosts": " ".join(sorted(WikipediaRetriever.allowed_hosts)) if global_ai else "",
