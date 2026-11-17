@@ -134,6 +134,37 @@ def _matches(term: str, words: set[str]) -> bool:
         len(w) >= 4 and (w.startswith(term) or term.startswith(w)) for w in words)
 
 
+def _fa_evidence_forms(text: str) -> set[str]:
+    """Persian lexical forms for retrieval scoring, without changing evidence.
+
+    A name can appear as one ZWNJ-joined word (ابن‌سینا), two words
+    (ابن سینا), or one unspaced word (ابنسینا). Index the individual
+    parts and adjacent two-part joins. Only ranking uses these forms;
+    the trusted source text, URLs, citations and digests stay unchanged.
+    """
+    tokens = _TOKEN.findall(normalize_text(text))
+    parts = [part for token in tokens for part in token.split("\u200c") if part]
+    forms = set(parts)
+    for left, right in zip(parts, parts[1:]):
+        if len(left) >= 2 and len(right) >= 2:
+            forms.add(left + right)
+    return forms
+
+
+def persian_fallback_search_text(query: str, language: str) -> str | None:
+    """One deterministic fallback query, only when primary ranking has no source.
+
+    Never inject an alias, append facts or change the requested language. The
+    registered retriever still enforces screening, host allowlist, DNS/IP
+    checks and bounded response size. Non-Persian searches never retry.
+    """
+    if language != "fa" or not isinstance(query, str) or "\u200c" not in query:
+        return None
+    collapsed = " ".join(query.split())
+    spaced = re.sub(r"(?<=\w)\u200c(?=\w)", " ", collapsed)
+    return spaced if spaced != collapsed and len(spaced) <= 200 else None
+
+
 def _iso(value):
     if not isinstance(value, str):
         return False
@@ -146,8 +177,18 @@ def _iso(value):
 
 def assess(question: str, language: str, item: WebEvidence, source_type: str = "unknown") -> dict:
     query = terms(question, language)
-    words = {w.replace("\u200c", "") for w in _TOKEN.findall(normalize_text(item.title + " " + item.excerpt))}
+    if language == "fa":
+        words = _fa_evidence_forms(item.title) | _fa_evidence_forms(item.excerpt)
+    else:
+        words = {w.replace("\u200c", "") for w in _TOKEN.findall(normalize_text(item.title + " " + item.excerpt))}
     matched = [t for t in query if _matches(t, words)]
+    if language == "fa":
+        # Also score spaced query names against compact source spellings.
+        matched_set = set(matched)
+        for left, right in zip(query, query[1:]):
+            if left + right in words:
+                matched_set.update((left, right))
+        matched = [t for t in query if t in matched_set]
     relevance = round(len(matched) / len(query), 3) if query else 0.0
     completeness = round(min(len(item.excerpt) / 300, 1.0), 3)
     provenance = (0.5 if _iso(item.retrieved_at) else 0.0) + (0.5 if _iso(item.published_at) else 0.0)

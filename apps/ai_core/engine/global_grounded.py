@@ -12,7 +12,8 @@ import re
 from urllib.parse import urlsplit
 
 from apps.ai_core.engine.citation import EvidenceRejected, validate_generated
-from apps.ai_core.engine.evidence_ranking import SCORE_SEMANTICS, rank_evidence, unsupported_numbers
+from apps.ai_core.engine.evidence_ranking import (SCORE_SEMANTICS, persian_fallback_search_text,
+                                                  rank_evidence, unsupported_numbers)
 from apps.ai_core.engine.grounded import ask_grounded
 from apps.ai_core.global_router import GENERAL_PUBLIC, OFFICIAL_VORNEQ, route_question
 from apps.ai_core.providers.exceptions import ProviderUnavailable
@@ -119,6 +120,16 @@ def ask_global(question, fallback_language, *, actor, provider, retriever, enabl
     source_types = _source_types(retriever)
     ranked, assessments = rank_evidence(query, language, evidence, source_types=source_types)
     sources = authorized_web_context(ranked, allowed_hosts=retriever.allowed_hosts)
+    if not sources:
+        # Exactly one bounded second retrieval for Persian ZWNJ compounds,
+        # only if the first search has no authorized, relevant evidence.
+        # Never fall back to uncited model knowledge or arbitrary hosts.
+        fallback_query = persian_fallback_search_text(query, language)
+        if fallback_query is not None:
+            fallback_evidence = retriever.search(fallback_query, language, limit=MAX_RESULTS)
+            ranked, assessments = rank_evidence(query, language, fallback_evidence,
+                                                source_types=source_types)
+            sources = authorized_web_context(ranked, allowed_hosts=retriever.allowed_hosts)
     if not sources:
         return _insufficient(language, GENERAL_PUBLIC)
     if provider is None:
