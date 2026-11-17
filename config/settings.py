@@ -476,6 +476,22 @@ VORNEQ_AI_LEDGER_ID = os.environ.get("VORNEQ_AI_LEDGER_ID", "")
 VORNEQ_AI_LEDGER_DB_NAME = os.environ.get("VORNEQ_AI_LEDGER_DB_NAME", "")
 # Kill switch: blocks every new model call in Staging and Production.
 VORNEQ_AI_EMERGENCY_STOP = env_bool("VORNEQ_AI_EMERGENCY_STOP", False)
+# Persistent AI conversations V1 (docs/ai/PERSISTENT_CONVERSATION_V1_DESIGN.md).
+# Default OFF in every environment; requires ai_core.0003 to be applied.
+VORNEQ_AI_CONVERSATIONS_ENABLED = env_bool("VORNEQ_AI_CONVERSATIONS_ENABLED", False)
+# Pilot access is controlled independently of the flag: "allowlist" (default,
+# empty list = nobody) or "authenticated". Applies to starting conversations and
+# asking; every user can always read, export and delete their OWN history.
+VORNEQ_AI_CONVERSATIONS_ACTOR_POLICY = os.environ.get("VORNEQ_AI_CONVERSATIONS_ACTOR_POLICY", "allowlist")
+VORNEQ_AI_CONVERSATIONS_ALLOWED_USER_IDS = os.environ.get("VORNEQ_AI_CONVERSATIONS_ALLOWED_USER_IDS", "")
+# Context-aware retrieval for follow-up questions (deterministic, no model call).
+# Default OFF until measured; see docs/ai/PERSISTENT_CONVERSATION_V1_DESIGN.md.
+VORNEQ_AI_CONTEXT_RETRIEVAL_ENABLED = env_bool("VORNEQ_AI_CONTEXT_RETRIEVAL_ENABLED", False)
+VORNEQ_AI_CONVERSATION_MAX_MESSAGES = 500
+VORNEQ_AI_CONVERSATIONS_PER_USER = 200
+VORNEQ_AI_CONVERSATION_TRASH_DAYS = 30
+VORNEQ_AI_CONTEXT_TURNS = 6
+VORNEQ_AI_CONTEXT_MAX_CHARS = 3000
 # Explicit Production policy (apps/ai_core/production_policy.py). Default OFF.
 VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED = (
     VORNEQ_ENV == "production" and env_bool("VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED", False)

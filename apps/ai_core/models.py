@@ -3,8 +3,12 @@
 Reservation records are durable budget allowances, not actual OpenAI invoices.
 They are deliberately never refunded automatically on errors/timeouts.
 """
+import uuid
+
+from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
 
 
 class StagingAIBudgetDay(models.Model):
@@ -50,3 +54,88 @@ class AIChatRequestGuard(models.Model):
         indexes = [
             models.Index(fields=["created_at"], name="ai_chat_guard_created_idx"),
         ]
+
+
+class AIConversation(models.Model):
+    """Persistent AI conversation owned by exactly one user (design V1, D1-D5).
+
+    Every query MUST be owner-bound (see conversations.repository). Deleting a
+    conversation moves it to a 30-day trash (D2); ``ai_conversations_purge``
+    removes it permanently afterwards. Content is never logged or registered
+    in Django admin.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                              related_name="ai_conversations")
+    title = models.CharField(max_length=120)
+    language = models.CharField(max_length=2, default="fa")
+    message_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    last_message_at = models.DateTimeField(default=timezone.now)
+    archived_at = models.DateTimeField(null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["owner", "deleted_at", "archived_at", "last_message_at"],
+                         name="ai_conv_owner_list_idx"),
+            models.Index(fields=["deleted_at"], name="ai_conv_deleted_idx"),
+        ]
+
+
+class AIMessage(models.Model):
+    """One turn of a conversation. Only user/assistant roles are ever stored:
+    instructions stay in code so stored text can never become an instruction."""
+
+    ROLE_USER = "user"
+    ROLE_ASSISTANT = "assistant"
+    # Durable request state of the assistant turn (design V1, section 11):
+    # pending   = request accepted and durably recorded BEFORE any provider call
+    # completed / insufficient_evidence / failed = final, committed together with
+    #             the request guard transition in ONE PostgreSQL transaction
+    # uncertain = provider outcome unknown (timeout, interruption, persistence
+    #             failure after the provider call); never retried automatically
+    STATUS_PENDING = "pending"
+    STATUS_COMPLETED = "completed"
+    STATUS_INSUFFICIENT = "insufficient_evidence"
+    STATUS_FAILED = "failed"
+    STATUS_UNCERTAIN = "uncertain"
+    FINAL_STATUSES = (STATUS_COMPLETED, STATUS_INSUFFICIENT, STATUS_FAILED, STATUS_UNCERTAIN)
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    conversation = models.ForeignKey(AIConversation, on_delete=models.CASCADE, related_name="messages")
+    sequence = models.PositiveIntegerField()
+    role = models.CharField(max_length=10, choices=[(ROLE_USER, ROLE_USER), (ROLE_ASSISTANT, ROLE_ASSISTANT)])
+    content = models.TextField(blank=True, default="")
+    status = models.CharField(max_length=24, default=STATUS_COMPLETED, choices=[
+        (STATUS_PENDING, STATUS_PENDING), (STATUS_COMPLETED, STATUS_COMPLETED),
+        (STATUS_INSUFFICIENT, STATUS_INSUFFICIENT), (STATUS_FAILED, STATUS_FAILED),
+        (STATUS_UNCERTAIN, STATUS_UNCERTAIN)])
+    error_code = models.CharField(max_length=40, blank=True, default="")
+    citations = models.JSONField(default=list, blank=True)
+    # Unique per assistant turn: replaying a request ID can never store twice.
+    request_id = models.UUIDField(null=True, blank=True, unique=True)
+    ledger_reservation_id = models.UUIDField(null=True, blank=True)
+    model = models.CharField(max_length=100, blank=True, default="")
+    http_status = models.PositiveSmallIntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    finalized_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["conversation", "sequence"], name="ai_msg_conv_seq_unique"),
+            models.CheckConstraint(condition=Q(role__in=["user", "assistant"]), name="ai_msg_role_valid"),
+            models.CheckConstraint(
+                condition=Q(status__in=["pending", "completed", "insufficient_evidence", "failed", "uncertain"]),
+                name="ai_msg_status_valid"),
+            # Only assistant turns carry a request ID or a pending/uncertain state.
+            models.CheckConstraint(condition=Q(role="assistant") | Q(request_id__isnull=True, status="completed"),
+                                   name="ai_msg_user_turn_plain"),
+        ]
+        indexes = [
+            models.Index(fields=["conversation", "sequence"], name="ai_msg_conv_seq_idx"),
+            models.Index(fields=["status", "created_at"], name="ai_msg_status_time_idx"),
+        ]
+        ordering = ["sequence"]

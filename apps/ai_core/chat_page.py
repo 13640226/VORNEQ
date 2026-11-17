@@ -46,6 +46,10 @@ def chat_page(request):
     language = requested_language if requested_language in ("fa", "de", "en") else (get_language() or "en")[:2]
     request.LANGUAGE_CODE = language
     global_ai = global_ai_available()
+    # Persistent conversations ride on Global AI; off unless explicitly enabled.
+    from .views_conversations import may_start
+    conversations_on = bool(global_ai and getattr(settings, "VORNEQ_AI_CONVERSATIONS_ENABLED", False)
+                            and may_start(request.user))
     with override(language):
         response = render(request, "ai_core/chat.html", {
             "chat_labels": chat_labels(language, environment=settings.VORNEQ_ENV),
@@ -56,6 +60,8 @@ def chat_page(request):
             "chat_production": settings.VORNEQ_ENV == "production",
             "chat_recovery_enabled": global_ai and recovery_enabled(),
             "chat_recovery_endpoint": reverse("ai_core:request-status"),
+            "chat_conversations_enabled": conversations_on,
+            "chat_conversations_endpoint": reverse("ai_core:conversations") if conversations_on else "",
         })
     response["Cache-Control"] = "no-store, private"
     response["X-Robots-Tag"] = "noindex, nofollow"

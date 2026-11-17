@@ -77,6 +77,55 @@ def search_keywords(question: str, language: str) -> str:
     return " ".join(out) or collapsed
 
 
+# Follow-up detection: personal/demonstrative pronouns that refer back to the
+# previous question's subject. Only these trigger context-aware retrieval.
+_FOLLOWUP_PRONOUNS = {
+    "fa": set("او وی آن این ایشان آنها اینها آن‌ها این‌ها اش".split()),
+    "en": set("he she it they him her his its their them this that these those".split()),
+    "de": set("er sie es ihm ihn ihr ihre sein seine seiner dessen deren dies diese dieser dieses".split()),
+}
+
+
+def _keyword_list(text: str, language: str) -> list[str]:
+    if language == "fa":
+        return search_keywords(text, "fa").split()
+    return terms(text, language)
+
+
+def followup_search_text(question: str, previous_question: str, language: str):
+    """Deterministic search text for a follow-up question, or None.
+
+    Returns None (= search with the question as before) unless the current
+    question contains a referring pronoun AND the previous USER question yields
+    keywords. Never uses assistant answers, never invents a subject, and never
+    forwards personal data or instruction-like text to the search provider.
+    """
+    from apps.ai_core.sanitization import UnsafePrompt, screen_and_redact
+
+    pronouns = _FOLLOWUP_PRONOUNS.get(language)
+    if not pronouns or not previous_question:
+        return None
+    tokens = _TOKEN.findall(normalize_text(question))
+    if not any(t in pronouns or t.replace("\u200c", "") in pronouns for t in tokens):
+        return None
+    try:
+        previous = screen_and_redact(" ".join(str(previous_question).split()), limit=1000)
+    except UnsafePrompt:
+        return None
+    if not previous or "[REDACTED_" in previous:
+        return None
+    carried = [k for k in _keyword_list(previous, language) if k not in pronouns]
+    if not carried:
+        return None
+    current = [k for k in _keyword_list(question, language) if k not in pronouns]
+    merged = []
+    for word in carried + current:
+        if word not in merged:
+            merged.append(word)
+    text = " ".join(merged)[:200].strip()
+    return text or None
+
+
 def _matches(term: str, words: set[str]) -> bool:
     if term in words:
         return True

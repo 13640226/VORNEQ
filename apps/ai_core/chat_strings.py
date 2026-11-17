@@ -241,6 +241,56 @@ UI_LABELS = {
 }
 
 
+
+# Persistent conversations V1 (shown only when VORNEQ_AI_CONVERSATIONS_ENABLED).
+CONVERSATION_LABELS = {
+    "en": {
+        "conv_not_saved": "This answer was shown but could NOT be saved to your history. It may have been billed; do not resend automatically.",
+        "conv_title": "Conversations", "conv_new": "New conversation", "conv_search": "Search conversations",
+        "conv_empty": "No conversations yet.", "conv_untitled": "New conversation",
+        "conv_rename": "Rename", "conv_save": "Save", "conv_archive": "Archive", "conv_unarchive": "Unarchive",
+        "conv_delete": "Delete", "conv_delete_confirm": "Move this conversation to the trash? It is deleted for good after 30 days.",
+        "conv_export": "Export (JSON)", "conv_trash": "Trash", "conv_back": "Back to conversations",
+        "conv_restore": "Restore", "conv_delete_forever": "Delete forever",
+        "conv_delete_forever_confirm": "Delete this conversation permanently? This cannot be undone.",
+        "conv_load_error": "The conversation could not be loaded.",
+        "conv_stored_notice": "Conversations are stored on the VORNEQ server so you can continue them later. You can export or delete them at any time; deleted conversations are removed for good after 30 days (backups may keep them until they expire).",
+        "conv_memory_value": "The last 6 exchanges of this conversation (context only, never a source)",
+        "conv_turns": "Follow-up questions use the recent messages of this conversation as context. Facts and numbers are still taken only from the cited sources.",
+        "conv_full": "This conversation is full. Please start a new conversation.",
+    },
+    "de": {
+        "conv_not_saved": "Diese Antwort wurde angezeigt, konnte aber NICHT im Verlauf gespeichert werden. Sie wurde möglicherweise berechnet; nicht automatisch erneut senden.",
+        "conv_title": "Gespräche", "conv_new": "Neues Gespräch", "conv_search": "Gespräche durchsuchen",
+        "conv_empty": "Noch keine Gespräche.", "conv_untitled": "Neues Gespräch",
+        "conv_rename": "Umbenennen", "conv_save": "Speichern", "conv_archive": "Archivieren", "conv_unarchive": "Aus dem Archiv holen",
+        "conv_delete": "Löschen", "conv_delete_confirm": "Dieses Gespräch in den Papierkorb verschieben? Nach 30 Tagen wird es endgültig gelöscht.",
+        "conv_export": "Exportieren (JSON)", "conv_trash": "Papierkorb", "conv_back": "Zurück zu den Gesprächen",
+        "conv_restore": "Wiederherstellen", "conv_delete_forever": "Endgültig löschen",
+        "conv_delete_forever_confirm": "Dieses Gespräch endgültig löschen? Das kann nicht rückgängig gemacht werden.",
+        "conv_load_error": "Das Gespräch konnte nicht geladen werden.",
+        "conv_stored_notice": "Gespräche werden auf dem VORNEQ-Server gespeichert, damit Sie sie später fortsetzen können. Sie können sie jederzeit exportieren oder löschen; gelöschte Gespräche werden nach 30 Tagen endgültig entfernt (Backups können sie bis zu deren Ablauf enthalten).",
+        "conv_memory_value": "Die letzten 6 Wortwechsel dieses Gesprächs (nur Kontext, nie Quelle)",
+        "conv_turns": "Folgefragen nutzen die letzten Nachrichten dieses Gesprächs als Kontext. Fakten und Zahlen stammen weiterhin nur aus den zitierten Quellen.",
+        "conv_full": "Dieses Gespräch ist voll. Bitte beginnen Sie ein neues Gespräch.",
+    },
+    "fa": {
+        "conv_not_saved": "این پاسخ نمایش داده شد اما در تاریخچه ذخیره نشد. ممکن است هزینه‌اش ثبت شده باشد؛ آن را خودکار دوباره نفرستید.",
+        "conv_title": "گفت‌وگوها", "conv_new": "گفت‌وگوی تازه", "conv_search": "جست‌وجو در گفت‌وگوها",
+        "conv_empty": "هنوز گفت‌وگویی ندارید.", "conv_untitled": "گفت‌وگوی تازه",
+        "conv_rename": "تغییر نام", "conv_save": "ذخیره", "conv_archive": "بایگانی", "conv_unarchive": "خروج از بایگانی",
+        "conv_delete": "حذف", "conv_delete_confirm": "این گفت‌وگو به سطل زباله برود؟ پس از ۳۰ روز برای همیشه حذف می‌شود.",
+        "conv_export": "خروجی (JSON)", "conv_trash": "سطل زباله", "conv_back": "بازگشت به گفت‌وگوها",
+        "conv_restore": "بازگرداندن", "conv_delete_forever": "حذف همیشگی",
+        "conv_delete_forever_confirm": "این گفت‌وگو برای همیشه حذف شود؟ این کار برگشت‌پذیر نیست.",
+        "conv_load_error": "گفت‌وگو بارگذاری نشد.",
+        "conv_stored_notice": "گفت‌وگوها روی سرور VORNEQ ذخیره می‌شوند تا بعداً بتوانید ادامه‌شان دهید. هر زمان می‌توانید از آن‌ها خروجی بگیرید یا حذفشان کنید؛ گفت‌وگوی حذف‌شده پس از ۳۰ روز برای همیشه پاک می‌شود (نسخه‌های پشتیبان ممکن است تا پایان مدت نگهداری‌شان آن را داشته باشند).",
+        "conv_memory_value": "۶ نوبت آخر همین گفت‌وگو (فقط برای فهم زمینه، هرگز منبع نیست)",
+        "conv_turns": "پرسش‌های بعدی از پیام‌های اخیر همین گفت‌وگو برای فهم زمینه استفاده می‌کنند. واقعیت‌ها و عددها همچنان فقط از منابع ذکرشده گرفته می‌شوند.",
+        "conv_full": "این گفت‌وگو پر شده است. لطفاً گفت‌وگوی تازه‌ای شروع کنید.",
+    },
+}
+
 def chat_labels(language, environment=None):
     """Select appropriate warnings and V2 UI labels without weakening the Production policy."""
     code = (language or "en")[:2]
@@ -248,7 +298,7 @@ def chat_labels(language, environment=None):
         code = "en"
     if environment is None:
         environment = getattr(settings, "VORNEQ_ENV", "development")
-    labels = {**UI_LABELS[code], **LABELS[code]}
+    labels = {**UI_LABELS[code], **LABELS[code], **CONVERSATION_LABELS[code]}
     if environment == "staging":
         labels.update(ENVIRONMENT_LABELS[code]["staging"])
     elif environment == "production":
