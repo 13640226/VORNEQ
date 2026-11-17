@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="{% static 'css/phase-c-chat.css' %}">
 {% endblock %}
 {% block content %}
+<div class="vq-chat-shell">
 <section class="vq-chat" aria-labelledby="vq-chat-title"
   data-vq-chat
   data-vq-language="{{ chat_language }}"
@@ -22,34 +23,70 @@
   data-vq-empty="{{ chat_labels.empty }}"
   data-vq-sources="{{ chat_labels.sources }}"
   data-vq-status="{{ chat_labels.status }}"
+  data-vq-you="{{ chat_labels.you }}"
+  data-vq-assistant="{{ chat_labels.assistant }}"
+  data-vq-copy="{{ chat_labels.copy }}"
+  data-vq-copied="{{ chat_labels.copied }}"
   data-vq-source-hosts="{{ chat_source_hosts }}"
   data-vq-recovery-enabled="{{ chat_recovery_enabled|yesno:'true,false' }}"
   data-vq-recovery-endpoint="{{ chat_recovery_endpoint }}">
   <header class="vq-chat__header">
-    <p class="vq-chat__kicker">VORNEQ · AI · {% if chat_production %}Generated drafts · claims not verified{% elif chat_staging %}Authorized staging trial{% else %}Development preview{% endif %}</p>
+    <p class="vq-chat__kicker"><span class="vq-chat__led" aria-hidden="true"></span>VORNEQ · AI · {% if chat_production %}Generated drafts · claims not verified{% elif chat_staging %}Authorized staging trial{% else %}Development preview{% endif %}</p>
     <h1 id="vq-chat-title">{{ chat_labels.title }}</h1>
-    <p>{{ chat_labels.intro }}</p>
+    <p class="vq-chat__intro">{{ chat_labels.intro }}</p>
   </header>
-  <aside class="vq-chat__warning" role="note">{{ chat_labels.warning }}</aside>
-  <p class="vq-chat__single">{{ chat_labels.single_turn }}</p>
+
+  {% if chat_source_hosts %}
+  <div class="vq-chat__welcome" data-vq-chat-welcome>
+    <h2 class="vq-chat__welcome-title">{{ chat_labels.examples_title }}</h2>
+    <ul class="vq-chat__examples">
+      {% for example in chat_labels.examples %}
+      <li><button type="button" class="vq-chat__example" data-vq-chat-example>{{ example }}</button></li>
+      {% endfor %}
+    </ul>
+    <p class="vq-chat__examples-note">{{ chat_labels.examples_note }}</p>
+  </div>
+  {% endif %}
+
   <div class="vq-chat__log" id="vq-chat-log" data-vq-chat-log role="log"
     aria-live="polite" aria-relevant="additions" aria-label="{{ chat_labels.title }}"></div>
   <p class="vq-chat__status" data-vq-chat-status role="status" aria-live="polite"></p>
+
   <form class="vq-chat__form" method="post" action="{{ chat_endpoint }}" data-vq-chat-form>
     {% csrf_token %}
-    <label for="vq-chat-question">{{ chat_labels.question }}</label>
+    <label class="vq-chat__label" for="vq-chat-question">{{ chat_labels.question }}</label>
     <textarea id="vq-chat-question" name="question" rows="3" maxlength="200"
-      required autocomplete="off" data-vq-chat-input
-      aria-describedby="vq-chat-limit" placeholder="{{ chat_labels.question }}"></textarea>
+      required enterkeyhint="send" autocomplete="off" data-vq-chat-input
+      aria-describedby="vq-chat-limit vq-chat-hint" placeholder="{{ chat_labels.question }}"></textarea>
     <div class="vq-chat__actions">
       <span class="vq-chat__count" id="vq-chat-limit" data-vq-chat-count>0/200</span>
-      <button type="button" data-vq-chat-clear>{{ chat_labels.clear }}</button>
-      <button type="submit" data-vq-chat-send>{{ chat_labels.send }}</button>
+      <span class="vq-chat__hint" id="vq-chat-hint">{{ chat_labels.hint }}</span>
+      <button type="button" class="vq-chat__clear" data-vq-chat-clear>{{ chat_labels.clear }}</button>
+      <button type="submit" class="vq-chat__send" data-vq-chat-send>{{ chat_labels.send }}</button>
     </div>
   </form>
-  <p class="vq-chat__back"><a href="{% url 'home' %}">{{ chat_labels.back }}</a></p>
   <noscript><p>{{ chat_labels.error }}</p></noscript>
 </section>
+
+<aside class="vq-chat__panel" aria-labelledby="vq-chat-panel-title">
+  <section class="vq-chat__card">
+    <h2 id="vq-chat-panel-title">{{ chat_labels.panel_title }}</h2>
+    <dl class="vq-chat__facts">
+      <div><dt>{{ chat_labels.sources_label }}</dt><dd>{% if chat_source_hosts %}{{ chat_labels.sources_global }}{% else %}{{ chat_labels.sources_local }}{% endif %}</dd></div>
+      <div><dt>{{ chat_labels.answers_label }}</dt><dd>{{ chat_labels.answers_value }}</dd></div>
+      <div><dt>{{ chat_labels.quotes_label }}</dt><dd>{{ chat_labels.quotes_value }}</dd></div>
+      <div><dt>{{ chat_labels.memory_label }}</dt><dd>{{ chat_labels.memory_value }}</dd></div>
+    </dl>
+    <p class="vq-chat__single">{{ chat_labels.single_turn }}</p>
+  </section>
+  <section class="vq-chat__card" aria-labelledby="vq-chat-privacy-title">
+    <h2 id="vq-chat-privacy-title">{{ chat_labels.privacy_title }}</h2>
+    <p class="vq-chat__warning" role="note">{{ chat_labels.warning }}</p>
+    {% if chat_recovery_enabled %}<p class="vq-chat__single">{{ chat_labels.recovery_note }}</p>{% endif %}
+  </section>
+  <p class="vq-chat__back"><a href="{% url 'search_page' %}">{{ chat_labels.back }}</a></p>
+</aside>
+</div>
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'js/phase-c-chat.js' %}" defer></script>

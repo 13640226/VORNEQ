@@ -107,7 +107,7 @@ def _ai_chat_available_for(user):
 def home(request):
     """AI-first workspace: Search handoff plus an AI chat link only when allowed."""
     chat_enabled = _ai_chat_available_for(request.user)
-    labels = chat_labels(get_language()) if chat_enabled else {}
+    labels = chat_labels(get_language(), environment=settings.VORNEQ_ENV) if chat_enabled else {}
     return render(request, "index.html", {
         "phase_c_chat_enabled": chat_enabled,
         "phase_c_chat_link_label": labels.get("entry", ""),
