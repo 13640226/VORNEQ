@@ -28,7 +28,21 @@
       recoveryChecking: root.dataset.vqRecoveryChecking,
       recoveryUncertain: root.dataset.vqRecoveryUncertain,
       recoveryExpired: root.dataset.vqRecoveryExpired,
+      you: root.dataset.vqYou,
+      assistant: root.dataset.vqAssistant,
+      copy: root.dataset.vqCopy,
+      copied: root.dataset.vqCopied,
     };
+    // Example prompts only fill the box. They never submit: every request may be billable.
+    const welcome = root.querySelector("[data-vq-chat-welcome]");
+    for (const example of root.querySelectorAll("[data-vq-chat-example]")) {
+      example.addEventListener("click", () => {
+        if (busy) return;
+        input.value = String(example.textContent || "").trim().slice(0, limit);
+        update();
+        input.focus();
+      });
+    }
     const language = ["fa", "de", "en"].includes(root.dataset.vqLanguage)
       ? root.dataset.vqLanguage : "en";
     // Prefer the script of the question over the surrounding UI language.
@@ -55,15 +69,21 @@
       send.disabled = busy || recoveryBlocked || !input.value.trim();
       clear.disabled = busy;
       input.disabled = busy;
+      root.classList.toggle("vq-chat--busy", busy);
     }
     function appendMessage(text, role) {
       const entry = document.createElement("article");
       entry.className = "vq-chat__message vq-chat__message--" + role;
       entry.dir = textDirection(String(text || ""));
+      const author = document.createElement("span");
+      author.className = "vq-chat__author";
+      author.textContent = (role === "user" ? labels.you : labels.assistant) || "";
+      entry.appendChild(author);
       const p = document.createElement("p");
       p.textContent = String(text || "");
       entry.appendChild(p);
       log.appendChild(entry);
+      if (welcome) welcome.hidden = true;
       return entry;
     }
     function relativeUrl(value) {
@@ -185,7 +205,24 @@
       note.textContent = labels.status || "Generated draft, not verified";
       bubble.appendChild(note);
       showSources(bubble, data.citations);
+      addCopyButton(bubble, data.answer);
       return { completed: true, answerBubble: bubble };
+    }
+    // Copies only the plain answer text that is already displayed.
+    function addCopyButton(bubble, answer) {
+      if (!navigator.clipboard || typeof navigator.clipboard.writeText !== "function") return;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "vq-chat__copy";
+      button.textContent = labels.copy || "Copy";
+      button.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(String(answer));
+          button.textContent = labels.copied || "Copied";
+          window.setTimeout(() => { button.textContent = labels.copy || "Copy"; }, 2000);
+        } catch (_error) { /* clipboard permission denied: leave the text selectable */ }
+      });
+      bubble.appendChild(button);
     }
     function focusAnswer(bubble) {
       if (bubble && typeof bubble.scrollIntoView === "function") {
@@ -354,6 +391,7 @@
     clear.addEventListener("click", () => {
       if (busy) return;
       log.replaceChildren();
+      if (welcome) welcome.hidden = false;
       clearRecovery();
       recoveryBlocked = false;
       input.value = "";

@@ -10,7 +10,7 @@ from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from django.utils.translation import override
 
-from apps.ai_core.chat_strings import LABELS, chat_labels
+from apps.ai_core.chat_strings import LABELS, PRODUCTION_LABELS, chat_labels
 
 
 class ProductionChatCopyTests(SimpleTestCase):
@@ -23,6 +23,9 @@ class ProductionChatCopyTests(SimpleTestCase):
         }.items():
             with self.subTest(language=language):
                 labels = chat_labels(language, environment="production")
+                # Retain the PR #639 owner-approved safety and recovery copy verbatim.
+                for protected_key in ("entry", "warning", "single_turn"):
+                    self.assertEqual(labels[protected_key], PRODUCTION_LABELS[language][protected_key])
                 self.assertIn(expected[0], labels["warning"])
                 self.assertIn(expected[1], labels["single_turn"])
                 self.assertEqual(labels["entry"], expected[2])
@@ -32,12 +35,17 @@ class ProductionChatCopyTests(SimpleTestCase):
                 self.assertEqual(labels["status"], LABELS[language]["status"])
                 self.assertEqual(labels["error"], LABELS[language]["error"])
 
-    def test_dev_and_staging_language_packs_remain_unchanged(self):
+    def test_existing_catalog_fields_preserved_with_v2_additions(self):
         for language in ("en", "de", "fa"):
             with self.subTest(language=language):
-                self.assertEqual(chat_labels(language), LABELS[language])
-                self.assertEqual(chat_labels(language, environment="development"), LABELS[language])
-                self.assertEqual(chat_labels(language, environment="staging"), LABELS[language])
+                dev = chat_labels(language, environment="development")
+                stage = chat_labels(language, environment="staging")
+                for key, value in LABELS[language].items():
+                    self.assertEqual(dev[key], value)
+                    if key not in ("entry", "warning"):
+                        self.assertEqual(stage[key], value)
+                self.assertTrue(stage["warning"])
+                self.assertIn("staging", stage["warning"].lower().replace("?????? ???? ", "staging "))
         self.assertEqual(chat_labels("unknown", environment="production")["entry"], "Open AI chat")
 
 
