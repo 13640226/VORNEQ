@@ -79,8 +79,13 @@ STAGING_BRIEF_INSTRUCTIONS = (
 
 
 def _output_cap_for_environment(environment):
-    """Raise Staging only; keep Production and development limits unchanged."""
-    return 2048 if environment == "staging" else 1024 if environment == "production" else 512
+    """Bound hosted responses at 2048 tokens; keep development capped at 512."""
+    return 2048 if environment in ("staging", "production") else 512
+
+
+def _compact_sources_for_environment(environment):
+    """Omit non-model source metadata on hosted runtimes; validation retains full evidence."""
+    return environment in ("staging", "production")
 
 
 def _strict_object(pairs):
@@ -170,7 +175,7 @@ def ask_global_view(request):
             max_output_tokens=_output_cap_for_environment(settings.VORNEQ_ENV),
             extra_instructions=(STAGING_BRIEF_INSTRUCTIONS if settings.VORNEQ_ENV == "staging"
                                 else GLOBAL_INSTRUCTIONS),
-            compact_sources=settings.VORNEQ_ENV == "staging",
+            compact_sources=_compact_sources_for_environment(settings.VORNEQ_ENV),
         )
         if shared_budget:
             provider = BudgetedProvider(provider, actor_id=request.user.pk)
