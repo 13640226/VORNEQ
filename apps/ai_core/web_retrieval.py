@@ -193,9 +193,12 @@ class WikipediaRetriever(PublicWebRetriever):
             raise RetrievalError("query contains personal data")
         limit = max(1, min(int(limit), MAX_RESULTS))
         host = self.HOSTS[language]
+        # Persian: send keywords, not the full question (measured; see search_keywords).
+        from apps.ai_core.engine.evidence_ranking import search_keywords
+        search_text = search_keywords(query, language)
         payload = self._fetch(host, "/w/api.php", {
             "action": "query", "format": "json", "formatversion": "2",
-            "generator": "search", "gsrsearch": query, "gsrlimit": str(limit),
+            "generator": "search", "gsrsearch": search_text, "gsrlimit": str(limit),
             "gsrnamespace": "0", "prop": "extracts|info", "exintro": "1",
             "explaintext": "1", "exchars": "700", "inprop": "url", "maxlag": "5",
         }, allowed_hosts=self.allowed_hosts)
