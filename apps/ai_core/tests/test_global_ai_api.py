@@ -242,7 +242,11 @@ class GlobalApiTests(NoNetworkMixin, TestCase):
             cache.clear()
             response, _ = self.run_with(FakeRetriever(evidence("en")), generate)
             self.assertEqual(response.status_code, 422)
-            self.assertEqual(response.json(), {"error": "INSUFFICIENT_EVIDENCE"})
+            self.assertEqual(response.json()["error"], "INSUFFICIENT_EVIDENCE")
+            self.assertIn(response.json()["reason_code"], {
+                "citation_identity_rejected", "citation_digest_mismatch",
+                "citation_quote_mismatch", "invalid_generated_output",
+            })
 
     def test_missing_evidence_never_calls_provider(self):
         response, gen = self.run_with(FakeRetriever(()), language="fa")

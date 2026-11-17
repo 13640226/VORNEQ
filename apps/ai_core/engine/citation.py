@@ -17,6 +17,22 @@ class EvidenceRejected(ValueError):
     code = "insufficient_evidence"
 
 
+class GeneratedAnswerRejected(EvidenceRejected):
+    """Generated response schema/status/answer is untrusted or malformed."""
+
+
+class CitationIdentityRejected(EvidenceRejected):
+    """Generated citation source identifiers or shape cannot be trusted."""
+
+
+class CitationDigestRejected(EvidenceRejected):
+    """Generated citation digest does not match the trusted source snapshot."""
+
+
+class CitationQuoteRejected(EvidenceRejected):
+    """Generated verbatim quote is not in the trusted source excerpt."""
+
+
 def _valid_key(key):
     return isinstance(key, str) and len(key) <= 100 and any(
         key.startswith(prefix) and len(key) > len(prefix) for prefix in _ALLOWED
@@ -80,42 +96,42 @@ def validate_generated(output, *, sources, language):
     fields = {"answer", "language", "citations", "model_status",
               "grounded_status", "verified", "error_code"}
     if not isinstance(output, dict) or set(output) != fields:
-        raise EvidenceRejected("invalid output schema")
+        raise GeneratedAnswerRejected("invalid output schema")
     if output["language"] != language or output["verified"] is not False:
-        raise EvidenceRejected("language or verification claim invalid")
+        raise GeneratedAnswerRejected("language or verification claim invalid")
     if (output["model_status"] != "generated" or
             output["grounded_status"] != "proposed" or output["error_code"] != ""):
-        raise EvidenceRejected("untrusted status claim")
+        raise GeneratedAnswerRejected("untrusted status claim")
     answer = output["answer"]
     if not isinstance(answer, str) or not 1 <= len(answer.strip()) <= 1000:
-        raise EvidenceRejected("invalid generated answer")
+        raise GeneratedAnswerRejected("invalid generated answer")
     try:
         answer = screen_and_redact(answer, limit=1000)
     except UnsafePrompt as exc:
-        raise EvidenceRejected("unsafe generated output") from exc
+        raise GeneratedAnswerRejected("unsafe generated output") from exc
     cites = output["citations"]
     if not isinstance(cites, list) or not 1 <= len(cites) <= min(3, len(sources)):
-        raise EvidenceRejected("missing or oversized citation list")
+        raise CitationIdentityRejected("missing or oversized citation list")
     source_map = {s["source_id"]: s for s in sources}
     used = set()
     for citation in cites:
         if not isinstance(citation, dict) or set(citation) != {
             "source_id", "evidence_digest", "evidence_quote"
         }:
-            raise EvidenceRejected("citation shape mismatch")
+            raise CitationIdentityRejected("citation shape mismatch")
         sid = citation["source_id"]
         if not isinstance(sid, str) or sid in used or sid not in source_map:
-            raise EvidenceRejected("unknown or duplicate citation")
+            raise CitationIdentityRejected("unknown or duplicate citation")
         used.add(sid)
         source = source_map[sid]
         if (citation["evidence_digest"] != source["evidence_digest"] or
                 not isinstance(citation["evidence_digest"], str) or
                 not _DIGEST.fullmatch(citation["evidence_digest"])):
-            raise EvidenceRejected("citation snapshot digest mismatch")
+            raise CitationDigestRejected("citation snapshot digest mismatch")
         quote = citation["evidence_quote"]
         if (not isinstance(quote, str) or not 8 <= len(quote) <= 300 or
                 quote not in source["excerpt"]):
-            raise EvidenceRejected("citation lacks exact source evidence")
+            raise CitationQuoteRejected("citation lacks exact source evidence")
     return {
         "mode": "grounded_draft",
         "answer": answer,

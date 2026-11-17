@@ -15,8 +15,11 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET, require_POST
 
 from apps.ai_core.engine.budget import BudgetExceeded
-from apps.ai_core.engine.citation import EvidenceRejected
-from apps.ai_core.engine.global_grounded import GLOBAL_INSTRUCTIONS, GlobalUnsupported, ask_global
+from apps.ai_core.engine.citation import (
+    EvidenceRejected, GeneratedAnswerRejected, CitationIdentityRejected,
+    CitationDigestRejected, CitationQuoteRejected,
+)
+from apps.ai_core.engine.global_grounded import GLOBAL_INSTRUCTIONS, GlobalUnsupported, UnsupportedNumericClaim, ask_global
 from apps.ai_core.engine.grounded import PhaseBDisabled
 from apps.ai_core.gateway import InputError, validate
 from apps.ai_core.global_budget import reserve_global_request
@@ -33,6 +36,20 @@ from apps.ai_core.web_retrieval import RetrievalError, RetrievalTimeout
 from apps.ai_core import request_recovery
 
 _log = logging.getLogger(__name__)
+
+
+_SAFE_REJECTION_CODES = {
+    GeneratedAnswerRejected: "invalid_generated_output",
+    CitationIdentityRejected: "citation_identity_rejected",
+    CitationDigestRejected: "citation_digest_mismatch",
+    CitationQuoteRejected: "citation_quote_mismatch",
+    UnsupportedNumericClaim: "unsupported_numeric_claim",
+}
+
+
+def _evidence_rejection_code(error):
+    """Return only a fixed operational enum; never inspect/log exception details."""
+    return _SAFE_REJECTION_CODES.get(type(error), "evidence_rejected")
 
 
 def _respond(data, *, status=200, request=None, request_id=None):
@@ -187,8 +204,12 @@ def ask_global_view(request):
         return _respond({"error": "rate_limited"}, status=429, request=request, request_id=request_id)
     except GlobalUnsupported:
         return _respond({"error": "UNSUPPORTED_QUESTION"}, status=422, request=request, request_id=request_id)
-    except (EvidenceRejected, PhaseBDisabled):
-        return _respond({"error": "INSUFFICIENT_EVIDENCE"}, status=422, request=request, request_id=request_id)
+    except (EvidenceRejected, PhaseBDisabled) as exc:
+        reason_code = _evidence_rejection_code(exc)
+        # Only a fixed enum, never raw prompt, response, citation or exception text.
+        _log.warning("ai_evidence_rejected reason_code=%s", reason_code)
+        return _respond({"error": "INSUFFICIENT_EVIDENCE", "reason_code": reason_code},
+                        status=422, request=request, request_id=request_id)
     except RetrievalTimeout:
         return _respond({"error": "search_timeout"}, status=504, request=request, request_id=request_id)
     except RetrievalError:

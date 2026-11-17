@@ -218,7 +218,9 @@ class GroundingV2ApiTests(NoNetworkMixin, TestCase):
     def test_fabricated_number_is_rejected(self):
         r, _ = self.ask((self.GAL_A,), lambda self_, **kw: output(
             kw["sources"], "en", "The source says there are exactly 500 billion galaxies."))
-        self.assertEqual((r.status_code, r.json()), (422, {"error": "INSUFFICIENT_EVIDENCE"}))
+        self.assertEqual(r.status_code, 422)
+        self.assertEqual(r.json(), {"error": "INSUFFICIENT_EVIDENCE",
+                                    "reason_code": "unsupported_numeric_claim"})
 
     def test_conflicting_evidence_forwarded_and_both_sides_citable(self):
         seen = {}
