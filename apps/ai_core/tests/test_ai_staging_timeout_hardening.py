@@ -30,7 +30,7 @@ from apps.ai_core.views_global import (
 class HostedTimeoutPolicyTests(SimpleTestCase):
     def test_provider_timeout_scoped_to_staging(self):
         self.assertEqual(_provider_timeout_for_environment("staging"), 60)
-        self.assertEqual(_provider_timeout_for_environment("production"), 30)
+        self.assertEqual(_provider_timeout_for_environment("production"), 60)
         self.assertEqual(_provider_timeout_for_environment("development"), 15)
         self.assertEqual(_provider_timeout_for_environment("unexpected"), 15)
         self.assertEqual(_output_cap_for_environment("staging"), 2048)
@@ -40,7 +40,7 @@ class HostedTimeoutPolicyTests(SimpleTestCase):
         config = Path(settings.BASE_DIR) / "gunicorn.conf.py"
         self.assertTrue(config.is_file())
         for environment, expected in (
-            ("staging", 100), ("production", 30), ("development", 30),
+            ("staging", 100), ("production", 100), ("development", 30),
             ("unexpected", 30),
         ):
             with self.subTest(environment=environment), patch.dict(
@@ -49,6 +49,7 @@ class HostedTimeoutPolicyTests(SimpleTestCase):
                 result = runpy.run_path(str(config))
                 self.assertEqual(result["timeout"], expected)
         self.assertGreater(100, _provider_timeout_for_environment("staging"))
+        self.assertGreater(100, _provider_timeout_for_environment("production"))
 
     def test_provider_accepts_60_seconds_but_rejects_unsafe_values(self):
         accepted = OpenAIResponsesProvider(

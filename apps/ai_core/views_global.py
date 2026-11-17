@@ -106,12 +106,13 @@ def _compact_sources_for_environment(environment):
 
 
 def _provider_timeout_for_environment(environment):
-    """Allow slow Staging inference without relaxing Production or adding retries.
+    """Bound hosted provider latency below the 100-second Gunicorn worker limit.
 
-    The Staging gunicorn worker timeout is separately bounded at 100 seconds,
-    leaving headroom for retrieval, DB commits and response serialization.
+    Both Staging and Production allow 60 seconds for a single provider call;
+    remaining headroom covers retrieval, Ledger and recovery writes.
+    No retry, authorization, citation or budget policy changes.
     """
-    return 60 if environment == "staging" else 30 if environment == "production" else 15
+    return 60 if environment in ("staging", "production") else 15
 
 
 def _strict_object(pairs):
