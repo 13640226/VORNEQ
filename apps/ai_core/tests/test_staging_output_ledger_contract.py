@@ -49,7 +49,10 @@ class StagingPromptBudgetContractTests(SimpleTestCase):
         self.assertEqual(source["evidence_digest"], SOURCES[0]["evidence_digest"])
         self.assertEqual(source["excerpt"], SOURCES[0]["excerpt"])
         self.assertEqual(source["quote_hint"], SOURCES[0]["excerpt"][:80])
-        self.assertEqual(json.loads(full)["sources"], SOURCES)
+        self.assertEqual(
+            json.loads(full)["sources"],
+            [{**source, "quote_hint": source["excerpt"][:80]} for source in SOURCES],
+        )
         self.assertNotIn("retrieved_at", compact)
         self.assertNotIn("source_key", compact)
         self.assertLess(len(compact), len(full))
