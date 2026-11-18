@@ -11,7 +11,8 @@ class PhaseBDisabled(ValueError):
     pass
 
 
-def ask_grounded(question, language, *, actor, provider=None, retrieval=None, enabled=False):
+def ask_grounded(question, language, *, actor, provider=None, retrieval=None, enabled=False,
+                 max_answer_chars=1000):
     if not enabled:
         raise PhaseBDisabled("Phase B disabled")
     if actor is None or not getattr(actor, "is_authenticated", False):
@@ -35,4 +36,5 @@ def ask_grounded(question, language, *, actor, provider=None, retrieval=None, en
     if provider is None:
         raise ProviderUnavailable("no provider configured")
     output = provider.generate(question=safe_question, language=language, sources=sources)
-    return validate_generated(output, sources=sources, language=language)
+    return validate_generated(output, sources=sources, language=language,
+                              max_answer_chars=max_answer_chars)
