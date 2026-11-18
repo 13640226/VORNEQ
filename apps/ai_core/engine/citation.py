@@ -88,7 +88,7 @@ def authorized_context(sources):
     return result
 
 
-def validate_generated(output, *, sources, language):
+def validate_generated(output, *, sources, language, max_answer_chars=1000):
     """Reject fabricated IDs/digests/quotes or claimed independent verification.
 
     NOT an NLI/semantic-claim validator. Users must see verified=False.
@@ -102,11 +102,13 @@ def validate_generated(output, *, sources, language):
     if (output["model_status"] != "generated" or
             output["grounded_status"] != "proposed" or output["error_code"] != ""):
         raise GeneratedAnswerRejected("untrusted status claim")
+    if type(max_answer_chars) is not int or not 1 <= max_answer_chars <= 2400:
+        raise GeneratedAnswerRejected("invalid answer bound")
     answer = output["answer"]
-    if not isinstance(answer, str) or not 1 <= len(answer.strip()) <= 1000:
+    if not isinstance(answer, str) or not 1 <= len(answer.strip()) <= max_answer_chars:
         raise GeneratedAnswerRejected("invalid generated answer")
     try:
-        answer = screen_and_redact(answer, limit=1000)
+        answer = screen_and_redact(answer, limit=max_answer_chars)
     except UnsafePrompt as exc:
         raise GeneratedAnswerRejected("unsafe generated output") from exc
     cites = output["citations"]
