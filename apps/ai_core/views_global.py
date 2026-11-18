@@ -26,6 +26,7 @@ from apps.ai_core.global_budget import reserve_global_request
 from apps.ai_core.global_router import UNSUPPORTED, route_question
 from apps.ai_core.providers.exceptions import GatewayError, ProviderInvalidResponse, ProviderTimeout
 from apps.ai_core.providers.openai_responses import OpenAIResponsesProvider
+from apps.ai_core import response_engine_v3
 from apps.ai_core.staging_budget import reserve_staging_request
 from apps.ai_core.budgeted_provider import BudgetedProvider
 from apps.ai_core.production_policy import production_actor_allowed, production_enabled
@@ -217,6 +218,7 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
             max_output_tokens=_output_cap_for_environment(settings.VORNEQ_ENV),
             extra_instructions=_instructions_for(settings.VORNEQ_ENV, bool(prior_turns)),
             compact_sources=_compact_sources_for_environment(settings.VORNEQ_ENV),
+            response_v3_enabled=response_engine_v3.enabled(settings),
         )
         if shared_budget:
             provider = BudgetedProvider(provider, actor_id=request.user.pk)
@@ -226,7 +228,8 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
         meta["model"] = getattr(provider, "model", "") or getattr(getattr(provider, "inner", None), "model", "")
         response = ask_global(question, language, actor=request.user, provider=provider,
                               retriever=default_retriever(), enabled=True, prior_turns=prior_turns,
-                              search_question=search_question)
+                              search_question=search_question,
+                              max_answer_chars=response_engine_v3.answer_limit(settings))
     except BudgetExceeded:
         return {"error": "rate_limited"}, 429, meta
     except GlobalUnsupported:
