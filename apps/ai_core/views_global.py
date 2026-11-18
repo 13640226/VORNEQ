@@ -207,8 +207,10 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
         return {"error": "UNSUPPORTED_QUESTION"}, 422, meta
     hosted = settings.VORNEQ_ENV in ("staging", "production")
     # Shared prepaid ledger: mandatory in production, optional in staging. While
-    # it governs cost, fixed daily counts are replaced by per-call money
-    # reservations (a per-minute abuse throttle remains).
+    # it governs cost, the cache-based daily counts are replaced by per-call money
+    # reservations (a per-minute abuse throttle remains). On STAGING the ledger
+    # additionally enforces an independent daily ceiling (paid calls + amount)
+    # inside the locked reservation transaction: apps.ai_ledger.service.reserve().
     shared_budget = hosted and ledger_enabled()
     try:
         reserve_global_request(request.user.pk, burst_only=shared_budget)
