@@ -12,6 +12,7 @@ from apps.audit.models import AuditEvent
 from apps.audit.services import record_audit_event
 
 from .models import Product, ProductReview
+from .selectors import is_known_fixture
 
 
 def latest_valid_approval(product):
@@ -35,10 +36,7 @@ def latest_valid_approval(product):
 
 def _is_known_fixture(product):
     """Existing seed/smoke names are defense-in-depth, not immutable provenance."""
-    return (
-        product.slug.startswith(("vorneq-benchmark-", "inspect-staging-smoke"))
-        or product.seller.username in {"vorneq-benchmark-seed", "vorneq-inspect-smoke"}
-    )
+    return is_known_fixture(product)
 
 
 @transaction.atomic

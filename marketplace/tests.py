@@ -313,3 +313,74 @@ class MarketplaceKnownFixtureVisibilityTests(TestCase):
         self.client.force_login(self.seller)
         response = self.client.get(reverse("marketplace:seller_dashboard"))
         self.assertContains(response, "Benchmark Fixture By Slug")
+
+
+@override_settings(STORAGES=TEST_STORAGES)
+class PublicFixtureGuardAllSurfacesTests(TestCase):
+    """Every public product surface uses the shared selector (no mutation)."""
+
+    def setUp(self):
+        real_seller = User.objects.create_user(username="real-surface-seller", password="testpass")
+        seed = User.objects.create_user(username="vorneq-benchmark-seed", password="testpass")
+        self.real = Product.objects.create(
+            seller=real_seller, title="Zebra Real Product", slug="zebra-real-product",
+            status=Product.STATUS_APPROVED, is_published=True,
+        )
+        self.fixture = Product.objects.create(
+            seller=seed, title="Zebra Benchmark Product", slug="vorneq-benchmark-product-000777",
+            status=Product.STATUS_APPROVED, is_published=True,
+        )
+        self.pending_real = Product.objects.create(
+            seller=real_seller, title="Zebra Pending Product", slug="zebra-pending",
+            status=Product.STATUS_PENDING, is_published=False,
+        )
+
+    def test_global_search_api_hides_fixtures_and_unpublished(self):
+        response = self.client.get(reverse("search:unified"), {"q": "Zebra"})
+        self.assertEqual(response.status_code, 200)
+        titles = [item.get("title") for item in response.json()["results"]]
+        self.assertIn(self.real.title, titles)
+        self.assertNotIn(self.fixture.title, titles)
+        self.assertNotIn(self.pending_real.title, titles)
+
+    def test_ai_public_retrieval_never_cites_fixture_products(self):
+        from apps.ai_core.gateway import retrieve_public
+
+        keys = [getattr(c, "key", "") for c in retrieve_public("Zebra", "en")]
+        self.assertTrue(any(str(self.real.pk) in k or self.real.slug in k for k in keys), keys)
+        self.assertFalse(any(str(self.fixture.pk) in k or self.fixture.slug in k for k in keys), keys)
+
+    def test_public_verification_api_404_for_fixture(self):
+        ok = self.client.get(reverse("verification:product_summary", args=[self.real.pk]))
+        hidden = self.client.get(reverse("verification:product_summary", args=[self.fixture.pk]))
+        self.assertEqual((ok.status_code, hidden.status_code), (200, 404))
+
+    def test_guard_never_mutates_records(self):
+        before = list(Product.objects.order_by("pk").values_list("pk", "status", "is_published", "updated_at"))
+        for url in (reverse("marketplace:index"), reverse("search:unified") + "?q=Zebra",
+                    reverse("marketplace:detail", args=[self.fixture.slug])):
+            self.client.get(url)
+        after = list(Product.objects.order_by("pk").values_list("pk", "status", "is_published", "updated_at"))
+        self.assertEqual(before, after)
+
+    def test_database_and_python_predicates_agree(self):
+        from .selectors import is_known_fixture, known_fixture_q
+
+        smoke = User.objects.create_user(username="vorneq-inspect-smoke", password="testpass")
+        cases = [
+            Product.objects.create(seller=self.real.seller, title="a", slug="inspect-staging-smoke-x"),
+            Product.objects.create(seller=smoke, title="b", slug="harmless-b"),
+            Product.objects.create(seller=self.real.seller, title="c", slug="benchmark-vorneq-not-prefix"),
+            Product.objects.create(seller=self.real.seller, title="d", slug="xvorneq-benchmark-1"),
+        ]
+        in_db = set(Product.objects.filter(known_fixture_q()).values_list("pk", flat=True))
+        for product in [self.real, self.fixture, self.pending_real, *cases]:
+            with self.subTest(slug=product.slug):
+                self.assertEqual(is_known_fixture(product), product.pk in in_db)
+        self.assertEqual(in_db, {self.fixture.pk, cases[0].pk, cases[1].pk})
+
+    def test_publication_guard_uses_the_same_rule(self):
+        from . import publication, selectors
+
+        for product in (self.real, self.fixture):
+            self.assertEqual(publication._is_known_fixture(product), selectors.is_known_fixture(product))

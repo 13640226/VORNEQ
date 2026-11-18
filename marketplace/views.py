@@ -24,28 +24,9 @@ from django.utils.translation import gettext as _
 
 from .forms import ProductForm, ProductReviewForm
 from .models import Product, ProductReview
-
-# Known historical benchmark/smoke fixtures may already be approved and
-# published in older databases. Publication guards prevent NEW publication,
-# but public discovery and detail views must also exclude existing fixtures.
-# This is visibility-only: do not mutate or delete any product records.
-_KNOWN_FIXTURE_SELLERS = ("vorneq-benchmark-seed", "vorneq-inspect-smoke")
-
-
-def _public_products():
-    """Approved and published products, excluding known historical fixtures."""
-    fixture = (
-        Q(slug__startswith="vorneq-benchmark-")
-        | Q(slug__startswith="inspect-staging-smoke")
-        | Q(seller__username__in=_KNOWN_FIXTURE_SELLERS)
-    )
-    return (
-        Product.objects
-        .filter(status=Product.STATUS_APPROVED, is_published=True)
-        .exclude(fixture)
-        .select_related("seller")
-    )
-
+# Historical benchmark/smoke fixtures may already be published in older
+# databases; public views use the shared visibility selector (no mutation).
+from .selectors import public_products as _public_products
 
 
 # ============================================================
