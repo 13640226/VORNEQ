@@ -8,6 +8,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
 from .chat_strings import chat_labels
+from .response_engine_v3 import answer_limit, stage2_enabled
 from .staging_policy import hosted_runtime, trial_enabled, actor_allowed
 from .production_policy import production_actor_allowed
 from .views_global import global_ai_available
@@ -56,6 +57,9 @@ def chat_page(request):
             "chat_language": language,
             "chat_endpoint": reverse("ai_core:ask-global" if global_ai else "ai_core:ask-grounded"),
             "chat_source_hosts": " ".join(sorted(WikipediaRetriever.allowed_hosts)) if global_ai else "",
+            "chat_v3_enabled": answer_limit(settings) > 1000,
+            "chat_answer_limit": answer_limit(settings),
+            "chat_citation_limit": 5 if stage2_enabled(settings) else 3,
             "chat_staging": settings.VORNEQ_ENV == "staging",
             "chat_production": settings.VORNEQ_ENV == "production",
             "chat_recovery_enabled": global_ai and recovery_enabled(),

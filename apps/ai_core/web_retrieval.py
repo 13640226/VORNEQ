@@ -167,7 +167,15 @@ class WikipediaRetriever(PublicWebRetriever):
     allowed_hosts = frozenset(HOSTS.values())
     _KEY = re.compile(r"web:wikipedia:(fa|de|en):[1-9][0-9]{0,11}\Z")
 
-    def __init__(self, *, fetch=safe_get_json, clock=None):
+    def __init__(self, *, fetch=safe_get_json, clock=None,
+                 max_results=MAX_RESULTS, max_excerpt=MAX_EXCERPT, exchars=700):
+        if (type(max_results) is not int or not 1 <= max_results <= 5
+                or type(max_excerpt) is not int or not 40 <= max_excerpt <= 1500
+                or type(exchars) is not int or not 700 <= exchars <= 1500):
+            raise RetrievalError("invalid bounded retrieval limits")
+        self.max_results = max_results
+        self.max_excerpt = max_excerpt
+        self.exchars = exchars
         self._fetch = fetch
         self._clock = clock or (lambda: datetime.now(timezone.utc))
 
@@ -191,7 +199,7 @@ class WikipediaRetriever(PublicWebRetriever):
         if not query or "[REDACTED_" in query:
             # Never send redacted personal data or secrets to a third party.
             raise RetrievalError("query contains personal data")
-        limit = max(1, min(int(limit), MAX_RESULTS))
+        limit = max(1, min(int(limit), self.max_results))
         host = self.HOSTS[language]
         # Persian: send keywords, not the full question (measured; see search_keywords).
         from apps.ai_core.engine.evidence_ranking import search_keywords
@@ -200,7 +208,7 @@ class WikipediaRetriever(PublicWebRetriever):
             "action": "query", "format": "json", "formatversion": "2",
             "generator": "search", "gsrsearch": search_text, "gsrlimit": str(limit),
             "gsrnamespace": "0", "prop": "extracts|info", "exintro": "1",
-            "explaintext": "1", "exchars": "700", "inprop": "url", "maxlag": "5",
+            "explaintext": "1", "exchars": str(self.exchars), "inprop": "url", "maxlag": "5",
         }, allowed_hosts=self.allowed_hosts)
         pages = payload.get("query", {}).get("pages", []) if isinstance(payload, dict) else []
         if not isinstance(pages, list):
@@ -216,7 +224,7 @@ class WikipediaRetriever(PublicWebRetriever):
             key = f"web:wikipedia:{language}:{pageid}"
             url = self._page_url(page.get("fullurl"), host)
             title = clean_text(page.get("title"), MAX_TITLE)
-            excerpt = clean_text(page.get("extract"), MAX_EXCERPT)
+            excerpt = clean_text(page.get("extract"), self.max_excerpt)
             if (not self._KEY.fullmatch(key) or not url or not title or len(excerpt) < 40
                     or key in seen or url in seen):
                 continue

@@ -20,6 +20,7 @@ from apps.ai_core.engine.citation import (
     CitationDigestRejected, CitationQuoteRejected,
 )
 from apps.ai_core.engine.global_grounded import GLOBAL_INSTRUCTIONS, HISTORY_INSTRUCTIONS, GlobalUnsupported, UnsupportedNumericClaim, ask_global
+from apps.ai_core.engine.sectioned import UnsupportedSectionNumber
 from apps.ai_core.engine.grounded import PhaseBDisabled
 from apps.ai_core.gateway import InputError, validate
 from apps.ai_core.global_budget import reserve_global_request
@@ -45,6 +46,7 @@ _SAFE_REJECTION_CODES = {
     CitationDigestRejected: "citation_digest_mismatch",
     CitationQuoteRejected: "citation_quote_mismatch",
     UnsupportedNumericClaim: "unsupported_numeric_claim",
+    UnsupportedSectionNumber: "section_numeric_claim",
 }
 
 
@@ -212,13 +214,16 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
         reserve_global_request(request.user.pk, burst_only=shared_budget)
         if settings.VORNEQ_ENV == "staging" and not shared_budget:
             reserve_staging_request()
+        stage2 = response_engine_v3.stage2_enabled(settings)
         provider = OpenAIResponsesProvider(
             model=os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""),
             timeout_s=_provider_timeout_for_environment(settings.VORNEQ_ENV),
-            max_output_tokens=_output_cap_for_environment(settings.VORNEQ_ENV),
+            max_output_tokens=(response_engine_v3.output_tokens(settings) if stage2
+                               else _output_cap_for_environment(settings.VORNEQ_ENV)),
             extra_instructions=_instructions_for(settings.VORNEQ_ENV, bool(prior_turns)),
             compact_sources=_compact_sources_for_environment(settings.VORNEQ_ENV),
             response_v3_enabled=response_engine_v3.enabled(settings),
+            response_stage2_enabled=stage2,
         )
         if shared_budget:
             provider = BudgetedProvider(provider, actor_id=request.user.pk)
@@ -226,9 +231,12 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
         elif settings.VORNEQ_ENV == "production":
             raise BudgetExceeded("production requires the shared prepaid ledger")
         meta["model"] = getattr(provider, "model", "") or getattr(getattr(provider, "inner", None), "model", "")
+        rlimit, elimit = response_engine_v3.retrieval_limits(settings)
+        retriever = (default_retriever(max_results=rlimit, max_excerpt=elimit, exchars=1500)
+                     if stage2 else default_retriever())
         response = ask_global(question, language, actor=request.user, provider=provider,
-                              retriever=default_retriever(), enabled=True, prior_turns=prior_turns,
-                              search_question=search_question,
+                              retriever=retriever, enabled=True, prior_turns=prior_turns,
+                              search_question=search_question, stage2=stage2,
                               max_answer_chars=response_engine_v3.answer_limit(settings))
     except BudgetExceeded:
         return {"error": "rate_limited"}, 429, meta

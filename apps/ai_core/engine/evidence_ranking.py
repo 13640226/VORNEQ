@@ -203,8 +203,10 @@ def _fingerprint(item: WebEvidence):
     return (normalize_text(item.title).strip(), normalize_text(item.excerpt)[:200])
 
 
-def rank_evidence(question, language, evidence, *, source_types=None):
+def rank_evidence(question, language, evidence, *, source_types=None, max_selected=MAX_SELECTED):
     """Return (selected evidence, assessments) — deterministic, bounded, deduplicated."""
+    if type(max_selected) is not int or not 1 <= max_selected <= 5:
+        raise ValueError("invalid ranking limit")
     source_types = source_types or {}
     seen_keys, seen_prints, candidates = set(), set(), []
     for order, item in enumerate(evidence):
@@ -220,7 +222,7 @@ def rank_evidence(question, language, evidence, *, source_types=None):
         if info["matched_terms"] >= 1 and info["relevance"] >= MIN_RELEVANCE:
             candidates.append((-info["score"], order, item, info))
     candidates.sort(key=lambda c: (c[0], c[1]))
-    selected = candidates[:MAX_SELECTED]
+    selected = candidates[:max_selected]
     return tuple(c[2] for c in selected), [c[3] for c in selected]
 
 

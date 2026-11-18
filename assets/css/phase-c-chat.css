@@ -207,3 +207,18 @@
   .vq-chat-page .standalone-nav__wordmark { font-size: .9rem; }
   .vq-chat-page .standalone-nav__action { font-size: .72rem; padding-inline: 3px; }
 }
+
+
+/* Stage 2 optional passage-linked sections; text only, no injected markup. */
+.vq-chat__sections, .vq-chat__section, .vq-chat__passages {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.vq-chat__section + .vq-chat__section { margin-block-start: 14px; }
+.vq-chat__section h3 { margin: 0 0 5px; font-size: 1rem; line-height: 1.5; }
+.vq-chat__section p, .vq-chat__passages blockquote { white-space: pre-wrap; }
+.vq-chat__passages { padding-inline-start: 16px; }
+.vq-chat__passages li { margin-block: 6px; }
+.vq-chat__passages blockquote { margin: 4px 0; }

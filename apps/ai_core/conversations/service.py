@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+import re
 
 from django.conf import settings
 from django.db import transaction
@@ -92,12 +93,55 @@ def ensure_capacity(conversation):
 
 # Provider outcomes that may have been billed although no answer arrived.
 _UNCERTAIN_ERRORS = {"provider_timeout"}
+_PASSAGE_ID = re.compile(r"S[1-5]\.P[1-9][0-9]?\Z")
+
+
+def _v2_citation(source):
+    """Allowlisted metadata only; never persist arbitrary provider/user objects."""
+    if not isinstance(source, dict):
+        return None
+    fields = ("source_id", "source_key", "title", "url", "publisher",
+              "evidence_quote", "retrieved_at", "evidence_digest")
+    result = {k: source[k] for k in fields
+              if isinstance(source.get(k), str)
+              and len(source[k]) <= (300 if k == "evidence_quote" else 500)}
+    source_id = result.get("source_id", "")
+    if source_id not in ("S1", "S2", "S3", "S4", "S5"):
+        return None
+    passages = source.get("passages")
+    if not isinstance(passages, list) or len(passages) > 8:
+        return result
+    safe = []
+    seen = set()
+    for p in passages:
+        if not isinstance(p, dict) or set(p) != {"passage_id", "quote", "section_indices"}:
+            continue
+        pid, quote, indexes = p["passage_id"], p["quote"], p["section_indices"]
+        if (not isinstance(pid, str) or not _PASSAGE_ID.fullmatch(pid)
+                or not pid.startswith(source_id + ".") or pid in seen
+                or not isinstance(quote, str) or not 80 <= len(quote) <= 300
+                or not isinstance(indexes, list) or not 1 <= len(indexes) <= 6
+                or any(type(i) is not int or not 0 <= i <= 5 for i in indexes)
+                or indexes != sorted(set(indexes))):
+            continue
+        seen.add(pid)
+        safe.append({"passage_id": pid, "quote": quote, "section_indices": indexes})
+    if safe:
+        result["passages"] = safe
+    return result
 
 
 def classify(result, http_status):
     """Map the exact client response to (status, content, error_code, citations)."""
     result = result if isinstance(result, dict) else {}
     if http_status == 200 and result.get("mode") == "grounded_draft":
+        if result.get("format_version") == 2:
+            raw = result.get("citations")
+            citations = [_v2_citation(c) for c in (raw[:5] if isinstance(raw, list) else [])]
+            return AIMessage.STATUS_COMPLETED, str(result.get("answer", "")), "", [
+                c for c in citations if c is not None
+            ]
+        # V1 behavior intentionally unchanged for existing clients and rows.
         citations = [
             {key: c.get(key) for key in ("source_id", "title", "url", "publisher", "evidence_quote", "retrieved_at")
              if isinstance(c, dict) and isinstance(c.get(key), str)}
@@ -197,9 +241,17 @@ def stored_response(message, conversation):
     """Rebuild the client response of a FINAL turn (replay after cache expiry)."""
     base = {"conversation_id": str(conversation.id), "persisted": True, "replayed": True}
     if message.status == AIMessage.STATUS_COMPLETED:
-        return dict(base, mode="grounded_draft", answer=message.content, language=conversation.language,
-                    citations=message.citations, verified=False, model_status="generated",
-                    grounded_status="citation_and_quote_checked_claims_unverified", error_code=""), 200
+        v2 = any(isinstance(c, dict) and isinstance(c.get("passages"), list)
+                 for c in (message.citations or []))
+        response = dict(base, mode="grounded_draft", answer=message.content, language=conversation.language,
+                        citations=message.citations, verified=False, model_status="generated",
+                        grounded_status=("passage_linked_claims_unverified" if v2
+                                         else "citation_and_quote_checked_claims_unverified"), error_code="")
+        # A DB replay has the flat answer and passage mappings; sections were
+        # deliberately not persisted without a separately approved migration.
+        if v2:
+            response["format_version"] = 2
+        return response, 200
     if message.status == AIMessage.STATUS_INSUFFICIENT:
         if message.http_status == 200:
             return dict(base, mode="insufficient_evidence", answer="", language=conversation.language,

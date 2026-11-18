@@ -497,6 +497,12 @@ VORNEQ_AI_RESPONSE_V3_ENABLED = (
     VORNEQ_ENV in ("development", "staging")
     and env_bool("VORNEQ_AI_RESPONSE_V3_ENABLED", False)
 )
+# Stage 2 is OFF unless the Stage 1 pilot is already enabled in dev/staging.
+# No Production variable can activate this path.
+VORNEQ_AI_RESPONSE_V3_STAGE2_ENABLED = (
+    VORNEQ_AI_RESPONSE_V3_ENABLED
+    and env_bool("VORNEQ_AI_RESPONSE_V3_STAGE2_ENABLED", False)
+)
 # Explicit Production policy (apps/ai_core/production_policy.py). Default OFF.
 VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED = (
     VORNEQ_ENV == "production" and env_bool("VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED", False)

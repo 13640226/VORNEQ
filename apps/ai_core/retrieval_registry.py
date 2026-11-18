@@ -32,7 +32,10 @@ class MultiSourceRetriever(PublicWebRetriever):
 
     name = "multi"
 
-    def __init__(self, retrievers):
+    def __init__(self, retrievers, *, max_results=MAX_RESULTS):
+        if type(max_results) is not int or not 1 <= max_results <= 5:
+            raise RetrievalError("invalid candidate limit")
+        self.max_results = max_results
         retrievers = tuple(retrievers)
         if not 1 <= len(retrievers) <= MAX_PROVIDERS:
             raise RetrievalError("invalid provider configuration")
@@ -44,7 +47,7 @@ class MultiSourceRetriever(PublicWebRetriever):
         self.last_status = ()
 
     def search(self, query, language, limit=PER_PROVIDER_LIMIT):
-        limit = max(1, min(int(limit), PER_PROVIDER_LIMIT))
+        limit = max(1, min(int(limit), self.max_results))
         collected, status, errors = [], [], []
         for retriever in self.retrievers:
             try:
@@ -69,7 +72,7 @@ class MultiSourceRetriever(PublicWebRetriever):
         if errors and len(errors) == len(self.retrievers):
             timeouts = [e for e in errors if isinstance(e, RetrievalTimeout)]
             raise timeouts[0] if timeouts else errors[0]
-        return tuple(collected[:MAX_CANDIDATES])
+        return tuple(collected[:MAX_PROVIDERS * self.max_results])
 
 
 def _host(url):
@@ -89,5 +92,12 @@ def configured_provider_names():
     return tuple(names)
 
 
-def default_retriever() -> MultiSourceRetriever:
-    return MultiSourceRetriever(PROVIDERS[name]() for name in configured_provider_names())
+def default_retriever(*, max_results=MAX_RESULTS, max_excerpt=500, exchars=700) -> MultiSourceRetriever:
+    names = configured_provider_names()
+    if (max_results, max_excerpt, exchars) == (MAX_RESULTS, 500, 700):
+        return MultiSourceRetriever(PROVIDERS[name]() for name in names)
+    # V3 currently authorizes *only* the existing code-reviewed Wikipedia host.
+    if names != ("wikipedia",):
+        raise RetrievalError("unsupported Stage 2 provider configuration")
+    wiki = WikipediaRetriever(max_results=max_results, max_excerpt=max_excerpt, exchars=exchars)
+    return MultiSourceRetriever((wiki,), max_results=max_results)

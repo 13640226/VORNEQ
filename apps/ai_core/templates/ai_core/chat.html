@@ -29,7 +29,9 @@
 {% endif %}
 <section class="vq-chat" aria-labelledby="vq-chat-title"
   data-vq-chat
-  data-vq-language="{{ chat_language }}"
+  data-vq-language="{{ chat_language }}"{% if chat_v3_enabled %}
+  data-vq-answer-limit="{{ chat_answer_limit }}"
+  data-vq-citation-limit="{{ chat_citation_limit }}"{% endif %}
   data-vq-loading="{{ chat_labels.loading }}"
   data-vq-error="{{ chat_labels.error }}"
   data-vq-timeout="{{ chat_labels.timeout }}"

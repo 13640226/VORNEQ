@@ -50,3 +50,26 @@ def guidance(question: str, language: str) -> str:
         return ""
     multipart = isinstance(question, str) and bool(_MULTIPART[language].search(question[:200]))
     return _LANGUAGE_GUIDANCE[language] + (_MULTI_GUIDANCE if multipart else _SINGLE_GUIDANCE) + _BOUNDARIES
+
+
+def stage2_enabled(settings_obj) -> bool:
+    """Fail closed if Stage 1 or the environment gate is not satisfied."""
+    return enabled(settings_obj) and (
+        getattr(settings_obj, "VORNEQ_AI_RESPONSE_V3_STAGE2_ENABLED", False) is True
+    )
+
+
+def retrieval_limits(settings_obj) -> tuple[int, int]:
+    return (5, 1500) if stage2_enabled(settings_obj) else (3, 500)
+
+
+def output_tokens(settings_obj) -> int:
+    return 3072 if stage2_enabled(settings_obj) and getattr(settings_obj, "VORNEQ_ENV", "") == "staging" else (
+        2048 if getattr(settings_obj, "VORNEQ_ENV", "") in ("staging", "production") else 512
+    )
+
+
+def length_budget(n_passages: int) -> int:
+    if type(n_passages) is not int or not 1 <= n_passages <= 8:
+        raise ValueError("invalid passage budget")
+    return min(2400, 400 + 250 * n_passages)
