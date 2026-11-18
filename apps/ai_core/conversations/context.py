@@ -9,6 +9,7 @@ from __future__ import annotations
 from django.conf import settings
 
 from apps.ai_core.models import AIMessage
+from apps.ai_core.response_engine_v3 import answer_limit
 from apps.ai_core.sanitization import UnsafePrompt, screen_and_redact
 
 PER_MESSAGE_LIMIT = 1000
@@ -23,6 +24,7 @@ def prior_turns(conversation, *, turns=None, max_chars=None):
     rows = list(conversation.messages.order_by("-sequence")[: turns * 2 + 8])
     by_sequence = {m.sequence: m for m in rows}
     pairs = []
+    assistant_limit = max(PER_MESSAGE_LIMIT, answer_limit(settings))
     for message in rows:
         if message.role != AIMessage.ROLE_ASSISTANT or message.status != AIMessage.STATUS_COMPLETED:
             continue
@@ -31,7 +33,7 @@ def prior_turns(conversation, *, turns=None, max_chars=None):
             continue
         try:
             pair = (screen_and_redact(question.content, limit=PER_MESSAGE_LIMIT),
-                    screen_and_redact(message.content, limit=PER_MESSAGE_LIMIT))
+                    screen_and_redact(message.content, limit=assistant_limit))
         except UnsafePrompt:
             continue
         if not pair[0] or not pair[1]:
