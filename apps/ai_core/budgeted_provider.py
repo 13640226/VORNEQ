@@ -19,7 +19,10 @@ class BudgetedProvider:
         payload = build_request_payload(question, language, sources,
                                         compact_sources=(getattr(self.inner, "compact_sources", False) is True),
                                         prior_turns=prior_turns)
-        input_bytes = len(getattr(self.inner, "instructions", "").encode("utf-8")) + len(payload.encode("utf-8"))
+        # Ledger reserves full effective instructions, including language/V3 guidance.
+        effective = getattr(self.inner, "instructions_for", None)
+        instructions = effective(question, language) if callable(effective) else getattr(self.inner, "instructions", "")
+        input_bytes = len(instructions.encode("utf-8")) + len(payload.encode("utf-8"))
         reservation = ledger.reserve(actor_id=self.actor_id, model=self.inner.model,
                                      input_bytes=input_bytes,
                                      max_output_tokens=self.inner.max_output_tokens)
