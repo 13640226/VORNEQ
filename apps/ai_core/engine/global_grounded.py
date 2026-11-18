@@ -98,7 +98,7 @@ def _insufficient(language, route):
 
 
 def ask_global(question, fallback_language, *, actor, provider, retriever, enabled=False, prior_turns=(),
-               search_question=None):
+               search_question=None, max_answer_chars=1000):
     if not enabled:
         raise GlobalUnsupported("Global AI disabled")
     if actor is None or not getattr(actor, "is_authenticated", False):
@@ -106,7 +106,8 @@ def ask_global(question, fallback_language, *, actor, provider, retriever, enabl
     route = route_question(question, fallback_language)
     if route.kind == OFFICIAL_VORNEQ:
         result = dict(ask_grounded(question, route.language, actor=actor,
-                                   provider=provider, enabled=True))
+                                   provider=provider, enabled=True,
+                                   max_answer_chars=max_answer_chars))
         result["route"] = OFFICIAL_VORNEQ
         return result
     if route.kind != GENERAL_PUBLIC:
@@ -139,7 +140,8 @@ def ask_global(question, fallback_language, *, actor, provider, retriever, enabl
     extra = {"prior_turns": tuple(prior_turns)} if prior_turns else {}
     output = provider.generate(question=screen_and_redact(question, limit=200),
                                language=language, sources=sources, **extra)
-    result = validate_generated(output, sources=sources, language=language)
+    result = validate_generated(output, sources=sources, language=language,
+                                max_answer_chars=max_answer_chars)
     # Preserve only the quote that the deterministic citation validator checked.
     # It is data, not markup, and does not imply independent factual verification.
     checked_quotes = {c["source_id"]: c["evidence_quote"] for c in output["citations"]}
