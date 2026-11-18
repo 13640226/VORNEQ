@@ -55,6 +55,22 @@ class ProviderStructuredResponseTests(SimpleTestCase):
                 self._generate(response)
         self.assertTrue(any("reason=max_output_tokens" in x for x in logs.output))
 
+    def test_parse_failure_after_http_200_logs_only_safe_reason_and_never_retries(self):
+        secret = "PRIVATE_PROVIDER_BODY_SENTINEL"
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-test-only"}), \
+                patch("openai.OpenAI") as factory, \
+                self.assertLogs("apps.ai_core.providers.openai_responses", "WARNING") as logs:
+            factory.return_value.responses.parse.side_effect = ValueError(secret)
+            with self.assertRaises(ProviderInvalidResponse):
+                self.provider.generate(question="How do solar cells work?",
+                                       language="en", sources=self.sources)
+        factory.return_value.responses.parse.assert_called_once()
+        self.assertEqual(logs.output, [
+            "WARNING:apps.ai_core.providers.openai_responses:"
+            "ai_provider_parse_rejected reason=invalid_response",
+        ])
+        self.assertNotIn(secret, "".join(logs.output))
+
     def test_provider_rejects_token_cap_above_2048(self):
         from apps.ai_core.providers.exceptions import ProviderUnavailable
         with self.assertRaises(ProviderUnavailable):

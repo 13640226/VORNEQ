@@ -24,7 +24,7 @@ from apps.ai_core.engine.grounded import PhaseBDisabled
 from apps.ai_core.gateway import InputError, validate
 from apps.ai_core.global_budget import reserve_global_request
 from apps.ai_core.global_router import UNSUPPORTED, route_question
-from apps.ai_core.providers.exceptions import GatewayError, ProviderTimeout
+from apps.ai_core.providers.exceptions import GatewayError, ProviderInvalidResponse, ProviderTimeout
 from apps.ai_core.providers.openai_responses import OpenAIResponsesProvider
 from apps.ai_core.staging_budget import reserve_staging_request
 from apps.ai_core.budgeted_provider import BudgetedProvider
@@ -242,6 +242,11 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
         return {"error": "search_unavailable"}, 503, meta
     except ProviderTimeout:
         return {"error": "provider_timeout"}, 504, meta
+    except ProviderInvalidResponse:
+        # HTTP 200 from the provider is not proof of a usable structured answer.
+        # Fixed code only: do not log or return raw provider content.
+        _log.warning("ai_provider_response_rejected reason_code=invalid_provider_response")
+        return {"error": "provider_unavailable", "reason_code": "invalid_provider_response"}, 503, meta
     except GatewayError:
         return {"error": "provider_unavailable"}, 503, meta
     return response, 200, meta

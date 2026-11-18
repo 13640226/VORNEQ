@@ -200,6 +200,10 @@
       if (data.error === "UNSUPPORTED_QUESTION") {
         return labels.unsupported || "Question unsupported; no model request was sent.";
       }
+      if (data.error === "provider_unavailable" &&
+          data.reason_code === "invalid_provider_response") {
+        return labels.rejectedOutput || labels.error || "Request failed";
+      }
       if (data.error !== "INSUFFICIENT_EVIDENCE") {
         return labels.error || "Request failed";
       }
@@ -639,7 +643,13 @@
           appendMessage(conv.fullLabel(), "assistant");
           if (requestId) clearRecovery();
         } else if (!response.ok) {
-          appendMessage(labels.error || "Request failed", "assistant");
+          // A failed provider parse may follow a billable HTTP 200. Show only a
+          // fixed localized explanation; never auto-retry the original request.
+          let failure = null;
+          if (response.status === 503) {
+            try { failure = await response.json(); } catch (_error) { /* fail closed */ }
+          }
+          appendMessage(rejectionMessage(failure), "assistant");
           if (requestId) recoveryBlocked = true;
         } else {
           const data = await response.json();
