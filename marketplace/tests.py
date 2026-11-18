@@ -233,3 +233,83 @@ class DownloadSecurityTests(TestCase):
         grant_entitlement(self.user, self.product)
         response = self.client.get(detail_url)
         self.assertContains(response, self.download_url)
+
+
+@override_settings(STORAGES=TEST_STORAGES)
+class MarketplaceKnownFixtureVisibilityTests(TestCase):
+    """Historical published fixtures must not appear in public catalog or detail."""
+
+    def setUp(self):
+        self.seller = User.objects.create_user(
+            username="real-marketplace-seller", password="testpass"
+        )
+        self.seed_seller = User.objects.create_user(
+            username="vorneq-benchmark-seed", password="testpass"
+        )
+        self.smoke_seller = User.objects.create_user(
+            username="vorneq-inspect-smoke", password="testpass"
+        )
+        self.real = Product.objects.create(
+            seller=self.seller, title="Real Published Course",
+            slug="real-published-course", status=Product.STATUS_APPROVED,
+            is_published=True, category=Product.CATEGORY_COURSE,
+        )
+        self.fixtures = [
+            Product.objects.create(
+                seller=self.seller, title="Benchmark Fixture By Slug",
+                slug="vorneq-benchmark-000001",
+                status=Product.STATUS_APPROVED, is_published=True,
+            ),
+            Product.objects.create(
+                seller=self.seller, title="Smoke Fixture By Slug",
+                slug="inspect-staging-smoke-public",
+                status=Product.STATUS_APPROVED, is_published=True,
+            ),
+            Product.objects.create(
+                seller=self.seed_seller, title="Benchmark Fixture By Seller",
+                slug="ordinary-looking-benchmark",
+                status=Product.STATUS_APPROVED, is_published=True,
+            ),
+            Product.objects.create(
+                seller=self.smoke_seller, title="Smoke Fixture By Seller",
+                slug="ordinary-looking-smoke",
+                status=Product.STATUS_APPROVED, is_published=True,
+            ),
+        ]
+
+    def test_catalog_shows_real_product_but_hides_all_known_fixtures(self):
+        response = self.client.get(reverse("marketplace:index"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["paginator"].count, 1)
+        self.assertContains(response, self.real.title)
+        for product in self.fixtures:
+            self.assertNotContains(response, product.title)
+
+    def test_search_and_category_filters_cannot_reveal_fixtures(self):
+        response = self.client.get(reverse("marketplace:index"), {"q": "Fixture"})
+        self.assertEqual(response.context["paginator"].count, 0)
+        response = self.client.get(
+            reverse("marketplace:index"), {"category": Product.CATEGORY_COURSE}
+        )
+        self.assertEqual(response.context["paginator"].count, 1)
+        self.assertContains(response, self.real.title)
+
+    def test_public_detail_returns_404_for_historical_fixtures(self):
+        self.assertEqual(
+            self.client.get(reverse("marketplace:detail", args=[self.real.slug])).status_code,
+            200,
+        )
+        for product in self.fixtures:
+            response = self.client.get(
+                reverse("marketplace:detail", args=[product.slug])
+            )
+            self.assertEqual(response.status_code, 404, product.slug)
+
+    def test_products_remain_in_database_and_seller_dashboard(self):
+        self.assertEqual(
+            Product.objects.filter(pk__in=[p.pk for p in self.fixtures]).count(),
+            len(self.fixtures),
+        )
+        self.client.force_login(self.seller)
+        response = self.client.get(reverse("marketplace:seller_dashboard"))
+        self.assertContains(response, "Benchmark Fixture By Slug")
