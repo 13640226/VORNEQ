@@ -17,10 +17,11 @@ import math
 import re
 import uuid
 from dataclasses import dataclass
+from datetime import datetime, time as dt_time, timezone as dt_timezone
 
 from django.conf import settings
 from django.db import connections, transaction
-from django.db.models import F
+from django.db.models import Count, F, Q, Sum
 from django.utils import timezone
 
 from apps.ai_core.engine.budget import BudgetExceeded
@@ -45,6 +46,50 @@ class BudgetExhausted(BudgetExceeded):
 
 class EmergencyStop(BudgetExceeded):
     """Kill switch active (environment or ledger)."""
+
+
+class StagingDailyCapReached(BudgetExhausted):
+    """Independent STAGING daily ceiling (paid model calls or money) reached."""
+
+
+@dataclass(frozen=True)
+class StagingDailyLimit:
+    """Per-UTC-day ceiling for STAGING model calls on the shared ledger.
+
+    Enforced inside the same locked ledger transaction as the reservation, so
+    concurrent requests (threads, workers, processes) can never exceed it.
+    Counts every staging reservation of the day: FINALIZED at observed cost,
+    RESERVED and UNCERTAIN at their full reserved amount (never optimistic).
+    """
+    max_requests: int
+    cap_micro: int
+
+
+def staging_daily_limit() -> StagingDailyLimit:
+    """Read the staging ceiling; missing or invalid configuration fails closed."""
+    max_requests = getattr(settings, "VORNEQ_AI_STAGING_MAX_DAILY_REQUESTS", 0)
+    cap_micro = getattr(settings, "VORNEQ_AI_STAGING_DAILY_CAP_MICROUSD", 0)
+    if (type(max_requests) is not int or type(cap_micro) is not int
+            or not 1 <= max_requests <= 100_000 or not 1 <= cap_micro <= MAX_TOTAL_MICRO):
+        raise LedgerUnavailable("staging daily ceiling not configured")
+    return StagingDailyLimit(max_requests, cap_micro)
+
+
+def _utc_day_start(now=None):
+    now = (now or timezone.now()).astimezone(dt_timezone.utc)
+    return datetime.combine(now.date(), dt_time.min, tzinfo=dt_timezone.utc)
+
+
+def _staging_usage_today(account):
+    """(count, committed_micro) of today's staging reservations for this account."""
+    from apps.ai_ledger.models import BudgetReservation
+
+    agg = (BudgetReservation.objects.using(LEDGER_ALIAS)
+           .filter(account=account, environment="staging", created_at__gte=_utc_day_start())
+           .aggregate(n=Count("pk"),
+                      held=Sum("reserved_micro", filter=~Q(status=BudgetReservation.FINALIZED)),
+                      spent=Sum("observed_micro", filter=Q(status=BudgetReservation.FINALIZED))))
+    return agg["n"] or 0, (agg["held"] or 0) + (agg["spent"] or 0)
 
 
 @dataclass(frozen=True)
@@ -114,15 +159,18 @@ def reserve(*, actor_id: int, model: str, input_bytes: int, max_output_tokens: i
     if getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", False):
         raise EmergencyStop("emergency stop (environment)")
     environment = getattr(settings, "VORNEQ_ENV", "")
+    # Staging always carries its own daily ceiling, independent of the shared
+    # allowance and of every request-quota or "unmetered" flag. Production is unchanged.
+    staging_daily = staging_daily_limit() if environment == "staging" else None
     return reserve_with_config(
         ledger_configuration(), environment=environment,
         service_id=os.environ.get("RENDER_SERVICE_ID", ""),
         git_sha=os.environ.get("RENDER_GIT_COMMIT", ""), actor_id=actor_id, model=model,
-        input_bytes=input_bytes, max_output_tokens=max_output_tokens)
+        input_bytes=input_bytes, max_output_tokens=max_output_tokens, staging_daily=staging_daily)
 
 
 def reserve_with_config(config: LedgerConfig, *, environment, service_id, git_sha, actor_id, model,
-                        input_bytes, max_output_tokens) -> Reservation:
+                        input_bytes, max_output_tokens, staging_daily=None) -> Reservation:
     from apps.ai_ledger.models import BudgetAccount, BudgetReservation
 
     if EXPECTED_SERVICES.get(environment) is None or service_id != EXPECTED_SERVICES[environment]:
@@ -133,6 +181,9 @@ def reserve_with_config(config: LedgerConfig, *, environment, service_id, git_sh
         raise LedgerUnavailable("invalid reservation request")
     if type(input_bytes) is not int or type(max_output_tokens) is not int:
         raise LedgerUnavailable("invalid reservation size")
+    if staging_daily is not None and (environment != "staging"
+                                      or not isinstance(staging_daily, StagingDailyLimit)):
+        raise LedgerUnavailable("staging daily ceiling misapplied")
     try:
         with transaction.atomic(using=LEDGER_ALIAS):
             _verify_identity(config.expected_db_name)
@@ -152,6 +203,16 @@ def reserve_with_config(config: LedgerConfig, *, environment, service_id, git_sh
                 output_price=account.output_price_micro_per_mtok)
             if account.remaining_micro() < amount:
                 raise BudgetExhausted("shared prepaid allowance exhausted")
+            if staging_daily is not None:
+                # Same transaction, account row still locked: serialized with
+                # every other reservation of this account.
+                count, committed = _staging_usage_today(account)
+                if count >= staging_daily.max_requests:
+                    _logger.warning("ai_ledger_staging_daily_cap_reached kind=requests")
+                    raise StagingDailyCapReached("staging daily request ceiling reached")
+                if committed + amount > staging_daily.cap_micro:
+                    _logger.warning("ai_ledger_staging_daily_cap_reached kind=amount")
+                    raise StagingDailyCapReached("staging daily amount ceiling reached")
             BudgetAccount.objects.using(LEDGER_ALIAS).filter(pk=account.pk).update(
                 reserved_micro=F("reserved_micro") + amount)
             reservation = BudgetReservation.objects.using(LEDGER_ALIAS).create(
