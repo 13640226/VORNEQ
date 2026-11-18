@@ -137,7 +137,8 @@ def _instructions_for_language(base_instructions: str, language: str) -> str:
 
 class OpenAIResponsesProvider:
     def __init__(self, *, model: str, timeout_s: float, max_output_tokens: int,
-                 extra_instructions: str = "", compact_sources: bool = False):
+                 extra_instructions: str = "", compact_sources: bool = False,
+                 response_v3_enabled: bool = False):
         if not isinstance(model, str) or not model or len(model) > 100:
             raise ProviderUnavailable("model not configured")
         if type(timeout_s) not in (int, float) or not 1 <= timeout_s <= 90 or not 64 <= max_output_tokens <= 2048:
@@ -151,6 +152,15 @@ class OpenAIResponsesProvider:
         self.instructions = (_SYSTEM_INSTRUCTIONS + " " + extra_instructions).strip()
         self.compact_sources = compact_sources
         self.last_usage = None
+        self.response_v3_enabled = response_v3_enabled is True
+
+    def instructions_for(self, question: str, language: str) -> str:
+        """Exactly the instructions sent to OpenAI and costed by Ledger."""
+        result = _instructions_for_language(self.instructions, language)
+        if self.response_v3_enabled:
+            from apps.ai_core.response_engine_v3 import guidance
+            result += " " + guidance(question, language)
+        return result
 
     def generate(self, *, question: str, language: str, sources: list[dict], prior_turns=()) -> dict:
         key = os.environ.get("OPENAI_API_KEY", "")
@@ -168,7 +178,7 @@ class OpenAIResponsesProvider:
         try:
             response = client.responses.parse(
                 model=self.model,
-                instructions=_instructions_for_language(self.instructions, language),
+                instructions=self.instructions_for(question, language),
                 input=[{"role": "user", "content": payload}],
                 text_format=GroundedAnswerSchema,
                 tools=[], store=False,
