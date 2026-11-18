@@ -1,6 +1,6 @@
 """Offline regression for V3 stage 1 (no paid API or network requests)."""
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from django.test import SimpleTestCase
 
@@ -111,6 +111,23 @@ class V3AnswerBoundaryTests(SimpleTestCase):
 
 
 class V3PrepaidLedgerTests(SimpleTestCase):
+    def test_synthetic_mock_with_no_declared_instructions_for_uses_base_prompt(self):
+        """Dynamic MagicMock attrs must not make prepaid prompt smaller."""
+        inner = MagicMock(model="synthetic", max_output_tokens=512,
+                          instructions="x" * 100)
+        inner.generate.return_value = generated("Synthetic answer.")
+        with patch("apps.ai_core.budgeted_provider.ledger.reserve") as reserve, \
+             patch("apps.ai_core.budgeted_provider.ledger.settle"):
+            BudgetedProvider(inner, actor_id=3).generate(
+                question="q", language="en", sources=[{"a": "ü"}],
+            )
+        expected = build_request_payload("q", "en", [{"a": "ü"}])
+        self.assertEqual(
+            reserve.call_args.kwargs["input_bytes"],
+            100 + len(expected.encode("utf-8")),
+        )
+        inner.instructions_for.assert_not_called()
+
     def test_reservation_includes_effective_model_instructions(self):
         provider = OpenAIResponsesProvider(
             model="mock", timeout_s=5, max_output_tokens=2048,
