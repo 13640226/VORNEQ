@@ -79,7 +79,11 @@ def build_request_payload(question, language, sources, *, compact_sources=False,
         return json.dumps(body, ensure_ascii=False, separators=(",", ":"))
     # Development receives the same exact quote hint; only nonessential
     # source metadata differ between full and compact payload modes.
-    sources = [{**source, "quote_hint": source["excerpt"][:80]} for source in sources]
+    sources = [
+        ({**source, "quote_hint": source["excerpt"][:80]}
+         if isinstance(source.get("excerpt"), str) else dict(source))
+        for source in sources
+    ]
     body = {"question": question, "language": language, "sources": sources}
     if prior_turns:
         body["prior_turns"] = list(prior_turns)
