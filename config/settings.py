@@ -492,6 +492,11 @@ VORNEQ_AI_CONVERSATIONS_PER_USER = 200
 VORNEQ_AI_CONVERSATION_TRASH_DAYS = 30
 VORNEQ_AI_CONTEXT_TURNS = 6
 VORNEQ_AI_CONTEXT_MAX_CHARS = 3000
+# V3 response engine: opt-in only for development or staging, never Production.
+VORNEQ_AI_RESPONSE_V3_ENABLED = (
+    VORNEQ_ENV in ("development", "staging")
+    and env_bool("VORNEQ_AI_RESPONSE_V3_ENABLED", False)
+)
 # Explicit Production policy (apps/ai_core/production_policy.py). Default OFF.
 VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED = (
     VORNEQ_ENV == "production" and env_bool("VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED", False)
