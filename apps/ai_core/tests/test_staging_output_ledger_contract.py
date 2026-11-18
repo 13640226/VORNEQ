@@ -45,10 +45,14 @@ class StagingPromptBudgetContractTests(SimpleTestCase):
         full = build_request_payload("What is Berlin?", "en", SOURCES)
         compact = build_request_payload("What is Berlin?", "en", SOURCES, compact_sources=True)
         source = json.loads(compact)["sources"][0]
-        self.assertEqual(set(source), {"source_id", "title", "excerpt", "evidence_digest"})
+        self.assertEqual(set(source), {"source_id", "title", "excerpt", "evidence_digest", "quote_hint"})
         self.assertEqual(source["evidence_digest"], SOURCES[0]["evidence_digest"])
         self.assertEqual(source["excerpt"], SOURCES[0]["excerpt"])
-        self.assertEqual(json.loads(full)["sources"], SOURCES)
+        self.assertEqual(source["quote_hint"], SOURCES[0]["excerpt"][:80])
+        self.assertEqual(
+            json.loads(full)["sources"],
+            [{**source, "quote_hint": source["excerpt"][:80]} for source in SOURCES],
+        )
         self.assertNotIn("retrieved_at", compact)
         self.assertNotIn("source_key", compact)
         self.assertLess(len(compact), len(full))

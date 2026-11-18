@@ -337,18 +337,27 @@ class ConversationContextTests(ConversationMixin, TestCase):
 
 
 class PayloadCompatibilityTests(TestCase):
-    def test_single_question_payload_unchanged_and_history_added_only_when_present(self):
+    def test_quote_hint_is_exact_and_history_is_added_only_when_present(self):
         sources = [{"source_id": "S1", "title": "t", "excerpt": "e", "evidence_digest": "d", "url": "u"}]
         for compact in (False, True):
-            legacy = json.dumps({"question": "q", "language": "en",
-                                 "sources": ([{k: sources[0][k] for k in ("source_id", "title", "excerpt", "evidence_digest")}]
-                                             if compact else sources)},
-                                ensure_ascii=False, **({"separators": (",", ":")} if compact else {}))
-            self.assertEqual(build_request_payload("q", "en", sources, compact_sources=compact), legacy)
+            quote_hint = sources[0]["excerpt"][:80]
+            expected_source = (
+                {**{k: sources[0][k] for k in ("source_id", "title", "excerpt", "evidence_digest")},
+                 "quote_hint": quote_hint}
+                if compact else {**sources[0], "quote_hint": quote_hint}
+            )
+            baseline = json.dumps({"question": "q", "language": "en",
+                                   "sources": [expected_source]},
+                                  ensure_ascii=False,
+                                  **({"separators": (",", ":")} if compact else {}))
+            single = build_request_payload("q", "en", sources, compact_sources=compact)
+            self.assertEqual(single, baseline)
+            self.assertNotIn('"prior_turns"', single)
+            self.assertEqual(sources[0]["excerpt"], "e")  # no input mutation
             with_history = build_request_payload("q", "en", sources, compact_sources=compact,
                                                  prior_turns=({"role": "user", "content": "h"},))
             self.assertIn('"prior_turns"', with_history)
-            self.assertGreater(len(with_history), len(legacy))
+            self.assertGreater(len(with_history), len(baseline))
 
 
 @override_settings(**CONV)

@@ -104,9 +104,11 @@ class CitationContractTests(SimpleTestCase):
         for actual, trusted in zip(payload["sources"], self.sources):
             self.assertEqual(actual["evidence_digest"], trusted["evidence_digest"])
             self.assertEqual(actual["excerpt"], trusted["excerpt"])
+            self.assertEqual(actual["quote_hint"], trusted["excerpt"][:80])
+            self.assertTrue(actual["excerpt"].startswith(actual["quote_hint"]))
             self.assertEqual(
                 set(actual),
-                {"source_id", "title", "excerpt", "evidence_digest"},
+                {"source_id", "title", "excerpt", "evidence_digest", "quote_hint"},
             )
         self.assertEqual(len(payload["prior_turns"]), 1)
         self.assertNotIn("source_key", serialized)

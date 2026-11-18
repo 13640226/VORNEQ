@@ -63,13 +63,27 @@ def build_request_payload(question, language, sources, *, compact_sources=False,
     """
     if compact_sources:
         sources = [
-            {field: source[field] for field in ("source_id", "title", "excerpt", "evidence_digest")}
+            {
+                **{field: source[field] for field in (
+                    "source_id", "title", "excerpt", "evidence_digest"
+                )},
+                # A trusted, exact substring: the model may copy this, but the
+                # unchanged server-side validator checks against the full excerpt.
+                "quote_hint": source["excerpt"][:80],
+            }
             for source in sources
         ]
         body = {"question": question, "language": language, "sources": sources}
         if prior_turns:
             body["prior_turns"] = list(prior_turns)
         return json.dumps(body, ensure_ascii=False, separators=(",", ":"))
+    # Development receives the same exact quote hint; only nonessential
+    # source metadata differ between full and compact payload modes.
+    sources = [
+        ({**source, "quote_hint": source["excerpt"][:80]}
+         if isinstance(source.get("excerpt"), str) else dict(source))
+        for source in sources
+    ]
     body = {"question": question, "language": language, "sources": sources}
     if prior_turns:
         body["prior_turns"] = list(prior_turns)
@@ -84,8 +98,12 @@ _SYSTEM_INSTRUCTIONS = (
     "source_id field (for example S1, S2; exact case and characters). "
     "Never use source_key, URL, title, list index or an earlier conversation turn "
     "as a source_id. Never make up an identifier or cite the same source_id twice. "
-    "Copy evidence_digest EXACTLY from the SAME chosen source, and copy an exact "
-    "verbatim 8-300 character evidence_quote from THAT source's excerpt. "
+    "Copy evidence_digest EXACTLY from the SAME chosen source. "
+    "Copy evidence_quote EXACTLY from that source's quote_hint in the sources "
+    "array. quote_hint is a contiguous excerpt prefix, already selected for you: "
+    "preserve each character, including Persian ZWNJ, spaces and punctuation. "
+    "The result MUST be a verbatim 8-300 character evidence_quote from THAT "
+    "source's excerpt. Do not translate, normalize, paraphrase or add ellipses. "
     "Do not swap digests or quotes between sources. If there is no source that "
     "supports a claim, omit that claim; do not fabricate a source or quote. "
     "Set verified=false, model_status='generated', grounded_status='proposed', error_code=''."
@@ -139,8 +157,12 @@ class OpenAIResponsesProvider:
         except (APIConnectionError, APIError) as exc:
             raise ProviderUnavailable("provider connection or API error") from exc
         except ValidationError as exc:
+            # SDK parsing may fail after HTTP 200 (e.g. truncated JSON).
+            # Never log the exception or raw provider response.
+            _logger.warning("ai_provider_parse_rejected reason=validation_error")
             raise ProviderInvalidResponse("structured response invalid") from exc
         except (ValueError, TypeError) as exc:
+            _logger.warning("ai_provider_parse_rejected reason=invalid_response")
             raise ProviderInvalidResponse("invalid structured response") from exc
         usage = getattr(response, "usage", None)
         tokens = (getattr(usage, "input_tokens", None), getattr(usage, "output_tokens", None))
