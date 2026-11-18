@@ -110,6 +110,31 @@ _SYSTEM_INSTRUCTIONS = (
 )
 
 
+# These language-specific rules affect only answer prose, never trusted evidence
+# or the exact-match citation fields validated later by engine.citation.
+_PERSIAN_WRITING_INSTRUCTIONS = (
+    "For Persian (language='fa'), write fluent, idiomatic, well-punctuated Persian. "
+    "Use standard Persian orthography and U+200C (ZWNJ) where needed, for example "
+    "شیمی‌دان, فیزیک‌دان, ریاضی‌دان, می‌شود, کتاب‌ها; avoid ordinary spaces "
+    "inside these compound words. "
+    "Answer every explicitly requested subquestion within the answer length limit. "
+    "When the user asks for named works, examples, or distinctions, give specific "
+    "names and explanations ONLY if the current source excerpts support them. "
+    "Otherwise acknowledge the evidence gap for that part without guessing. "
+    "Keep sentences concise and logically ordered instead of listing unrelated facts. "
+    "These writing rules apply ONLY to answer prose: do not rewrite, normalize, "
+    "or alter source titles, excerpts, quote_hint, evidence_quote, source_id, "
+    "evidence_digest, URLs, dates, or numbers in citations or source material. "
+)
+
+
+def _instructions_for_language(base_instructions: str, language: str) -> str:
+    """Append bounded Persian prose guidance without modifying evidence contracts."""
+    if language == "fa":
+        return base_instructions + " " + _PERSIAN_WRITING_INSTRUCTIONS
+    return base_instructions
+
+
 class OpenAIResponsesProvider:
     def __init__(self, *, model: str, timeout_s: float, max_output_tokens: int,
                  extra_instructions: str = "", compact_sources: bool = False):
@@ -143,7 +168,7 @@ class OpenAIResponsesProvider:
         try:
             response = client.responses.parse(
                 model=self.model,
-                instructions=self.instructions,
+                instructions=_instructions_for_language(self.instructions, language),
                 input=[{"role": "user", "content": payload}],
                 text_format=GroundedAnswerSchema,
                 tools=[], store=False,
