@@ -1,0 +1,602 @@
+[
+  {
+    "id": "fa001",
+    "language": "fa",
+    "kind": "general",
+    "question": "ابن‌سینا که بود و مهم‌ترین آثار علمی او چه بودند؟"
+  },
+  {
+    "id": "fa002",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: ابن‌سینا که بود و مهم‌ترین آثار علمی او چه بودند؟"
+  },
+  {
+    "id": "fa003",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: ابن‌سینا که بود و مهم‌ترین آثار علمی او چه بودند؟"
+  },
+  {
+    "id": "fa004",
+    "language": "fa",
+    "kind": "general",
+    "question": "فتوسنتز چیست و گیاهان چگونه از نور استفاده می‌کنند؟"
+  },
+  {
+    "id": "fa005",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: فتوسنتز چیست و گیاهان چگونه از نور استفاده می‌کنند؟"
+  },
+  {
+    "id": "fa006",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: فتوسنتز چیست و گیاهان چگونه از نور استفاده می‌کنند؟"
+  },
+  {
+    "id": "fa007",
+    "language": "fa",
+    "kind": "general",
+    "question": "انرژی خورشیدی چگونه به برق تبدیل می‌شود؟"
+  },
+  {
+    "id": "fa008",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: انرژی خورشیدی چگونه به برق تبدیل می‌شود؟"
+  },
+  {
+    "id": "fa009",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: انرژی خورشیدی چگونه به برق تبدیل می‌شود؟"
+  },
+  {
+    "id": "fa010",
+    "language": "fa",
+    "kind": "general",
+    "question": "تفاوت آب‌وهوا و اقلیم چیست؟"
+  },
+  {
+    "id": "fa011",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: تفاوت آب‌وهوا و اقلیم چیست؟"
+  },
+  {
+    "id": "fa012",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: تفاوت آب‌وهوا و اقلیم چیست؟"
+  },
+  {
+    "id": "fa013",
+    "language": "fa",
+    "kind": "general",
+    "question": "زمین چرا به دور خورشید می‌چرخد؟"
+  },
+  {
+    "id": "fa014",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: زمین چرا به دور خورشید می‌چرخد؟"
+  },
+  {
+    "id": "fa015",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: زمین چرا به دور خورشید می‌چرخد؟"
+  },
+  {
+    "id": "fa016",
+    "language": "fa",
+    "kind": "general",
+    "question": "ماه چگونه بر جزرومد اثر می‌گذارد؟"
+  },
+  {
+    "id": "fa017",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: ماه چگونه بر جزرومد اثر می‌گذارد؟"
+  },
+  {
+    "id": "fa018",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: ماه چگونه بر جزرومد اثر می‌گذارد؟"
+  },
+  {
+    "id": "fa019",
+    "language": "fa",
+    "kind": "general",
+    "question": "جرم و وزن چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa020",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: جرم و وزن چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa021",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: جرم و وزن چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa022",
+    "language": "fa",
+    "kind": "general",
+    "question": "چگالی چگونه تعریف می‌شود؟"
+  },
+  {
+    "id": "fa023",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: چگالی چگونه تعریف می‌شود؟"
+  },
+  {
+    "id": "fa024",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: چگالی چگونه تعریف می‌شود؟"
+  },
+  {
+    "id": "fa025",
+    "language": "fa",
+    "kind": "general",
+    "question": "چرخه آب در طبیعت چگونه کار می‌کند؟"
+  },
+  {
+    "id": "fa026",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: چرخه آب در طبیعت چگونه کار می‌کند؟"
+  },
+  {
+    "id": "fa027",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: چرخه آب در طبیعت چگونه کار می‌کند؟"
+  },
+  {
+    "id": "fa028",
+    "language": "fa",
+    "kind": "general",
+    "question": "چه عواملی موجب آلودگی هوا می‌شوند؟"
+  },
+  {
+    "id": "fa029",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: چه عواملی موجب آلودگی هوا می‌شوند؟"
+  },
+  {
+    "id": "fa030",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: چه عواملی موجب آلودگی هوا می‌شوند؟"
+  },
+  {
+    "id": "fa031",
+    "language": "fa",
+    "kind": "general",
+    "question": "خون در بدن چه وظیفه‌ای دارد؟"
+  },
+  {
+    "id": "fa032",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: خون در بدن چه وظیفه‌ای دارد؟"
+  },
+  {
+    "id": "fa033",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: خون در بدن چه وظیفه‌ای دارد؟"
+  },
+  {
+    "id": "fa034",
+    "language": "fa",
+    "kind": "general",
+    "question": "میکروب‌ها و ویروس‌ها چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa035",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: میکروب‌ها و ویروس‌ها چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa036",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: میکروب‌ها و ویروس‌ها چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa037",
+    "language": "fa",
+    "kind": "general",
+    "question": "اینترنت و شبکه محلی چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa038",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: اینترنت و شبکه محلی چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa039",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: اینترنت و شبکه محلی چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa040",
+    "language": "fa",
+    "kind": "general",
+    "question": "موتور الکتریکی چگونه کار می‌کند؟"
+  },
+  {
+    "id": "fa041",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: موتور الکتریکی چگونه کار می‌کند؟"
+  },
+  {
+    "id": "fa042",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: موتور الکتریکی چگونه کار می‌کند؟"
+  },
+  {
+    "id": "fa043",
+    "language": "fa",
+    "kind": "general",
+    "question": "سیم‌پیچ در تولید میدان مغناطیسی چه نقشی دارد؟"
+  },
+  {
+    "id": "fa044",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: سیم‌پیچ در تولید میدان مغناطیسی چه نقشی دارد؟"
+  },
+  {
+    "id": "fa045",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: سیم‌پیچ در تولید میدان مغناطیسی چه نقشی دارد؟"
+  },
+  {
+    "id": "fa046",
+    "language": "fa",
+    "kind": "general",
+    "question": "آیا مریخ جو دارد و ویژگی‌های آن چیست؟"
+  },
+  {
+    "id": "fa047",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: آیا مریخ جو دارد و ویژگی‌های آن چیست؟"
+  },
+  {
+    "id": "fa048",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: آیا مریخ جو دارد و ویژگی‌های آن چیست؟"
+  },
+  {
+    "id": "fa049",
+    "language": "fa",
+    "kind": "general",
+    "question": "کوه‌ها چگونه تشکیل می‌شوند؟"
+  },
+  {
+    "id": "fa050",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: کوه‌ها چگونه تشکیل می‌شوند؟"
+  },
+  {
+    "id": "fa051",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: کوه‌ها چگونه تشکیل می‌شوند؟"
+  },
+  {
+    "id": "fa052",
+    "language": "fa",
+    "kind": "general",
+    "question": "سنگ‌های آذرین و رسوبی چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa053",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: سنگ‌های آذرین و رسوبی چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa054",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: سنگ‌های آذرین و رسوبی چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa055",
+    "language": "fa",
+    "kind": "general",
+    "question": "دانشنامه و مقاله پژوهشی از نظر کاربرد چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa056",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: دانشنامه و مقاله پژوهشی از نظر کاربرد چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa057",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: دانشنامه و مقاله پژوهشی از نظر کاربرد چه تفاوتی دارند؟"
+  },
+  {
+    "id": "fa058",
+    "language": "fa",
+    "kind": "general",
+    "question": "چگونه انرژی باد به نیروی برق تبدیل می‌شود؟"
+  },
+  {
+    "id": "fa059",
+    "language": "fa",
+    "kind": "multipart",
+    "question": "لطفاً به همه بخش‌ها پاسخ بده: چگونه انرژی باد به نیروی برق تبدیل می‌شود؟"
+  },
+  {
+    "id": "fa060",
+    "language": "fa",
+    "kind": "evidence_gap",
+    "question": "اگر منبع کافی نیست، شکاف شواهد را مشخص کن: چگونه انرژی باد به نیروی برق تبدیل می‌شود؟"
+  },
+  {
+    "id": "de001",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Was sind Solarzellen und wie funktionieren sie?"
+  },
+  {
+    "id": "de002",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Was ist der Unterschied zwischen Wetter und Klima?"
+  },
+  {
+    "id": "de003",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Wie funktioniert Photosynthese?"
+  },
+  {
+    "id": "de004",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Was verursacht Ebbe und Flut?"
+  },
+  {
+    "id": "de005",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Was sind Masse und Gewicht?"
+  },
+  {
+    "id": "de006",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Wie funktioniert ein Elektromotor?"
+  },
+  {
+    "id": "de007",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Welche Aufgaben hat das Blut?"
+  },
+  {
+    "id": "de008",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Was unterscheidet Viren von Bakterien?"
+  },
+  {
+    "id": "de009",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Wie entstehen Berge?"
+  },
+  {
+    "id": "de010",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Wie entstehen Wolken?"
+  },
+  {
+    "id": "de011",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Was sind erneuerbare Energien?"
+  },
+  {
+    "id": "de012",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Wie funktioniert ein lokales Netzwerk?"
+  },
+  {
+    "id": "de013",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Wie unterscheiden sich Gesteinsarten?"
+  },
+  {
+    "id": "de014",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Was ist der Treibhauseffekt?"
+  },
+  {
+    "id": "de015",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Wie funktionieren Windkraftanlagen?"
+  },
+  {
+    "id": "de016",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Wie entstand das Sonnensystem?"
+  },
+  {
+    "id": "de017",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Was ist elektrische Spannung?"
+  },
+  {
+    "id": "de018",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Was macht eine wissenschaftliche Studie aus?"
+  },
+  {
+    "id": "de019",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Was ist der Unterschied zwischen Klima und Jahreszeit?"
+  },
+  {
+    "id": "de020",
+    "language": "de",
+    "kind": "public_knowledge",
+    "question": "Warum ist Biodiversität wichtig?"
+  },
+  {
+    "id": "en001",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "What is solar energy and how is it converted to electricity?"
+  },
+  {
+    "id": "en002",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "What is the difference between weather and climate?"
+  },
+  {
+    "id": "en003",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "How does photosynthesis work?"
+  },
+  {
+    "id": "en004",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "What causes ocean tides?"
+  },
+  {
+    "id": "en005",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "What is the difference between mass and weight?"
+  },
+  {
+    "id": "en006",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "How does an electric motor work?"
+  },
+  {
+    "id": "en007",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "What does blood transport in the human body?"
+  },
+  {
+    "id": "en008",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "What is the difference between viruses and bacteria?"
+  },
+  {
+    "id": "en009",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "How are mountains formed?"
+  },
+  {
+    "id": "en010",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "How do clouds form?"
+  },
+  {
+    "id": "en011",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "What are renewable energy sources?"
+  },
+  {
+    "id": "en012",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "How does a local area network work?"
+  },
+  {
+    "id": "en013",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "How do igneous and sedimentary rocks differ?"
+  },
+  {
+    "id": "en014",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "What is the greenhouse effect?"
+  },
+  {
+    "id": "en015",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "How do wind turbines generate electricity?"
+  },
+  {
+    "id": "en016",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "How did the solar system form?"
+  },
+  {
+    "id": "en017",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "What is electric voltage?"
+  },
+  {
+    "id": "en018",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "What makes a study scientifically reliable?"
+  },
+  {
+    "id": "en019",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "How do climate and seasons differ?"
+  },
+  {
+    "id": "en020",
+    "language": "en",
+    "kind": "public_knowledge",
+    "question": "Why is biodiversity important?"
+  }
+]

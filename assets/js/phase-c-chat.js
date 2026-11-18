@@ -54,6 +54,11 @@
     }
     const language = ["fa", "de", "en"].includes(root.dataset.vqLanguage)
       ? root.dataset.vqLanguage : "en";
+    // Trusted template values, bounded to the existing server policy.
+    const rawAnswerLimit = Number(root.dataset.vqAnswerLimit);
+    const answerLimit = Number.isInteger(rawAnswerLimit) && rawAnswerLimit >= 1000 &&
+      rawAnswerLimit <= 2400 ? rawAnswerLimit : 1000;
+    const citationLimit = root.dataset.vqCitationLimit === "5" ? 5 : 3;
     // Prefer the script of the question over the surrounding UI language.
     // Mixed Latin brand names (e.g. VORNEQ) must not override Persian text.
     function questionLanguage(question) {
@@ -124,7 +129,7 @@
       container.appendChild(title);
       const list = document.createElement("ul");
       list.className = "vq-chat__sources";
-      for (const source of citations.slice(0, 3)) {
+      for (const source of citations.slice(0, citationLimit)) {
         if (!source || typeof source !== "object") continue;
         const li = document.createElement("li");
         li.dir = textDirection(String(source.title || ""));
@@ -157,9 +162,64 @@
           quote.textContent = source.evidence_quote;
           li.appendChild(quote);
         }
+        if (Array.isArray(source.passages) && source.passages.length <= 8) {
+          const passages = document.createElement("ul");
+          passages.className = "vq-chat__passages";
+          for (const p of source.passages) {
+            if (!p || typeof p !== "object" || typeof p.quote !== "string" ||
+                p.quote.length > 300 || typeof p.passage_id !== "string" ||
+                !/^S[1-5]\.P[1-9][0-9]?$/.test(p.passage_id)) continue;
+            const item = document.createElement("li");
+            item.dir = textDirection(p.quote);
+            const id = document.createElement("strong");
+            id.textContent = p.passage_id;
+            item.appendChild(id);
+            const quote = document.createElement("blockquote");
+            quote.textContent = p.quote;
+            item.appendChild(quote);
+            passages.appendChild(item);
+          }
+          if (passages.childElementCount) li.appendChild(passages);
+        }
         list.appendChild(li);
       }
       container.appendChild(list);
+    }
+
+    function renderSections(bubble, sections) {
+      if (!Array.isArray(sections) || sections.length < 1 || sections.length > 6) return;
+      const rootSections = document.createElement("div");
+      rootSections.className = "vq-chat__sections";
+      for (const section of sections) {
+        if (!section || !["answer", "gap"].includes(section.kind) ||
+            typeof section.text !== "string" || section.text.length > 700 ||
+            typeof section.heading !== "string" || section.heading.length > 80) return;
+        const block = document.createElement("section");
+        block.className = "vq-chat__section";
+        block.dir = textDirection(section.text);
+        if (section.heading) {
+          const heading = document.createElement("h3");
+          heading.textContent = section.heading;
+          block.appendChild(heading);
+        }
+        const p = document.createElement("p");
+        p.textContent = section.text;
+        block.appendChild(p);
+        if (Array.isArray(section.refs) && section.refs.length <= 4 &&
+            section.refs.every((ref) => typeof ref === "string" && /^S[1-5]\.P[1-9][0-9]?$/.test(ref))) {
+          const ids = document.createElement("small");
+          ids.className = "vq-chat__section-refs";
+          ids.textContent = section.refs.join(" · ");
+          block.appendChild(ids);
+        }
+        rootSections.appendChild(block);
+      }
+      // The flat string always remains the fallback, including DB replay.
+      const original = bubble.querySelector("p");
+      if (original && rootSections.childElementCount) {
+        original.hidden = true;
+        bubble.insertBefore(rootSections, original.nextSibling);
+      }
     }
 
     // Only an opaque UUID and timestamp are kept in tab-scoped storage; no prompt,
@@ -230,12 +290,15 @@
         return { completed: true, answerBubble: null };
       }
       if (!data || data.verified !== false ||
-          typeof data.answer !== "string" || data.answer.length > 1000 ||
+          typeof data.answer !== "string" || data.answer.length > answerLimit ||
           data.mode !== "grounded_draft" || !Array.isArray(data.citations)) {
         appendMessage(labels.error || "Invalid response", "assistant");
         return { completed: false, answerBubble: null };
       }
       const bubble = appendMessage(data.answer, "assistant");
+      if (data.format_version === 2 && Array.isArray(data.sections)) {
+        renderSections(bubble, data.sections);
+      }
       const note = document.createElement("small");
       note.textContent = labels.status || "Generated draft, not verified";
       bubble.appendChild(note);

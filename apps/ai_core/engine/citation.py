@@ -146,3 +146,10 @@ def validate_generated(output, *, sources, language, max_answer_chars=1000):
         "grounded_status": "citation_and_quote_checked_claims_unverified",
         "error_code": "",
     }
+
+
+def validate_sectioned(output, *, passages, sources, language, question="", max_chars=2400):
+    """V3 section-level validator; legacy validate_generated remains unchanged."""
+    from apps.ai_core.engine.sectioned import validate_sectioned as strict_validate
+    return strict_validate(output, passages=passages, sources=sources, language=language,
+                           question=question, max_chars=max_chars)

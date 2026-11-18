@@ -11,7 +11,7 @@ import hashlib
 import re
 from urllib.parse import urlsplit
 
-from apps.ai_core.engine.citation import EvidenceRejected, validate_generated
+from apps.ai_core.engine.citation import EvidenceRejected, validate_generated, validate_sectioned
 from apps.ai_core.engine.evidence_ranking import (SCORE_SEMANTICS, persian_fallback_search_text,
                                                   rank_evidence, unsupported_numbers)
 from apps.ai_core.engine.grounded import ask_grounded
@@ -48,9 +48,13 @@ def evidence_digest(source_key, title, excerpt, url, publisher):
     return hashlib.sha256("\n".join((source_key, title, excerpt, url, publisher)).encode("utf-8")).hexdigest()
 
 
-def authorized_web_context(evidence, *, allowed_hosts):
+def authorized_web_context(evidence, *, allowed_hosts,
+                           max_results=MAX_RESULTS, max_excerpt=MAX_EXCERPT):
     """Accept only WebEvidence from an allowlisted host; skip unsafe snapshots."""
-    if not isinstance(evidence, (tuple, list)) or len(evidence) > MAX_RESULTS:
+    if (type(max_results) is not int or not 1 <= max_results <= 5
+            or type(max_excerpt) is not int or not 40 <= max_excerpt <= 1500):
+        raise EvidenceRejected("invalid evidence limits")
+    if not isinstance(evidence, (tuple, list)) or len(evidence) > max_results:
         raise EvidenceRejected("invalid web evidence collection")
     result, keys, urls = [], set(), set()
     for item in evidence:
@@ -66,7 +70,7 @@ def authorized_web_context(evidence, *, allowed_hosts):
             continue
         try:
             title = screen_and_redact(item.title, limit=MAX_TITLE)
-            excerpt = screen_and_redact(item.excerpt, limit=MAX_EXCERPT)
+            excerpt = screen_and_redact(item.excerpt, limit=max_excerpt)
         except UnsafePrompt:
             # Untrusted page text that looks like an instruction is dropped,
             # never forwarded; other sources may still be used.
@@ -98,7 +102,7 @@ def _insufficient(language, route):
 
 
 def ask_global(question, fallback_language, *, actor, provider, retriever, enabled=False, prior_turns=(),
-               search_question=None, max_answer_chars=1000):
+               search_question=None, max_answer_chars=1000, stage2=False):
     if not enabled:
         raise GlobalUnsupported("Global AI disabled")
     if actor is None or not getattr(actor, "is_authenticated", False):
@@ -117,20 +121,24 @@ def ask_global(question, fallback_language, *, actor, provider, retriever, enabl
     # searched and ranked; the model still receives the user's real question and
     # all validation below still runs against the retrieved sources.
     query = search_question or question
-    evidence = retriever.search(query, language, limit=MAX_RESULTS)
+    result_limit, excerpt_limit = (5, 1500) if stage2 else (MAX_RESULTS, MAX_EXCERPT)
+    evidence = retriever.search(query, language, limit=result_limit)
     source_types = _source_types(retriever)
-    ranked, assessments = rank_evidence(query, language, evidence, source_types=source_types)
-    sources = authorized_web_context(ranked, allowed_hosts=retriever.allowed_hosts)
+    ranked, assessments = rank_evidence(query, language, evidence, source_types=source_types,
+                                         max_selected=result_limit)
+    sources = authorized_web_context(ranked, allowed_hosts=retriever.allowed_hosts,
+                                     max_results=result_limit, max_excerpt=excerpt_limit)
     if not sources:
         # Exactly one bounded second retrieval for Persian ZWNJ compounds,
         # only if the first search has no authorized, relevant evidence.
         # Never fall back to uncited model knowledge or arbitrary hosts.
         fallback_query = persian_fallback_search_text(query, language)
         if fallback_query is not None:
-            fallback_evidence = retriever.search(fallback_query, language, limit=MAX_RESULTS)
+            fallback_evidence = retriever.search(fallback_query, language, limit=result_limit)
             ranked, assessments = rank_evidence(query, language, fallback_evidence,
-                                                source_types=source_types)
-            sources = authorized_web_context(ranked, allowed_hosts=retriever.allowed_hosts)
+                                                source_types=source_types, max_selected=result_limit)
+            sources = authorized_web_context(ranked, allowed_hosts=retriever.allowed_hosts,
+                                             max_results=result_limit, max_excerpt=excerpt_limit)
     if not sources:
         return _insufficient(language, GENERAL_PUBLIC)
     if provider is None:
@@ -138,23 +146,39 @@ def ask_global(question, fallback_language, *, actor, provider, retriever, enabl
     # Prior turns are context only; citations/numbers below are validated
     # exclusively against the current ``sources``.
     extra = {"prior_turns": tuple(prior_turns)} if prior_turns else {}
-    output = provider.generate(question=screen_and_redact(question, limit=200),
-                               language=language, sources=sources, **extra)
-    result = validate_generated(output, sources=sources, language=language,
-                                max_answer_chars=max_answer_chars)
-    # Preserve only the quote that the deterministic citation validator checked.
-    # It is data, not markup, and does not imply independent factual verification.
-    checked_quotes = {c["source_id"]: c["evidence_quote"] for c in output["citations"]}
-    trusted = {s["source_id"]: s for s in sources}
-    cited = [trusted[c["source_id"]]["excerpt"] for c in result["citations"]]
-    if unsupported_numbers(result["answer"], cited, question):
-        raise UnsupportedNumericClaim("answer contains numbers absent from cited evidence")
-    for citation in result["citations"]:
-        source = trusted[citation["source_id"]]
-        citation["evidence_quote"] = checked_quotes[citation["source_id"]]
-        citation["publisher"] = source["publisher"]
-        citation["retrieved_at"] = source["retrieved_at"]
-        citation["source_class"] = "public_web"
+    if stage2:
+        from apps.ai_core.engine.passages import split
+        passages = split(sources)
+        if not passages:
+            return _insufficient(language, GENERAL_PUBLIC)
+        with_passages = [
+            {**source, "passages": [
+                {"passage_id": p.passage_id, "text": p.text}
+                for p in passages if p.source_id == source["source_id"]
+            ]}
+            for source in sources
+        ]
+        output = provider.generate(question=screen_and_redact(question, limit=200),
+                                   language=language, sources=with_passages, mode="sectioned", **extra)
+        result = validate_sectioned(output, passages=passages, sources=sources, language=language,
+                                    question=question, max_chars=max_answer_chars)
+    else:
+        output = provider.generate(question=screen_and_redact(question, limit=200),
+                                   language=language, sources=sources, **extra)
+        result = validate_generated(output, sources=sources, language=language,
+                                    max_answer_chars=max_answer_chars)
+        # Keep the original quote and numeric-claim contract byte-for-byte.
+        checked_quotes = {c["source_id"]: c["evidence_quote"] for c in output["citations"]}
+        trusted = {s["source_id"]: s for s in sources}
+        cited = [trusted[c["source_id"]]["excerpt"] for c in result["citations"]]
+        if unsupported_numbers(result["answer"], cited, question):
+            raise UnsupportedNumericClaim("answer contains numbers absent from cited evidence")
+        for citation in result["citations"]:
+            source = trusted[citation["source_id"]]
+            citation["evidence_quote"] = checked_quotes[citation["source_id"]]
+            citation["publisher"] = source["publisher"]
+            citation["retrieved_at"] = source["retrieved_at"]
+            citation["source_class"] = "public_web"
     result["route"] = GENERAL_PUBLIC
     by_key = {a["source_key"]: a for a in assessments}
     result["evidence_assessment"] = {

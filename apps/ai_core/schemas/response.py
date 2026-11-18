@@ -22,3 +22,21 @@ class GroundedAnswerSchema(BaseModel):
     grounded_status: str
     verified: bool
     error_code: str
+
+
+class SectionSchema(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    kind: str
+    heading: str
+    text: str
+    passage_ids: list[str]
+
+
+class SectionedAnswerSchema(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    language: str
+    sections: list[SectionSchema]
+    model_status: str
+    grounded_status: str
+    verified: bool
+    error_code: str
