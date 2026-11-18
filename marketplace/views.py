@@ -25,6 +25,28 @@ from django.utils.translation import gettext as _
 from .forms import ProductForm, ProductReviewForm
 from .models import Product, ProductReview
 
+# Known historical benchmark/smoke fixtures may already be approved and
+# published in older databases. Publication guards prevent NEW publication,
+# but public discovery and detail views must also exclude existing fixtures.
+# This is visibility-only: do not mutate or delete any product records.
+_KNOWN_FIXTURE_SELLERS = ("vorneq-benchmark-seed", "vorneq-inspect-smoke")
+
+
+def _public_products():
+    """Approved and published products, excluding known historical fixtures."""
+    fixture = (
+        Q(slug__startswith="vorneq-benchmark-")
+        | Q(slug__startswith="inspect-staging-smoke")
+        | Q(seller__username__in=_KNOWN_FIXTURE_SELLERS)
+    )
+    return (
+        Product.objects
+        .filter(status=Product.STATUS_APPROVED, is_published=True)
+        .exclude(fixture)
+        .select_related("seller")
+    )
+
+
 
 # ============================================================
 # PUBLIC MARKETPLACE
@@ -54,12 +76,7 @@ def index(request):
     # Public products
     # --------------------------------------------------------
 
-    products = Product.objects.filter(
-        status=Product.STATUS_APPROVED,
-        is_published=True,
-    ).select_related(
-        "seller",
-    )
+    products = _public_products()
 
 
     # --------------------------------------------------------
@@ -167,14 +184,7 @@ def detail(request, slug):
     Display a publicly available product.
     """
 
-    product = get_object_or_404(
-        Product.objects.select_related(
-            "seller",
-        ),
-        slug=slug,
-        status=Product.STATUS_APPROVED,
-        is_published=True,
-    )
+    product = get_object_or_404(_public_products(), slug=slug)
 
 
     context = {
