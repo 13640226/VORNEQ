@@ -30,6 +30,8 @@ jobs:
             image: python:3.11-bookworm@sha256:84fa927127b46670e768371d1ad1be271d57ba93a6fbb3479045c7c6c452432f
           - python-version: "3.12"
             image: python:3.12-bookworm@sha256:a5bab0ff300f91231c2e68bf73a8a8d60762ac39ce1c50eaf6803e4c38a9062b
+          - python-version: "3.14"
+            image: python:3.14.3-bookworm@sha256:084a6aca614be8c886f856f671010adeb3658b1bf64b76bbcb81eeca28bf46e0
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -67,6 +69,8 @@ jobs:
             image: python:3.11-bookworm@sha256:84fa927127b46670e768371d1ad1be271d57ba93a6fbb3479045c7c6c452432f
           - python-version: "3.12"
             image: python:3.12-bookworm@sha256:a5bab0ff300f91231c2e68bf73a8a8d60762ac39ce1c50eaf6803e4c38a9062b
+          - python-version: "3.14"
+            image: python:3.14.3-bookworm@sha256:084a6aca614be8c886f856f671010adeb3658b1bf64b76bbcb81eeca28bf46e0
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
