@@ -338,6 +338,12 @@ class SyntheticQuarantineLocalTests(TestCase):
         self.assertEqual(self.client.get(library_url).status_code, 404)
         self.assertEqual(self.client.get(real_library_url).status_code, 200)
         self.assertEqual(self.client.get(real_url).status_code, 200)
+        # Database reversal restores original values, not public seed access.
+        self.assertEqual(revert_quarantine(manifest=m, actor=self.owner), 5)
+        self.library.refresh_from_db()
+        self.assertTrue(self.library.is_published)
+        self.assertEqual(self.client.get(library_url).status_code, 404)
+        self.assertEqual(self.client.get(real_library_url).status_code, 200)
 
     @override_settings(STORAGES={
         "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
@@ -368,21 +374,25 @@ class SyntheticQuarantineLocalTests(TestCase):
             self.client.get(reverse("marketplace:detail", kwargs={"slug": self.real_product.slug})).status_code,
             200,
         )
-        # Database reversal restores original values, not public seed access.
-        self.assertEqual(revert_quarantine(manifest=m, actor=self.owner), 5)
-        self.library.refresh_from_db()
-        self.assertTrue(self.library.is_published)
-        self.assertEqual(self.client.get(library_url).status_code, 404)
-        self.assertEqual(self.client.get(real_library_url).status_code, 200)
 
     def test_public_ai_retrieval_excludes_fixture_after_hold(self):
+        """AI retrieval never cites fixtures: guarded before AND after the hold.
+
+        With #655 (products) and #658 (articles/library/media) every seed row is
+        already excluded from public retrieval while still published; the hold
+        then withdraws the publication state itself. Genuine sources remain.
+        """
         from apps.ai_core.gateway import retrieve_public
+        from marketplace.selectors import published_products
+
         m = self.manifest()
-        before = retrieve_public("Benchmark", "en")
-        self.assertGreater(len(before), 0)
+        self.assertEqual(len(retrieve_public("Benchmark", "en")), 0)
+        self.assertGreater(len(retrieve_public("Genuine", "en")), 0)
+        self.assertTrue(published_products().filter(pk=self.product.pk).exists())
         apply_quarantine(manifest=m, actor=self.owner)
         self.assertEqual(len(retrieve_public("Benchmark", "en")), 0)
         self.assertGreater(len(retrieve_public("Genuine", "en")), 0)
+        self.assertFalse(published_products().filter(pk=self.product.pk).exists())
 
     def test_audit_failure_during_revert_rolls_back_all_flags(self):
         from apps.audit.services import record_audit_event as actual_audit
