@@ -145,3 +145,26 @@ for _suffix, _reason, _outcome in (
         "reason_codes": {_reason},
         "outcomes": {_outcome},
     }
+
+# One-time Marketplace fixture cleanup: append-only, exact metadata contract.
+# This does not grant permission to execute the cleanup.
+for _event, _outcome in (
+    ("marketplace.synthetic_cleanup.started", AuditEvent.Outcome.CHANGED),
+    ("marketplace.synthetic_cleanup.completed", AuditEvent.Outcome.SUCCEEDED),
+):
+    EVENT_SCHEMAS[_event] = {
+        "required_keys": {
+            "batch_id", "row_count", "id_set_sha256", "backup_sha256",
+            "authorization_reference", "artifact_binding_count",
+        },
+        "allowed_keys": {
+            "batch_id": str,
+            "row_count": int,
+            "id_set_sha256": str,
+            "backup_sha256": str,
+            "authorization_reference": str,
+            "artifact_binding_count": int,
+        },
+        "reason_codes": {"OWNER_APPROVED_FIXTURE_CLEANUP"},
+        "outcomes": {_outcome},
+    }
