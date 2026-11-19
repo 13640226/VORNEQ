@@ -2138,3 +2138,105 @@ msgstr "زمینهٔ فضای کاری"
 
 msgid "Workspace status"
 msgstr "وضعیت فضای کاری"
+
+# Marketplace UI V2
+
+msgid "A moderator reviews it"
+msgstr "یک ناظر آن را بررسی می‌کند"
+
+msgid "After approval it can be published"
+msgstr "پس از تأیید، امکان انتشار آن فراهم می‌شود"
+
+msgid "All products"
+msgstr "همهٔ محصولات"
+
+msgid "Apply"
+msgstr "اعمال"
+
+
+msgid "Breadcrumb"
+msgstr "مسیر صفحه"
+
+
+
+msgid "Create your product with a description and file"
+msgstr "محصول خود را با توضیحات و فایل ایجاد کنید"
+
+msgid "Digital file delivered only to entitled accounts"
+msgstr "فایل دیجیتال فقط به حساب‌های دارای مجوز تحویل داده می‌شود"
+
+msgid "Download digital file"
+msgstr "دریافت فایل دیجیتال"
+
+msgid "Editing an approved product sends it back to review before it can be published again."
+msgstr "ویرایش محصول تأییدشده، آن را پیش از انتشار دوباره به صف بررسی برمی‌گرداند."
+
+msgid "Every product is reviewed by a moderator before it is published."
+msgstr "هر محصول پیش از انتشار توسط یک ناظر بررسی می‌شود."
+
+
+msgid "Free first"
+msgstr "ابتدا رایگان‌ها"
+
+
+
+msgid "Latest moderation decision"
+msgstr "آخرین تصمیم نظارت"
+
+
+msgid "Newest"
+msgstr "جدیدترین"
+
+
+msgid "No products have been published yet."
+msgstr "هنوز محصولی منتشر نشده است."
+
+msgid "No products match your search"
+msgstr "محصولی با جست‌وجوی شما مطابقت ندارد"
+
+
+msgid "Not published yet"
+msgstr "هنوز منتشر نشده"
+
+
+msgid "Paid product"
+msgstr "محصول پولی"
+
+
+
+msgid "Price and availability"
+msgstr "قیمت و دسترس‌پذیری"
+
+msgid "Product status overview"
+msgstr "نمای کلی وضعیت محصولات"
+
+
+
+msgid "Purchasing is not available yet."
+msgstr "امکان خرید هنوز فراهم نیست."
+
+msgid "Reviewed by a moderator before publication"
+msgstr "پیش از انتشار توسط ناظر بررسی شده است"
+
+msgid "Sign in to check your access"
+msgstr "برای بررسی دسترسی وارد شوید"
+
+msgid "Sign in to submit a product"
+msgstr "برای ثبت محصول وارد شوید"
+
+msgid "Sort by"
+msgstr "مرتب‌سازی بر اساس"
+
+msgid "Submit a new product"
+msgstr "ثبت محصول جدید"
+
+msgid "The marketplace is open for its first creators. Submitted products are reviewed before they become publicly available."
+msgstr "بازار برای نخستین سازندگان باز است. محصولات ثبت‌شده پیش از نمایش عمومی بررسی می‌شوند."
+
+msgid "Title A–Z"
+msgstr "عنوان (الفبایی)"
+
+
+
+msgid "Waiting for a moderator."
+msgstr "در انتظار بررسی ناظر."

@@ -10,28 +10,39 @@
 {% block extra_head %}
 {{ block.super }}
 <link rel="stylesheet" href="{% static 'css/marketplace.css' %}">
+<link rel="stylesheet" href="{% static 'css/marketplace-v2.css' %}">
 {% endblock %}
 
 {% block content %}
-<article class="marketplace-detail">
+<article class="marketplace-detail mkt-v2" data-marketplace-ui="v2">
   <div class="marketplace-detail__shell">
-    <a href="{% url 'marketplace:index' %}" class="marketplace-detail__back">← {% trans "Back to Marketplace" %}</a>
+    <nav class="mkt-breadcrumb" aria-label="{% trans 'Breadcrumb' %}">
+      <ol>
+        <li><a href="{% url 'marketplace:index' %}">{% trans "Marketplace" %}</a></li>
+        <li><a href="{% url 'marketplace:index' %}?category={{ product.category|urlencode }}">{{ product.get_category_display }}</a></li>
+        <li aria-current="page"><bdi>{{ product.title }}</bdi></li>
+      </ol>
+    </nav>
 
-    <div class="marketplace-detail__layout">
-      {% if product.image %}
-        <div class="marketplace-detail__image-wrapper">
-          <img src="{{ product.image.url }}" alt="{{ product.title }}" class="marketplace-detail__image">
+    <div class="mkt-detail">
+      <div class="mkt-detail__media">
+        {% if product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.title }}" class="mkt-detail__image" width="960" height="600" decoding="async">
+        {% else %}
+          <span class="mkt-card__placeholder mkt-card__placeholder--{{ product.category }} mkt-detail__placeholder" aria-hidden="true">
+            <span class="mkt-card__placeholder-label">{{ product.get_category_display }}</span>
+          </span>
+        {% endif %}
+      </div>
+
+      <div class="mkt-detail__summary">
+        <div class="mkt-card__kicker">
+          <span class="mkt-tag">{{ product.get_category_display }}</span>
+          {% if product.version %}<span class="mkt-card__version"><bdi>v{{ product.version }}</bdi></span>{% endif %}
         </div>
-      {% endif %}
 
-      <div class="marketplace-detail__body">
-        <div class="marketplace-detail__meta-top">
-          <span class="marketplace-detail__category">{{ product.get_category_display }}</span>
-          {% if product.version %}<span class="marketplace-detail__version">v{{ product.version }}</span>{% endif %}
-        </div>
-
-        <h1 class="marketplace-detail__title">{{ product.title }}</h1>
-        <p class="marketplace-detail__seller">{% trans "By" %} {{ product.seller.get_username }}</p>
+        <h1 class="mkt-detail__title" dir="auto"><bdi>{{ product.title }}</bdi></h1>
+        <p class="mkt-card__seller">{% trans "By" %} <bdi>{{ product.seller.get_username }}</bdi></p>
         {% canonical_identity product.seller as seller_identity %}
         {% if seller_identity %}
           <p class="marketplace-detail__identity-badge">
@@ -42,14 +53,25 @@
         {% endif %}
 
         {% if product.short_description %}
-          <p class="marketplace-detail__description">{{ product.short_description }}</p>
+          <p class="mkt-detail__lead" dir="auto">{{ product.short_description }}</p>
         {% endif %}
 
-        <div class="marketplace-detail__price" aria-label="{% trans 'Price' %}">
-          {% if product.price == 0 %}
-            <span class="marketplace-detail__free">{% trans "Free" %}</span>
-          {% else %}
-            <span>{{ product.price|floatformat:2 }}</span>
+        <div class="mkt-panel" aria-label="{% trans 'Price and availability' %}">
+          {% include "marketplace/includes/price_state.html" with product=product compact=False %}
+          <ul class="mkt-panel__facts" role="list">
+            <li><span class="mkt-dot" aria-hidden="true"></span>{% trans "Reviewed by a moderator before publication" %}</li>
+            {% if product.has_digital_file %}
+              <li>{% trans "Digital file delivered only to entitled accounts" %}</li>
+            {% endif %}
+            <li>{% trans "Updated" %} <time datetime="{{ product.updated_at|date:'c' }}">{{ product.updated_at|date:"DATE_FORMAT" }}</time></li>
+          </ul>
+          {% if product.has_digital_file %}
+            {% has_product_entitlement user product as can_download %}
+            {% if can_download %}
+              <a href="{% url 'marketplace:download_product' product.id %}" class="mkt-button mkt-button--primary mkt-panel__action">{% trans "Download digital file" %}</a>
+            {% elif not user.is_authenticated %}
+              <a href="{% url 'account_login' %}?next={{ request.path|urlencode }}" class="mkt-button mkt-button--secondary mkt-panel__action">{% trans "Sign in to check your access" %}</a>
+            {% endif %}
           {% endif %}
         </div>
       </div>
@@ -148,15 +170,6 @@
         <dd>{{ product.updated_at|date:"DATE_FORMAT" }}</dd>
       </div>
     </dl>
-
-    {% if product.has_digital_file %}
-      {% has_product_entitlement user product as can_download %}
-      {% if can_download %}
-        <div class="marketplace-detail__footer">
-          <a href="{% url 'marketplace:download_product' product.id %}" class="marketplace-detail__back-action">↓ {% trans "Digital file" %}</a>
-        </div>
-      {% endif %}
-    {% endif %}
 
     <div class="marketplace-detail__footer">
       <a href="{% url 'marketplace:index' %}" class="marketplace-detail__back-action">{% trans "Browse more products" %}</a>

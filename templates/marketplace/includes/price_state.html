@@ -1,0 +1,4 @@
+{% load i18n %}{% comment %}
+Honest price state. Product.price has NO currency and there is no checkout yet,
+so a non-zero amount is never shown as a purchasable price with an invented unit.
+{% endcomment %}{% if product.price == 0 %}<span class="mkt-price mkt-price--free">{% trans "Free" %}</span>{% else %}<span class="mkt-price mkt-price--paid">{% trans "Paid product" %}{% if not compact %}<span class="mkt-price__note">{% trans "Purchasing is not available yet." %}</span>{% endif %}</span>{% endif %}

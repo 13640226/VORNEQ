@@ -2423,3 +2423,105 @@ msgstr "Arbeitsbereich-Kontext"
 
 msgid "Workspace status"
 msgstr "Status des Arbeitsbereichs"
+
+# Marketplace UI V2
+
+msgid "A moderator reviews it"
+msgstr "Eine Moderation prüft es"
+
+msgid "After approval it can be published"
+msgstr "Nach der Freigabe kann es veröffentlicht werden"
+
+msgid "All products"
+msgstr "Alle Produkte"
+
+msgid "Apply"
+msgstr "Anwenden"
+
+
+msgid "Breadcrumb"
+msgstr "Brotkrumen-Navigation"
+
+
+
+msgid "Create your product with a description and file"
+msgstr "Produkt mit Beschreibung und Datei anlegen"
+
+msgid "Digital file delivered only to entitled accounts"
+msgstr "Digitale Datei nur für berechtigte Konten"
+
+msgid "Download digital file"
+msgstr "Digitale Datei herunterladen"
+
+msgid "Editing an approved product sends it back to review before it can be published again."
+msgstr "Wird ein freigegebenes Produkt bearbeitet, geht es erneut in die Prüfung, bevor es wieder veröffentlicht werden kann."
+
+msgid "Every product is reviewed by a moderator before it is published."
+msgstr "Jedes Produkt wird vor der Veröffentlichung von einer Moderation geprüft."
+
+
+msgid "Free first"
+msgstr "Kostenlose zuerst"
+
+
+
+msgid "Latest moderation decision"
+msgstr "Letzte Moderationsentscheidung"
+
+
+msgid "Newest"
+msgstr "Neueste"
+
+
+msgid "No products have been published yet."
+msgstr "Es wurden noch keine Produkte veröffentlicht."
+
+msgid "No products match your search"
+msgstr "Keine Produkte passen zu Ihrer Suche"
+
+
+msgid "Not published yet"
+msgstr "Noch nicht veröffentlicht"
+
+
+msgid "Paid product"
+msgstr "Kostenpflichtiges Produkt"
+
+
+
+msgid "Price and availability"
+msgstr "Preis und Verfügbarkeit"
+
+msgid "Product status overview"
+msgstr "Übersicht der Produktstatus"
+
+
+
+msgid "Purchasing is not available yet."
+msgstr "Ein Kauf ist noch nicht möglich."
+
+msgid "Reviewed by a moderator before publication"
+msgstr "Vor der Veröffentlichung moderiert"
+
+msgid "Sign in to check your access"
+msgstr "Anmelden, um den Zugriff zu prüfen"
+
+msgid "Sign in to submit a product"
+msgstr "Anmelden, um ein Produkt einzureichen"
+
+msgid "Sort by"
+msgstr "Sortieren nach"
+
+msgid "Submit a new product"
+msgstr "Neues Produkt einreichen"
+
+msgid "The marketplace is open for its first creators. Submitted products are reviewed before they become publicly available."
+msgstr "Der Marktplatz ist offen für die ersten Anbieterinnen und Anbieter. Eingereichte Produkte werden geprüft, bevor sie öffentlich erscheinen."
+
+msgid "Title A–Z"
+msgstr "Titel A–Z"
+
+
+
+msgid "Waiting for a moderator."
+msgstr "Wartet auf die Moderation."

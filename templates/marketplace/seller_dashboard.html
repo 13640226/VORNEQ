@@ -1,111 +1,81 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}
-    {% trans "Seller Dashboard" %} — VORNEQ
+{% block title %}{% trans "Seller Dashboard" %} — VORNEQ{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/marketplace.css' %}">
+<link rel="stylesheet" href="{% static 'css/marketplace-v2.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="page-header">
-    <div class="container">
-        <div class="page-header__content">
-            <p class="section-code">VORNEQ / {% trans "Seller Dashboard" %}</p>
-            <h1>{% trans "Seller Dashboard" %}</h1>
-            <p class="page-header__subtitle">
-                {% trans "Manage your products and submit new work for review." %}
-            </p>
-        </div>
-    </div>
+<section class="marketplace-page mkt-v2" data-marketplace-ui="v2">
+  <div class="marketplace-shell">
+    <header class="mkt-dash__header">
+      <div>
+        <p class="mkt-eyebrow">VORNEQ / {% trans "Seller Dashboard" %}</p>
+        <h1 class="mkt-hero__title">{% trans "Seller Dashboard" %}</h1>
+        <p class="mkt-hero__subtitle">{% trans "Manage your products and submit new work for review." %}</p>
+      </div>
+      <a href="{% url 'marketplace:product_create' %}" class="mkt-button mkt-button--primary">{% trans "Create new product" %}</a>
+    </header>
+
+    <dl class="mkt-stats" aria-label="{% trans 'Product status overview' %}">
+      <div class="mkt-stats__item"><dt>{% trans "All products" %}</dt><dd>{{ counts.total }}</dd></div>
+      <div class="mkt-stats__item"><dt>{% trans "Pending review" %}</dt><dd>{{ counts.pending }}</dd></div>
+      <div class="mkt-stats__item"><dt>{% trans "Approved" %}</dt><dd>{{ counts.approved }}</dd></div>
+      <div class="mkt-stats__item"><dt>{% trans "Published" %}</dt><dd>{{ counts.published }}</dd></div>
+      <div class="mkt-stats__item"><dt>{% trans "Rejected" %}</dt><dd>{{ counts.rejected }}</dd></div>
+    </dl>
+
+    <h2 class="mkt-dash__section-title">{% trans "My products" %}</h2>
+    {% if products %}
+      <ul class="mkt-dash__list" role="list">
+        {% for product in products %}
+          <li class="mkt-row">
+            <div class="mkt-row__main">
+              <h3 class="mkt-row__title" dir="auto"><bdi>{{ product.title }}</bdi></h3>
+              <p class="mkt-row__meta">
+                <span class="mkt-status mkt-status--{{ product.status }}">{{ product.get_status_display }}</span>
+                {% if product.status == "approved" %}
+                  {% if product.is_published %}
+                    <span class="mkt-status mkt-status--published">{% trans "Published" %}</span>
+                  {% else %}
+                    <span class="mkt-status mkt-status--unpublished">{% trans "Not published yet" %}</span>
+                  {% endif %}
+                {% endif %}
+                <span class="mkt-row__muted">{{ product.get_category_display }}</span>
+                <span class="mkt-row__muted">{% trans "Updated" %} <time datetime="{{ product.updated_at|date:'c' }}">{{ product.updated_at|date:"DATE_FORMAT" }}</time></span>
+              </p>
+              {% if product.latest_decision %}
+                <p class="mkt-row__review">
+                  {% trans "Latest moderation decision" %}:
+                  <strong>{% for key, label in decision_labels.items %}{% if key == product.latest_decision %}{{ label }}{% endif %}{% endfor %}</strong>
+                  {% if product.latest_reviewed_at %}· <time datetime="{{ product.latest_reviewed_at|date:'c' }}">{{ product.latest_reviewed_at|date:"DATE_FORMAT" }}</time>{% endif %}
+                </p>
+              {% elif product.status == "pending" %}
+                <p class="mkt-row__review">{% trans "Waiting for a moderator." %}</p>
+              {% endif %}
+            </div>
+            <div class="mkt-row__actions">
+              {% if product.status == "approved" and product.is_published %}
+                <a href="{% url 'marketplace:detail' product.slug %}" class="mkt-link">{% trans "View" %}<span class="sr-only">: {{ product.title }}</span></a>
+              {% endif %}
+              <a href="{% url 'marketplace:product_edit' product.pk %}" class="mkt-button mkt-button--quiet">{% trans "Edit" %}<span class="sr-only">: {{ product.title }}</span></a>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+      <p class="mkt-dash__hint">{% trans "Editing an approved product sends it back to review before it can be published again." %}</p>
+    {% else %}
+      <div class="mkt-empty" data-empty-state="seller">
+        <span class="mkt-empty__icon" aria-hidden="true"></span>
+        <h2 class="mkt-empty__title">{% trans "You have not submitted any products yet" %}</h2>
+        <p class="mkt-empty__message">{% trans "Create your first product and submit it for review." %}</p>
+        <a href="{% url 'marketplace:product_create' %}" class="mkt-button mkt-button--primary">{% trans "Create new product" %}</a>
+      </div>
+    {% endif %}
+  </div>
 </section>
-
-<section class="marketplace-grid-section">
-    <div class="container">
-
-        <div class="results-summary">
-            <p>{% trans "My products" %}</p>
-            <a
-                href="{% url 'marketplace:product_create' %}"
-                class="btn btn--primary"
-            >
-                {% trans "Create new product" %}
-            </a>
-        </div>
-
-        <div class="archive-grid">
-
-            {% for product in products %}
-
-                <article class="archive-card archive-card--marketplace">
-                    <div class="archive-card__body">
-
-                        <div class="archive-card__meta">
-                            <span>{% trans "Status:" %}</span>
-                            <span>{{ product.get_status_display }}</span>
-                        </div>
-
-                        <h2 class="archive-card__title">
-                            {{ product.title }}
-                        </h2>
-
-                        {% if product.short_description %}
-                            <p class="archive-card__description">
-                                {{ product.short_description|striptags|truncatewords:24 }}
-                            </p>
-                        {% endif %}
-
-                        <div class="archive-card__footer">
-                            <div>
-                                {% if product.status == 'approved' and product.is_published %}
-                                    <a
-                                        href="{% url 'marketplace:detail' product.slug %}"
-                                        class="archive-card__read-more"
-                                    >
-                                        {% trans "View" %}
-                                        <span aria-hidden="true">←</span>
-                                    </a>
-                                {% endif %}
-
-                                <a
-                                    href="{% url 'marketplace:product_edit' product.pk %}"
-                                    class="archive-card__read-more"
-                                >
-                                    {% trans "Edit" %}
-                                </a>
-                            </div>
-
-                            <div class="archive-card__badges">
-                                <span class="archive-card__badge">
-                                    {{ product.get_status_display }}
-                                </span>
-                            </div>
-                        </div>
-
-                    </div>
-                </article>
-
-            {% empty %}
-
-                <article class="archive-card archive-card--empty">
-                    <div class="archive-card__body">
-                        <p class="archive-card__meta">{% trans "Seller" %} / {% trans "Empty" %}</p>
-                        <h2>{% trans "You have not submitted any products yet" %}</h2>
-                        <p>
-                            {% trans "Create your first product and submit it for review." %}
-                        </p>
-                        <a
-                            href="{% url 'marketplace:product_create' %}"
-                            class="btn btn--primary"
-                        >
-                            {% trans "Create new product" %}
-                        </a>
-                    </div>
-                </article>
-
-            {% endfor %}
-
-        </div>
-
-    </div>
-</section>
-
 {% endblock %}
