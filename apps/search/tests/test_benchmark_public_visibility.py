@@ -4,6 +4,7 @@ All rows are created in disposable test databases. No production data,
 file-system objects, AI provider calls or fixture deletion is involved.
 """
 from unittest.mock import patch
+from types import SimpleNamespace
 
 from django.test import TestCase
 from django.urls import reverse
@@ -190,7 +191,10 @@ class BenchmarkVisibilityShieldTests(TestCase):
         official.assert_called_once()
 
     def test_media_similarity_resolver_hides_seed_records(self):
-        service = MediaSimilarityService(provider=object(), index=object())
+        service = MediaSimilarityService(
+            provider=SimpleNamespace(descriptor=SimpleNamespace(policy="unit-test")),
+            index=object(),
+        )
         rows = service._resolve_results([
             (str(self.seed_media.pk), 0.99),
             (str(self.real_media.pk), 0.93),
