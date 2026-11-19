@@ -3,6 +3,8 @@ import json
 import os
 import uuid
 import hashlib
+import sys
+import types
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -33,6 +35,19 @@ FLAGS = {
 }
 
 
+def _paid_sdk_tripwire(calls):
+    module = types.ModuleType("openai")
+
+    def _forbidden(*args, **kwargs):
+        # Recorded separately: the provider maps every exception to
+        # ImageProviderError, which would otherwise hide this tripwire.
+        calls.append("OpenAI")
+        raise AssertionError("PAID_SDK_CONSTRUCTED")
+
+    module.OpenAI = _forbidden
+    return module
+
+
 @override_settings(**FLAGS)
 class ImageGenerationTests(TestCase):
     @classmethod
@@ -43,9 +58,13 @@ class ImageGenerationTests(TestCase):
     def setUp(self):
         self.client.force_login(self.owner)
         self.url = reverse("ai_core:image-jobs")
-        self.sdk = patch("openai.OpenAI", side_effect=AssertionError("PAID_SDK_CONSTRUCTED"))
+        # Replace the SDK module itself (installed or not) with a tripwire, so the
+        # suite needs no SDK in CI and any client construction fails loudly.
+        self.sdk_calls = []
+        self.sdk = patch.dict(sys.modules, {"openai": _paid_sdk_tripwire(self.sdk_calls)})
         self.sdk.start()
         self.addCleanup(self.sdk.stop)
+        self.addCleanup(lambda: self.assertEqual(self.sdk_calls, [], "PAID_SDK_CONSTRUCTED"))
         self.env = patch.dict(os.environ, {"RENDER": "", "RENDER_SERVICE_ID": ""})
         self.env.start()
         self.addCleanup(self.env.stop)
@@ -176,3 +195,15 @@ class ImageGenerationTests(TestCase):
             "request_id": str(uuid.uuid4()), "prompt": "A sunny valley"
         }), content_type="application/json")
         self.assertEqual(result.status_code, 403)
+
+    def test_sdk_tripwire_is_active_and_detected(self):
+        # Guard for the guard: if every runtime gate were bypassed, the tripwire
+        # must be hit and recorded even though the provider swallows the error.
+        with patch("apps.ai_core.image_generation.policy.paid_provider_enabled", return_value=True), \
+             patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-never-live"}), \
+             self.assertRaises(ImageProviderError):
+            OpenAIImageProvider().generate(
+                prompt="A harmless landscape", model="gpt-image-2.6-flare", size="1024x1024"
+            )
+        self.assertEqual(self.sdk_calls, ["OpenAI"])
+        self.sdk_calls.clear()
