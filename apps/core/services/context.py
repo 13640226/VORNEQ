@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.core.models import Artifact, ArtifactBinding, ArtifactIdentityRole
+from apps.core.benchmark_visibility import is_public_library_item, public_library_items
 from apps.evidence.models import ProvenanceStep
 from apps.verification.public import (
     get_public_evidence_projection,
@@ -27,7 +28,7 @@ def _is_public_content(content_object):
     if isinstance(content_object, Product):
         return content_object.is_public
     if isinstance(content_object, LibraryItem):
-        return content_object.is_published
+        return is_public_library_item(content_object)
     return False
 
 
@@ -103,7 +104,9 @@ def resolve_artifact_from_input(user_input):
             if artifact is not None:
                 return artifact
 
-        library_item = LibraryItem.objects.filter(slug=slug, is_published=True).first()
+        library_item = public_library_items(
+            LibraryItem.objects.filter(slug=slug, is_published=True)
+        ).first()
         if library_item is not None:
             artifact = _artifact_for_content(library_item)
             if artifact is not None:
@@ -126,7 +129,7 @@ def resolve_artifact_from_input(user_input):
             return artifact
 
     library_item = (
-        LibraryItem.objects.filter(is_published=True)
+        public_library_items(LibraryItem.objects.filter(is_published=True))
         .filter(
             Q(title__iexact=value)
             | Q(title_en__iexact=value)
@@ -137,7 +140,7 @@ def resolve_artifact_from_input(user_input):
     )
     if library_item is None:
         library_item = (
-            LibraryItem.objects.filter(is_published=True)
+            public_library_items(LibraryItem.objects.filter(is_published=True))
             .filter(
                 Q(title__icontains=value)
                 | Q(title_en__icontains=value)
