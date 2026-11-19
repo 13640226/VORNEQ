@@ -525,3 +525,56 @@ VORNEQ_AI_PHASE_C_ENABLED = (
     and VORNEQ_AI_PHASE_B_ENABLED
     and env_bool("VORNEQ_AI_PHASE_C_ENABLED", False)
 )
+
+
+# Image generation V1: strictly separate from text chat, default OFF.
+# Production is blocked by the independent image policy in all cases.
+VORNEQ_AI_IMAGE_ENABLED = env_bool("VORNEQ_AI_IMAGE_ENABLED", False)
+VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED = env_bool("VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED", False)
+VORNEQ_AI_IMAGE_PROVIDER = os.environ.get("VORNEQ_AI_IMAGE_PROVIDER", "mock")
+VORNEQ_AI_IMAGE_MODEL = os.environ.get("VORNEQ_AI_IMAGE_MODEL", "gpt-image-2.6-flare")
+VORNEQ_AI_IMAGE_ALLOWED_USER_IDS = os.environ.get("VORNEQ_AI_IMAGE_ALLOWED_USER_IDS", "")
+VORNEQ_AI_IMAGE_AUTHORIZED_SHA = os.environ.get("VORNEQ_AI_IMAGE_AUTHORIZED_SHA", "")
+VORNEQ_AI_IMAGE_OWNER_AUTH = os.environ.get("VORNEQ_AI_IMAGE_OWNER_AUTH", "")
+VORNEQ_AI_IMAGE_LEDGER_ID = os.environ.get("VORNEQ_AI_IMAGE_LEDGER_ID", "")
+
+
+def _image_int(name, default):
+    try:
+        return int(os.environ.get(name, str(default)))
+    except (ValueError, TypeError):
+        return 0  # fail closed without crashing Django on bad disabled-feature env
+
+VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND = _image_int("VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND", 0)
+VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD = _image_int("VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD", 0)
+VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS = _image_int("VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS", 3)
+VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS = _image_int("VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS", 10)
+
+# Optional private, durable image bucket. No Render local disk fallback.
+# Explicit configuration is required; do not inherit media/default storage.
+_IMAGE_BUCKET = os.environ.get("VORNEQ_IMAGE_S3_BUCKET", "")
+_IMAGE_ENDPOINT = os.environ.get("VORNEQ_IMAGE_S3_ENDPOINT_URL", "")
+_IMAGE_ACCESS = os.environ.get("VORNEQ_IMAGE_S3_ACCESS_KEY_ID", "")
+_IMAGE_SECRET = os.environ.get("VORNEQ_IMAGE_S3_SECRET_ACCESS_KEY", "")
+if _IMAGE_BUCKET and _IMAGE_ENDPOINT and _IMAGE_ACCESS and _IMAGE_SECRET:
+    from urllib.parse import urlsplit
+    endpoint = urlsplit(_IMAGE_ENDPOINT)
+    host = (endpoint.hostname or "").lower()
+    if (endpoint.scheme != "https" or endpoint.username or endpoint.password
+            or endpoint.query or endpoint.fragment
+            or not (host.endswith(".r2.cloudflarestorage.com")
+                    or host.endswith(".amazonaws.com"))):
+        raise ImproperlyConfigured("invalid image storage endpoint")
+    STORAGES["ai_images"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "bucket_name": _IMAGE_BUCKET,
+            "endpoint_url": _IMAGE_ENDPOINT,
+            "access_key": _IMAGE_ACCESS,
+            "secret_key": _IMAGE_SECRET,
+            "default_acl": "private",
+            "querystring_auth": True,
+            "file_overwrite": False,
+            "custom_domain": None,
+        },
+    }
