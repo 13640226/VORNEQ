@@ -11,6 +11,9 @@
   --mkt-touch: 44px;
   --mkt-media-ratio: 16 / 10;
   --mkt-positive: var(--color-success, var(--color-accent));
+  /* Inherited: long words (e.g. German compounds) and large user text sizes
+     must never widen a grid/flex track beyond the viewport (min-content). */
+  overflow-wrap: anywhere;
 }
 
 .mkt-v2 .sr-only {
@@ -36,7 +39,7 @@
 /* ---------- Buttons & links ---------- */
 .mkt-button {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
-  min-block-size: var(--mkt-touch); padding-inline: var(--space-5);
+  min-block-size: var(--mkt-touch); max-inline-size: 100%; padding-inline: var(--space-5); text-align: center;
   border: 1px solid transparent; border-radius: var(--radius-pill);
   font: inherit; font-weight: 600; text-decoration: none; cursor: pointer;
   transition: background-color var(--motion-duration-fast) var(--motion-easing-standard),
@@ -58,7 +61,8 @@
 
 /* ---------- Hero ---------- */
 .mkt-hero {
-  display: grid; gap: var(--space-5);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5);
+  min-inline-size: 0;
   padding: var(--space-6);
   margin-block-end: var(--space-5);
   border: 1px solid var(--color-border);
@@ -72,14 +76,15 @@
     radial-gradient(120% 140% at 0% 0%, var(--color-accent-subtle), transparent 60%),
     var(--color-bg-surface);
 }
-.mkt-hero__title { margin: 0 0 var(--space-2); font-size: var(--font-size-h1); font-weight: var(--font-weight-h1); line-height: 1.15; }
+.mkt-hero > * { min-inline-size: 0; }
+.mkt-hero__title { margin: 0 0 var(--space-2); font-size: var(--font-size-h1); font-weight: var(--font-weight-h1); line-height: 1.15; hyphens: auto; }
 .mkt-hero__subtitle { margin: 0; max-inline-size: 62ch; color: var(--color-text-secondary); line-height: var(--line-height-body); }
 .mkt-hero__note { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-3) 0 0; color: var(--color-text-secondary); font-size: var(--font-size-small); }
 .mkt-dot { inline-size: 8px; block-size: 8px; border-radius: 50%; background: var(--mkt-positive); flex: none; }
 
-.mkt-search { display: flex; gap: var(--space-2); align-items: stretch; }
+.mkt-search { display: flex; gap: var(--space-2); align-items: stretch; min-inline-size: 0; }
 .mkt-search__input {
-  flex: 1 1 auto; min-inline-size: 0; min-block-size: 52px; padding-inline: var(--space-4);
+  flex: 1 1 auto; box-sizing: border-box; min-inline-size: 0; max-inline-size: 100%; min-block-size: 52px; padding-inline: var(--space-4);
   border: 1px solid var(--color-border-strong); border-radius: var(--radius-pill);
   background: var(--color-bg-page); color: var(--color-text-primary); font: inherit; font-size: 1rem;
 }
@@ -250,12 +255,22 @@
 /* ---------- Small screens ---------- */
 @media (max-width: 640px) {
   .mkt-v2 { --mkt-media-ratio: 21 / 9; }
-  .mkt-hero { padding: var(--space-5); }
+  /* Compact mobile rhythm: less vertical space between header, hero, filters, results. */
+  .mkt-v2.marketplace-page { padding-block: var(--space-4) var(--space-6); }
+  .mkt-hero { gap: var(--space-3); padding: var(--space-4); margin-block-end: var(--space-4); }
+  .mkt-hero__title { margin-block-end: var(--space-1); font-size: clamp(1.75rem, 1.35rem + 2vw, 2.25rem); }
+  .mkt-hero__subtitle { font-size: var(--font-size-small); }
+  .mkt-hero__note { margin-block-start: var(--space-2); }
   .mkt-search { flex-direction: column; }
+  .mkt-search__input, .mkt-search .mkt-button { min-block-size: 48px; }
   .mkt-search .mkt-button { inline-size: 100%; }
+  .mkt-toolbar { gap: var(--space-2); margin-block-end: var(--space-4); }
   .mkt-toolbar__row { align-items: stretch; }
   .mkt-sort { inline-size: 100%; }
+  .mkt-sort__label { flex: 1 0 100%; }
   .mkt-sort__select { flex: 1 1 8rem; min-inline-size: 0; }
+  .mkt-empty { padding: var(--space-5) var(--space-4); }
+  .mkt-sell { margin-block-start: var(--space-6); padding: var(--space-5) var(--space-4); }
   .mkt-row__actions { inline-size: 100%; justify-content: flex-end; }
 }
 

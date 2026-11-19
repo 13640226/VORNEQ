@@ -220,3 +220,47 @@ class StylesheetContractTests(TestCase):
         self.assertIn("prefers-reduced-motion: reduce", css)
         self.assertIn(":focus-visible", css)
         self.assertIn("--mkt-touch: 44px", css)
+
+    def _rule(self, css, selector):
+        match = re.search(r"(?m)^" + re.escape(selector) + r"\s*\{([^}]*)\}", css)
+        self.assertIsNotNone(match, selector)
+        return match.group(1)
+
+    def _mobile_block(self, css):
+        start = css.index("@media (max-width: 640px)")
+        depth, i = 0, css.index("{", start)
+        for j in range(i, len(css)):
+            depth += {"{": 1, "}": -1}.get(css[j], 0)
+            if depth == 0:
+                return css[i:j]
+        self.fail("unclosed mobile media block")
+
+    def test_hero_track_cannot_grow_to_min_content(self):
+        # Regression: an `auto` track grew to the H1/subtitle min-content at large
+        # text sizes and pushed the search field and button out of the hero.
+        css = self.CSS.read_text(encoding="utf-8")
+        hero = self._rule(css, ".mkt-hero")
+        self.assertIn("grid-template-columns: minmax(0, 1fr)", hero)
+        self.assertIn("min-inline-size: 0", hero)
+        self.assertIn("min-inline-size: 0", self._rule(css, ".mkt-hero > *"))
+        self.assertIn("min-inline-size: 0", self._rule(css, ".mkt-search"))
+        field = self._rule(css, ".mkt-search__input")
+        self.assertIn("box-sizing: border-box", field)
+        self.assertIn("max-inline-size: 100%", field)
+        self.assertIn("max-inline-size: 100%", self._rule(css, ".mkt-button"))
+        self.assertIn("overflow-wrap: anywhere", self._rule(css, ".mkt-v2"))
+
+    def test_compact_mobile_hero_keeps_touch_targets(self):
+        css = self.CSS.read_text(encoding="utf-8")
+        mobile = self._mobile_block(css)
+        self.assertRegex(mobile, r"\.mkt-hero__title\s*\{[^}]*font-size:\s*clamp\(")
+        self.assertIn(".mkt-search { flex-direction: column; }", mobile)
+        self.assertIn(".mkt-sort__select { flex: 1 1 8rem; min-inline-size: 0; }", mobile)
+        # Never shrink below the 44px touch target.
+        for value in re.findall(r"min-block-size:\s*(\d+)px", mobile):
+            self.assertGreaterEqual(int(value), 44)
+
+    def test_chips_scroll_inside_their_own_container(self):
+        css = self.CSS.read_text(encoding="utf-8")
+        self.assertIn("overflow-x: auto", self._rule(css, ".mkt-chips"))
+        self.assertIn("min-inline-size: 0", self._rule(css, ".mkt-toolbar"))
