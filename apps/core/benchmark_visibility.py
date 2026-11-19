@@ -19,10 +19,16 @@ def public_articles(queryset):
     """Exclude articles matching any known fixture identity signal."""
     # Subquery is intentional: negating a nullable JSON lookup directly can
     # make unrelated rows vanish under SQL three-valued NULL logic.
+    # A benchmark *category alone* is not proof of synthetic provenance:
+    # legitimate user articles can be published in the same category.
+    # An explicit seed marker is decisive; otherwise require both the
+    # seed slug namespace AND the seed category to avoid false positives.
     fixture_ids = queryset.model._base_manager.filter(
-        Q(slug__startswith=ARTICLE_SLUG_PREFIX)
-        | Q(editorial_metadata__benchmark_seed=True)
-        | Q(category__slug=ARTICLE_CATEGORY_SLUG)
+        Q(editorial_metadata__benchmark_seed=True)
+        | (
+            Q(slug__startswith=ARTICLE_SLUG_PREFIX)
+            & Q(category__slug=ARTICLE_CATEGORY_SLUG)
+        )
     ).values("pk")
     return queryset.exclude(pk__in=fixture_ids)
 
