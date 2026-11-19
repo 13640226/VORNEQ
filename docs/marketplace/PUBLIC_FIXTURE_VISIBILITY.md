@@ -39,3 +39,10 @@ Die Entscheidung trifft der Eigentümer.
 
 ## Rollback
 Revert des PR: Die öffentlichen Oberflächen zeigen dann wieder alle veröffentlichten Produkte. Es sind keine Daten betroffen und keine Migration nötig.
+
+## Verhältnis zur Production-Bereinigung (#656)
+- `marketplace/fixture_cleanup.py` (#656) hat am 2026-11-19 die 501 bekannten Produkt-Fixtures in Production auditiert gelöscht.
+- Dort gilt bewusst eine **strengere** Regel: Slug-Präfix **und** Seller. Löschen muss eng sein.
+- Der Sichtbarkeitsschutz hier nutzt **Slug oder Seller**. Ausblenden darf breit sein.
+- Nach der Bereinigung ist der Schutz Defense in Depth: Er verhindert, dass erneut eingespielte Seed- oder Smoke-Daten (z. B. `seed_staging_data`, `inspect_staging_smoke` auf Staging) öffentlich erscheinen.
+- Inspect-Pfad: Das einzige Artefakt mit Produktbindung wurde in #656 deaktiviert (`is_active=False`). `get_context_view` verlangt `is_active=True`. Der offene Entscheid betrifft nur neu angelegte Smoke-Daten auf Staging.
