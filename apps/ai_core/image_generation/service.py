@@ -128,6 +128,7 @@ def process_next_image_job():
         job_id = job.pk
     reservation = None
     provider_called = False
+    settlement_attempted = False
     try:
         # Storage must exist before any model/ledger work.
         image_storage()
@@ -169,7 +170,18 @@ def process_next_image_job():
             usage = None
             if type(output.input_tokens) is int and type(output.output_tokens) is int:
                 usage = (output.input_tokens, output.output_tokens)
-            settle(reservation, usage=usage, outcome="image_generated")
+            settlement_attempted = True
+            ledger_state = settle(reservation, usage=usage, outcome="image_generated")
+            if ledger_state != "finalized":
+                # No verified ledger commit means no completed, downloadable image.
+                # Keep the private object reference for manual reconciliation.
+                AIImageJob.objects.filter(pk=job_id, status=AIImageJob.STATUS_RUNNING).update(
+                    status=AIImageJob.STATUS_UNCERTAIN,
+                    prompt="", storage_key=key, image_digest=digest,
+                    is_mock=output.is_mock, error_code="ledger_settlement_unconfirmed",
+                    finished_at=timezone.now(),
+                )
+                return job_id
         AIImageJob.objects.filter(pk=job_id, status=AIImageJob.STATUS_RUNNING).update(
             status=AIImageJob.STATUS_COMPLETED,
             prompt="", storage_key=key,
@@ -178,9 +190,14 @@ def process_next_image_job():
         )
     except Exception:
         # Provider may have billed before returning/raising. Never silently retry.
-        if reservation is not None:
+        if reservation is not None and not settlement_attempted:
             from apps.ai_ledger.service import settle
-            settle(reservation, usage=None, outcome="image_uncertain")
+            try:
+                settle(reservation, usage=None, outcome="image_uncertain")
+            except Exception:
+                # Never strand the image job just because a ledger error escaped.
+                # The reserved allowance remains held for manual reconciliation.
+                pass
         AIImageJob.objects.filter(pk=job_id, status=AIImageJob.STATUS_RUNNING).update(
             status=AIImageJob.STATUS_UNCERTAIN if reservation is not None and provider_called
                    else AIImageJob.STATUS_FAILED,

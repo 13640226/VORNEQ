@@ -129,6 +129,36 @@ class StagingDailyCapPostgresTests(TransactionTestCase):
                 do_reserve("staging")
         self.assertEqual(staging_rows().get().status, "reserved")
 
+    def test_settle_ack_only_after_committed_finalization(self):
+        h.provision(20)
+        with staging_cap(10, 10 ** 9):
+            res = do_reserve("staging")
+            self.assertEqual(settle(res, usage=(12, 9), outcome="image_generated"),
+                             BudgetReservation.FINALIZED)
+            # An idempotent replay performs no new settlement; no new ACK.
+            self.assertIsNone(settle(res, usage=(12, 9), outcome="replayed"))
+        row = staging_rows().get()
+        self.assertEqual(row.status, BudgetReservation.FINALIZED)
+        self.assertEqual(row.outcome, "image_generated")
+        self.assert_invariants()
+
+    def test_settle_ack_explicitly_reports_uncertain_and_failed_commit(self):
+        h.provision(20)
+        with staging_cap(10, 10 ** 9):
+            uncertain_res = do_reserve("staging")
+            self.assertEqual(settle(uncertain_res, usage=None, outcome="image_uncertain"),
+                             BudgetReservation.UNCERTAIN)
+            failed_res = do_reserve("staging")
+            with patch.object(BudgetReservation.objects, "using",
+                              side_effect=OperationalError("synthetic DB failure")):
+                self.assertIsNone(settle(failed_res, usage=(12, 9),
+                                         outcome="image_generated"))
+        self.assertEqual(
+            BudgetReservation.objects.using(LEDGER_ALIAS).get(pk=failed_res.id).status,
+            BudgetReservation.RESERVED,
+        )
+        self.assert_invariants()
+
     def test_previous_utc_days_do_not_count(self):
         h.provision(20)
         with staging_cap(1, 10 ** 9):

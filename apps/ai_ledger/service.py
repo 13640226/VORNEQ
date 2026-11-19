@@ -226,11 +226,14 @@ def reserve_with_config(config: LedgerConfig, *, environment, service_id, git_sh
                        account.output_price_micro_per_mtok)
 
 
-def settle(reservation: Reservation, *, usage=None, outcome: str) -> None:
-    """Finalize at observed usage, or mark UNCERTAIN at the full reserved amount.
+def settle(reservation: Reservation, *, usage=None, outcome: str) -> str | None:
+    """Return the *committed* ledger state (finalized/uncertain), or None.
 
-    Never raises to the caller: if settlement fails, the reservation remains
-    RESERVED and keeps counting against the allowance (safe direction).
+    The return value is an acknowledgement only after the transaction commits.
+    A failed transaction or an already-settled reservation returns None; neither
+    is an acknowledgement of this attempt. Existing text-chat callers may
+    continue to ignore the result. Never raises: failed settlements retain the
+    full RESERVED allowance for manual reconciliation.
     """
     from apps.ai_ledger.models import BudgetAccount, BudgetReservation
 
@@ -257,5 +260,8 @@ def settle(reservation: Reservation, *, usage=None, outcome: str) -> None:
             row.outcome = (outcome or "")[:40]
             row.settled_at = timezone.now()
             row.save(using=LEDGER_ALIAS)
+        # Do not return from within atomic(): the DB commit must have succeeded.
+        return row.status
     except Exception:
         _logger.warning("ai_ledger_settle_failed reservation=%s", reservation.id)
+        return None

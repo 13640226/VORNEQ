@@ -46,6 +46,8 @@ The existing prepaid chat Ledger is model-specific; its account must never be re
 
 A conservative, separately verified VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND is required. This is not a guaranteed provider price upper bound: budget monitoring, independent provider account spend caps and finance reconciliation are required before live image generation.
 
+**Settlement acknowledgment (V1.1):** `ai_ledger.service.settle()` returns `finalized` or `uncertain` only after its transaction commits; it returns `None` on failure or if already settled. Existing text chat callers remain compatible because they do not depend on its return value. A paid image job may be `completed` and expose its signed URL **only** after an explicit `finalized` acknowledgment. Missing/invalid usage, failed or ambiguous settlement, and an unexpected settlement exception leave the image job `uncertain`, with its prompt removed and any private image object reference held for manual reconciliation. Neither the provider nor failed settlements are automatically retried. A crash after provider execution may still leave a `running` job requiring manual reconciliation; the Worker intentionally never retries it.
+
 ## Configuration (all default safe)
 
 VORNEQ_AI_IMAGE_ENABLED=false
