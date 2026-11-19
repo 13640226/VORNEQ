@@ -189,7 +189,7 @@ def cleanup(*, apply=False, local_test=False, expected_ids_digest=None):
                 cursor.execute("SELECT pg_try_advisory_xact_lock(20261119, 501)")
                 if not cursor.fetchone()[0]:
                     raise FixtureCleanupRejected("STOP_CONCURRENT_CLEANUP")
-        if not apply and connection.vendor == "postgresql":
+        if not apply and connection.vendor == "postgresql" and not local_test:
             with connection.cursor() as cursor:
                 cursor.execute("SET TRANSACTION READ ONLY")
         products = list(Product.objects.select_related("seller").order_by("pk"))
