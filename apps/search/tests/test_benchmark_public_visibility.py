@@ -6,7 +6,9 @@ file-system objects, AI provider calls or fixture deletion is involved.
 from unittest.mock import patch
 from types import SimpleNamespace
 
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
+from django.http import Http404
+from django.contrib.auth.models import AnonymousUser
 from django.urls import reverse
 
 from apps.ai_core.gateway import retrieve_public
@@ -24,6 +26,7 @@ from apps.search.services import (
     ArticleAdapter, LibraryItemAdapter, MediaAssetAdapter, UnifiedSearch,
 )
 from library.models import LibraryItem
+from library import views as library_views
 
 
 class BenchmarkVisibilityShieldTests(TestCase):
@@ -157,22 +160,24 @@ class BenchmarkVisibilityShieldTests(TestCase):
             self.assertContains(response, "Benchmark report written by a scientist")
 
     def test_library_index_detail_and_pdf_reader_deny_seed_but_keep_real(self):
-        index = self.client.get(reverse("library:index"), follow=True)
+        # Public /library/ is currently redirected to Marketplace by the URL
+        # router. Exercise the Library views directly so their visibility
+        # guard stays enforced if those legacy routes are exposed again.
+        request = RequestFactory().get("/en/library/")
+        request.user = AnonymousUser()
+        index = library_views.index(request)
         self.assertEqual(index.status_code, 200)
-        self.assertNotContains(index, "Benchmark library seed")
-        self.assertNotContains(index, "A seeded library title")
-        self.assertContains(index, "Benchmark report written by a scientist")
+        html = index.content.decode("utf-8")
+        self.assertNotIn("Benchmark library seed", html)
+        self.assertNotIn("A seeded library title", html)
+        self.assertIn("Benchmark report written by a scientist", html)
         for slug in (self.seed_library.slug, self.seed_library_author_only.slug):
-            self.assertEqual(
-                self.client.get(reverse("library:detail", kwargs={"slug": slug}), follow=True).status_code,
-                404,
-            )
-            self.assertEqual(
-                self.client.get(reverse("library:serve_pdf", kwargs={"slug": slug}), follow=True).status_code,
-                404,
-            )
+            with self.assertRaises(Http404):
+                library_views.detail(request, slug=slug)
+            with self.assertRaises(Http404):
+                library_views.serve_pdf(request, slug=slug)
         self.assertEqual(
-            self.client.get(reverse("library:detail", kwargs={"slug": self.real_library.slug}), follow=True).status_code,
+            library_views.detail(request, slug=self.real_library.slug).status_code,
             200,
         )
 
