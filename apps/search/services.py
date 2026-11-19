@@ -12,9 +12,13 @@ from django.urls import reverse
 from django.utils.translation import get_language
 
 from apps.content.models import Article
+from apps.core.benchmark_visibility import (
+    public_articles, public_library_items, public_media_assets,
+)
 from apps.media.models import MediaAsset
 from library.models import AudioItem, LibraryItem
 from marketplace.models import Product
+from marketplace.selectors import public_products
 
 
 @dataclass(frozen=True)
@@ -93,7 +97,9 @@ class ArticleAdapter(SearchAdapter):
     type_name = "article"
 
     def get_queryset(self, query: str, filters: dict) -> QuerySet:
-        qs = Article.objects.filter(is_published=True).select_related("category")
+        qs = public_articles(
+            Article.objects.filter(is_published=True)
+        ).select_related("category")
         if query:
             qs = qs.filter(
                 Q(title__icontains=query)
@@ -127,10 +133,9 @@ class ProductAdapter(SearchAdapter):
     type_name = "product"
 
     def get_queryset(self, query: str, filters: dict) -> QuerySet:
-        qs = Product.objects.filter(
-            status=Product.STATUS_APPROVED,
-            is_published=True,
-        ).select_related("seller")
+        # Shared public visibility: excludes known historical fixtures (also
+        # protects AI retrieval, which uses this adapter).
+        qs = public_products()
         if query:
             qs = qs.filter(
                 Q(title__icontains=query)
@@ -169,7 +174,7 @@ class LibraryItemAdapter(SearchAdapter):
     type_name = "libraryitem"
 
     def get_queryset(self, query: str, filters: dict) -> QuerySet:
-        qs = LibraryItem.objects.filter(is_published=True)
+        qs = public_library_items(LibraryItem.objects.filter(is_published=True))
         if query:
             qs = qs.filter(
                 Q(title__icontains=query)
@@ -213,7 +218,7 @@ class MediaAssetAdapter(SearchAdapter):
     type_name = "mediaasset"
 
     def get_queryset(self, query: str, filters: dict) -> QuerySet:
-        qs = MediaAsset.objects.filter(is_active=True)
+        qs = public_media_assets(MediaAsset.objects.filter(is_active=True))
         if query:
             qs = qs.filter(
                 Q(title__icontains=query)

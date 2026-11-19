@@ -303,30 +303,96 @@ class SyntheticQuarantineLocalTests(TestCase):
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     })
     def test_public_product_and_library_http_detail_denied_after_quarantine(self):
+        """Quarantine changes the publication STATE; the fixture guard is separate.
+
+        Contract (docs/marketplace/PUBLIC_FIXTURE_VISIBILITY.md): known product
+        fixtures (#655) and Library seed fixtures (#658,
+        apps/core/benchmark_visibility.py) are never publicly visible, even while
+        still published. This test therefore proves the data-layer transition
+        before/after quarantine, and that public HTTP stays 404 throughout while
+        genuine items stay reachable.
+        """
+        from marketplace.selectors import published_products, public_products
+
         m = self.manifest()
-        # Establish routes exist and are public before fixture hold.
         product_url = reverse("marketplace:detail", kwargs={"slug": self.product.slug})
         library_url = reverse("library:detail", kwargs={"slug": self.library.slug})
-        before_product = self.client.get(product_url)
-        before_library = self.client.get(library_url)
-        self.assertEqual(before_product.status_code, 200)
-        self.assertEqual(before_library.status_code, 200)
-        apply_quarantine(manifest=m, actor=self.owner)
+        real_library_url = reverse("library:detail", kwargs={"slug": self.real_library.slug})
+        real_url = reverse("marketplace:detail", kwargs={"slug": self.real_product.slug})
+        fixture_ids = {self.product.pk, self.smoke.pk}
+        # Before hold: product fixtures ARE in the published data state ...
+        self.assertEqual(set(published_products().filter(pk__in=fixture_ids).values_list("pk", flat=True)),
+                         fixture_ids)
+        # ... but never on public surfaces (permanent guards, no mutation):
+        # product fixtures (#655) and Library seed fixtures (#658).
+        self.assertFalse(public_products().filter(pk__in=fixture_ids).exists())
         self.assertEqual(self.client.get(product_url).status_code, 404)
         self.assertEqual(self.client.get(library_url).status_code, 404)
+        self.assertEqual(self.client.get(real_library_url).status_code, 200)
+        self.assertEqual(apply_quarantine(manifest=m, actor=self.owner), 5)
+        # After hold: the publication state itself is withdrawn by quarantine.
+        self.assertFalse(published_products().filter(pk__in=fixture_ids).exists())
+        self.library.refresh_from_db()
+        self.assertFalse(self.library.is_published)
+        self.assertEqual(self.client.get(product_url).status_code, 404)
+        self.assertEqual(self.client.get(library_url).status_code, 404)
+        self.assertEqual(self.client.get(real_library_url).status_code, 200)
+        self.assertEqual(self.client.get(real_url).status_code, 200)
+        # Database reversal restores original values, not public seed access.
+        self.assertEqual(revert_quarantine(manifest=m, actor=self.owner), 5)
+        self.library.refresh_from_db()
+        self.assertTrue(self.library.is_published)
+        self.assertEqual(self.client.get(library_url).status_code, 404)
+        self.assertEqual(self.client.get(real_library_url).status_code, 200)
+
+    @override_settings(STORAGES={
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    })
+    def test_revert_restores_publication_state_but_public_guard_still_holds(self):
+        from marketplace.selectors import published_products
+
+        m = self.manifest()
+        product_url = reverse("marketplace:detail", kwargs={"slug": self.product.slug})
+        library_url = reverse("library:detail", kwargs={"slug": self.library.slug})
+        real_library_url = reverse("library:detail", kwargs={"slug": self.real_library.slug})
+        fixture_ids = {self.product.pk, self.smoke.pk}
+        apply_quarantine(manifest=m, actor=self.owner)
+        revert_quarantine(manifest=m, actor=self.owner)
+        # Rollback is predictable: the exact data state returns ...
+        self.assertEqual(set(published_products().filter(pk__in=fixture_ids).values_list("pk", flat=True)),
+                         fixture_ids)
+        self.product.refresh_from_db()
+        self.library.refresh_from_db()
+        self.assertEqual(self.product.status, Product.STATUS_APPROVED)
+        self.assertTrue(self.library.is_published)
+        # ... while the independent public guards keep fixtures hidden.
+        self.assertEqual(self.client.get(product_url).status_code, 404)
+        self.assertEqual(self.client.get(library_url).status_code, 404)
+        self.assertEqual(self.client.get(real_library_url).status_code, 200)
         self.assertEqual(
             self.client.get(reverse("marketplace:detail", kwargs={"slug": self.real_product.slug})).status_code,
             200,
         )
 
     def test_public_ai_retrieval_excludes_fixture_after_hold(self):
+        """AI retrieval never cites fixtures: guarded before AND after the hold.
+
+        With #655 (products) and #658 (articles/library/media) every seed row is
+        already excluded from public retrieval while still published; the hold
+        then withdraws the publication state itself. Genuine sources remain.
+        """
         from apps.ai_core.gateway import retrieve_public
+        from marketplace.selectors import published_products
+
         m = self.manifest()
-        before = retrieve_public("Benchmark", "en")
-        self.assertGreater(len(before), 0)
+        self.assertEqual(len(retrieve_public("Benchmark", "en")), 0)
+        self.assertGreater(len(retrieve_public("Genuine", "en")), 0)
+        self.assertTrue(published_products().filter(pk=self.product.pk).exists())
         apply_quarantine(manifest=m, actor=self.owner)
         self.assertEqual(len(retrieve_public("Benchmark", "en")), 0)
         self.assertGreater(len(retrieve_public("Genuine", "en")), 0)
+        self.assertFalse(published_products().filter(pk=self.product.pk).exists())
 
     def test_audit_failure_during_revert_rolls_back_all_flags(self):
         from apps.audit.services import record_audit_event as actual_audit

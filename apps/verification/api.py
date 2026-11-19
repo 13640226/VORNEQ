@@ -4,6 +4,7 @@ from django.views.decorators.http import require_GET
 
 from library.models import LibraryItem
 from marketplace.models import Product
+from marketplace.selectors import public_products
 
 from .public import get_public_evidence_projection, get_public_verification_summary
 from .services.activity import get_verification_activity
@@ -58,20 +59,16 @@ def _public_artifact(artifact_type, artifact_id):
         return None
 
     model, public_filters = model_config
+    base = public_products() if model is Product else model.objects
     try:
-        return model.objects.filter(pk=artifact_id, **public_filters).first()
+        return base.filter(pk=artifact_id, **public_filters).first()
     except (TypeError, ValueError):
         return None
 
 
 @require_GET
 def product_verification_summary(request, pk):
-    product = get_object_or_404(
-        Product,
-        pk=pk,
-        status=Product.STATUS_APPROVED,
-        is_published=True,
-    )
+    product = get_object_or_404(public_products(), pk=pk)
     return _summary_response(product, "product")
 
 
