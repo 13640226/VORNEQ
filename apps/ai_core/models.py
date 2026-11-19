@@ -139,3 +139,53 @@ class AIMessage(models.Model):
             models.Index(fields=["status", "created_at"], name="ai_msg_status_time_idx"),
         ]
         ordering = ["sequence"]
+
+
+class AIImageJob(models.Model):
+    """Persistent, owner-bound request. Running work is NEVER auto-retried.
+
+    The prompt is erased after terminal completion. No public media URL.
+    A repeated client UUID returns the existing job instead of a new charge.
+    """
+    STATUS_QUEUED = "queued"
+    STATUS_RUNNING = "running"
+    STATUS_COMPLETED = "completed"
+    STATUS_FAILED = "failed"
+    STATUS_UNCERTAIN = "uncertain"
+    STATES = [(x, x) for x in (
+        STATUS_QUEUED, STATUS_RUNNING, STATUS_COMPLETED,
+        STATUS_FAILED, STATUS_UNCERTAIN,
+    )]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name="ai_image_jobs",
+    )
+    prompt = models.TextField(max_length=2000)
+    prompt_digest = models.CharField(max_length=64)
+    model_id = models.CharField(max_length=100)
+    image_size = models.CharField(max_length=16, default="1024x1024")
+    provider = models.CharField(max_length=10, default="mock")
+    status = models.CharField(max_length=12, choices=STATES, default=STATUS_QUEUED)
+    reservation_id = models.UUIDField(null=True, blank=True)
+    storage_key = models.CharField(max_length=255, blank=True)
+    image_digest = models.CharField(max_length=64, blank=True)
+    is_mock = models.BooleanField(default=False)
+    error_code = models.CharField(max_length=40, blank=True)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["owner", "created_at"], name="ai_image_owner_day_idx"),
+            models.Index(fields=["status", "created_at"], name="ai_image_queue_idx"),
+        ]
+
+
+class AIImageDailyQuota(models.Model):
+    """Global day lock serializes quotas across users and worker processes."""
+    day_utc = models.DateField(primary_key=True)
+    submitted = models.PositiveIntegerField(default=0)
