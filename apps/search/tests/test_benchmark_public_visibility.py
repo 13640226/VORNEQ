@@ -125,6 +125,41 @@ class BenchmarkVisibilityShieldTests(TestCase):
         self.assertFalse(_is_public_content(self.seed_library))
         self.assertTrue(_is_public_content(self.real_library))
 
+    def test_article_provenance_requires_seed_marker_or_slug_and_category(self):
+        # Legitimate documents must survive an accidental seed-category
+        # assignment or a slug prefix alone; neither proves provenance.
+        genuine_in_seed_category = Article.objects.create(
+            title="Genuine benchmark results",
+            slug="research-genuine-benchmark",
+            summary="Independent research",
+            content="Non-synthetic real document",
+            category=self.seed_article.category,
+            editorial_metadata={},
+            is_published=True,
+        )
+        genuine_with_seed_like_slug = Article.objects.create(
+            title="Genuine benchmark namespace example",
+            slug="vorneq-benchmark-article-user-written",
+            summary="Real explanation of benchmark naming",
+            content="Not seeded",
+            category=self.real_article.category,
+            editorial_metadata={},
+            is_published=True,
+        )
+        shown = set(
+            public_articles(Article.objects.filter(is_published=True))
+            .values_list("pk", flat=True)
+        )
+        self.assertIn(genuine_in_seed_category.pk, shown)
+        self.assertIn(genuine_with_seed_like_slug.pk, shown)
+        self.assertIn(self.real_article.pk, shown)
+        self.assertNotIn(self.seed_article.pk, shown)
+        self.assertNotIn(self.seed_article_metadata.pk, shown)
+        self.assertIn(
+            genuine_in_seed_category.pk,
+            set(ArticleAdapter().get_queryset("Genuine", {}).values_list("pk", flat=True)),
+        )
+
     def test_search_adapters_filter_fixture_rows_before_pagination_and_counts(self):
         self.assertEqual(
             set(ArticleAdapter().get_queryset("Benchmark", {}).values_list("pk", flat=True)),
