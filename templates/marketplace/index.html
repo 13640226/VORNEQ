@@ -13,148 +13,178 @@
 <link rel="stylesheet" href="{% static 'css/marketplace-stability.css' %}">
 <link rel="stylesheet" href="{% static 'css/marketplace-index-system.css' %}">
 <link rel="stylesheet" href="{% static 'css/trust-context.css' %}">
+<link rel="stylesheet" href="{% static 'css/marketplace-v2.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="marketplace-page">
+<section class="marketplace-page mkt-v2" data-marketplace-ui="v2">
   <div class="marketplace-shell">
-    <header class="marketplace-header">
-      <p class="marketplace-header__eyebrow">VORNEQ / {% trans "Marketplace" %}</p>
-      <h1 class="marketplace-header__title">{% trans "Marketplace" %}</h1>
-      <p class="marketplace-header__subtitle">
-        {% trans "Discover approved digital products, courses, templates, audio, software, and more from independent creators." %}
-      </p>
+
+    <header class="mkt-hero">
+      <div class="mkt-hero__text">
+        <p class="mkt-eyebrow">VORNEQ / {% trans "Marketplace" %}</p>
+        <h1 class="mkt-hero__title">{% trans "Marketplace" %}</h1>
+        <p class="mkt-hero__subtitle">
+          {% trans "Discover approved digital products, courses, templates, audio, software, and more from independent creators." %}
+        </p>
+        <p class="mkt-hero__note">
+          <span class="mkt-dot" aria-hidden="true"></span>
+          {% trans "Every product is reviewed by a moderator before it is published." %}
+        </p>
+      </div>
+
+      <form method="get" action="{% url 'marketplace:index' %}" class="mkt-search" role="search" aria-label="{% trans 'Search marketplace' %}">
+        <label for="marketplace-search" class="sr-only">{% trans "Search marketplace" %}</label>
+        <input
+          id="marketplace-search"
+          type="search"
+          name="q"
+          class="mkt-search__input"
+          placeholder="{% trans 'Search products…' %}"
+          value="{{ query }}"
+          maxlength="{{ max_query_length }}"
+          autocomplete="off"
+          enterkeyhint="search"
+        >
+        {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+        {% if sort != "newest" %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+        <button type="submit" class="mkt-button mkt-button--primary">{% trans "Search" %}</button>
+      </form>
     </header>
 
-    <section class="marketplace-toolbar" aria-label="{% trans 'Search and filter products' %}">
-      <form method="get" action="{% url 'marketplace:index' %}" class="marketplace-search" role="search">
-        <label for="marketplace-search" class="sr-only">{% trans "Search marketplace" %}</label>
-        <div class="marketplace-search__wrapper">
-          <input
-            id="marketplace-search"
-            type="search"
-            name="q"
-            class="marketplace-search__input"
-            placeholder="{% trans 'Search products…' %}"
-            value="{{ query }}"
-            autocomplete="off"
-          >
-          {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
-          <button type="submit" class="marketplace-search__button">{% trans "Search" %}</button>
-        </div>
-      </form>
-
-      <nav class="marketplace-filters" aria-label="{% trans 'Filter by category' %}">
+    <section class="mkt-toolbar" aria-label="{% trans 'Search and filter products' %}">
+      <nav class="mkt-chips" aria-label="{% trans 'Filter by category' %}">
         <a
-          href="{% url 'marketplace:index' %}{% if query %}?q={{ query|urlencode }}{% endif %}"
-          class="marketplace-filters__link {% if not category %}is-active{% endif %}"
+          href="{% url 'marketplace:index' %}?{% if query %}q={{ query|urlencode }}&amp;{% endif %}sort={{ sort }}"
+          class="mkt-chip{% if not category %} is-active{% endif %}"
           {% if not category %}aria-current="page"{% endif %}
         >{% trans "All" %}</a>
         {% for category_code, category_label in categories %}
           <a
-            href="{% url 'marketplace:index' %}?category={{ category_code|urlencode }}{% if query %}&q={{ query|urlencode }}{% endif %}"
-            class="marketplace-filters__link {% if category == category_code %}is-active{% endif %}"
+            href="{% url 'marketplace:index' %}?category={{ category_code|urlencode }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}&amp;sort={{ sort }}"
+            class="mkt-chip{% if category == category_code %} is-active{% endif %}"
             {% if category == category_code %}aria-current="page"{% endif %}
           >{{ category_label }}</a>
         {% endfor %}
       </nav>
 
-      <div class="marketplace-toolbar__summary" aria-live="polite">
-        <span>{% blocktrans count total=paginator.count %}{{ total }} product{% plural %}{{ total }} products{% endblocktrans %}</span>
-        {% if query or category %}
-          <a href="{% url 'marketplace:index' %}" class="marketplace-toolbar__clear">{% trans "Clear filters" %}</a>
-        {% else %}
-          <span class="marketplace-toolbar__clear marketplace-toolbar__clear--placeholder" aria-hidden="true">{% trans "Clear filters" %}</span>
-        {% endif %}
+      <div class="mkt-toolbar__row">
+        <p class="mkt-toolbar__count" aria-live="polite">
+          {% blocktrans count total=paginator.count %}{{ total }} product{% plural %}{{ total }} products{% endblocktrans %}
+          {% if has_filters %}
+            <a href="{% url 'marketplace:index' %}" class="mkt-link">{% trans "Clear filters" %}</a>
+          {% endif %}
+        </p>
+        <form method="get" action="{% url 'marketplace:index' %}" class="mkt-sort">
+          {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+          {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+          <label for="marketplace-sort" class="mkt-sort__label">{% trans "Sort by" %}</label>
+          <select id="marketplace-sort" name="sort" class="mkt-sort__select">
+            {% for key, label in sort_options %}
+              <option value="{{ key }}"{% if key == sort %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="mkt-button mkt-button--quiet">{% trans "Apply" %}</button>
+        </form>
       </div>
     </section>
 
-    <div class="marketplace-results-surface">
+    <div class="marketplace-results-surface mkt-results">
       {% if products %}
-        <div class="marketplace-grid">
+        <ul class="mkt-grid" role="list">
           {% for product in products %}
-            <article class="marketplace-card">
-              {% if product.image %}
-                <a href="{% url 'marketplace:detail' product.slug %}" class="marketplace-card__image-link" tabindex="-1" aria-hidden="true">
-                  <img src="{{ product.image.url }}" alt="" class="marketplace-card__image" loading="lazy" decoding="async">
-                </a>
-              {% endif %}
+            <li class="mkt-card">
+              <a href="{% url 'marketplace:detail' product.slug %}" class="mkt-card__media" tabindex="-1" aria-hidden="true">
+                {% if product.image %}
+                  <img src="{{ product.image.url }}" alt="" class="mkt-card__image" loading="lazy" decoding="async" width="640" height="400">
+                {% else %}
+                  <span class="mkt-card__placeholder mkt-card__placeholder--{{ product.category }}">
+                    <span class="mkt-card__placeholder-label">{{ product.get_category_display }}</span>
+                  </span>
+                {% endif %}
+              </a>
 
-              <div class="marketplace-card__body">
-                <div class="marketplace-card__kicker">
-                  <span class="marketplace-card__category">{{ product.get_category_display }}</span>
-                  {% if product.version %}<span class="marketplace-card__version">v{{ product.version }}</span>{% endif %}
+              <div class="mkt-card__body">
+                <div class="mkt-card__kicker">
+                  <span class="mkt-tag">{{ product.get_category_display }}</span>
+                  {% if product.version %}<span class="mkt-card__version"><bdi>v{{ product.version }}</bdi></span>{% endif %}
                 </div>
 
-                <h2 class="marketplace-card__title">
-                  <a href="{% url 'marketplace:detail' product.slug %}" class="marketplace-card__link">{{ product.title }}</a>
+                <h2 class="mkt-card__title" dir="auto">
+                  <a href="{% url 'marketplace:detail' product.slug %}" class="mkt-card__link"><bdi>{{ product.title }}</bdi></a>
                 </h2>
 
-                <p class="marketplace-card__seller">{% trans "By" %} {{ product.seller.get_username }}</p>
+                <p class="mkt-card__seller">{% trans "By" %} <bdi>{{ product.seller.get_username }}</bdi></p>
 
                 {% if product.short_description %}
-                  <p class="marketplace-card__description">{{ product.short_description|striptags|truncatechars:140 }}</p>
+                  <p class="mkt-card__description" dir="auto">{{ product.short_description|striptags|truncatechars:160 }}</p>
                 {% endif %}
 
                 {% public_trust_context product %}
 
-                <div class="marketplace-card__footer">
-                  <div class="marketplace-card__price">
-                    {% if product.price == 0 %}
-                      <span class="marketplace-card__badge">{% trans "Free" %}</span>
-                    {% else %}
-                      <span>{{ product.price|floatformat:2 }}</span>
-                    {% endif %}
-                  </div>
-                  <a href="{% url 'marketplace:detail' product.slug %}" class="marketplace-card__action">{% trans "View details" %}</a>
+                <div class="mkt-card__footer">
+                  {% include "marketplace/includes/price_state.html" with product=product compact=True %}
+                  <a href="{% url 'marketplace:detail' product.slug %}" class="mkt-link mkt-card__cta">
+                    {% trans "View details" %}<span class="sr-only">: {{ product.title }}</span>
+                  </a>
                 </div>
               </div>
-            </article>
+            </li>
           {% endfor %}
-        </div>
+        </ul>
 
         {% if page_obj.has_other_pages %}
-          <nav class="marketplace-pagination" aria-label="{% trans 'Pagination' %}">
+          <nav class="mkt-pagination" aria-label="{% trans 'Pagination' %}">
             {% if page_obj.has_previous %}
-              <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if category %}&category={{ category|urlencode }}{% endif %}" class="marketplace-pagination__link" rel="prev">{% trans "Previous" %}</a>
+              <a href="?page={{ page_obj.previous_page_number }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}{% if category %}&amp;category={{ category|urlencode }}{% endif %}&amp;sort={{ sort }}" class="mkt-pagination__link" rel="prev">{% trans "Previous" %}</a>
             {% endif %}
-
             {% for num in page_obj.paginator.page_range %}
               {% if page_obj.number == num %}
-                <span class="marketplace-pagination__current" aria-current="page">{{ num }}</span>
+                <span class="mkt-pagination__current" aria-current="page">{{ num }}</span>
               {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?page={{ num }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if category %}&category={{ category|urlencode }}{% endif %}" class="marketplace-pagination__link">{{ num }}</a>
+                <a href="?page={{ num }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}{% if category %}&amp;category={{ category|urlencode }}{% endif %}&amp;sort={{ sort }}" class="mkt-pagination__link">{{ num }}</a>
               {% endif %}
             {% endfor %}
-
             {% if page_obj.has_next %}
-              <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if category %}&category={{ category|urlencode }}{% endif %}" class="marketplace-pagination__link" rel="next">{% trans "Next" %}</a>
+              <a href="?page={{ page_obj.next_page_number }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}{% if category %}&amp;category={{ category|urlencode }}{% endif %}&amp;sort={{ sort }}" class="mkt-pagination__link" rel="next">{% trans "Next" %}</a>
             {% endif %}
           </nav>
         {% endif %}
       {% else %}
-        <div class="marketplace-empty">
-          <h2 class="marketplace-empty__title">{% trans "No products found" %}</h2>
-          <p class="marketplace-empty__message">
-            {% if query or category %}
-              {% trans "Try a different search term or category." %}
+        <div class="mkt-empty" data-empty-state="{% if has_filters %}filtered{% else %}catalog{% endif %}">
+          <span class="mkt-empty__icon" aria-hidden="true"></span>
+          {% if has_filters %}
+            <h2 class="mkt-empty__title">{% trans "No products match your search" %}</h2>
+            <p class="mkt-empty__message">{% trans "Try a different search term or category." %}</p>
+            <a href="{% url 'marketplace:index' %}" class="mkt-button mkt-button--quiet">{% trans "View all products" %}</a>
+          {% else %}
+            <h2 class="mkt-empty__title">{% trans "No products have been published yet." %}</h2>
+            <p class="mkt-empty__message">{% trans "The marketplace is open for its first creators. Submitted products are reviewed before they become publicly available." %}</p>
+            {% if user.is_authenticated %}
+              <a href="{% url 'marketplace:product_create' %}" class="mkt-button mkt-button--primary">{% trans "Submit a new product" %}</a>
             {% else %}
-              {% trans "No approved products have been published yet." %}
+              <a href="{% url 'account_login' %}?next={% url 'marketplace:product_create' %}" class="mkt-button mkt-button--primary">{% trans "Sign in to submit a product" %}</a>
             {% endif %}
-          </p>
-          {% if query or category %}<a href="{% url 'marketplace:index' %}" class="marketplace-empty__action">{% trans "View all products" %}</a>{% endif %}
+          {% endif %}
         </div>
       {% endif %}
     </div>
 
-    <aside class="marketplace-seller-cta">
-      <p class="marketplace-seller-cta__eyebrow">{% trans "For creators" %}</p>
-      <h2 class="marketplace-seller-cta__title">{% trans "Have something to publish?" %}</h2>
-      <p class="marketplace-seller-cta__text">{% trans "Submitted products are reviewed before they become publicly available." %}</p>
+    <aside class="mkt-sell" aria-labelledby="mkt-sell-title">
+      <div class="mkt-sell__intro">
+        <p class="mkt-eyebrow">{% trans "For creators" %}</p>
+        <h2 id="mkt-sell-title" class="mkt-sell__title">{% trans "Have something to publish?" %}</h2>
+        <p class="mkt-sell__text">{% trans "Submitted products are reviewed before they become publicly available." %}</p>
+      </div>
+      <ol class="mkt-steps">
+        <li class="mkt-steps__item"><span class="mkt-steps__num" aria-hidden="true">1</span><span>{% trans "Create your product with a description and file" %}</span></li>
+        <li class="mkt-steps__item"><span class="mkt-steps__num" aria-hidden="true">2</span><span>{% trans "A moderator reviews it" %}</span></li>
+        <li class="mkt-steps__item"><span class="mkt-steps__num" aria-hidden="true">3</span><span>{% trans "After approval it can be published" %}</span></li>
+      </ol>
       {% if user.is_authenticated %}
-        <a href="{% url 'marketplace:seller_dashboard' %}" class="marketplace-seller-cta__link">{% trans "Open seller dashboard" %}</a>
+        <a href="{% url 'marketplace:seller_dashboard' %}" class="mkt-button mkt-button--secondary">{% trans "Open seller dashboard" %}</a>
       {% else %}
-        <a href="{% url 'account_login' %}?next={% url 'marketplace:seller_dashboard' %}" class="marketplace-seller-cta__link">{% trans "Sign in to sell on VORNEQ" %}</a>
+        <a href="{% url 'account_login' %}?next={% url 'marketplace:seller_dashboard' %}" class="mkt-button mkt-button--secondary">{% trans "Sign in to sell on VORNEQ" %}</a>
       {% endif %}
     </aside>
   </div>

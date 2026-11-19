@@ -18,9 +18,19 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Count, OuterRef, Q, Subquery
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
+
+# Marketplace UI V2: bounded, allowlisted sort keys (never raw order_by input).
+MAX_QUERY_LENGTH = 100
+SORT_OPTIONS = (
+    ("newest", gettext_lazy("Newest"), ("-published_at", "-created_at")),
+    ("title", gettext_lazy("Title A–Z"), ("title", "-published_at")),
+    ("price_low", gettext_lazy("Free first"), ("price", "-published_at")),
+)
+_SORT_ORDER = {key: order for key, _label, order in SORT_OPTIONS}
 
 from .forms import ProductForm, ProductReviewForm
 from .models import Product, ProductReview
@@ -42,7 +52,7 @@ def index(request):
     query = request.GET.get(
         "q",
         "",
-    ).strip()
+    ).strip()[:MAX_QUERY_LENGTH]
 
     category = request.GET.get(
         "category",
@@ -115,10 +125,10 @@ def index(request):
     # Ordering
     # --------------------------------------------------------
 
-    products = products.order_by(
-        "-published_at",
-        "-created_at",
-    )
+    sort = request.GET.get("sort", "newest")
+    if sort not in _SORT_ORDER:
+        sort = "newest"
+    products = products.order_by(*_SORT_ORDER[sort], "pk")
 
 
     # --------------------------------------------------------
@@ -146,6 +156,10 @@ def index(request):
 
         "query": query,
         "category": category,
+        "sort": sort,
+        "sort_options": [(key, label) for key, label, _order in SORT_OPTIONS],
+        "has_filters": bool(query or category),
+        "max_query_length": MAX_QUERY_LENGTH,
 
         "categories": Product.CATEGORY_CHOICES,
     }
@@ -201,19 +215,37 @@ def seller_dashboard(request):
     Product creation and editing use separate views.
     """
 
+    latest_review = (
+        ProductReview.objects
+        .filter(product=OuterRef("pk"))
+        .order_by("-reviewed_at", "-pk")
+    )
     products = (
         Product.objects
         .filter(
             seller=request.user,
         )
+        .annotate(
+            latest_decision=Subquery(latest_review.values("decision")[:1]),
+            latest_reviewed_at=Subquery(latest_review.values("reviewed_at")[:1]),
+        )
         .order_by(
             "-created_at",
         )
+    )
+    counts = Product.objects.filter(seller=request.user).aggregate(
+        total=Count("pk"),
+        pending=Count("pk", filter=Q(status=Product.STATUS_PENDING)),
+        approved=Count("pk", filter=Q(status=Product.STATUS_APPROVED)),
+        rejected=Count("pk", filter=Q(status=Product.STATUS_REJECTED)),
+        published=Count("pk", filter=Q(status=Product.STATUS_APPROVED, is_published=True)),
     )
 
 
     context = {
         "products": products,
+        "counts": counts,
+        "decision_labels": dict(ProductReview.DECISION_CHOICES),
     }
 
 
