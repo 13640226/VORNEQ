@@ -21,6 +21,9 @@ def durable_storage_ready():
         isinstance(options, dict)
         and options.get("bucket_name")
         and options.get("querystring_auth", True) is True
+        and options.get("signature_version") == "s3v4"
+        and type(options.get("querystring_expire")) is int
+        and 1 <= options["querystring_expire"] <= 3600
         and options.get("default_acl") in (None, "private")
         and not options.get("custom_domain")
     )
