@@ -17,11 +17,14 @@ MEDIA_FILE_PREFIX = "benchmark/vorneq-benchmark-media-"
 
 def public_articles(queryset):
     """Exclude articles matching any known fixture identity signal."""
-    return queryset.exclude(
+    # Subquery is intentional: negating a nullable JSON lookup directly can
+    # make unrelated rows vanish under SQL three-valued NULL logic.
+    fixture_ids = queryset.model._base_manager.filter(
         Q(slug__startswith=ARTICLE_SLUG_PREFIX)
         | Q(editorial_metadata__benchmark_seed=True)
         | Q(category__slug=ARTICLE_CATEGORY_SLUG)
-    )
+    ).values("pk")
+    return queryset.exclude(pk__in=fixture_ids)
 
 
 def public_library_items(queryset):
@@ -34,11 +37,12 @@ def public_library_items(queryset):
 
 def public_media_assets(queryset):
     """Filter known seed media even if a media search adapter is added later."""
-    return queryset.exclude(
+    fixture_ids = queryset.model._base_manager.filter(
         Q(title__startswith=MEDIA_TITLE_PREFIX)
         | Q(presentation_metadata__benchmark_seed=True)
         | Q(file__startswith=MEDIA_FILE_PREFIX)
-    )
+    ).values("pk")
+    return queryset.exclude(pk__in=fixture_ids)
 
 
 def is_public_library_item(item):
