@@ -6,6 +6,7 @@ from typing import Callable
 
 from apps.media.embedding import BaseEmbeddingProvider
 from apps.media.models import MediaAsset
+from apps.core.benchmark_visibility import public_media_assets
 from apps.media.vector_index import BaseVectorIndex, VectorRecord
 
 
@@ -116,10 +117,10 @@ class MediaSimilarityService:
         policy = self.provider.descriptor.policy
         self.index.clear(embedding_policy=policy)
         count = 0
-        queryset = MediaAsset.objects.filter(
+        queryset = public_media_assets(MediaAsset.objects.filter(
             is_active=True,
             media_type=MediaAsset.MediaType.IMAGE,
-        ).order_by("pk")
+        )).order_by("pk")
         for media_asset in queryset.iterator():
             self.index_media_asset(media_asset)
             count += 1
@@ -195,7 +196,9 @@ class MediaSimilarityService:
 
     def _resolve_results(self, raw_results: list[tuple[str, float]]) -> list[dict]:
         ids = [media_id for media_id, _ in raw_results]
-        assets_by_pk = MediaAsset.objects.filter(pk__in=ids, is_active=True).in_bulk()
+        assets_by_pk = public_media_assets(
+            MediaAsset.objects.filter(pk__in=ids, is_active=True)
+        ).in_bulk()
         assets = {str(pk): asset for pk, asset in assets_by_pk.items()}
         formatted = []
         for media_id, score in raw_results:

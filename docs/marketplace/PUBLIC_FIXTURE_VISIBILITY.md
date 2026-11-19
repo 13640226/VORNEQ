@@ -46,3 +46,12 @@ Revert des PR: Die öffentlichen Oberflächen zeigen dann wieder alle veröffent
 - Der Sichtbarkeitsschutz hier nutzt **Slug oder Seller**. Ausblenden darf breit sein.
 - Nach der Bereinigung ist der Schutz Defense in Depth: Er verhindert, dass erneut eingespielte Seed- oder Smoke-Daten (z. B. `seed_staging_data`, `inspect_staging_smoke` auf Staging) öffentlich erscheinen.
 - Inspect-Pfad: Das einzige Artefakt mit Produktbindung wurde in #656 deaktiviert (`is_active=False`). `get_context_view` verlangt `is_active=True`. Der offene Entscheid betrifft nur neu angelegte Smoke-Daten auf Staging.
+
+## Zusammenspiel mit #658 (Benchmark-Schutz für Artikel, Library, Medien)
+- #658 (`apps/core/benchmark_visibility.py`) schützt die Seed-Inhalte vom 2026-09-06 in Suche, Discover, Library, Inspect und AI-Retrieval. Dieser PR schützt Marketplace-Produkte. Beide Schutzschichten sind rein lesend und ergänzen sich.
+- `test_synthetic_quarantine` wurde beim Merge von `main` (#658) zusammengeführt:
+  - Produkt- und Library-Fixtures sind vor, während und nach der Quarantine öffentlich 404.
+  - Die Quarantine ändert nachweislich den Datenzustand (`published_products`, `LibraryItem.is_published`).
+  - Echte Einträge bleiben erreichbar.
+  - Keine Assertion beider Seiten wurde entfernt.
+- Inspect: Library-Einträge schützt #658. Produkte werden über `Product.is_public` aufgelöst. In Production gibt es nach #656 keine Produkt-Fixtures mehr; der offene Entscheid betrifft nur neu angelegte Smoke-Daten auf Staging.

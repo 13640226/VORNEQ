@@ -306,30 +306,37 @@ class SyntheticQuarantineLocalTests(TestCase):
         """Quarantine changes the publication STATE; the fixture guard is separate.
 
         Contract (docs/marketplace/PUBLIC_FIXTURE_VISIBILITY.md): known product
-        fixtures are never publicly visible, even while still published. So for
-        products this test proves the data-layer transition (published_products)
-        before/after quarantine, and that public HTTP stays 404 throughout.
-        Library items have no fixture guard and keep the HTTP 200 -> 404 proof.
+        fixtures (#655) and Library seed fixtures (#658,
+        apps/core/benchmark_visibility.py) are never publicly visible, even while
+        still published. This test therefore proves the data-layer transition
+        before/after quarantine, and that public HTTP stays 404 throughout while
+        genuine items stay reachable.
         """
         from marketplace.selectors import published_products, public_products
 
         m = self.manifest()
         product_url = reverse("marketplace:detail", kwargs={"slug": self.product.slug})
         library_url = reverse("library:detail", kwargs={"slug": self.library.slug})
+        real_library_url = reverse("library:detail", kwargs={"slug": self.real_library.slug})
         real_url = reverse("marketplace:detail", kwargs={"slug": self.real_product.slug})
         fixture_ids = {self.product.pk, self.smoke.pk}
-        # Before hold: fixtures ARE in the published data state ...
+        # Before hold: product fixtures ARE in the published data state ...
         self.assertEqual(set(published_products().filter(pk__in=fixture_ids).values_list("pk", flat=True)),
                          fixture_ids)
-        # ... but never on public surfaces (permanent guard, no mutation).
+        # ... but never on public surfaces (permanent guards, no mutation):
+        # product fixtures (#655) and Library seed fixtures (#658).
         self.assertFalse(public_products().filter(pk__in=fixture_ids).exists())
         self.assertEqual(self.client.get(product_url).status_code, 404)
-        self.assertEqual(self.client.get(library_url).status_code, 200)
-        apply_quarantine(manifest=m, actor=self.owner)
+        self.assertEqual(self.client.get(library_url).status_code, 404)
+        self.assertEqual(self.client.get(real_library_url).status_code, 200)
+        self.assertEqual(apply_quarantine(manifest=m, actor=self.owner), 5)
         # After hold: the publication state itself is withdrawn by quarantine.
         self.assertFalse(published_products().filter(pk__in=fixture_ids).exists())
+        self.library.refresh_from_db()
+        self.assertFalse(self.library.is_published)
         self.assertEqual(self.client.get(product_url).status_code, 404)
         self.assertEqual(self.client.get(library_url).status_code, 404)
+        self.assertEqual(self.client.get(real_library_url).status_code, 200)
         self.assertEqual(self.client.get(real_url).status_code, 200)
 
     @override_settings(STORAGES={
@@ -342,6 +349,7 @@ class SyntheticQuarantineLocalTests(TestCase):
         m = self.manifest()
         product_url = reverse("marketplace:detail", kwargs={"slug": self.product.slug})
         library_url = reverse("library:detail", kwargs={"slug": self.library.slug})
+        real_library_url = reverse("library:detail", kwargs={"slug": self.real_library.slug})
         fixture_ids = {self.product.pk, self.smoke.pk}
         apply_quarantine(manifest=m, actor=self.owner)
         revert_quarantine(manifest=m, actor=self.owner)
@@ -349,14 +357,23 @@ class SyntheticQuarantineLocalTests(TestCase):
         self.assertEqual(set(published_products().filter(pk__in=fixture_ids).values_list("pk", flat=True)),
                          fixture_ids)
         self.product.refresh_from_db()
+        self.library.refresh_from_db()
         self.assertEqual(self.product.status, Product.STATUS_APPROVED)
-        self.assertEqual(self.client.get(library_url).status_code, 200)
-        # ... while the independent public guard keeps product fixtures hidden.
+        self.assertTrue(self.library.is_published)
+        # ... while the independent public guards keep fixtures hidden.
         self.assertEqual(self.client.get(product_url).status_code, 404)
+        self.assertEqual(self.client.get(library_url).status_code, 404)
+        self.assertEqual(self.client.get(real_library_url).status_code, 200)
         self.assertEqual(
             self.client.get(reverse("marketplace:detail", kwargs={"slug": self.real_product.slug})).status_code,
             200,
         )
+        # Database reversal restores original values, not public seed access.
+        self.assertEqual(revert_quarantine(manifest=m, actor=self.owner), 5)
+        self.library.refresh_from_db()
+        self.assertTrue(self.library.is_published)
+        self.assertEqual(self.client.get(library_url).status_code, 404)
+        self.assertEqual(self.client.get(real_library_url).status_code, 200)
 
     def test_public_ai_retrieval_excludes_fixture_after_hold(self):
         from apps.ai_core.gateway import retrieve_public

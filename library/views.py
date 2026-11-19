@@ -23,6 +23,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import get_language
 
 from .models import AudioItem, LibraryItem
+from apps.core.benchmark_visibility import public_library_items
 
 
 # ============================================================
@@ -83,9 +84,9 @@ def index(request):
     # Base queryset
     # --------------------------------------------------------
 
-    items = LibraryItem.objects.filter(
+    items = public_library_items(LibraryItem.objects.filter(
         is_published=True,
-    )
+    ))
 
     audio_items = AudioItem.objects.filter(
         is_published=True,
@@ -275,7 +276,7 @@ def detail(request, slug):
 
 
     item = get_object_or_404(
-        LibraryItem,
+        public_library_items(LibraryItem.objects.all()),
         slug=slug,
         is_published=True,
     )
@@ -353,7 +354,7 @@ def serve_pdf(request, slug):
     """
 
     item = get_object_or_404(
-        LibraryItem,
+        public_library_items(LibraryItem.objects.all()),
         slug=slug,
         is_published=True,
     )
