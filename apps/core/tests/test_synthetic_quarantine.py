@@ -304,20 +304,29 @@ class SyntheticQuarantineLocalTests(TestCase):
     })
     def test_public_product_and_library_http_detail_denied_after_quarantine(self):
         m = self.manifest()
-        # Establish routes exist and are public before fixture hold.
+        # Public presentation can shield known Library seed fixtures before
+        # the reversible DB quarantine. That shield must remain in force
+        # before, during, and after quarantine without concealing real items.
         product_url = reverse("marketplace:detail", kwargs={"slug": self.product.slug})
         library_url = reverse("library:detail", kwargs={"slug": self.library.slug})
-        before_product = self.client.get(product_url)
-        before_library = self.client.get(library_url)
-        self.assertEqual(before_product.status_code, 200)
-        self.assertEqual(before_library.status_code, 200)
-        apply_quarantine(manifest=m, actor=self.owner)
+        real_library_url = reverse("library:detail", kwargs={"slug": self.real_library.slug})
+        self.assertEqual(self.client.get(product_url).status_code, 200)
+        self.assertEqual(self.client.get(library_url).status_code, 404)
+        self.assertEqual(self.client.get(real_library_url).status_code, 200)
+        self.assertEqual(apply_quarantine(manifest=m, actor=self.owner), 5)
         self.assertEqual(self.client.get(product_url).status_code, 404)
         self.assertEqual(self.client.get(library_url).status_code, 404)
+        self.assertEqual(self.client.get(real_library_url).status_code, 200)
         self.assertEqual(
             self.client.get(reverse("marketplace:detail", kwargs={"slug": self.real_product.slug})).status_code,
             200,
         )
+        # Database reversal restores original values, not public seed access.
+        self.assertEqual(revert_quarantine(manifest=m, actor=self.owner), 5)
+        self.library.refresh_from_db()
+        self.assertTrue(self.library.is_published)
+        self.assertEqual(self.client.get(library_url).status_code, 404)
+        self.assertEqual(self.client.get(real_library_url).status_code, 200)
 
     def test_public_ai_retrieval_excludes_fixture_after_hold(self):
         from apps.ai_core.gateway import retrieve_public
