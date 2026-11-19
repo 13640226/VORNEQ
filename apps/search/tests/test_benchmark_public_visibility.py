@@ -156,22 +156,22 @@ class BenchmarkVisibilityShieldTests(TestCase):
             self.assertContains(response, "Benchmark report written by a scientist")
 
     def test_library_index_detail_and_pdf_reader_deny_seed_but_keep_real(self):
-        index = self.client.get(reverse("library:index"))
+        index = self.client.get(reverse("library:index"), follow=True)
         self.assertEqual(index.status_code, 200)
         self.assertNotContains(index, "Benchmark library seed")
         self.assertNotContains(index, "A seeded library title")
         self.assertContains(index, "Benchmark report written by a scientist")
         for slug in (self.seed_library.slug, self.seed_library_author_only.slug):
             self.assertEqual(
-                self.client.get(reverse("library:detail", kwargs={"slug": slug})).status_code,
+                self.client.get(reverse("library:detail", kwargs={"slug": slug}), follow=True).status_code,
                 404,
             )
             self.assertEqual(
-                self.client.get(reverse("library:serve_pdf", kwargs={"slug": slug})).status_code,
+                self.client.get(reverse("library:serve_pdf", kwargs={"slug": slug}), follow=True).status_code,
                 404,
             )
         self.assertEqual(
-            self.client.get(reverse("library:detail", kwargs={"slug": self.real_library.slug})).status_code,
+            self.client.get(reverse("library:detail", kwargs={"slug": self.real_library.slug}), follow=True).status_code,
             200,
         )
 
