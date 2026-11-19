@@ -23,7 +23,10 @@ dependency checks. Do not replay Marketplace product deletion #656.
 
 - `apps/core/benchmark_visibility.py` implements public-only QuerySet
   filters using specific observed seed signals; avoids generic keyword
-  exclusion so genuine benchmark content stays discoverable.
+  exclusion so genuine benchmark content stays discoverable. Articles
+  require an explicit seed JSON marker, or the combination of both the
+  benchmark slug namespace and dedicated seed category. Category alone
+  or slug alone must not hide independently written articles.
 - `apps/search/services.py` uses those filters at the adapter QuerySet
   source, covering search API, Discover, paginated narrow CTE and
   offline/grounded AI retrieval.
