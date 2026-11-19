@@ -156,6 +156,7 @@ for _event, _outcome in (
         "required_keys": {
             "batch_id", "row_count", "id_set_sha256", "backup_sha256",
             "authorization_reference", "artifact_binding_count",
+            "artifact_id", "linked_product_id", "runtime_sha",
         },
         "allowed_keys": {
             "batch_id": str,
@@ -164,6 +165,9 @@ for _event, _outcome in (
             "backup_sha256": str,
             "authorization_reference": str,
             "artifact_binding_count": int,
+            "artifact_id": str,
+            "linked_product_id": int,
+            "runtime_sha": str,
         },
         "reason_codes": {"OWNER_APPROVED_FIXTURE_CLEANUP"},
         "outcomes": {_outcome},
