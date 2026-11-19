@@ -245,6 +245,9 @@ def cleanup(*, apply=False, local_test=False, expected_ids_digest=None):
             "backup_sha256": BACKUP_DIGEST,
             "authorization_reference": OWNER_REFERENCE,
             "artifact_binding_count": 1,
+            "artifact_id": str(artifact.pk),
+            "linked_product_id": max(ids),
+            "runtime_sha": os.environ.get("RENDER_GIT_COMMIT", "LOCAL_TEST") if not local_test else "LOCAL_TEST",
         }
         if AuditEvent.objects.filter(correlation_id=BATCH_ID).exists():
             raise FixtureCleanupRejected("STOP_ALREADY_EXECUTED")
