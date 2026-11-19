@@ -24,6 +24,9 @@ from django.utils.translation import gettext as _
 
 from .forms import ProductForm, ProductReviewForm
 from .models import Product, ProductReview
+# Historical benchmark/smoke fixtures may already be published in older
+# databases; public views use the shared visibility selector (no mutation).
+from .selectors import public_products as _public_products
 
 
 # ============================================================
@@ -54,12 +57,7 @@ def index(request):
     # Public products
     # --------------------------------------------------------
 
-    products = Product.objects.filter(
-        status=Product.STATUS_APPROVED,
-        is_published=True,
-    ).select_related(
-        "seller",
-    )
+    products = _public_products()
 
 
     # --------------------------------------------------------
@@ -167,14 +165,7 @@ def detail(request, slug):
     Display a publicly available product.
     """
 
-    product = get_object_or_404(
-        Product.objects.select_related(
-            "seller",
-        ),
-        slug=slug,
-        status=Product.STATUS_APPROVED,
-        is_published=True,
-    )
+    product = get_object_or_404(_public_products(), slug=slug)
 
 
     context = {

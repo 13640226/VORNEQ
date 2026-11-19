@@ -18,6 +18,7 @@ from apps.core.benchmark_visibility import (
 from apps.media.models import MediaAsset
 from library.models import AudioItem, LibraryItem
 from marketplace.models import Product
+from marketplace.selectors import public_products
 
 
 @dataclass(frozen=True)
@@ -132,10 +133,9 @@ class ProductAdapter(SearchAdapter):
     type_name = "product"
 
     def get_queryset(self, query: str, filters: dict) -> QuerySet:
-        qs = Product.objects.filter(
-            status=Product.STATUS_APPROVED,
-            is_published=True,
-        ).select_related("seller")
+        # Shared public visibility: excludes known historical fixtures (also
+        # protects AI retrieval, which uses this adapter).
+        qs = public_products()
         if query:
             qs = qs.filter(
                 Q(title__icontains=query)
