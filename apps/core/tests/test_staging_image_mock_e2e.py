@@ -259,6 +259,73 @@ class ExecuteOnceTests(TestCase):
             self.run_e2e(fetch=lambda url: (200, b"not-a-png"))
         self.assert_clean()
 
+    def test_r2_put_then_worker_failure_without_storage_key_is_cleaned(self):
+        """Provider/storage writes object, then job fails before DB key update."""
+        from apps.ai_core.image_generation import service
+        from apps.ai_core.image_generation.storage import store_image as save_real
+
+        called = []
+        def save_then_fail(*, job, content):
+            key, digest = save_real(job=job, content=content)
+            called.append((key, digest))
+            self.assertTrue(image_storage().exists(key))
+            raise RuntimeError("injected failure after R2 write")
+
+        with patch.object(service, "store_image", side_effect=save_then_fail):
+            with self.assertRaises(e2e.Aborted):
+                self.run_e2e()
+        self.assertEqual(len(called), 1)
+        self.assertFalse(image_storage().exists(called[0][0]))
+        self.assert_clean()
+
+    def test_worker_crash_after_upload_before_return_cleans_expected_key(self):
+        """A worker that raises after PUT never reports job.storage_key."""
+        from apps.ai_core.image_generation import service
+        from django.core.files.base import ContentFile
+
+        keys = []
+        def upload_then_crash():
+            job = AIImageJob.objects.get(status=AIImageJob.STATUS_QUEUED)
+            key = "ai-generated/{}/{}.png".format(job.owner_id, job.pk.hex)
+            keys.append(key)
+            self.assertEqual(
+                image_storage().save(key, ContentFile(b"synthetic-mock-crash")), key)
+            raise RuntimeError("injected worker crash after upload")
+
+        with patch.object(service, "process_next_image_job", side_effect=upload_then_crash):
+            with self.assertRaises(e2e.Aborted):
+                self.run_e2e()
+        self.assertEqual(len(keys), 1)
+        self.assertFalse(image_storage().exists(keys[0]))
+        self.assert_clean()
+
+    def test_r2_delete_error_retains_users_and_job_for_residue_finder(self):
+        """Never delete the only owner reference if R2 cleanup is uncertain."""
+        storage = image_storage()
+        with patch.object(storage, "delete", side_effect=OSError("test R2 delete failure")):
+            with self.assertRaisesMessage(e2e.Aborted, "CLEANUP_INCOMPLETE"):
+                self.run_e2e()
+
+        users = list(get_user_model().objects.filter(
+            username__startswith=e2e.USER_PREFIX))
+        self.assertEqual(len(users), 2)
+        owner = next(u for u in users if u.username.endswith("-owner"))
+        jobs = AIImageJob.objects.filter(owner=owner)
+        self.assertEqual(jobs.count(), 1)
+        key = jobs.get().storage_key
+        self.assertTrue(key and storage.exists(key))
+        residue = e2e.find_residue(out=lambda _: None)
+        self.assertEqual(residue["e2e_users"], 2)
+        self.assertEqual(residue["e2e_jobs"], 1)
+        self.assertEqual(residue["e2e_r2_objects"], 1)
+
+        # Test-only cleanup, outside the simulated storage outage.
+        storage.delete(key)
+        jobs.delete()
+        for user in users:
+            user.delete()
+        self.assert_clean()
+
     def test_service_gate_stays_closed_after_run(self):
         from apps.ai_core.image_generation import policy
         self.run_e2e()
