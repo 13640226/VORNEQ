@@ -131,13 +131,45 @@ class GitHubStagingOwnerReleaseTests(SimpleTestCase):
         with self.assertRaises(legacy.OwnerReleaseDenied):
             verify(v)
 
-    def test_release_must_expire_within_fifteen_minutes(self):
+    def test_release_over_thirty_minutes_rejected(self):
         v = comment()
         body = json.loads(v["body"].split("\n", 1)[1])
         body["expires_at"] = (NOW+timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
         v["body"] = release.HEADER + "\n" + json.dumps(body)
         with self.assertRaises(legacy.OwnerReleaseDenied):
             verify(v)
+
+    def test_owner_release_thirty_minute_boundary(self):
+        v = comment()
+        body = json.loads(v["body"].split("\n", 1)[1])
+        body["expires_at"] = (NOW + timedelta(minutes=30)).strftime(
+            "%Y-%m-%dT%H:%M:%SZ")
+        v["body"] = release.HEADER + "\n" + json.dumps(body)
+        proof = verify(v, now=NOW + timedelta(minutes=29, seconds=59))
+        self.assertIsInstance(proof, legacy.VerifiedOwnerRelease)
+        self.assertEqual(proof.expires_at, NOW + timedelta(minutes=30))
+        with self.assertRaises(legacy.OwnerReleaseDenied):
+            verify(v, now=NOW + timedelta(minutes=30))
+
+    def test_owner_release_over_thirty_minutes_rejected(self):
+        v = comment()
+        body = json.loads(v["body"].split("\n", 1)[1])
+        body["expires_at"] = (NOW + timedelta(minutes=30, seconds=1)).strftime(
+            "%Y-%m-%dT%H:%M:%SZ")
+        v["body"] = release.HEADER + "\n" + json.dumps(body)
+        with self.assertRaises(legacy.OwnerReleaseDenied):
+            verify(v)
+
+    def test_owner_release_still_rejects_stale_backup_at_new_ttl(self):
+        v = comment()
+        body = json.loads(v["body"].split("\n", 1)[1])
+        body["expires_at"] = (NOW + timedelta(minutes=30)).strftime(
+            "%Y-%m-%dT%H:%M:%SZ")
+        body["backup_exported_at"] = (
+            NOW - timedelta(hours=2, seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        v["body"] = release.HEADER + "\n" + json.dumps(body)
+        with self.assertRaises(legacy.OwnerReleaseDenied):
+            verify(v, now=NOW + timedelta(minutes=29))
 
     def test_stale_backup_or_restoration_rejected(self):
         for field in ("backup_exported_at", "restore_verified_at"):
