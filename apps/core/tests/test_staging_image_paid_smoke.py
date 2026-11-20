@@ -236,9 +236,20 @@ class SettingsChecksTests(SimpleTestCase):
     def failing(self, **over):
         checks = smoke.Checks()
         with override_settings(**dict(PAID_SETTINGS, **over)), \
-                patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-never-live"}):
+                patch.dict(os.environ, {"VORNEQ_OPENAI_IMAGE_API_KEY": "synthetic-never-live"}):
             smoke._settings_checks(checks, cap_micro=100_000)
         return [n for n, ok, _ in checks.items if not ok]
+
+    def test_preflight_does_not_accept_chat_key_in_place_of_image_key(self):
+        checks = smoke.Checks()
+        with (override_settings(**PAID_SETTINGS),
+              patch.dict(os.environ, {
+                  "OPENAI_API_KEY": "synthetic-chat-project-key",
+                  "VORNEQ_OPENAI_IMAGE_API_KEY": "",
+              })):
+            smoke._settings_checks(checks, cap_micro=100_000)
+        self.assertIn("image_openai_key_present",
+                      [name for name, ok, _ in checks.items if not ok])
 
     def test_bound_and_caps(self):
         self.assertNotIn("worst_case_within_cap", self.failing())
@@ -271,7 +282,7 @@ class PaidExecuteTests(TransactionTestCase):
         self.addCleanup(override.disable)
         for p in (patch.dict(os.environ, {"RENDER_SERVICE_ID": e2e.SERVICE,
                                           "RENDER_GIT_COMMIT": SHA,
-                                          "OPENAI_API_KEY": "synthetic-never-live"}),
+                                          "VORNEQ_OPENAI_IMAGE_API_KEY": "synthetic-never-live"}),
                   patch("apps.ai_core.image_generation.storage.durable_storage_ready",
                         return_value=True)):
             p.start()

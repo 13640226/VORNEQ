@@ -31,8 +31,8 @@ Befehl: `run_staging_image_paid_smoke_once` (Modul `apps/core/staging_image_paid
 1. Read-only Preflight (Standard): Identität (Service, SHA, PostgreSQL, Migrationen
    `ai_core` 0001–0004), Service-Gates geschlossen, Queue leer, keine Reste,
    Modell/Complexity/Preisreferenz, Output-Bound, Request- und Tagesobergrenze,
-   Worst Case ≤ Obergrenze, HMAC-Schlüssel, `OPENAI_API_KEY` vorhanden (nur
-   Existenz), SDK installiert, keine Worker-Identität, Ledger (siehe unten).
+   Worst Case ≤ Obergrenze, HMAC-Schlüssel, `VORNEQ_OPENAI_IMAGE_API_KEY` vorhanden (nur
+   Existenz, niemals Fallback auf `OPENAI_API_KEY` des Chats), SDK installiert, keine Worker-Identität, Ledger (siehe unten).
    Ergebnis `STAGING_IMAGE_PAID_SMOKE_PREFLIGHT: GO|NO_GO`.
 2. Ledger-Prüfung ausschließlich in einer `READ ONLY`-Transaktion: Ledger aktiv,
    Datenbankidentität, Tabellen, Migration `ai_ledger.0001_initial` in der

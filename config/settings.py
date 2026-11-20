@@ -531,6 +531,8 @@ VORNEQ_AI_PHASE_C_ENABLED = (
 # Production is blocked by the independent image policy in all cases.
 VORNEQ_AI_IMAGE_ENABLED = env_bool("VORNEQ_AI_IMAGE_ENABLED", False)
 VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED = env_bool("VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED", False)
+# Paid image API key is read directly from VORNEQ_OPENAI_IMAGE_API_KEY.
+# It must never fall back to OPENAI_API_KEY used by chat.
 VORNEQ_AI_IMAGE_PROVIDER = os.environ.get("VORNEQ_AI_IMAGE_PROVIDER", "mock")
 VORNEQ_AI_IMAGE_MODEL = os.environ.get("VORNEQ_AI_IMAGE_MODEL", "gpt-image-2.6-flare")
 VORNEQ_AI_IMAGE_ALLOWED_USER_IDS = os.environ.get("VORNEQ_AI_IMAGE_ALLOWED_USER_IDS", "")

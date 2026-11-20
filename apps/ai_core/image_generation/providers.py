@@ -122,10 +122,15 @@ class OpenAIImageProvider:
             raise ImageProviderError("safety identifier unavailable",
                                      code="safety_identifier_unavailable", request_sent=False)
         import os
+        image_api_key = os.environ.get("VORNEQ_OPENAI_IMAGE_API_KEY", "")
+        if not image_api_key.strip():
+            raise ImageProviderError("dedicated image API key missing",
+                                     code="image_api_key_missing", request_sent=False)
         try:
             # Import only after every runtime gate. The key stays in Render env.
             from openai import OpenAI
-            client = OpenAI(api_key=os.environ["OPENAI_API_KEY"], timeout=90.0, max_retries=0)
+            # No fallback to OPENAI_API_KEY: image and chat projects are separate.
+            client = OpenAI(api_key=image_api_key, timeout=90.0, max_retries=0)
         except Exception as exc:
             raise ImageProviderError("provider client unavailable", code="sdk_unavailable",
                                      request_sent=False) from exc
