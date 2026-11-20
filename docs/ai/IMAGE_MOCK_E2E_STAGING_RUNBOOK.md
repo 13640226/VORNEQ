@@ -46,10 +46,16 @@ Befehl: `run_staging_image_mock_e2e_once` (Modul `apps/core/staging_image_mock_e
    Download über die signierte URL (nur Host `*.r2.cloudflarestorage.com`,
    keine Redirects) → PNG, SHA-256 = gespeicherter Digest. Dieselbe URL ohne
    Signatur → 400/401/403.
-10. **Bereinigung immer** (auch bei Fehlern), jeweils einzeln verifiziert:
-   Sessions (Logout), R2-Objekt gelöscht und nicht mehr vorhanden, Jobs der
-   Wegwerf-Benutzer gelöscht, Tagesquote exakt auf den Vorzustand zurückgesetzt,
-   Wegwerf-Benutzer gelöscht.
+10. **Bereinigung immer** (auch bei Fehlern): Der einzige erlaubte
+   R2-Key wird vor dem Worker-Aufruf aus Owner-ID und Request-UUID berechnet.
+   Damit kann das Objekt auch gelöscht werden, wenn ein Upload erfolgreich
+   war, der Worker aber vor der DB-Speicherung von `storage_key` abbricht.
+   Nach bestätigter R2-Löschung werden Jobs, Tagesquote und Benutzer
+   verifiziert bereinigt. Ist die R2-Löschung oder eine andere Bereinigung
+   unsicher, bleiben Benutzer als identifizierbare Anker für
+   `--find-residue` bestehen; bei unklarer R2-Löschung bleiben auch Jobs.
+   Der Lauf endet mit `CLEANUP_INCOMPLETE` und darf nicht blind wiederholt
+   werden. Sessions werden ausgeloggt; Audit-Quittungen bleiben erhalten.
 
 Ergebniszeilen: `E2E_STEP_OK …`, `E2E_CLEANUP … OK|FAILED`,
 `STAGING_IMAGE_MOCK_E2E_RESULT: PASS_CLEANUP_VERIFIED`.
@@ -63,8 +69,13 @@ Signierte URLs, Token und Prompts werden **nicht** ausgegeben.
 - Die Einmal-Quittung und Audit-Ereignisse (z. B. Logins der Wegwerf-Benutzer)
   bleiben absichtlich bestehen (append-only Audit).
 - Wird der Prozess hart beendet (z. B. Render-Timeout, SIGKILL), läuft die
-  Bereinigung nicht. Reste sind über `--find-residue` auffindbar (siehe unten);
-  es gibt bewusst keine automatische Löschung.
+  Bereinigung nicht. Reste sind über `--find-residue` auffindbar (siehe unten),
+  solange die Wegwerf-Benutzer vorhanden sind; es gibt bewusst keine
+  automatische Löschung. Ein hartes Ende nach einem R2-Upload ist ein
+  manueller Incident: Object-Prefix, Audit-Quittung und Datenbank prüfen.
+- Wenn R2-Löschung unbestätigt ist, löscht der Runner weder Job noch
+  Wegwerf-Benutzer, damit `--find-residue` die Owner-ID und den R2-Prefix
+  weiterhin erkennen kann.
 - Der API-Test läuft In-Process gegen die echten Views und Middleware, nicht
   über das öffentliche Netz/den Render-Load-Balancer.
 
