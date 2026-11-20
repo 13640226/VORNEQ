@@ -361,6 +361,103 @@ def preflight(connection, expected_sha, *, environ, out=print, cap_micro=MAX_COS
     return checks
 
 
+# --- Read-only ledger audit (all accounts, no credentials) ------------------------
+
+def ledger_audit(*, out=print):
+    """READ-ONLY inventory of the shared ledger for owner decisions.
+
+    Runs inside a READ ONLY transaction on the ``ai_ledger`` alias, prints only
+    identity facts, schema conformity, account parameters and aggregates. Never
+    prints URLs, credentials, full ledger IDs, actor IDs or prompts.
+    """
+    from django.apps import apps
+    from django.db import connections, transaction
+    from apps.ai_ledger.service import LEDGER_ALIAS
+
+    def put(key, value):
+        out("LEDGER_AUDIT {}={}".format(key, value))
+
+    def setting_uuid(name):
+        try:
+            return uuid.UUID(str(getattr(settings, name, "")))
+        except ValueError:
+            return None
+
+    chat, image = setting_uuid("VORNEQ_AI_LEDGER_ID"), setting_uuid("VORNEQ_AI_IMAGE_LEDGER_ID")
+    expected = getattr(settings, "VORNEQ_AI_LEDGER_DB_NAME", "")
+    cfg = connections.databases.get(LEDGER_ALIAS, {})
+    put("ledger_url_set", bool(os.environ.get("VORNEQ_AI_LEDGER_DATABASE_URL")))
+    put("ledger_enabled_setting", getattr(settings, "VORNEQ_AI_LEDGER_ENABLED", None))
+    put("expected_db_name", expected or "-")
+    put("chat_ledger_id_set", chat is not None)
+    put("image_ledger_id_set", image is not None)
+    put("image_equals_chat", chat is not None and chat == image)
+    put("host_label", (cfg.get("HOST") or "-").split(".")[0])
+    models = {m._meta.db_table: m for m in apps.get_app_config("ai_ledger").get_models()}
+    with transaction.atomic(using=LEDGER_ALIAS):
+        with connections[LEDGER_ALIAS].cursor() as c:
+            c.execute("SET TRANSACTION READ ONLY")
+            c.execute("SELECT current_database(), current_user, session_user, "
+                      "current_setting('server_version'), pg_is_in_recovery(), "
+                      "current_setting('transaction_read_only')")
+            db, user, session_user, version, replica, read_only = c.fetchone()
+            put("current_database", db)
+            put("db_matches_expected", db == expected)
+            put("current_user", user)
+            put("session_user", session_user)
+            put("server_version", version.split(" ")[0])
+            put("in_recovery_replica", replica)
+            put("transaction_read_only", read_only)
+            for table in sorted(models) + ["django_migrations"]:
+                c.execute("SELECT to_regclass(%s) IS NOT NULL", ["public." + table])
+                present = c.fetchone()[0]
+                put("table_" + table, present)
+                if present and table in models:
+                    c.execute("SELECT column_name FROM information_schema.columns "
+                              "WHERE table_schema = 'public' AND table_name = %s", [table])
+                    actual = {r[0] for r in c.fetchall()}
+                    wanted = {f.column for f in models[table]._meta.concrete_fields}
+                    put("columns_" + table, "MATCH" if actual == wanted else "DIFF")
+            c.execute("SELECT name FROM django_migrations WHERE app = 'ai_ledger' ORDER BY name")
+            put("ai_ledger_migrations", ",".join(r[0] for r in c.fetchall()) or "-")
+            c.execute("SELECT id, ledger_id::text, model_id, allowed_environments, emergency_stop, "
+                      "input_price_micro_per_mtok, output_price_micro_per_mtok, "
+                      "total_allowance_micro, safety_reserve_micro, consumed_before_micro, "
+                      "reserved_micro, finalized_micro, uncertain_micro "
+                      "FROM ai_ledger_budgetaccount ORDER BY id")
+            accounts = c.fetchall()
+            put("account_count", len(accounts))
+            for (pk, ledger, model, envs, stop, in_price, out_price, total, safety, before,
+                 reserved, finalized, uncertain) in accounts:
+                role = ("chat" if chat and ledger == str(chat)
+                        else "image" if image and ledger == str(image) else "other")
+                c.execute("SELECT status, count(*), coalesce(sum(reserved_micro), 0), "
+                          "coalesce(sum(observed_micro), 0) FROM ai_ledger_budgetreservation "
+                          "WHERE account_id = %s GROUP BY status ORDER BY status", [pk])
+                by_status = {s: [n, int(r), int(o)] for s, n, r, o in c.fetchall()}
+                c.execute("SELECT environment, count(*) FROM ai_ledger_budgetreservation "
+                          "WHERE account_id = %s GROUP BY environment ORDER BY environment", [pk])
+                by_env = dict(c.fetchall())
+                put("account", json.dumps({
+                    "role": role, "ledger_id_prefix": ledger[:8], "model_id": model,
+                    "allowed_environments": envs, "emergency_stop": stop,
+                    "input_price_micro_per_mtok": in_price, "output_price_micro_per_mtok": out_price,
+                    "total_allowance_micro": total, "safety_reserve_micro": safety,
+                    "remaining_micro": total - safety - before - reserved - finalized - uncertain,
+                    "reserved_micro": reserved, "finalized_micro": finalized,
+                    "uncertain_micro": uncertain, "reservations_by_status": by_status,
+                    "reservations_by_environment": by_env,
+                    "totals_match_rows": (
+                        reserved == by_status.get("reserved", [0, 0, 0])[1]
+                        and uncertain == by_status.get("uncertain", [0, 0, 0])[1]
+                        and finalized == by_status.get("finalized", [0, 0, 0])[2]),
+                }, sort_keys=True))
+            c.execute("SELECT count(*) FROM ai_ledger_budgetreservation WHERE status = 'reserved' "
+                      "AND created_at < now() - interval '15 minutes'")
+            put("stale_open_reservations_over_15min", c.fetchone()[0])
+    put("RESULT", "READ_ONLY_LEDGER_AUDIT_COMPLETE")
+
+
 # --- Authorization and receipt ---------------------------------------------------------
 
 def authorize(environ, expected_sha, db_config):

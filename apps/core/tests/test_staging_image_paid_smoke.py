@@ -195,6 +195,43 @@ class LedgerPreflightTests(TransactionTestCase):
         self.assertTrue(info["shared_with_production"])
 
 
+@skipUnless(IS_PG, "ledger needs PostgreSQL")
+class LedgerAuditTests(TransactionTestCase):
+    databases = {"default", LEDGER_ALIAS}
+
+    def setUp(self):
+        override = override_settings(**h.ledger_settings(), **PAID_SETTINGS)
+        override.enable()
+        self.addCleanup(override.disable)
+        h.provision(2)
+        image_account()
+
+    def test_audit_is_read_only_complete_and_redacted(self):
+        from apps.ai_ledger.tests.test_ledger_postgres import do_reserve_explicit
+        do_reserve_explicit("production")
+        before = (BudgetAccount.objects.using(LEDGER_ALIAS).count(),
+                  BudgetReservation.objects.using(LEDGER_ALIAS).count())
+        lines = []
+        smoke.ledger_audit(out=lines.append)
+        text = "\n".join(lines)
+        self.assertIn("LEDGER_AUDIT transaction_read_only=on", lines)
+        self.assertIn("LEDGER_AUDIT db_matches_expected=True", lines)
+        self.assertIn("LEDGER_AUDIT ai_ledger_migrations=0001_initial", lines)
+        for table in ("budgetaccount", "budgetreservation", "externalusagerecord"):
+            self.assertIn("LEDGER_AUDIT columns_ai_ledger_{}=MATCH".format(table), lines)
+        accounts = [json.loads(l.split("=", 1)[1]) for l in lines
+                    if l.startswith("LEDGER_AUDIT account=")]
+        self.assertEqual(sorted(a["role"] for a in accounts), ["chat", "image"])
+        chat = next(a for a in accounts if a["role"] == "chat")
+        self.assertEqual(chat["reservations_by_environment"], {"production": 1})
+        self.assertTrue(all(a["totals_match_rows"] for a in accounts))
+        self.assertNotIn(str(h.LEDGER_ID), text)
+        self.assertNotIn(str(IMAGE_LEDGER), text)
+        self.assertEqual(lines[-1], "LEDGER_AUDIT RESULT=READ_ONLY_LEDGER_AUDIT_COMPLETE")
+        self.assertEqual(before, (BudgetAccount.objects.using(LEDGER_ALIAS).count(),
+                                  BudgetReservation.objects.using(LEDGER_ALIAS).count()))
+
+
 class SettingsChecksTests(SimpleTestCase):
     def failing(self, **over):
         checks = smoke.Checks()
@@ -337,7 +374,9 @@ class CommandTests(TransactionTestCase):
         from django.core.management.base import CommandError
         for args in (["--expected-sha", SHA],
                      ["--expected-sha", SHA, "--execute", "--release-id", RELEASE_ID],
-                     ["--expected-sha", SHA, "--release-id", RELEASE_ID]):
+                     ["--expected-sha", SHA, "--release-id", RELEASE_ID],
+                     ["--expected-sha", SHA, "--ledger-audit"],
+                     ["--expected-sha", SHA, "--ledger-audit", "--execute"]):
             with self.subTest(args), self.assertRaisesMessage(
                     CommandError, "STAGING_IMAGE_PAID_SMOKE_REFUSED"):
                 call_command("run_staging_image_paid_smoke_once", *args)

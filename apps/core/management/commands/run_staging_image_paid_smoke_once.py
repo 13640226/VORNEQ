@@ -19,12 +19,20 @@ class Command(BaseCommand):
         parser.add_argument("--expected-sha", required=True)
         parser.add_argument("--execute", action="store_true")
         parser.add_argument("--release-id", default="")
+        parser.add_argument("--ledger-audit", action="store_true",
+                            help="read-only shared-ledger inventory (identity, schema, accounts)")
 
     def handle(self, *args, **options):
         sha = options["expected_sha"]
         environ = os.environ
         connection = connections["default"]
         try:
+            if options["ledger_audit"]:
+                if options["execute"] or options["release_id"]:
+                    raise smoke.Refused("--ledger-audit is read-only and stands alone")
+                smoke.e2e.base_context(environ, sha, connection.settings_dict)
+                smoke.ledger_audit(out=self.stdout.write)
+                return None
             if not options["execute"]:
                 if options["release_id"]:
                     raise smoke.Refused("release ID is only accepted with --execute")

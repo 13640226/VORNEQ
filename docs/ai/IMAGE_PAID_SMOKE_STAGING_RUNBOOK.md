@@ -62,10 +62,43 @@ Befehl: `run_staging_image_paid_smoke_once` (Modul `apps/core/staging_image_paid
    Quittung bleiben (Audit). Bei `uncertain`: **keine** Bereinigung
    (`PAID_SMOKE_CLEANUP DEFERRED_FOR_RECONCILIATION`), manuelle Abstimmung.
 
+## Befund: read-only Ledger-Audit vom 20.11.2026
+
+Render-Job `job-dc0bj6gn74is73b2vvq0` auf `srv-dbm7dvc9v7es7393g70g`, SHA
+`10563f4f…`, ausschließlich `SET TRANSACTION READ ONLY` (Skript-SHA-256
+`ca2d6dfc…633d1`). Keine Schreibzugriffe, keine Zugangsdaten in der Ausgabe.
+
+| Kontrolle | Status | Beleg |
+|---|---|---|
+| Ledger aktiv, URL gesetzt | VERIFIED | `ledger_enabled_setting=True`, `ledger_url_set=True` |
+| Datenbankidentität | VERIFIED | `current_database=vorneq_ai_ledger` = erwartet; Host-Ressource `dpg-dbsb7i61egvs73dc37i0-a` |
+| Rolle | VERIFIED | `current_user = session_user = vorneq_ai_ledger_user` |
+| Primary (kein Replica) | VERIFIED | `in_recovery_replica=False`, PostgreSQL 18.6 |
+| Tabellen und Spalten | VERIFIED | BudgetAccount, BudgetReservation, ExternalUsageRecord: Spalten = Modell |
+| Migration in der Ledger-DB | VERIFIED | `ai_ledger_migrations=0001_initial`, keine fremden Apps |
+| Chat-Konto | VERIFIED | 1 Konto, `gpt-5-mini`, `staging,production`, nicht gestoppt, Summen = Zeilen |
+| Gemeinsame Nutzung | VERIFIED | 29 Reservierungen: 15 production, 14 staging (Chat-Konto) |
+| Offene Reservierungen | VERIFIED | `reserved_micro=0`, keine älter als 15 min |
+| Unklare Kosten Chat | OPEN | 6 × `uncertain`, zusammen 34 676 Mikro-USD (≈ 0,035 USD), Abgleich ausstehend |
+| `VORNEQ_AI_IMAGE_LEDGER_ID` | MISSING | `image_ledger_id_set=False` |
+| Eigenes Bild-Konto | MISSING | `account_count=1` (nur Chat) |
+| OpenAI-Projektlimit | NOT_VERIFIED | von hier aus nicht prüfbar |
+
+Moderation: Der Moderation-Endpunkt ist laut OpenAI kostenlos und zählt nicht
+zu den Nutzungslimits; eine abgelehnte Vorab-Moderation verursacht daher keine
+Bildkosten (`request_sent=False` ist zulässig).
+
+Wiederholbar ohne Ad-hoc-Skript (nach Merge/Deploy):
+
+```bash
+DJANGO_SETTINGS_MODULE=config.settings_render \
+python manage.py run_staging_image_paid_smoke_once --expected-sha "$RENDER_GIT_COMMIT" --ledger-audit
+```
+
 ## Voraussetzungen (jeweils eigene Owner-Entscheidung, nicht Teil dieses PR)
 
-1. Ledger-Datenbank (`VORNEQ_AI_LEDGER_DATABASE_URL`) für Staging bestätigt, Tabellen
-   und Migration vorhanden. Keine Migration ohne gesonderte Freigabe.
+1. Ledger-Datenbank, Tabellen und Migration: **bestätigt** (siehe Befund). Keine
+   weitere Migration nötig; keine Migration ohne gesonderte Freigabe.
 2. Eigenes Bild-Konto im Ledger: neue `ledger_id`, `model_id=gpt-image-2.6-flare`,
    Preise 5 000 000 / 30 000 000, `allowed_environments=staging`, kleines Guthaben.
    Anlage ist ein Schreibzugriff auf das gemeinsame Ledger → gesonderte Freigabe.
