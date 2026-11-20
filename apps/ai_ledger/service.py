@@ -2,8 +2,10 @@
 
 Reserve BEFORE every model call, settle AFTER it. All amounts are integer
 micro-USD. Every failure fails closed (no model call). Reservations are never
-returned: a settled reservation is FINALIZED at observed usage (authoritative
-token counts returned by the provider) or UNCERTAIN at its full amount.
+returned after a provider request may have been sent: a settled reservation is
+FINALIZED at observed usage (authoritative token counts returned by the
+provider) or UNCERTAIN at its full amount. The only exception is ``release()``
+for a request that provably never left the process (FINALIZED at zero).
 
 This is an application-side estimate. It cannot guarantee zero overrun: the
 provider does not expose a synchronous authoritative balance, prices may
@@ -264,4 +266,45 @@ def settle(reservation: Reservation, *, usage=None, outcome: str) -> str | None:
         return row.status
     except Exception:
         _logger.warning("ai_ledger_settle_failed reservation=%s", reservation.id)
+        return None
+
+
+RELEASE_PREFIX = "released:"
+RELEASED = "released"
+_RELEASE_REASON = re.compile(r"[a-z0-9_]{1,30}\Z")
+
+
+def release(reservation: Reservation, *, reason: str) -> str | None:
+    """Return ``"released"`` only after commit, for a reservation whose paid
+    provider request provably never left this process.
+
+    Callers must NOT use this for timeouts, disconnects, HTTP 400/401/429/5xx
+    or any outcome after the request was sent: without proof of no charge they
+    stay UNCERTAIN (``settle(usage=None)``). No schema change: the reservation
+    is closed as FINALIZED at zero observed cost with outcome
+    ``released:<reason>`` (auditable). Atomic and idempotent: a reservation
+    that is no longer RESERVED is never touched again (returns None).
+    """
+    from apps.ai_ledger.models import BudgetAccount, BudgetReservation
+
+    if not isinstance(reason, str) or not _RELEASE_REASON.fullmatch(reason):
+        _logger.warning("ai_ledger_release_rejected_reason reservation=%s", reservation.id)
+        return None
+    try:
+        with transaction.atomic(using=LEDGER_ALIAS):
+            row = (BudgetReservation.objects.using(LEDGER_ALIAS).select_for_update()
+                   .get(id=reservation.id))
+            if row.status != BudgetReservation.RESERVED:
+                return None
+            BudgetAccount.objects.using(LEDGER_ALIAS).select_for_update().get(pk=row.account_id)
+            BudgetAccount.objects.using(LEDGER_ALIAS).filter(pk=row.account_id).update(
+                reserved_micro=F("reserved_micro") - row.reserved_micro)
+            row.status, row.observed_micro = BudgetReservation.FINALIZED, 0
+            row.input_tokens, row.output_tokens = 0, 0
+            row.outcome = (RELEASE_PREFIX + reason)[:40]
+            row.settled_at = timezone.now()
+            row.save(using=LEDGER_ALIAS)
+        return RELEASED
+    except Exception:
+        _logger.warning("ai_ledger_release_failed reservation=%s", reservation.id)
         return None

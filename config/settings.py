@@ -551,6 +551,12 @@ VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND = _image_int("VORNEQ_AI_IMAGE_OUTPUT_TOKENS_
 VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD = _image_int("VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD", 0)
 VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS = _image_int("VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS", 3)
 VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS = _image_int("VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS", 10)
+# Paid path only (all default closed): worst-case ledger reservation per request
+# must not exceed this; 0 keeps paid generation disabled.
+VORNEQ_AI_IMAGE_MAX_REQUEST_MICROUSD = _image_int("VORNEQ_AI_IMAGE_MAX_REQUEST_MICROUSD", 0)
+VORNEQ_AI_IMAGE_COMPLEXITY = os.environ.get("VORNEQ_AI_IMAGE_COMPLEXITY", "low")
+# Server-side secret for HMAC safety_identifier; missing keeps paid generation disabled.
+VORNEQ_AI_IMAGE_SAFETY_ID_KEY = os.environ.get("VORNEQ_AI_IMAGE_SAFETY_ID_KEY", "")
 
 # Optional private, durable image bucket. No Render local disk fallback.
 # Explicit configuration is required; do not inherit media/default storage.

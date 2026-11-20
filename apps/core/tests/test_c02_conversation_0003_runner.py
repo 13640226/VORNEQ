@@ -203,7 +203,10 @@ class DisposablePostgresRunnerTests(TransactionTestCase):
                 self.assertTrue(response["pending"])
                 runner._state(connection, runner.PRE_HISTORY, runner.PRE_TABLES)
         finally:
-            MigrationExecutor(connection).migrate([("ai_core", "0003_conversation")])
+            # Restore the newest ai_core schema (not only 0003): later migrations
+            # (e.g. 0004 image tables) must exist for subsequent TransactionTestCases.
+            executor = MigrationExecutor(connection)
+            executor.migrate(executor.loader.graph.leaf_nodes("ai_core"))
 
     def test_rehearsal_rollback(self):
         self._exercise(commit=False)

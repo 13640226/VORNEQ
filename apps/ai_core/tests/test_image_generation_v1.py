@@ -203,7 +203,8 @@ class ImageGenerationTests(TestCase):
              patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-never-live"}), \
              self.assertRaises(ImageProviderError):
             OpenAIImageProvider().generate(
-                prompt="A harmless landscape", model="gpt-image-2.6-flare", size="1024x1024"
+                prompt="A harmless landscape", model="gpt-image-2.6-flare", size="1024x1024",
+                safety_identifier="vq_" + "0" * 64,
             )
         self.assertEqual(self.sdk_calls, ["OpenAI"])
         self.sdk_calls.clear()
