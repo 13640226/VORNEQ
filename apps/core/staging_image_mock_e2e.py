@@ -469,6 +469,10 @@ def _execute_locked(connection, target, expected_sha, *, public_host, out, fetch
             report.ok("process_gate_mock_only", out)
             url = reverse("ai_core:image-jobs")
             rid = uuid.uuid4()
+            # Fix the only permissible R2 key BEFORE the worker can upload.
+            # A worker may save the object and then fail before storage_key is
+            # committed to PostgreSQL or returned to this runner.
+            key = "ai-generated/{}/{}.png".format(owner.pk, rid.hex)
             payload = json.dumps({"request_id": str(rid),
                                   "prompt": "VORNEQ staging mock E2E " + tag,
                                   "size": "1024x1024"})
@@ -503,11 +507,10 @@ def _execute_locked(connection, target, expected_sha, *, public_host, out, fetch
             require(process_next_image_job() == rid, "worker did not process the test job",
                     Aborted)
             job = AIImageJob.objects.get(pk=rid)
-            key = job.storage_key
             require(job.status == AIImageJob.STATUS_COMPLETED and job.is_mock
                     and job.provider == "mock" and job.prompt == "" and job.attempts == 1
                     and job.reservation_id is None
-                    and key == "ai-generated/{}/{}.png".format(owner.pk, rid.hex),
+                    and job.storage_key == key,
                     "worker result invalid", Aborted)
             report.ok("worker_once_completed", out)
             require(image_storage().exists(key), "R2 object missing", Aborted)
@@ -564,19 +567,26 @@ def _cleanup(report, users, key, clients, day, quota_before, out):
             client.logout()
         except Exception:
             failed = True
+    object_gone = True
     if key:
         try:
             storage = image_storage()
+            # Deterministic key is retained even if the worker never returned.
+            # An uncertain delete/readback must never discard the owner anchor.
             storage.delete(key)
-            gone = not storage.exists(key)
+            object_gone = not storage.exists(key)
         except Exception:
-            gone = False
-        report.clean("r2_object_deleted", gone, out)
-        failed |= not gone
-    try:
-        AIImageJob.objects.filter(owner__in=users).delete()
-        ok = not AIImageJob.objects.filter(owner__in=users).exists()
-    except Exception:
+            object_gone = False
+        report.clean("r2_object_deleted", object_gone, out)
+        failed |= not object_gone
+    if object_gone:
+        try:
+            AIImageJob.objects.filter(owner__in=users).delete()
+            ok = not AIImageJob.objects.filter(owner__in=users).exists()
+        except Exception:
+            ok = False
+    else:
+        # Keep DB job / owner IDs for --find-residue and manual R2 recovery.
         ok = False
     report.clean("image_jobs_deleted", ok, out)
     failed |= not ok
@@ -594,14 +604,19 @@ def _cleanup(report, users, key, clients, day, quota_before, out):
         ok = False
     report.clean("quota_restored", ok, out)
     failed |= not ok
-    try:
-        ids = [u.pk for u in users if u.pk]
-        for user in users:
-            if user.pk:
-                user.delete()
-        from django.contrib.auth import get_user_model
-        ok = not get_user_model().objects.filter(pk__in=ids).exists()
-    except Exception:
+    if not failed:
+        try:
+            ids = [u.pk for u in users if u.pk]
+            for user in users:
+                if user.pk:
+                    user.delete()
+            from django.contrib.auth import get_user_model
+            ok = not get_user_model().objects.filter(pk__in=ids).exists()
+        except Exception:
+            ok = False
+    else:
+        # Never remove the only searchable owner prefix when any preceding
+        # cleanup step is unverified; require manual residue reconciliation.
         ok = False
     report.clean("disposable_users_deleted", ok, out)
     failed |= not ok
