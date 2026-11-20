@@ -38,7 +38,7 @@ other migrations or schema drift after any deployment.
 
 ## Scoped human independent-reviewer waiver (owner direction, 2026-11-20)
 
-For **PR #665** and the **Staging-only `ai_core.0004_image_generation_job_v1`** release path, the repository administrator has waived the requirement for a separate human code reviewer. This decision is recorded in [Issue #664](https://github.com/13640226/VORNEQ/issues/664). It is not a GitHub owner execution permit, does not override required GitHub status checks (including any failed `merge-authorization` context), and does not waive CI, Security Audit, runtime identity, a fresh backup and isolated restore, scoped C02 authorization, or the authenticated 15-minute owner comment. All Production, other migrations, Worker, and paid image calls are excluded.
+For **PR #665** and the **Staging-only `ai_core.0004_image_generation_job_v1`** release path, the repository administrator has waived the requirement for a separate human code reviewer. This decision is recorded in [Issue #664](https://github.com/13640226/VORNEQ/issues/664). It is not a GitHub owner execution permit, does not override required GitHub status checks (including any failed `merge-authorization` context), and does not waive CI, Security Audit, runtime identity, a fresh backup and isolated restore, scoped C02 authorization, or the authenticated 30-minute owner comment. All Production, other migrations, Worker, and paid image calls are excluded.
 
 ## Release prerequisites — all required
 
@@ -70,7 +70,7 @@ real, current values for `release_id`, `sha`, `backup_sha256`,
 `backup_evidence`, `backup_exported_at`, `restore_verified_at` and
 `expires_at` after all checks have passed. The backup export and its
 isolated restore must be within two hours of execution.
-The expiry must be no more than 15 minutes after the *comment creation*.
+The expiry must be no more than 30 minutes after the *comment creation*.
 
 ```text
 STAGING_IMAGE_0004_OWNER_RELEASE_V1
