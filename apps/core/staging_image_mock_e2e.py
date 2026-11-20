@@ -269,6 +269,13 @@ def inspect(connection, expected_sha, *, environ, out=print):
     out("MIGRATION_0004_APPLIED=True")
     out("SERVICE_IMAGE_GATES_CLOSED=True")
     out("R2_PRIVATE_CONFIGURED=True")
+    from apps.ai_core.image_generation.storage import image_storage
+    try:  # local presign only, no network
+        check_signed_url(image_storage().url("ai-generated/preflight/check.png"),
+                         endpoint_host=configured_endpoint_host())
+    except Aborted as exc:
+        raise Refused(str(exc)) from None
+    out("R2_SIGNED_URL_SIGV4=True")
     out("IMAGE_QUEUE_EMPTY=True")
     out("READ_ONLY_PREFLIGHT_COMPLETE")
     return queue
@@ -328,9 +335,62 @@ def consume_one_use_receipt(connection, target, expected_sha):
         receipt.close()
 
 
-# --- Signed URL fetch (no redirects, private R2 host only) -------------------
+# --- Signed URL checks and fetch (no redirects, pinned R2 host only) ---------
+
+SIGV4_ALGORITHM = "AWS4-HMAC-SHA256"
+R2_CREDENTIAL_SCOPE = "/auto/s3/aws4_request"
+_R2_CODE = re.compile(rb"<Code>([A-Za-z0-9]{1,64})</Code>")
+_SAFE_TYPE = re.compile(r"[A-Za-z0-9/.+-]{1,64}\Z")
+
+
+@dataclass(frozen=True)
+class Download:
+    status: int
+    content_type: str
+    body: bytes
+    truncated: bool = False
+
+    def describe(self):
+        """Safe diagnostics only: never the URL, query, headers or credentials."""
+        ctype = self.content_type.split(";", 1)[0].strip().lower()
+        code = _R2_CODE.search(self.body[:4096]) if self.status != 200 else None
+        return "status={} content_type={} bytes={}{} r2_code={}".format(
+            self.status, ctype if _SAFE_TYPE.fullmatch(ctype or "-") else "invalid",
+            len(self.body), "+" if self.truncated else "",
+            code.group(1).decode("ascii") if code else "-")
+
+
+def configured_endpoint_host():
+    options = settings.STORAGES.get("ai_images", {}).get("OPTIONS", {})
+    return (urlsplit(options.get("endpoint_url") or "").hostname or "").lower()
+
+
+def check_signed_url(url, *, endpoint_host, bucket=BUCKET):
+    """Local check of the URL shape before any network access."""
+    parts = urlsplit(url)
+    require(parts.scheme == "https" and (parts.hostname or "").lower() == endpoint_host
+            and bool(endpoint_host) and parts.port in (None, 443)
+            and not parts.username and not parts.password,
+            "signed URL host is not the pinned private R2 endpoint", Aborted)
+    require(parts.path.startswith("/{}/ai-generated/".format(bucket)),
+            "signed URL path is not the private image bucket", Aborted)
+    query = {}
+    for item in parts.query.split("&"):
+        name, _, value = item.partition("=")
+        require(name not in query, "duplicate signed URL parameter", Aborted)
+        query[name] = value
+    require(not ({"AWSAccessKeyId", "Signature"} & set(query)),
+            "signed URL uses legacy SigV2 query authentication", Aborted)
+    require(query.get("X-Amz-Algorithm") == SIGV4_ALGORITHM
+            and bool(query.get("X-Amz-Signature"))
+            and query.get("X-Amz-SignedHeaders") == "host"
+            and query.get("X-Amz-Credential", "").replace("%2F", "/")
+                .endswith(R2_CREDENTIAL_SCOPE),
+            "signed URL is not R2 SigV4 (region auto)", Aborted)
+
 
 def fetch_url(url):
+    """HTTPS GET without redirects; transport errors never expose the URL."""
     parts = urlsplit(url)
     host = (parts.hostname or "").lower()
     require(parts.scheme == "https" and host.endswith(".r2.cloudflarestorage.com")
@@ -342,9 +402,50 @@ def fetch_url(url):
         connection.request("GET", path, headers={"User-Agent": "VORNEQ-Mock-E2E/1.0"})
         response = connection.getresponse()
         body = response.read(MAX_PNG_BYTES + 1)
-        return response.status, body
+        return Download(response.status, response.getheader("Content-Type", "") or "",
+                        body[:MAX_PNG_BYTES], len(body) > MAX_PNG_BYTES)
+    except Aborted:
+        raise
+    except (OSError, http.client.HTTPException, ValueError) as exc:
+        raise Aborted("signed download transport error: " + type(exc).__name__) from None
     finally:
         connection.close()
+
+
+def verify_signed_download(download, expected_digest):
+    require(isinstance(download, Download), "signed download result invalid", Aborted)
+    info = download.describe()
+    require(not download.truncated, "signed download exceeds size limit (" + info + ")",
+            Aborted)
+    require(not 300 <= download.status < 400, "signed download redirected (" + info + ")",
+            Aborted)
+    require(download.status == 200, "signed download rejected by storage (" + info + ")",
+            Aborted)
+    require(download.content_type.split(";", 1)[0].strip().lower() == "image/png",
+            "signed download has wrong content type (" + info + ")", Aborted)
+    require(download.body.startswith(b"\x89PNG\r\n\x1a\n"),
+            "signed download is not a PNG (" + info + ")", Aborted)
+    require(hashlib.sha256(download.body).hexdigest() == expected_digest,
+            "signed download digest mismatch (" + info + ")", Aborted)
+
+
+def diagnose_signed_url(*, out=print, fetch=fetch_url, endpoint_host=None):
+    """Read-only: presign a GET for a random, non-existent key and fetch it.
+
+    SigV4 accepted by R2 -> 404 NoSuchKey. A signature problem -> 400/403 with
+    its R2 error code. Writes nothing; prints no URL, query or credential.
+    """
+    from apps.ai_core.image_generation.storage import image_storage
+    host = endpoint_host or configured_endpoint_host()
+    key = "ai-generated/diagnostic-nonexistent/{}.png".format(uuid.uuid4().hex)
+    url = image_storage().url(key)
+    check_signed_url(url, endpoint_host=host)
+    out("R2_SIGNED_URL_SIGV4=True")
+    download = fetch(url)
+    out("R2_SIGNED_GET " + download.describe())
+    accepted = download.status == 404 and b"NoSuchKey" in download.body[:4096]
+    out("R2_SIGNED_URL_RESULT: {}".format("SIGNATURE_ACCEPTED" if accepted else "REJECTED"))
+    return accepted
 
 
 # --- Mutual exclusion --------------------------------------------------------
@@ -432,17 +533,21 @@ def _gate_settings(target, expected_sha, user_ids):
 
 
 def execute_once(connection, target, expected_sha, *, public_host, out=print,
-                 fetch=fetch_url, consume=consume_one_use_receipt):
+                 fetch=fetch_url, consume=consume_one_use_receipt, endpoint_host=None):
     """Exactly one mock job for disposable users; cleanup is always attempted."""
+    endpoint_host = endpoint_host or configured_endpoint_host()
+    require(bool(endpoint_host), "private R2 endpoint host unavailable")
     held = acquire_run_lock(connection)
     try:
         return _execute_locked(connection, target, expected_sha, public_host=public_host,
-                               out=out, fetch=fetch, consume=consume)
+                               out=out, fetch=fetch, consume=consume,
+                               endpoint_host=endpoint_host)
     finally:
         release_run_lock(connection, held)
 
 
-def _execute_locked(connection, target, expected_sha, *, public_host, out, fetch, consume):
+def _execute_locked(connection, target, expected_sha, *, public_host, out, fetch, consume,
+                    endpoint_host):
     from django.contrib.auth import get_user_model
     from django.test import Client
     from django.test.utils import override_settings
@@ -544,14 +649,16 @@ def _execute_locked(connection, target, expected_sha, *, public_host, out, fetch
             r = anon.get(detail, secure=True)
             require(r.status_code == 401, "anonymous detail not rejected", Aborted)
             report.ok("anonymous_detail_401", out)
-            status, data = fetch(signed)
-            require(status == 200 and data.startswith(b"\x89PNG\r\n\x1a\n")
-                    and hashlib.sha256(data).hexdigest() == job.image_digest,
-                    "signed download invalid", Aborted)
+            check_signed_url(signed, endpoint_host=endpoint_host)
+            report.ok("signed_url_sigv4", out)
+            download = fetch(signed)
+            verify_signed_download(download, job.image_digest)
             report.ok("signed_download_digest_match", out)
-            unsigned = signed.split("?", 1)[0]
-            status, _ = fetch(unsigned)
-            require(status in (400, 401, 403), "object readable without signature", Aborted)
+            unsigned = fetch(signed.split("?", 1)[0])
+            require(isinstance(unsigned, Download) and unsigned.status in (400, 401, 403),
+                    "object readable without signature ("
+                    + (unsigned.describe() if isinstance(unsigned, Download) else "-")
+                    + ")", Aborted)
             report.ok("unsigned_access_denied", out)
     except Exception as exc:  # report, then always clean up
         failure = exc

@@ -141,6 +141,37 @@ python manage.py run_staging_image_mock_e2e_once \
    `IMAGE_JOB_ROW_COUNT`/`IMAGE_QUOTA_ROW_COUNT` wie vor dem Test.
 3. Ergebnis (Log-Zeilen, Release-ID, SHA, Kommentar-ID; keine URLs/Token) in Issue #664 dokumentieren.
 
+## Signierte R2-URL prüfen (read-only)
+
+Befund vom 20.11.2026 (Release `IMGE2E-20261120-1722Z-02`, Job `job-dc0853gn74is73a4iai0`):
+`signed download invalid`. Ursache: Ohne explizite Signaturversion/Region
+erzeugte botocore die signierte GET-URL im veralteten SigV2-Format
+(`AWSAccessKeyId`/`Signature`/`Expires`); Cloudflare R2 akzeptiert nur SigV4.
+Header-signierte PUT/HEAD-Aufrufe funktionierten deshalb, der Download nicht.
+Seit diesem Fix setzt `config/image_storage.py` `signature_version=s3v4`,
+`region_name=auto` und `addressing_style=path`; `durable_storage_ready()`
+meldet eine Konfiguration ohne SigV4 nicht mehr als bereit.
+
+Der Preflight prüft die URL-Form lokal (ohne Netz) und meldet
+`R2_SIGNED_URL_SIGV4=True`. Zusätzlich, ohne Owner-Freigabe und ohne
+Schreibzugriff:
+
+```bash
+DJANGO_SETTINGS_MODULE=config.settings_render \
+python manage.py run_staging_image_mock_e2e_once --expected-sha "$RENDER_GIT_COMMIT" --diagnose-signed-url
+```
+
+Signiert einen GET auf einen zufälligen, nicht existierenden Schlüssel und
+ruft ihn ab. Erwartet: `R2_SIGNED_GET status=404 … r2_code=NoSuchKey` und
+`R2_SIGNED_URL_RESULT: SIGNATURE_ACCEPTED`. Bei 400/403 wird nur Status,
+Content-Type, Größe und R2-Fehlercode ausgegeben – nie URL, Query oder Zugangsdaten.
+Erst nach `SIGNATURE_ACCEPTED` eine neue Owner-Freigabe für den E2E-Lauf anlegen.
+
+Fehlermeldungen des Downloads sind jetzt einzeln unterscheidbar:
+`rejected by storage`, `redirected`, `wrong content type`, `is not a PNG`,
+`digest mismatch`, `exceeds size limit`, `transport error: <Typ>`,
+`legacy SigV2`, `not the pinned private R2 endpoint`.
+
 ## Reste nach Abbruch finden (read-only)
 
 ```bash
