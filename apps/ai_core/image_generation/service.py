@@ -13,7 +13,7 @@ from django.db import connection, transaction
 from django.utils import timezone
 
 from apps.ai_core.models import AIImageDailyQuota, AIImageJob
-from .policy import SIZES, actor_allowed, enabled, paid_provider_enabled
+from .policy import SIZES, actor_allowed, enabled, worker_enabled, paid_provider_enabled
 from .providers import MockImageProvider, OpenAIImageProvider
 from .storage import image_storage, store_image
 
@@ -104,10 +104,14 @@ def serialize_job(job):
 
 def process_next_image_job():
     """Run exactly one job. A claimed/uncertain job is NEVER auto-retried."""
-    if not enabled():
+    worker_mode = worker_enabled()
+    if not (enabled() or worker_mode):
         return None
     with transaction.atomic():
         qs = AIImageJob.objects.filter(status=AIImageJob.STATUS_QUEUED).order_by("created_at")
+        # A mock-only Worker MUST NOT claim paid provider jobs.
+        if worker_mode:
+            qs = qs.filter(provider="mock")
         if connection.features.has_select_for_update_skip_locked:
             qs = qs.select_for_update(skip_locked=True)
         elif connection.features.has_select_for_update:
@@ -115,7 +119,7 @@ def process_next_image_job():
         job = qs.first()
         if job is None:
             return None
-        if not actor_allowed(job.owner):
+        if not actor_allowed(job.owner, worker=worker_mode):
             job.status = AIImageJob.STATUS_FAILED
             job.error_code = "authorization_revoked"
             job.prompt = ""
@@ -137,7 +141,7 @@ def process_next_image_job():
                 StagingDailyLimit, reserve_with_config, settle,
             )
             from .policy import image_ledger_config
-            if (not paid_provider_enabled() or not actor_allowed(job.owner)
+            if (not paid_provider_enabled() or not actor_allowed(job.owner, worker=worker_mode)
                     or job.model_id != getattr(
                         settings, "VORNEQ_AI_IMAGE_MODEL", "")):
                 raise ImageQueueError("paid provider disabled")
@@ -158,7 +162,7 @@ def process_next_image_job():
             AIImageJob.objects.filter(pk=job_id, status=AIImageJob.STATUS_RUNNING).update(
                 reservation_id=reservation.id
             )
-            if not paid_provider_enabled() or not actor_allowed(job.owner):
+            if not paid_provider_enabled() or not actor_allowed(job.owner, worker=worker_mode):
                 raise ImageQueueError("paid provider gate closed")
             provider = OpenAIImageProvider()
         else:
