@@ -536,6 +536,8 @@ VORNEQ_AI_IMAGE_MODEL = os.environ.get("VORNEQ_AI_IMAGE_MODEL", "gpt-image-2.6-f
 VORNEQ_AI_IMAGE_ALLOWED_USER_IDS = os.environ.get("VORNEQ_AI_IMAGE_ALLOWED_USER_IDS", "")
 VORNEQ_AI_IMAGE_AUTHORIZED_SHA = os.environ.get("VORNEQ_AI_IMAGE_AUTHORIZED_SHA", "")
 VORNEQ_AI_IMAGE_OWNER_AUTH = os.environ.get("VORNEQ_AI_IMAGE_OWNER_AUTH", "")
+# Separate MOCK-only Render Background Worker identity; defaults to no Worker.
+VORNEQ_AI_IMAGE_WORKER_SERVICE_ID = os.environ.get("VORNEQ_AI_IMAGE_WORKER_SERVICE_ID", "")
 VORNEQ_AI_IMAGE_LEDGER_ID = os.environ.get("VORNEQ_AI_IMAGE_LEDGER_ID", "")
 
 
