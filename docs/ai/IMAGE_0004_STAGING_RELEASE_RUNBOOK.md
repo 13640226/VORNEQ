@@ -1,6 +1,6 @@
 # VORNEQ — ai_core.0004 Staging one-use migration release
 
-Status: **PROPOSED / NO_GO until all gates are independently verified.**
+Status: **PROPOSED / NO_GO until all operational release gates are verified.**
 
 This runbook is **not** an owner grant. Generic `migrate-staging.yml`,
 `scripts/db_target_guard.py`, C02 Production guards, and Production image
@@ -36,11 +36,14 @@ release. A previously verified backup may be stale.** Confirm source database
 identity, archive SHA, restore logs, and same-backup provenance. Check for
 other migrations or schema drift after any deployment.
 
+## Scoped human independent-reviewer waiver (owner direction, 2026-11-20)
+
+For **PR #665** and the **Staging-only `ai_core.0004_image_generation_job_v1`** release path, the repository administrator has waived the requirement for a separate human code reviewer. This decision is recorded in [Issue #664](https://github.com/13640226/VORNEQ/issues/664). It is not a GitHub owner execution permit, does not override required GitHub status checks (including any failed `merge-authorization` context), and does not waive CI, Security Audit, runtime identity, a fresh backup and isolated restore, scoped C02 authorization, or the authenticated 15-minute owner comment. All Production, other migrations, Worker, and paid image calls are excluded.
+
 ## Release prerequisites — all required
 
-1. Review and merge the one-use migration runner PR; run CI and security audit.
-   Deploy the new SHA to **Staging only**. Do not activate the image feature.
-2. Independently read Render control-plane service/DB metadata. From Render
+1. The merged one-use runner PR #665 does **not** require a human independent reviewer for this scope. CI and Security Audit must be green, and any failed required GitHub status must be investigated rather than misrepresented as passing. Deploy the current merged SHA to **Staging only**. Do not activate the image feature.
+2. Verify Render control-plane service/DB metadata against the live runtime. From Render
    runtime verify the same database, PostgreSQL role, hostname resource prefix,
    current SHA, writable primary, and *exactly one* pending migration.
    Hostname/name match is operational evidence, **not** cryptographic
@@ -56,9 +59,9 @@ other migrations or schema drift after any deployment.
    isolated one-use receipt rights. Its deterministic UUID is inserted using a
    *separate autocommit database connection*, so reuse is rejected even if
    the DDL transaction rolls back. An ambiguous attempt **must not be retried**.
-6. Independent approval explicitly scoped to Staging, the new deployed SHA,
+6. Separate authenticated **owner execution authorization** explicitly scoped to Staging, the new deployed SHA,
    this one migration, the backup, and this release ID must be recorded before
-   arming. Operational C02 governance still needs separate sign-off.
+   arming. Operational C02 governance still needs separate sign-off; this is not a human reviewer requirement.
 
 ## New GitHub owner comment format — template, not approval
 
@@ -80,7 +83,7 @@ and checked again before receipt consumption and before migration commit.
 ## Dedicated command (not automatically run by deploy)
 
 The command starts in **read-only** mode. Execute it within positively
-identified Render Staging (only after merging/deploying the reviewed runner):
+identified Render Staging (only after deploying the merged runner):
 
 ```bash
 DJANGO_SETTINGS_MODULE=config.settings_render \
@@ -100,7 +103,7 @@ VORNEQ_IMAGE_0004_BACKUP_EVIDENCE=<VERIFIED_RESTORE_ID>
 VORNEQ_IMAGE_0004_GITHUB_READ_TOKEN=<SCOPED_READ_ONLY_TOKEN_FROM_RENDER_SECRET>
 ```
 
-The independent, already-approved one-use run is then scoped to:
+The separately owner-approved one-use run is then scoped to:
 
 ```bash
 DJANGO_SETTINGS_MODULE=config.settings_render \
@@ -111,7 +114,7 @@ python manage.py migrate_ai_image_0004_staging_once \
 
 **Do not run the command above until an authenticated fresh owner comment,
 C02 scoped exception, Render identity, backup evidence, exact plan, and CI
-are all independently verified.** Do not use bare `manage.py migrate`.
+are all verified.** No human independent reviewer is required for this scoped Staging release. Do not use bare `manage.py migrate`.
 
 After an approved run, verify `showmigrations ai_core`, inspect both new
 tables and indexes, check the append-only receipt and Render logs, remove
