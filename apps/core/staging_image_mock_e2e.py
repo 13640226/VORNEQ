@@ -380,7 +380,18 @@ def find_residue(*, out=print):
     try:
         storage = image_storage()
         for pk in users:
-            objects += len(storage.listdir("ai-generated/{}/".format(pk))[1])
+            prefix = "ai-generated/{}/".format(pk)
+            try:
+                _, files = storage.listdir(prefix)
+            except FileNotFoundError:
+                # InMemoryStorage raises when a test user's prefix was never
+                # created; this is an empty prefix, not an R2 service failure.
+                # Never apply this exception to the real remote S3 backend.
+                from django.core.files.storage import InMemoryStorage
+                if not isinstance(storage, InMemoryStorage):
+                    raise
+                files = []
+            objects += len(files)
     except Exception:
         listing_ok = False
     audit = apps.get_model("audit", "AuditEvent")
