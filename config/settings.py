@@ -576,6 +576,9 @@ if _IMAGE_BUCKET and _IMAGE_ENDPOINT and _IMAGE_ACCESS and _IMAGE_SECRET:
             "secret_key": _IMAGE_SECRET,
             "default_acl": "private",
             "querystring_auth": True,
+            # R2 only supports SigV4 presigned URLs; SigV2 fails with HTTP 401.
+            "signature_version": "s3v4",
+            "querystring_expire": 900,
             "file_overwrite": False,
             "custom_domain": None,
         },
