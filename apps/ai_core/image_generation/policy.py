@@ -7,6 +7,8 @@ import uuid
 from django.conf import settings
 
 STAGING_SERVICE_ID = "srv-dbm7dvc9v7es7393g70g"
+PRODUCTION_SERVICE_ID = "srv-dadn07eq1p3s73eccau0"
+_WORKER_ID = re.compile(r"srv-[a-z0-9]{20,32}\Z")
 _SHA = re.compile(r"[0-9a-f]{40}\Z")
 _OWNER = re.compile(r"OWNER-AUTH-AI-IMAGE-STAGING-[A-Z0-9-]{6,100}\Z")
 MODELS = frozenset({
@@ -58,8 +60,36 @@ def enabled():
     )
 
 
-def actor_allowed(user):
-    if not enabled() or not (
+def worker_enabled():
+    """Explicitly separate, MOCK-ONLY background-worker identity.
+
+    A Render worker never inherits the web-service grant. Its own service ID
+    must be configured after separately authorized provisioning. No Production
+    or paid-worker route is granted by this function.
+    """
+    if (not getattr(settings, "VORNEQ_AI_IMAGE_ENABLED", False)
+            or getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", False)
+            or getattr(settings, "VORNEQ_ENV", "") != "staging"
+            or getattr(settings, "DEBUG", True)
+            or getattr(settings, "VORNEQ_AI_IMAGE_PROVIDER", "") != "mock"
+            or getattr(settings, "VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED", False)):
+        return False
+    worker_id = getattr(settings, "VORNEQ_AI_IMAGE_WORKER_SERVICE_ID", "")
+    expected = getattr(settings, "VORNEQ_AI_IMAGE_AUTHORIZED_SHA", "")
+    owner = getattr(settings, "VORNEQ_AI_IMAGE_OWNER_AUTH", "")
+    return bool(
+        isinstance(worker_id, str) and _WORKER_ID.fullmatch(worker_id)
+        and worker_id not in (STAGING_SERVICE_ID, PRODUCTION_SERVICE_ID)
+        and os.getenv("RENDER_SERVICE_ID") == worker_id
+        and isinstance(expected, str) and _SHA.fullmatch(expected)
+        and os.getenv("RENDER_GIT_COMMIT") == expected
+        and isinstance(owner, str) and _OWNER.fullmatch(owner)
+        and _ids()
+    )
+
+
+def actor_allowed(user, *, worker=False):
+    if not (worker_enabled() if worker else enabled()) or not (
         getattr(user, "is_authenticated", False)
         and getattr(user, "is_active", False)
     ):
