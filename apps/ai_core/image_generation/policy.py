@@ -157,7 +157,8 @@ def paid_provider_enabled():
         return False
     if getattr(settings, "VORNEQ_AI_IMAGE_MODEL", "") not in MODELS:
         return False
-    if not os.getenv("OPENAI_API_KEY"):
+    # Never use the chat OpenAI project for paid image requests.
+    if not os.getenv("VORNEQ_OPENAI_IMAGE_API_KEY", "").strip():
         return False
     try:
         image_ledger_config()

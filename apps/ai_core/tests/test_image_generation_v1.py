@@ -200,7 +200,7 @@ class ImageGenerationTests(TestCase):
         # Guard for the guard: if every runtime gate were bypassed, the tripwire
         # must be hit and recorded even though the provider swallows the error.
         with patch("apps.ai_core.image_generation.policy.paid_provider_enabled", return_value=True), \
-             patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-never-live"}), \
+             patch.dict(os.environ, {"VORNEQ_OPENAI_IMAGE_API_KEY": "synthetic-never-live"}), \
              self.assertRaises(ImageProviderError):
             OpenAIImageProvider().generate(
                 prompt="A harmless landscape", model="gpt-image-2.6-flare", size="1024x1024",

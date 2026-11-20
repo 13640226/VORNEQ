@@ -247,7 +247,8 @@ def _settings_checks(checks, *, cap_micro):
                "worst_case_micro={} max_bound_for_cap={}".format(
                    worst, max_output_bound_for(min(request_cap or 0, cap_micro))))
     checks.add("safety_identifier_key", policy.safety_key_ready())
-    checks.add("openai_key_present", bool(os.environ.get("OPENAI_API_KEY")))
+    checks.add("image_openai_key_present",
+               bool(os.environ.get("VORNEQ_OPENAI_IMAGE_API_KEY", "").strip()))
     checks.add("openai_sdk_installed", importlib.util.find_spec("openai") is not None)
     checks.add("no_worker_identity",
                not getattr(settings, "VORNEQ_AI_IMAGE_WORKER_SERVICE_ID", "")

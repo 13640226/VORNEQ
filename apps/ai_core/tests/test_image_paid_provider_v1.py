@@ -89,7 +89,7 @@ PAID = dict(VORNEQ_AI_IMAGE_MODEL=MODEL, VORNEQ_AI_IMAGE_COMPLEXITY="low",
 class PaidProviderTests(SimpleTestCase):
     def run_provider(self, sdk, *, safety=SAFETY, gate=True):
         with patch.dict(sys.modules, {"openai": sdk.module()}), \
-                patch.dict("os.environ", {"OPENAI_API_KEY": "synthetic-never-live"}), \
+                patch.dict("os.environ", {"VORNEQ_OPENAI_IMAGE_API_KEY": "synthetic-never-live"}), \
                 patch.object(policy, "paid_provider_enabled", return_value=gate):
             return OpenAIImageProvider().generate(prompt="A small green leaf", model=MODEL,
                                                   size="1024x1024", safety_identifier=safety)
@@ -108,10 +108,42 @@ class PaidProviderTests(SimpleTestCase):
         self.assertEqual((result.input_tokens, result.output_tokens, result.is_mock),
                          (12, 310, False))
         self.assertEqual(sdk.ctor_kwargs["max_retries"], 0)
+        self.assertEqual(sdk.ctor_kwargs["api_key"], "synthetic-never-live")
         self.assertEqual(sdk.image_calls(), [dict(
             model=MODEL, prompt="A small green leaf", n=1, size="1024x1024", quality="low",
             output_format="png", moderation="auto", complexity="low",
             safety_identifier=SAFETY)])
+
+    def test_dedicated_image_key_never_uses_chat_key(self):
+        sdk = FakeSDK()
+        with (patch.dict(sys.modules, {"openai": sdk.module()}),
+              patch.dict("os.environ", {
+                  "OPENAI_API_KEY": "synthetic-chat-project-key",
+                  "VORNEQ_OPENAI_IMAGE_API_KEY": "synthetic-image-project-key",
+              }),
+              patch.object(policy, "paid_provider_enabled", return_value=True)):
+            OpenAIImageProvider().generate(
+                prompt="A small green leaf", model=MODEL, size="1024x1024",
+                safety_identifier=SAFETY)
+        self.assertEqual(sdk.ctor_kwargs["api_key"], "synthetic-image-project-key")
+        self.assertNotEqual(sdk.ctor_kwargs["api_key"], "synthetic-chat-project-key")
+        self.assertEqual(len(sdk.image_calls()), 1)
+
+    def test_missing_image_key_never_falls_back_to_chat_key(self):
+        sdk = FakeSDK()
+        with (patch.dict(sys.modules, {"openai": sdk.module()}),
+              patch.dict("os.environ", {
+                  "OPENAI_API_KEY": "synthetic-chat-project-key",
+                  "VORNEQ_OPENAI_IMAGE_API_KEY": "",
+              }),
+              patch.object(policy, "paid_provider_enabled", return_value=True)):
+            with self.assertRaises(ImageProviderError) as caught:
+                OpenAIImageProvider().generate(
+                    prompt="A small green leaf", model=MODEL, size="1024x1024",
+                    safety_identifier=SAFETY)
+        self.assertEqual((caught.exception.code, caught.exception.request_sent),
+                         ("image_api_key_missing", False))
+        self.assertIsNone(sdk.ctor_kwargs)
 
     def test_moderation_block_is_not_sent(self):
         sdk = FakeSDK(flagged=True)
@@ -216,7 +248,7 @@ class PaidGateConfigurationTests(SimpleTestCase):
                 patch.object(policy, "image_ledger_config", return_value=object()), \
                 patch("apps.ai_core.image_generation.storage.durable_storage_ready",
                       return_value=True), \
-                patch.dict("os.environ", {"OPENAI_API_KEY": "synthetic-never-live"}):
+                patch.dict("os.environ", {"VORNEQ_OPENAI_IMAGE_API_KEY": "synthetic-never-live"}):
             return policy.paid_provider_enabled()
 
     def test_all_controls_set_opens_only_in_process(self):
@@ -231,6 +263,29 @@ class PaidGateConfigurationTests(SimpleTestCase):
                      {"VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED": False}):
             with self.subTest(over):
                 self.assertFalse(self.enabled_with(**over))
+
+    def test_chat_key_only_keeps_paid_image_gate_closed(self):
+        with (override_settings(**self.BASE),
+              patch.object(policy, "enabled", return_value=True),
+              patch.object(policy, "image_ledger_config", return_value=object()),
+              patch("apps.ai_core.image_generation.storage.durable_storage_ready",
+                    return_value=True),
+              patch.dict("os.environ", {
+                  "OPENAI_API_KEY": "synthetic-chat-project-key",
+                  "VORNEQ_OPENAI_IMAGE_API_KEY": "",
+              })):
+            self.assertFalse(policy.paid_provider_enabled())
+
+    def test_whitespace_image_key_fails_closed(self):
+        with (override_settings(**self.BASE),
+              patch.object(policy, "enabled", return_value=True),
+              patch.object(policy, "image_ledger_config", return_value=object()),
+              patch("apps.ai_core.image_generation.storage.durable_storage_ready",
+                    return_value=True),
+              patch.dict("os.environ", {
+                  "VORNEQ_OPENAI_IMAGE_API_KEY": "   ",
+              })):
+            self.assertFalse(policy.paid_provider_enabled())
 
     def test_official_price_reference(self):
         self.assertEqual(policy.OFFICIAL_PRICES_MICRO_PER_MTOK[MODEL], (5_000_000, 30_000_000))
