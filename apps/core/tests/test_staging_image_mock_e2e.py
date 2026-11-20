@@ -22,6 +22,7 @@ RELEASE_ID = "IMGE2E-OWNER-20261120"
 NOW = datetime(2026, 11, 20, 16, 0, tzinfo=timezone.utc)
 API = "https://api.github.com/repos/13640226/VORNEQ"
 HOST = "vorneq-staging.example.onrender.com"
+R2_HOST = "acct.r2.cloudflarestorage.com"
 
 
 def comment(*, created=NOW, changed=False, header=e2e.HEADER, issue=e2e.ISSUE, **over):
@@ -173,8 +174,10 @@ class SignedMemoryStorage(InMemoryStorage):
     """Test stand-in for private R2: URLs carry a signature query."""
 
     def url(self, name):
-        return "https://acct.r2.cloudflarestorage.com/{}/{}?X-Amz-Signature=test".format(
-            e2e.BUCKET, name)
+        return ("https://acct.r2.cloudflarestorage.com/{}/{}?X-Amz-Algorithm=AWS4-HMAC-SHA256"
+                "&X-Amz-Credential=TESTKEY%2F20261120%2Fauto%2Fs3%2Faws4_request"
+                "&X-Amz-Date=20261120T170000Z&X-Amz-Expires=3600"
+                "&X-Amz-SignedHeaders=host&X-Amz-Signature=test").format(e2e.BUCKET, name)
 
 
 TARGET = e2e.ApprovedTarget(RELEASE_ID, legacy.VerifiedOwnerRelease(
@@ -204,14 +207,15 @@ class ExecuteOnceTests(TestCase):
         except ImportError:
             pass
         if "?" not in url:
-            return 403, b""
+            return e2e.Download(403, "application/xml", b"<Error><Code>AccessDenied</Code></Error>")
         name = url.split(e2e.BUCKET + "/", 1)[1].split("?", 1)[0]
         with image_storage().open(name) as handle:
-            return 200, handle.read()
+            return e2e.Download(200, "image/png", handle.read())
 
     def run_e2e(self, fetch=None):
         return e2e.execute_once(None, TARGET, SHA, public_host=HOST, out=lambda _: None,
-                                fetch=fetch or self.fetch, consume=self.consume)
+                                fetch=fetch or self.fetch, consume=self.consume,
+                                endpoint_host=R2_HOST)
 
     def assert_clean(self):
         self.assertFalse(AIImageJob.objects.exists())
@@ -230,7 +234,7 @@ class ExecuteOnceTests(TestCase):
             "process_gate_mock_only", "anonymous_rejected", "csrf_enforced",
             "api_submit_202", "idempotent_resubmit", "worker_once_completed",
             "r2_object_exists", "owner_detail_signed_url", "other_user_404",
-            "anonymous_detail_401", "signed_download_digest_match",
+            "anonymous_detail_401", "signed_url_sigv4", "signed_download_digest_match",
             "unsigned_access_denied",
         ])
         self.assertTrue(all(ok for _, ok in report.cleanup))
@@ -256,7 +260,7 @@ class ExecuteOnceTests(TestCase):
 
     def test_failure_mid_run_still_cleans_up(self):
         with self.assertRaises(e2e.Aborted):
-            self.run_e2e(fetch=lambda url: (200, b"not-a-png"))
+            self.run_e2e(fetch=lambda url: e2e.Download(200, "image/png", b"not-a-png"))
         self.assert_clean()
 
     def test_r2_put_then_worker_failure_without_storage_key_is_cleaned(self):
@@ -347,6 +351,32 @@ class ExecuteOnceTests(TestCase):
             result = e2e.find_residue(out=lambda _: None)
         self.assertIsNone(result["e2e_r2_objects"])
 
+    def test_real_staging_failure_signed_get_rejected_is_reported_and_cleaned(self):
+        rejected = e2e.Download(403, "application/xml",
+                                b"<Error><Code>AccessDenied</Code></Error>")
+        lines = []
+        with self.assertRaises(e2e.Aborted) as ctx:
+            e2e.execute_once(None, TARGET, SHA, public_host=HOST, out=lines.append,
+                             fetch=lambda url: rejected, consume=self.consume,
+                             endpoint_host=R2_HOST)
+        message = str(ctx.exception)
+        self.assertIn("signed download rejected by storage", message)
+        self.assertIn("status=403", message)
+        self.assertIn("r2_code=AccessDenied", message)
+        self.assertNotIn("X-Amz", message + "".join(lines))
+        self.assertIn("E2E_STEP_OK signed_url_sigv4", lines)
+        self.assert_clean()
+
+    def test_sigv2_signed_url_aborts_before_any_download(self):
+        calls = []
+        legacy = "https://{}/{}/{{}}?AWSAccessKeyId=AKIA&Signature=x&Expires=1".format(
+            R2_HOST, e2e.BUCKET)
+        with patch.object(SignedMemoryStorage, "url", lambda self, name: legacy.format(name)), \
+                self.assertRaisesMessage(e2e.Aborted, "legacy SigV2"):
+            self.run_e2e(fetch=lambda url: calls.append(url))
+        self.assertEqual(calls, [])
+        self.assert_clean()
+
     def test_service_gate_stays_closed_after_run(self):
         from apps.ai_core.image_generation import policy
         self.run_e2e()
@@ -405,7 +435,7 @@ class LockAndResidueTests(TestCase):
         helper.sdk_imports = []
         return e2e.execute_once(connection, TARGET, SHA, public_host=HOST,
                                 out=lambda _: None, fetch=fetch or helper.fetch,
-                                consume=self.consume)
+                                consume=self.consume, endpoint_host=R2_HOST)
 
     def test_concurrent_run_refused_before_receipt_or_write(self):
         conn = FakeLockConnection(granted=False)
@@ -416,7 +446,7 @@ class LockAndResidueTests(TestCase):
         self.assertEqual([q for q, _ in conn.sql], ["SELECT pg_try_advisory_lock(%s)"])
 
     def test_lock_held_for_run_and_released_even_on_failure(self):
-        for fetch in (None, lambda url: (200, b"not-a-png")):
+        for fetch in (None, lambda url: e2e.Download(200, "image/png", b"not-a-png")):
             conn = FakeLockConnection(granted=True)
             with self.subTest(failing=fetch is not None):
                 if fetch is None:
@@ -471,7 +501,9 @@ class CommandTests(TestCase):
         from django.core.management import call_command
         from django.core.management.base import CommandError
         for args in (["--expected-sha", SHA, "--find-residue"],
-                     ["--expected-sha", SHA, "--find-residue", "--execute"]):
+                     ["--expected-sha", SHA, "--find-residue", "--execute"],
+                     ["--expected-sha", SHA, "--diagnose-signed-url"],
+                     ["--expected-sha", SHA, "--diagnose-signed-url", "--execute"]):
             with self.subTest(args), self.assertRaisesMessage(
                     CommandError, "STAGING_IMAGE_MOCK_E2E_REFUSED"):
                 call_command("run_staging_image_mock_e2e_once", *args)

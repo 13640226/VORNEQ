@@ -23,6 +23,8 @@ def durable_storage_ready():
         and options.get("querystring_auth", True) is True
         and options.get("default_acl") in (None, "private")
         and not options.get("custom_domain")
+        # R2 rejects legacy SigV2 presigned URLs; never report such a config as ready.
+        and options.get("signature_version") == "s3v4"
     )
 
 

@@ -22,12 +22,22 @@ class Command(BaseCommand):
         parser.add_argument("--release-id", default="")
         parser.add_argument("--find-residue", action="store_true",
                             help="read-only report of leftovers from interrupted runs")
+        parser.add_argument("--diagnose-signed-url", action="store_true",
+                            help="read-only signed GET of a random non-existent key")
 
     def handle(self, *args, **options):
         sha = options["expected_sha"]
         environ = os.environ
         connection = connections["default"]
         try:
+            if options["diagnose_signed_url"]:
+                if options["execute"] or options["release_id"] or options["find_residue"]:
+                    raise e2e.Refused("--diagnose-signed-url is read-only and stands alone")
+                e2e.base_context(environ, sha, connection.settings_dict)
+                runner0004.check_identity(runner0004.snapshot(connection), False)
+                if not e2e.diagnose_signed_url(out=self.stdout.write):
+                    raise e2e.Refused("R2 rejected the SigV4 signed GET")
+                return None
             if options["find_residue"]:
                 if options["execute"] or options["release_id"]:
                     raise e2e.Refused("--find-residue is read-only and stands alone")

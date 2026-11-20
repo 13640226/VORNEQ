@@ -559,24 +559,16 @@ _IMAGE_ENDPOINT = os.environ.get("VORNEQ_IMAGE_S3_ENDPOINT_URL", "")
 _IMAGE_ACCESS = os.environ.get("VORNEQ_IMAGE_S3_ACCESS_KEY_ID", "")
 _IMAGE_SECRET = os.environ.get("VORNEQ_IMAGE_S3_SECRET_ACCESS_KEY", "")
 if _IMAGE_BUCKET and _IMAGE_ENDPOINT and _IMAGE_ACCESS and _IMAGE_SECRET:
-    from urllib.parse import urlsplit
-    endpoint = urlsplit(_IMAGE_ENDPOINT)
-    host = (endpoint.hostname or "").lower()
-    if (endpoint.scheme != "https" or endpoint.username or endpoint.password
-            or endpoint.query or endpoint.fragment
-            or not (host.endswith(".r2.cloudflarestorage.com")
-                    or host.endswith(".amazonaws.com"))):
-        raise ImproperlyConfigured("invalid image storage endpoint")
+    # Options (incl. pinned SigV4 for R2 presigned URLs) live in config.image_storage.
+    from config.image_storage import InvalidImageStorage, image_storage_options
+    try:
+        _IMAGE_OPTIONS = image_storage_options(
+            bucket=_IMAGE_BUCKET, endpoint_url=_IMAGE_ENDPOINT,
+            access_key=_IMAGE_ACCESS, secret_key=_IMAGE_SECRET,
+        )
+    except InvalidImageStorage:
+        raise ImproperlyConfigured("invalid image storage endpoint") from None
     STORAGES["ai_images"] = {
         "BACKEND": "storages.backends.s3.S3Storage",
-        "OPTIONS": {
-            "bucket_name": _IMAGE_BUCKET,
-            "endpoint_url": _IMAGE_ENDPOINT,
-            "access_key": _IMAGE_ACCESS,
-            "secret_key": _IMAGE_SECRET,
-            "default_acl": "private",
-            "querystring_auth": True,
-            "file_overwrite": False,
-            "custom_domain": None,
-        },
+        "OPTIONS": _IMAGE_OPTIONS,
     }
