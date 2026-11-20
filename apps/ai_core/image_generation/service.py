@@ -14,7 +14,7 @@ from django.utils import timezone
 
 from apps.ai_core.models import AIImageDailyQuota, AIImageJob
 from .policy import SIZES, actor_allowed, enabled, worker_enabled, paid_provider_enabled
-from .providers import MockImageProvider, OpenAIImageProvider
+from .providers import ImageProviderError, MockImageProvider, OpenAIImageProvider
 from .storage import image_storage, store_image
 
 
@@ -133,6 +133,7 @@ def process_next_image_job():
     reservation = None
     provider_called = False
     settlement_attempted = False
+    safety_id = None
     try:
         # Storage must exist before any model/ledger work.
         image_storage()
@@ -140,11 +141,15 @@ def process_next_image_job():
             from apps.ai_ledger.service import (
                 StagingDailyLimit, reserve_with_config, settle,
             )
-            from .policy import image_ledger_config
+            from .policy import image_ledger_config, max_request_micro, safety_identifier
             if (not paid_provider_enabled() or not actor_allowed(job.owner, worker=worker_mode)
                     or job.model_id != getattr(
                         settings, "VORNEQ_AI_IMAGE_MODEL", "")):
                 raise ImageQueueError("paid provider disabled")
+            per_request_cap = max_request_micro()
+            safety_id = safety_identifier(job.owner_id)
+            if per_request_cap is None or safety_id is None:
+                raise ImageQueueError("paid provider controls unavailable")
             daily = StagingDailyLimit(
                 max_requests=_limit("VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS", 50),
                 cap_micro=_limit("VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD", 2_000_000_000),
@@ -162,13 +167,19 @@ def process_next_image_job():
             AIImageJob.objects.filter(pk=job_id, status=AIImageJob.STATUS_RUNNING).update(
                 reservation_id=reservation.id
             )
+            if reservation.amount_micro > per_request_cap:
+                # Worst-case cost exceeds the per-request ceiling: provably not sent.
+                raise ImageProviderError("request over cost ceiling",
+                                         code="cost_ceiling_exceeded", request_sent=False)
             if not paid_provider_enabled() or not actor_allowed(job.owner, worker=worker_mode):
-                raise ImageQueueError("paid provider gate closed")
+                raise ImageProviderError("paid provider gate closed", code="paid_disabled",
+                                         request_sent=False)
             provider = OpenAIImageProvider()
         else:
             provider = MockImageProvider()
         provider_called = True
-        output = provider.generate(prompt=job.prompt, model=job.model_id, size=job.image_size)
+        output = provider.generate(prompt=job.prompt, model=job.model_id, size=job.image_size,
+                                   safety_identifier=safety_id)
         key, digest = store_image(job=job, content=output.content)
         if reservation is not None:
             usage = None
@@ -176,13 +187,18 @@ def process_next_image_job():
                 usage = (output.input_tokens, output.output_tokens)
             settlement_attempted = True
             ledger_state = settle(reservation, usage=usage, outcome="image_generated")
-            if ledger_state != "finalized":
-                # No verified ledger commit means no completed, downloadable image.
-                # Keep the private object reference for manual reconciliation.
+            bound = getattr(settings, "VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND", 0)
+            over_bound = usage is not None and usage[1] > bound
+            if ledger_state != "finalized" or over_bound:
+                # No verified ledger commit (or usage beyond the reserved bound)
+                # means no completed, downloadable image. Keep the private object
+                # reference for manual reconciliation.
                 AIImageJob.objects.filter(pk=job_id, status=AIImageJob.STATUS_RUNNING).update(
                     status=AIImageJob.STATUS_UNCERTAIN,
                     prompt="", storage_key=key, image_digest=digest,
-                    is_mock=output.is_mock, error_code="ledger_settlement_unconfirmed",
+                    is_mock=output.is_mock,
+                    error_code=("usage_exceeded_bound" if ledger_state == "finalized"
+                                else "ledger_settlement_unconfirmed"),
                     finished_at=timezone.now(),
                 )
                 return job_id
@@ -192,8 +208,14 @@ def process_next_image_job():
             image_digest=digest,
             is_mock=output.is_mock, finished_at=timezone.now(),
         )
-    except Exception:
+    except ImageProviderError as exc:
+        _finish_after_provider_error(job_id, reservation, exc,
+                                     settlement_attempted=settlement_attempted)
+    except Exception as exc:
         # Provider may have billed before returning/raising. Never silently retry.
+        from apps.ai_core.engine.budget import BudgetExceeded
+        error_code = ("ledger_refused" if reservation is None and isinstance(exc, BudgetExceeded)
+                      else "provider_or_storage_unavailable")
         if reservation is not None and not settlement_attempted:
             from apps.ai_ledger.service import settle
             try:
@@ -205,7 +227,33 @@ def process_next_image_job():
         AIImageJob.objects.filter(pk=job_id, status=AIImageJob.STATUS_RUNNING).update(
             status=AIImageJob.STATUS_UNCERTAIN if reservation is not None and provider_called
                    else AIImageJob.STATUS_FAILED,
-            prompt="", error_code="provider_or_storage_unavailable",
+            prompt="", error_code=error_code,
             finished_at=timezone.now(),
         )
     return job_id
+
+
+def _finish_after_provider_error(job_id, reservation, exc, *, settlement_attempted):
+    """Release ONLY provably-unsent paid requests; everything else stays UNCERTAIN."""
+    code = getattr(exc, "code", "provider_error") or "provider_error"
+    status = AIImageJob.STATUS_FAILED
+    if reservation is not None and not settlement_attempted:
+        from apps.ai_ledger.service import RELEASED, release, settle
+        if exc.request_sent is False:
+            try:
+                released = release(reservation, reason=code[:30])
+            except Exception:
+                released = None
+            if released != RELEASED:
+                status, code = AIImageJob.STATUS_UNCERTAIN, "ledger_release_unconfirmed"
+        else:
+            try:
+                settle(reservation, usage=None, outcome=("uncertain:" + code)[:40])
+            except Exception:
+                pass
+            status = AIImageJob.STATUS_UNCERTAIN
+    elif reservation is not None:
+        status = AIImageJob.STATUS_UNCERTAIN
+    AIImageJob.objects.filter(pk=job_id, status=AIImageJob.STATUS_RUNNING).update(
+        status=status, prompt="", error_code=code[:40], finished_at=timezone.now(),
+    )
