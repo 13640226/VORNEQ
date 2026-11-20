@@ -22,7 +22,7 @@ POSTGRES = "dpg-dbm74m8u01pc738j8r1g-a"
 DATABASE = "vorneq_staging_db_9i8v"
 ROLE = "vorneq_staging_db_9i8v_user"
 MIGRATION = "ai_core.0004_image_generation_job_v1"
-MAX_AGE = timedelta(minutes=15)
+MAX_AGE = timedelta(minutes=30)
 SHA = re.compile(r"[0-9a-f]{40}\Z")
 DIGEST = re.compile(r"[0-9a-f]{64}\Z")
 RELEASE = re.compile(r"[A-Z0-9-]{8,60}\Z")
