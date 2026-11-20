@@ -44,6 +44,8 @@ TOKEN_KEY = "VORNEQ_IMAGE_MOCK_E2E_GITHUB_READ_TOKEN"
 BACKUP_KEY = "VORNEQ_IMAGE_MOCK_E2E_BACKUP_SHA256"
 EVIDENCE_KEY = "VORNEQ_IMAGE_MOCK_E2E_BACKUP_EVIDENCE"
 RECEIPT_EVENT = "staging.ai_image_mock_e2e_one_use_release_consumed"
+LOCK_KEY = 202611200501  # session advisory lock: one mock E2E run at a time
+USER_PREFIX = "vorneq-e2e-"
 MAX_PNG_BYTES = 10 * 1024 * 1024
 _SHA = re.compile(r"[0-9a-f]{40}\Z")
 _DIGEST = re.compile(r"[0-9a-f]{64}\Z")
@@ -345,6 +347,63 @@ def fetch_url(url):
         connection.close()
 
 
+# --- Mutual exclusion --------------------------------------------------------
+
+def acquire_run_lock(connection):
+    """Session-level PostgreSQL advisory lock held for the whole run."""
+    if connection is None or connection.vendor != "postgresql":
+        return False  # offline tests only; Staging is pinned to PostgreSQL
+    with connection.cursor() as c:
+        c.execute("SELECT pg_try_advisory_lock(%s)", [LOCK_KEY])
+        require(c.fetchone()[0] is True, "another mock E2E run holds the lock")
+    return True
+
+
+def release_run_lock(connection, held):
+    if held:
+        with connection.cursor() as c:
+            c.execute("SELECT pg_advisory_unlock(%s)", [LOCK_KEY])
+
+
+# --- Read-only residue finder (after a crash/kill) ---------------------------
+
+def find_residue(*, out=print):
+    """Report leftovers of interrupted runs. Never deletes or changes anything."""
+    from django.apps import apps
+    from django.contrib.auth import get_user_model
+    from apps.ai_core.image_generation.storage import image_storage
+    from apps.ai_core.models import AIImageJob
+    users = list(get_user_model().objects.filter(username__startswith=USER_PREFIX)
+                 .values_list("pk", flat=True))
+    jobs = AIImageJob.objects.filter(owner_id__in=users)
+    objects, listing_ok = 0, True
+    try:
+        storage = image_storage()
+        for pk in users:
+            objects += len(storage.listdir("ai-generated/{}/".format(pk))[1])
+    except Exception:
+        listing_ok = False
+    audit = apps.get_model("audit", "AuditEvent")
+    receipts = audit.objects.filter(event_name=RECEIPT_EVENT).count()
+    result = {
+        "e2e_users": len(users),
+        "e2e_jobs": jobs.count(),
+        "e2e_jobs_by_status": {s: jobs.filter(status=s).count()
+                               for s, _ in AIImageJob.STATES if jobs.filter(status=s).exists()},
+        "e2e_r2_objects": objects if listing_ok else None,
+        "consumed_receipts": receipts,
+    }
+    out("E2E_RESIDUE_USERS={}".format(result["e2e_users"]))
+    out("E2E_RESIDUE_JOBS={}".format(result["e2e_jobs"]))
+    out("E2E_RESIDUE_R2_OBJECTS={}".format(
+        "UNAVAILABLE" if not listing_ok else result["e2e_r2_objects"]))
+    out("E2E_CONSUMED_RECEIPTS={}".format(receipts))
+    clean = listing_ok and not result["e2e_users"] and not result["e2e_jobs"] \
+        and not result["e2e_r2_objects"]
+    out("E2E_RESIDUE_RESULT: {}".format("NONE" if clean else "PRESENT_OR_UNKNOWN"))
+    return result
+
+
 # --- One-use execution -------------------------------------------------------
 
 def _gate_settings(target, expected_sha, user_ids):
@@ -364,6 +423,15 @@ def _gate_settings(target, expected_sha, user_ids):
 def execute_once(connection, target, expected_sha, *, public_host, out=print,
                  fetch=fetch_url, consume=consume_one_use_receipt):
     """Exactly one mock job for disposable users; cleanup is always attempted."""
+    held = acquire_run_lock(connection)
+    try:
+        return _execute_locked(connection, target, expected_sha, public_host=public_host,
+                               out=out, fetch=fetch, consume=consume)
+    finally:
+        release_run_lock(connection, held)
+
+
+def _execute_locked(connection, target, expected_sha, *, public_host, out, fetch, consume):
     from django.contrib.auth import get_user_model
     from django.test import Client
     from django.test.utils import override_settings
@@ -374,6 +442,8 @@ def execute_once(connection, target, expected_sha, *, public_host, out=print,
     from apps.ai_core.models import AIImageDailyQuota, AIImageJob
 
     require(not any(queue_state().values()), "image queue is not empty")
+    require(not get_user_model().objects.filter(username__startswith=USER_PREFIX).exists(),
+            "residue of an earlier mock E2E run exists; run --find-residue")
     day = datetime.now(timezone.utc).date()
     quota_before = AIImageDailyQuota.objects.filter(day_utc=day).first()
     quota_before = None if quota_before is None else quota_before.submitted
@@ -388,7 +458,7 @@ def execute_once(connection, target, expected_sha, *, public_host, out=print,
     try:
         User = get_user_model()
         for role in ("owner", "other"):
-            user = User(username="vorneq-e2e-{}-{}".format(tag, role), is_active=True)
+            user = User(username="{}{}-{}".format(USER_PREFIX, tag, role), is_active=True)
             user.set_unusable_password()
             user.save()
             users.append(user)

@@ -23,25 +23,30 @@ Befehl: `run_staging_image_mock_e2e_once` (Modul `apps/core/staging_image_mock_e
 2. Nur mit `--execute`: Prüfung des Arm-Schalters, des SHA-gebundenen
    Owner-Strings und eines **frischen, unbearbeiteten GitHub-Owner-Kommentars**
    in Issue #664 (live per TLS abgerufen, max. 30 Minuten gültig, Backup ≤ 2 h alt).
-3. **Einmal-Quittung** in `audit_auditevent` (Autocommit, eigene Verbindung)
+3. **Gegenseitiger Ausschluss:** Session-Advisory-Lock in PostgreSQL
+   (`pg_try_advisory_lock(202611200501)`) für den gesamten Lauf; ein zweiter,
+   gleichzeitiger Lauf wird vor Quittung und Schreibzugriff abgelehnt. Ebenso
+   abgelehnt wird ein Lauf, wenn noch Benutzer `vorneq-e2e-*` eines früheren
+   Laufs existieren.
+4. **Einmal-Quittung** in `audit_auditevent` (Autocommit, eigene Verbindung)
    **vor** jedem Test-Schreibzugriff. Eine zweite Ausführung mit derselben
    Release-ID wird abgelehnt.
-4. Zwei Wegwerf-Benutzer `vorneq-e2e-<zufall>-owner/-other` (ohne Passwort).
-5. Das Image-Gate wird **nur innerhalb dieses einen Prozesses** geöffnet
+5. Zwei Wegwerf-Benutzer `vorneq-e2e-<zufall>-owner/-other` (ohne Passwort).
+6. Das Image-Gate wird **nur innerhalb dieses einen Prozesses** geöffnet
    (`override_settings`), ausschließlich Provider `mock`, Paid-Gate geschlossen,
    Allowlist = nur die zwei Wegwerf-Benutzer, Tageslimit 1. Das Modul `openai`
    ist im Prozess gesperrt (`sys.modules["openai"] = None`).
-6. Prüfungen über die echten Django-Views (In-Process-Client mit dem echten
+7. Prüfungen über die echten Django-Views (In-Process-Client mit dem echten
    Staging-Host, HTTPS): anonym → 401, ohne CSRF-Token → 403, Owner-Submit → 202,
    identische Wiederholung → 200 ohne zweiten Job.
-7. Nur wenn **genau dieser eine Job** in der Queue liegt: einmal
+8. Nur wenn **genau dieser eine Job** in der Queue liegt: einmal
    `process_next_image_job()` → `completed`, `is_mock`, Prompt gelöscht,
    kein Ledger-Reservat, Objekt-Key `ai-generated/<owner>/<job>.png`.
-8. Owner-Detail → signierte URL; anderer Benutzer → 404; anonym → 401.
+9. Owner-Detail → signierte URL; anderer Benutzer → 404; anonym → 401.
    Download über die signierte URL (nur Host `*.r2.cloudflarestorage.com`,
    keine Redirects) → PNG, SHA-256 = gespeicherter Digest. Dieselbe URL ohne
    Signatur → 400/401/403.
-9. **Bereinigung immer** (auch bei Fehlern), jeweils einzeln verifiziert:
+10. **Bereinigung immer** (auch bei Fehlern), jeweils einzeln verifiziert:
    Sessions (Logout), R2-Objekt gelöscht und nicht mehr vorhanden, Jobs der
    Wegwerf-Benutzer gelöscht, Tagesquote exakt auf den Vorzustand zurückgesetzt,
    Wegwerf-Benutzer gelöscht.
@@ -57,6 +62,9 @@ Signierte URLs, Token und Prompts werden **nicht** ausgegeben.
   keine Production-Änderung.
 - Die Einmal-Quittung und Audit-Ereignisse (z. B. Logins der Wegwerf-Benutzer)
   bleiben absichtlich bestehen (append-only Audit).
+- Wird der Prozess hart beendet (z. B. Render-Timeout, SIGKILL), läuft die
+  Bereinigung nicht. Reste sind über `--find-residue` auffindbar (siehe unten);
+  es gibt bewusst keine automatische Löschung.
 - Der API-Test läuft In-Process gegen die echten Views und Middleware, nicht
   über das öffentliche Netz/den Render-Load-Balancer.
 
@@ -122,12 +130,24 @@ python manage.py run_staging_image_mock_e2e_once \
    `IMAGE_JOB_ROW_COUNT`/`IMAGE_QUOTA_ROW_COUNT` wie vor dem Test.
 3. Ergebnis (Log-Zeilen, Release-ID, SHA, Kommentar-ID; keine URLs/Token) in Issue #664 dokumentieren.
 
+## Reste nach Abbruch finden (read-only)
+
+```bash
+DJANGO_SETTINGS_MODULE=config.settings_render \
+python manage.py run_staging_image_mock_e2e_once --expected-sha "$RENDER_GIT_COMMIT" --find-residue
+```
+
+Meldet nur Anzahlen (Benutzer `vorneq-e2e-*`, deren Jobs, R2-Objekte unter
+`ai-generated/<id>/`, verbrauchte Quittungen) und
+`E2E_RESIDUE_RESULT: NONE|PRESENT_OR_UNKNOWN`. Ändert oder löscht nichts.
+Eine Bereinigung von Resten ist eine eigene, gesondert freizugebende Maßnahme.
+
 ## Bei Fehlern
 
 - `…_REFUSED`: es wurde nichts geschrieben (vor der Quittung abgebrochen).
 - `…_ABORTED`: Quittung verbraucht; Testdaten wurden bereinigt, sofern nicht
   `CLEANUP_INCOMPLETE` gemeldet wird. **Nicht automatisch wiederholen.**
-  Bei `CLEANUP_INCOMPLETE` manuell prüfen: R2-Präfix `ai-generated/<owner-id>/`,
+  Bei `CLEANUP_INCOMPLETE` zuerst `--find-residue` ausführen, dann manuell prüfen: R2-Präfix `ai-generated/<owner-id>/`,
   Benutzer `vorneq-e2e-*`, `ai_core_aiimagejob`, `ai_core_aiimagedailyquota`.
   Eine neue Ausführung benötigt eine neue Owner-Freigabe mit neuer Release-ID.
 

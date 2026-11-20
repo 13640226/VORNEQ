@@ -9,6 +9,7 @@ import os
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connections
 
+from apps.core import staging_image_0004_runner as runner0004
 from apps.core import staging_image_mock_e2e as e2e
 
 
@@ -19,12 +20,21 @@ class Command(BaseCommand):
         parser.add_argument("--expected-sha", required=True)
         parser.add_argument("--execute", action="store_true")
         parser.add_argument("--release-id", default="")
+        parser.add_argument("--find-residue", action="store_true",
+                            help="read-only report of leftovers from interrupted runs")
 
     def handle(self, *args, **options):
         sha = options["expected_sha"]
         environ = os.environ
         connection = connections["default"]
         try:
+            if options["find_residue"]:
+                if options["execute"] or options["release_id"]:
+                    raise e2e.Refused("--find-residue is read-only and stands alone")
+                e2e.base_context(environ, sha, connection.settings_dict)
+                runner0004.check_identity(runner0004.snapshot(connection), False)
+                e2e.find_residue(out=self.stdout.write)
+                return None
             e2e.inspect(connection, sha, environ=environ, out=self.stdout.write)
             if not options["execute"]:
                 if options["release_id"]:

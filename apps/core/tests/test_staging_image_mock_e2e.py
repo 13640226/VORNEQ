@@ -278,6 +278,95 @@ class ExecuteOnceTests(TestCase):
         self.assert_clean()
 
 
+class FakeLockConnection:
+    """Records advisory-lock SQL; ORM work still uses the real test database."""
+    vendor = "postgresql"
+
+    def __init__(self, granted):
+        self.granted, self.sql = granted, []
+
+    def cursor(self):
+        outer = self
+
+        class Cursor:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+            def execute(self, sql, params):
+                outer.sql.append((sql, tuple(params)))
+
+            def fetchone(self):
+                return (outer.granted,)
+        return Cursor()
+
+
+@override_settings(STORAGES=STORES, **STAGING)
+class LockAndResidueTests(TestCase):
+    def setUp(self):
+        env = patch.dict(os.environ, {"RENDER_SERVICE_ID": e2e.SERVICE,
+                                      "RENDER_GIT_COMMIT": SHA})
+        env.start()
+        self.addCleanup(env.stop)
+        self.consume = Mock()
+
+    def run_with(self, connection, fetch=None):
+        helper = ExecuteOnceTests()
+        helper.sdk_imports = []
+        return e2e.execute_once(connection, TARGET, SHA, public_host=HOST,
+                                out=lambda _: None, fetch=fetch or helper.fetch,
+                                consume=self.consume)
+
+    def test_concurrent_run_refused_before_receipt_or_write(self):
+        conn = FakeLockConnection(granted=False)
+        with self.assertRaisesMessage(e2e.Refused, "another mock E2E run holds the lock"):
+            self.run_with(conn)
+        self.consume.assert_not_called()
+        self.assertFalse(get_user_model().objects.exists())
+        self.assertEqual([q for q, _ in conn.sql], ["SELECT pg_try_advisory_lock(%s)"])
+
+    def test_lock_held_for_run_and_released_even_on_failure(self):
+        for fetch in (None, lambda url: (200, b"not-a-png")):
+            conn = FakeLockConnection(granted=True)
+            with self.subTest(failing=fetch is not None):
+                if fetch is None:
+                    self.run_with(conn)
+                else:
+                    with self.assertRaises(e2e.Aborted):
+                        self.run_with(conn, fetch=fetch)
+                self.assertEqual(conn.sql, [
+                    ("SELECT pg_try_advisory_lock(%s)", (e2e.LOCK_KEY,)),
+                    ("SELECT pg_advisory_unlock(%s)", (e2e.LOCK_KEY,)),
+                ])
+
+    def test_residue_of_earlier_run_blocks_new_run(self):
+        get_user_model().objects.create(username=e2e.USER_PREFIX + "old-owner")
+        with self.assertRaisesMessage(e2e.Refused, "residue of an earlier mock E2E run"):
+            self.run_with(None)
+        self.consume.assert_not_called()
+
+    def test_find_residue_reports_without_changing_anything(self):
+        lines = []
+        self.assertEqual(e2e.find_residue(out=lines.append)["e2e_users"], 0)
+        self.assertIn("E2E_RESIDUE_RESULT: NONE", lines)
+        user = get_user_model().objects.create(username=e2e.USER_PREFIX + "crash-owner")
+        AIImageJob.objects.create(owner=user, prompt="", prompt_digest="0" * 64,
+                                  model_id="mock", provider="mock",
+                                  status=AIImageJob.STATUS_COMPLETED)
+        from django.core.files.base import ContentFile
+        image_storage().save("ai-generated/{}/x.png".format(user.pk), ContentFile(b"x"))
+        lines = []
+        result = e2e.find_residue(out=lines.append)
+        self.assertEqual((result["e2e_users"], result["e2e_jobs"], result["e2e_r2_objects"]),
+                         (1, 1, 1))
+        self.assertIn("E2E_RESIDUE_RESULT: PRESENT_OR_UNKNOWN", lines)
+        self.assertTrue(get_user_model().objects.filter(pk=user.pk).exists())
+        self.assertEqual(AIImageJob.objects.count(), 1)
+        self.assertTrue(image_storage().exists("ai-generated/{}/x.png".format(user.pk)))
+
+
 class CommandTests(TestCase):
     def test_command_refuses_outside_staging_without_writes(self):
         from django.core.management import call_command
@@ -289,3 +378,31 @@ class CommandTests(TestCase):
                 call_command("run_staging_image_mock_e2e_once", *args)
         self.assertFalse(AIImageJob.objects.exists())
         self.assertFalse(get_user_model().objects.exists())
+
+    def test_find_residue_refuses_outside_staging_and_with_execute(self):
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+        for args in (["--expected-sha", SHA, "--find-residue"],
+                     ["--expected-sha", SHA, "--find-residue", "--execute"]):
+            with self.subTest(args), self.assertRaisesMessage(
+                    CommandError, "STAGING_IMAGE_MOCK_E2E_REFUSED"):
+                call_command("run_staging_image_mock_e2e_once", *args)
+
+
+class RealPostgresLockTests(TestCase):
+    def test_second_session_cannot_take_the_lock(self):
+        from unittest import SkipTest
+        from django.db import connection
+        if connection.vendor != "postgresql":
+            raise SkipTest("advisory locks need PostgreSQL")
+        held = e2e.acquire_run_lock(connection)
+        other = connection.copy(alias="e2e_lock_probe")
+        try:
+            self.assertTrue(held)
+            with self.assertRaisesMessage(e2e.Refused, "holds the lock"):
+                e2e.acquire_run_lock(other)
+            e2e.release_run_lock(connection, held)
+            self.assertTrue(e2e.acquire_run_lock(other))
+            e2e.release_run_lock(other, True)
+        finally:
+            other.close()
