@@ -326,6 +326,27 @@ class ExecuteOnceTests(TestCase):
             user.delete()
         self.assert_clean()
 
+    def test_residue_finder_missing_memory_prefix_not_a_storage_outage(self):
+        """The second disposable user has no R2 directory after a failed PUT."""
+        first = get_user_model().objects.create(username=e2e.USER_PREFIX + "first")
+        get_user_model().objects.create(username=e2e.USER_PREFIX + "empty")
+        from django.core.files.base import ContentFile
+        storage = image_storage()
+        key = "ai-generated/{}/test.png".format(first.pk)
+        storage.save(key, ContentFile(b"synthetic"))
+        result = e2e.find_residue(out=lambda _: None)
+        self.assertEqual(result["e2e_users"], 2)
+        self.assertEqual(result["e2e_r2_objects"], 1)
+        storage.delete(key)
+
+    def test_residue_finder_real_storage_failure_remains_unknown(self):
+        """Do not mistake a genuine storage outage for a missing prefix."""
+        get_user_model().objects.create(username=e2e.USER_PREFIX + "outage")
+        storage = image_storage()
+        with patch.object(storage, "listdir", side_effect=OSError("R2 unavailable")):
+            result = e2e.find_residue(out=lambda _: None)
+        self.assertIsNone(result["e2e_r2_objects"])
+
     def test_service_gate_stays_closed_after_run(self):
         from apps.ai_core.image_generation import policy
         self.run_e2e()
