@@ -334,6 +334,28 @@ def ledger_checks(checks, *, cap_micro, expected_image_ledger_id=None):
     return info
 
 
+GLOBAL_CAP_CEILING = 500   # same ceiling submit_image_job() enforces for the global cap
+
+
+def global_quota_state(day=None):
+    """Read-only: (submitted today UTC, service-wide global daily cap or None).
+
+    The smoke never raises or bypasses the service cap: it may add exactly ONE
+    submission on top of today's count, and only while that stays within it.
+    """
+    from apps.ai_core.models import AIImageDailyQuota
+    day = day or datetime.now(timezone.utc).date()
+    row = AIImageDailyQuota.objects.filter(day_utc=day).first()
+    submitted = 0 if row is None else row.submitted
+    cap = getattr(settings, "VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS", 0)
+    cap = cap if type(cap) is int and 1 <= cap <= GLOBAL_CAP_CEILING else None
+    return submitted, cap
+
+
+def global_quota_available(submitted, cap):
+    return cap is not None and type(submitted) is int and 0 <= submitted < cap
+
+
 def preflight(connection, expected_sha, *, environ, out=print, cap_micro=MAX_COST_CEILING_MICRO,
               expected_image_ledger_id=None):
     from django.contrib.auth import get_user_model
@@ -346,6 +368,9 @@ def preflight(connection, expected_sha, *, environ, out=print, cap_micro=MAX_COS
     checks.add("service_image_gates_closed",
                not policy.enabled() and not policy.paid_provider_enabled())
     checks.add("image_queue_empty", not any(e2e.queue_state().values()))
+    submitted, global_cap = global_quota_state()
+    checks.add("global_daily_quota_available", global_quota_available(submitted, global_cap),
+               "submitted_today={} global_cap={}".format(submitted, global_cap or "invalid"))
     users = get_user_model().objects
     checks.add("no_residue_users", not users.filter(username__startswith=USER_PREFIX).exists()
                and not users.filter(username__startswith=e2e.USER_PREFIX).exists())
@@ -516,7 +541,7 @@ def consume_one_use_receipt(connection, target, expected_sha):
 
 # --- One-use execution ---------------------------------------------------------------
 
-def _gate_settings(target, expected_sha, user_id):
+def _gate_settings(target, expected_sha, user_id, *, submitted_today):
     return {
         "VORNEQ_AI_IMAGE_ENABLED": True,
         "VORNEQ_AI_IMAGE_PROVIDER": "openai",
@@ -528,11 +553,31 @@ def _gate_settings(target, expected_sha, user_id):
         "VORNEQ_AI_IMAGE_ALLOWED_USER_IDS": str(user_id),
         "VORNEQ_AI_IMAGE_WORKER_SERVICE_ID": "",
         "VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS": 1,
-        "VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS": 1,
+        # Exactly one more submission today; never above the service-wide cap
+        # (checked before the one-use receipt is consumed).
+        "VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS": submitted_today + 1,
         "VORNEQ_AI_IMAGE_MAX_REQUEST_MICROUSD": min(
             target.max_cost_micro,
             getattr(settings, "VORNEQ_AI_IMAGE_MAX_REQUEST_MICROUSD", 0) or 0),
     }
+
+
+def _submit_rejection(response, day):
+    """Classified, non-sensitive reason for a rejected submit (no prompt, no IDs)."""
+    try:
+        error = response.json().get("error")
+    except (ValueError, AttributeError):
+        error = None
+    error = error if isinstance(error, str) and error.replace("_", "").isalnum() else "unknown"
+    submitted, _cap = global_quota_state(day)
+    if response.status_code == 400 and submitted >= getattr(
+            settings, "VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS", 0):
+        reason = "PAID_SMOKE_SUBMIT_REJECTED_GLOBAL_DAILY_CAP"
+    elif response.status_code in (401, 403):
+        reason = "PAID_SMOKE_SUBMIT_REJECTED_AUTHORIZATION"
+    else:
+        reason = "PAID_SMOKE_SUBMIT_REJECTED"
+    return "{} status={} error={}; provider not called".format(reason, response.status_code, error)
 
 
 def _reservation_line(reservation_id):
@@ -578,6 +623,11 @@ def _execute_locked(connection, target, expected_sha, *, public_host, out, fetch
     day = datetime.now(timezone.utc).date()
     quota_before = AIImageDailyQuota.objects.filter(day_utc=day).first()
     quota_before = None if quota_before is None else quota_before.submitted
+    submitted_today, global_cap = global_quota_state(day)
+    # Fail closed BEFORE the receipt: a full global quota must not burn the release.
+    require(global_quota_available(submitted_today, global_cap),
+            "PAID_SMOKE_PREFLIGHT_GLOBAL_QUOTA_EXHAUSTED submitted_today={} global_cap={}".format(
+                submitted_today, global_cap or "invalid"))
     consume(connection, target, expected_sha)
     out("PAID_SMOKE_ONE_USE_RECEIPT_CONSUMED release={}".format(target.release_id))
 
@@ -588,7 +638,8 @@ def _execute_locked(connection, target, expected_sha, *, public_host, out, fetch
         user.set_unusable_password()
         user.save()
         users.append(user)
-        with override_settings(**_gate_settings(target, expected_sha, user.pk)):
+        with override_settings(**_gate_settings(target, expected_sha, user.pk,
+                                                submitted_today=submitted_today)):
             require(policy.enabled() and policy.paid_provider_enabled()
                     and not policy.worker_enabled(), "paid process gate state invalid", Aborted)
             report.ok("process_gate_paid_single_user", out)
@@ -600,8 +651,9 @@ def _execute_locked(connection, target, expected_sha, *, public_host, out, fetch
             r = client.post(reverse("ai_core:image-jobs"),
                             json.dumps({"request_id": str(rid), "prompt": PROMPT, "size": SIZE}),
                             content_type="application/json", secure=True)
-            require(r.status_code == 202 and r.json().get("model") == MODEL,
-                    "paid submit response invalid", Aborted)
+            if r.status_code != 202:
+                raise Aborted(_submit_rejection(r, day))
+            require(r.json().get("model") == MODEL, "paid submit response invalid", Aborted)
             report.ok("api_submit_202", out)
             queued = list(AIImageJob.objects.filter(status=AIImageJob.STATUS_QUEUED)
                           .values_list("pk", flat=True))

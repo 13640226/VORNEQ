@@ -379,6 +379,94 @@ class PaidExecuteTests(TransactionTestCase):
             account__ledger_id=IMAGE_LEDGER).exists())
 
 
+    def seed_completed_mock_job_today(self, *, submitted=1):
+        """The real incident: an earlier Image Studio mock job on the same UTC day."""
+        from apps.ai_core.models import AIImageDailyQuota
+        owner = get_user_model().objects.create(username="studio-owner-mock")
+        AIImageJob.objects.create(
+            id=uuid.uuid4(), owner=owner, prompt="", prompt_digest="0" * 64, model_id="mock",
+            image_size="1024x1024", provider="mock", status=AIImageJob.STATUS_COMPLETED,
+            is_mock=True)
+        AIImageDailyQuota.objects.update_or_create(
+            day_utc=datetime.now(timezone.utc).date(), defaults={"submitted": submitted})
+
+    def test_full_global_quota_refuses_before_receipt_reservation_or_provider(self):
+        self.seed_completed_mock_job_today(submitted=1)
+        sdk = FakeSDK()
+        with override_settings(VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS=1), \
+                patch.dict(sys.modules, {"openai": sdk.module()}), \
+                self.assertRaises(smoke.Refused) as ctx:
+            smoke.execute_once(None, TARGET, SHA, public_host=HOST, out=lambda _: None,
+                               fetch=self.fetcher.fetch, consume=self.consume,
+                               endpoint_host=R2_HOST)
+        self.assertIn("PAID_SMOKE_PREFLIGHT_GLOBAL_QUOTA_EXHAUSTED", str(ctx.exception))
+        self.assertIn("submitted_today=1 global_cap=1", str(ctx.exception))
+        self.consume.assert_not_called()
+        self.assertIsNone(sdk.ctor_kwargs)
+        self.assertEqual(sdk.image_calls(), [])
+        self.assertFalse(BudgetReservation.objects.using(LEDGER_ALIAS).filter(
+            account__ledger_id=IMAGE_LEDGER).exists())
+        self.assertEqual(AIImageJob.objects.count(), 1)  # retained mock job untouched
+
+    def test_earlier_mock_job_with_capacity_left_allows_exactly_one_paid_call(self):
+        from apps.ai_core.models import AIImageDailyQuota
+        self.seed_completed_mock_job_today(submitted=1)
+        sdk = FakeSDK()
+        with override_settings(VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS=10):
+            lines, error = self.run_smoke(sdk)
+        self.assertIsNone(error, lines)
+        self.assertEqual(len(sdk.image_calls()), 1)
+        self.consume.assert_called_once()
+        self.assertEqual(self.reservation().status, "finalized")
+        # Only the paid job is cleaned up; the earlier mock job and its quota stay.
+        self.assertEqual(AIImageJob.objects.count(), 1)
+        self.assertEqual(AIImageDailyQuota.objects.get(
+            day_utc=datetime.now(timezone.utc).date()).submitted, 1)
+
+    def test_gate_allows_one_submission_on_top_of_today_never_above_service_cap(self):
+        gate = smoke._gate_settings(TARGET, SHA, 7, submitted_today=4)
+        self.assertEqual(gate["VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS"], 5)
+        self.assertEqual(gate["VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS"], 1)
+        for submitted, cap, ok in ((0, 1, True), (1, 1, False), (4, 5, True), (5, 5, False),
+                                   (0, None, False), (-1, 5, False)):
+            with self.subTest(submitted=submitted, cap=cap):
+                self.assertIs(smoke.global_quota_available(submitted, cap), ok)
+
+    def test_rejected_submit_is_classified_without_sensitive_data(self):
+        from apps.ai_core.models import AIImageDailyQuota
+        day = datetime.now(timezone.utc).date()
+        AIImageDailyQuota.objects.create(day_utc=day, submitted=3)
+        response = Mock(status_code=400)
+        response.json.return_value = {"error": "invalid_or_limited_request"}
+        with override_settings(VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS=3):
+            reason = smoke._submit_rejection(response, day)
+        self.assertTrue(reason.startswith("PAID_SMOKE_SUBMIT_REJECTED_GLOBAL_DAILY_CAP status=400"))
+        self.assertIn("provider not called", reason)
+        response.json.return_value = {"error": "x" * 5 + "<script>"}
+        with override_settings(VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS=10):
+            reason = smoke._submit_rejection(response, day)
+        self.assertEqual(reason, "PAID_SMOKE_SUBMIT_REJECTED status=400 error=unknown; "
+                                 "provider not called")
+        self.assertNotIn(smoke.PROMPT, reason)
+
+
+@skipUnless(IS_PG, "ledger needs PostgreSQL")
+class QuotaPreflightTests(TransactionTestCase):
+    databases = {"default", LEDGER_ALIAS}
+
+    def test_preflight_reports_global_quota_state_read_only(self):
+        from apps.ai_core.models import AIImageDailyQuota
+        day = datetime.now(timezone.utc).date()
+        with override_settings(VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS=1):
+            self.assertEqual(smoke.global_quota_state(day), (0, 1))
+            AIImageDailyQuota.objects.create(day_utc=day, submitted=1)
+            self.assertEqual(smoke.global_quota_state(day), (1, 1))
+            self.assertFalse(smoke.global_quota_available(*smoke.global_quota_state(day)))
+        with override_settings(VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS=0):
+            self.assertEqual(smoke.global_quota_state(day), (1, None))
+        self.assertEqual(AIImageDailyQuota.objects.get(day_utc=day).submitted, 1)
+
+
 class CommandTests(TransactionTestCase):
     def test_refuses_outside_staging_without_writes(self):
         from django.core.management import call_command
