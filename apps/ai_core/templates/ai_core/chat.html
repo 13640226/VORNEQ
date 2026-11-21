@@ -29,8 +29,12 @@
 {% endif %}
 <section class="vq-chat" aria-labelledby="vq-chat-title"
   data-vq-chat
+  data-vq-question-limit="{{ chat_question_limit|default:200 }}"
+  data-vq-question-bytes="{{ chat_question_bytes|default:0 }}"
   data-vq-language="{{ chat_language }}"{% if chat_v3_enabled %}
   data-vq-answer-limit="{{ chat_answer_limit }}"
+  data-vq-section-limit="{{ chat_section_limit|default:700 }}"
+  data-vq-rich-text="{{ chat_rich_text|yesno:'true,false' }}"
   data-vq-citation-limit="{{ chat_citation_limit }}"{% endif %}
   data-vq-loading="{{ chat_labels.loading }}"
   data-vq-error="{{ chat_labels.error }}"
@@ -42,6 +46,8 @@
   data-vq-unsupported="{{ chat_labels.unsupported }}"
   data-vq-rejected-evidence="{{ chat_labels.rejectedEvidence }}"
   data-vq-rejected-output="{{ chat_labels.rejectedOutput }}"
+  data-vq-output-limited="{{ chat_labels.outputLimited }}"
+  data-vq-context-limited="{{ chat_labels.contextLimited }}"
   data-vq-citation-identity="{{ chat_labels.citationIdentity }}"
   data-vq-citation-digest="{{ chat_labels.citationDigest }}"
   data-vq-citation-quote="{{ chat_labels.citationQuote }}"
@@ -110,11 +116,11 @@
   <form class="vq-chat__form" method="post" action="{{ chat_endpoint }}" data-vq-chat-form>
     {% csrf_token %}
     <label class="vq-chat__label" for="vq-chat-question">{{ chat_labels.question }}</label>
-    <textarea id="vq-chat-question" name="question" rows="3" maxlength="200"
+    <textarea id="vq-chat-question" name="question" rows="3" maxlength="{{ chat_question_limit|default:200 }}"
       required enterkeyhint="send" autocomplete="off" data-vq-chat-input
       aria-describedby="vq-chat-limit vq-chat-hint" placeholder="{{ chat_labels.question }}"></textarea>
     <div class="vq-chat__actions">
-      <span class="vq-chat__count" id="vq-chat-limit" data-vq-chat-count>0/200</span>
+      <span class="vq-chat__count" id="vq-chat-limit" data-vq-chat-count>0/{{ chat_question_limit|default:200 }}</span>
       <span class="vq-chat__hint" id="vq-chat-hint">{{ chat_labels.hint }}</span>
       <button type="button" class="vq-chat__clear" data-vq-chat-clear>{{ chat_labels.clear }}</button>
       <button type="submit" class="vq-chat__send" data-vq-chat-send>{{ chat_labels.send }}</button>

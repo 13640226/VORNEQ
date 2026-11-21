@@ -226,3 +226,13 @@
 /* Image Studio entry is visible only after separate Staging UI authorization. */
 .vq-chat__image-entry { margin: 12px 0 0; font-size: .92rem; }
 .vq-chat__image-entry a { color: var(--vq-led); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+
+/* Safe server-gated rich response subset. */
+.vq-chat__rich { min-width: 0; overflow-wrap: anywhere; unicode-bidi: plaintext; }
+.vq-chat__rich p { white-space: pre-wrap; }
+.vq-chat__rich pre { max-width: 100%; overflow-x: auto; white-space: pre; padding: .75rem; border: 1px solid currentColor; border-radius: .35rem; }
+.vq-chat__rich code { font-family: ui-monospace, monospace; unicode-bidi: isolate; }
+.vq-chat__table-wrap { max-width: 100%; overflow-x: auto; }
+.vq-chat__rich table { border-collapse: collapse; max-width: 100%; }
+.vq-chat__rich th, .vq-chat__rich td { text-align: start; border: 1px solid currentColor; padding: .35rem .55rem; }
+.vq-chat__rich ul, .vq-chat__rich ol { padding-inline-start: 1.5rem; }

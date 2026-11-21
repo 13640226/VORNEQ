@@ -305,4 +305,19 @@ def chat_labels(language, environment=None):
         labels.update(ENVIRONMENT_LABELS[code]["production"])
         # PR #639 copy is authoritative for Production's safety and recovery language.
         labels.update(PRODUCTION_LABELS[code])
+    messages = {
+        "en": (
+            "The model reached its output budget. No incomplete response was displayed. Check usage before submitting a new request.",
+            "The configured context budget is too small for this request. No provider call was made.",
+        ),
+        "de": (
+            "Das Ausgabelimit wurde erreicht. Keine unvollst\u00e4ndige Antwort angezeigt. Vor einer neuen Anfrage den Verbrauch pr\u00fcfen.",
+            "Das konfigurierte Kontextbudget reicht nicht aus. Es wurde kein Provider aufgerufen.",
+        ),
+        "fa": (
+            "\u0645\u062f\u0644 \u0628\u0647 \u0633\u0642\u0641 \u067e\u0627\u0633\u062e \u0631\u0633\u06cc\u062f. \u067e\u0627\u0633\u062e \u0646\u0627\u0642\u0635 \u0646\u0645\u0627\u06cc\u0634 \u062f\u0627\u062f\u0647 \u0646\u0634\u062f. \u067e\u06cc\u0634 \u0627\u0632 \u062f\u0631\u062e\u0648\u0627\u0633\u062a \u062c\u062f\u06cc\u062f \u0647\u0632\u06cc\u0646\u0647 \u0631\u0627 \u0628\u0631\u0631\u0633\u06cc \u06a9\u0646\u06cc\u062f.",
+            "\u0628\u0648\u062f\u062c\u0647 \u0645\u062a\u0646 \u0628\u0631\u0627\u06cc \u0627\u06cc\u0646 \u062f\u0631\u062e\u0648\u0627\u0633\u062a \u06a9\u0627\u0641\u06cc \u0646\u06cc\u0633\u062a. \u0647\u06cc\u0686 \u062f\u0631\u062e\u0648\u0627\u0633\u062a\u06cc \u0628\u0647 \u0627\u0631\u0627\u0626\u0647\u200c\u062f\u0647\u0646\u062f\u0647 \u0627\u0631\u0633\u0627\u0644 \u0646\u0634\u062f.",
+        ),
+    }
+    labels["outputLimited"], labels["contextLimited"] = messages[code]
     return labels

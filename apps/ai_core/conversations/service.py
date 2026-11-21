@@ -9,6 +9,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.ai_core.models import AIConversation, AIMessage
+from apps.ai_core.engine.passages import MAX_PASSAGES
 
 from . import repository
 from .repository import ConversationNotFound
@@ -109,7 +110,7 @@ def _v2_citation(source):
     if source_id not in ("S1", "S2", "S3", "S4", "S5"):
         return None
     passages = source.get("passages")
-    if not isinstance(passages, list) or len(passages) > 8:
+    if not isinstance(passages, list) or len(passages) > MAX_PASSAGES:
         return result
     safe = []
     seen = set()
@@ -138,9 +139,13 @@ def classify(result, http_status):
         if result.get("format_version") == 2:
             raw = result.get("citations")
             citations = [_v2_citation(c) for c in (raw[:5] if isinstance(raw, list) else [])]
-            return AIMessage.STATUS_COMPLETED, str(result.get("answer", "")), "", [
-                c for c in citations if c is not None
-            ]
+            citations = [c for c in citations if c is not None]
+            # The engine permits at most MAX_PASSAGES across all sources.
+            # Do not persist a misleading partial set if replay metadata is oversized.
+            if sum(len(c.get("passages", ())) for c in citations) > MAX_PASSAGES:
+                for c in citations:
+                    c.pop("passages", None)
+            return AIMessage.STATUS_COMPLETED, str(result.get("answer", "")), "", citations
         # V1 behavior intentionally unchanged for existing clients and rows.
         citations = [
             {key: c.get(key) for key in ("source_id", "title", "url", "publisher", "evidence_quote", "retrieved_at")

@@ -7,7 +7,8 @@ import logging
 import os
 import re
 
-from .exceptions import ProviderInvalidResponse, ProviderTimeout, ProviderUnavailable
+from .exceptions import (ProviderContextLimited, ProviderInvalidResponse,
+                         ProviderOutputLimited, ProviderTimeout, ProviderUnavailable)
 
 _logger = logging.getLogger(__name__)
 
@@ -141,8 +142,13 @@ class OpenAIResponsesProvider:
                  response_v3_enabled: bool = False, response_stage2_enabled: bool = False):
         if not isinstance(model, str) or not model or len(model) > 100:
             raise ProviderUnavailable("model not configured")
-        max_allowed = 3072 if response_stage2_enabled is True else 2048
-        if type(timeout_s) not in (int, float) or not 1 <= timeout_s <= 90 or not 64 <= max_output_tokens <= max_allowed:
+        from apps.ai_core.chat_output_budget import configured_output_budget
+        pilot = configured_output_budget() if response_stage2_enabled is True else None
+        self.output_budget = pilot if pilot and pilot.model == model and pilot.output_tokens == max_output_tokens else None
+        max_allowed = self.output_budget.output_tokens if self.output_budget else (
+            3072 if response_stage2_enabled is True else 2048)
+        if (type(timeout_s) not in (int, float) or not 1 <= timeout_s <= 90
+                or type(max_output_tokens) is not int or not 64 <= max_output_tokens <= max_allowed):
             raise ProviderUnavailable("invalid provider limits")
         self.model = model
         self.timeout_s = timeout_s
@@ -162,7 +168,13 @@ class OpenAIResponsesProvider:
         if mode == "sectioned":
             if not self.response_stage2_enabled:
                 raise ProviderUnavailable("sectioned mode disabled")
-            base = (_STAGE2_INSTRUCTIONS + " " + self.extra_instructions).strip()
+            stage_rules = _STAGE2_INSTRUCTIONS
+            if self.output_budget:
+                stage_rules = stage_rules.replace(
+                    "to 700 characters (gap at most 200),",
+                    "to the evidence-backed bound (at most 1400 characters per answer section, gap at most 200),"
+                )
+            base = (stage_rules + " " + self.extra_instructions).strip()
         elif mode == "grounded":
             base = self.instructions
         else:
@@ -171,10 +183,24 @@ class OpenAIResponsesProvider:
         if self.response_v3_enabled:
             from apps.ai_core.response_engine_v3 import guidance
             result += " " + guidance(question, language)
+        if mode == "sectioned" and self.output_budget:
+            result += (
+                " Use complete paragraphs or Markdown headings, simple tables and fenced code "
+                "only where supported by the current evidence. Finish all fences and sections. "
+                "Prefer fewer complete sections over incomplete output. "
+                "Never add unsupported claims, numbers, links or executable HTML."
+            )
         return result
+
+    def check_context_budget(self, input_bytes):
+        if self.output_budget:
+            from apps.ai_ledger.service import INPUT_OVERHEAD_TOKENS
+            if not self.output_budget.fits_context(input_bytes, INPUT_OVERHEAD_TOKENS):
+                raise ProviderContextLimited("configured context budget exceeded")
 
     def generate(self, *, question: str, language: str, sources: list[dict],
                  prior_turns=(), mode="grounded") -> dict:
+        self.last_usage = None
         if mode not in ("grounded", "sectioned") or (mode == "sectioned" and not self.response_stage2_enabled):
             raise ProviderUnavailable("response mode disabled")
         key = os.environ.get("OPENAI_API_KEY", "")
@@ -188,15 +214,17 @@ class OpenAIResponsesProvider:
                 from apps.ai_core.schemas.response import SectionedAnswerSchema
         except ImportError as exc:
             raise ProviderUnavailable("optional provider dependencies unavailable") from exc
-        client = OpenAI(api_key=key, timeout=self.timeout_s, max_retries=0)
         schema = SectionedAnswerSchema if mode == "sectioned" else GroundedAnswerSchema
         builder = build_request_payload_v2 if mode == "sectioned" else build_request_payload
         payload = builder(question, language, sources, compact_sources=self.compact_sources,
                           prior_turns=prior_turns)
+        instructions = self.instructions_for(question, language, mode=mode)
+        self.check_context_budget(len(instructions.encode("utf-8")) + len(payload.encode("utf-8")))
+        client = OpenAI(api_key=key, timeout=self.timeout_s, max_retries=0)
         try:
             response = client.responses.parse(
                 model=self.model,
-                instructions=self.instructions_for(question, language, mode=mode),
+                instructions=instructions,
                 input=[{"role": "user", "content": payload}],
                 text_format=schema,
                 tools=[], store=False,
@@ -231,6 +259,8 @@ class OpenAIResponsesProvider:
             _logger.warning("ai_provider_incomplete status=%s reason=%s",
                             status if status in {"incomplete", "failed", "queued", "in_progress"} else "other",
                             safe_reason)
+            if self.output_budget and status == "incomplete" and reason == "max_output_tokens":
+                raise ProviderOutputLimited("provider output budget reached")
             raise ProviderInvalidResponse("provider response incomplete")
         parsed = getattr(response, "output_parsed", None)
         if not isinstance(parsed, schema):

@@ -32,6 +32,7 @@ from apps.ai_core.conversations import context, repository, service
 from apps.ai_core.conversations.repository import ConversationNotFound
 from apps.ai_core.conversations.service import ConversationLimit, ConversationNotInTrash
 from apps.ai_core.gateway import InputError, validate
+from apps.ai_core.chat_input_budget import global_budget
 from apps.ai_core.models import AIMessage
 from apps.ai_core.production_policy import _ids, production_actor_allowed
 from apps.ai_core.staging_policy import actor_allowed
@@ -54,11 +55,11 @@ def _enabled_user(request):
     return user if user.is_authenticated and user.is_active else None
 
 
-def _body(request, allowed):
+def _body(request, allowed, *, max_body=MAX_BODY):
     if request.content_type != "application/json":
         raise ValueError("json_only")
     length = int(request.META.get("CONTENT_LENGTH", "0") or "0")
-    if length < 0 or length > MAX_BODY or len(request.body) > MAX_BODY:
+    if length < 0 or length > max_body or len(request.body) > max_body:
         raise ValueError("request_too_large")
     body = json.loads(request.body or b"{}", object_pairs_hook=_strict_object)
     if not isinstance(body, dict) or set(body) - set(allowed):
@@ -217,8 +218,9 @@ def conversation_message_view(request, conversation_id):
     if settings.VORNEQ_ENV in ("production", "staging") and not request_recovery.enabled():
         return _json({"error": "recovery_unavailable"}, 503)
     try:
-        body = _body(request, {"question", "language"})
-        question, language = validate(body.get("question"), body.get("language", "fa"))
+        budget = global_budget()
+        body = _body(request, {"question", "language"}, max_body=budget.body_bytes)
+        question, language = validate(body.get("question"), body.get("language", "fa"), input_budget=budget)
     except ValueError as exc:
         code = str(exc) if str(exc) in ("json_only", "request_too_large", "invalid_fields") else "invalid_input"
         return _json({"error": code}, {"json_only": 415, "request_too_large": 413}.get(code, 400))

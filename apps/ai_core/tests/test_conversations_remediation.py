@@ -296,7 +296,7 @@ class FollowupRetrievalTests(TestCase):
         from pathlib import Path
         from django.conf import settings
         self.assertIn('env_bool("VORNEQ_AI_CONTEXT_RETRIEVAL_ENABLED", False)',
-                      (Path(settings.BASE_DIR) / "config" / "settings.py").read_text())
+                      (Path(settings.BASE_DIR) / "config" / "settings.py").read_text(encoding="utf-8"))
 
 
 @override_settings(**dict(DEV, VORNEQ_AI_CONVERSATIONS_ENABLED=True, VORNEQ_AI_CONVERSATIONS_ACTOR_POLICY="authenticated"))

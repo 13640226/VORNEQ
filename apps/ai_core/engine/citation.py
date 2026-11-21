@@ -148,8 +148,8 @@ def validate_generated(output, *, sources, language, max_answer_chars=1000):
     }
 
 
-def validate_sectioned(output, *, passages, sources, language, question="", max_chars=2400):
+def validate_sectioned(output, *, passages, sources, language, question="", max_chars=2400, output_budget=None):
     """V3 section-level validator; legacy validate_generated remains unchanged."""
     from apps.ai_core.engine.sectioned import validate_sectioned as strict_validate
     return strict_validate(output, passages=passages, sources=sources, language=language,
-                           question=question, max_chars=max_chars)
+                           question=question, max_chars=max_chars, output_budget=output_budget)

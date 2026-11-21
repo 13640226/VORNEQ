@@ -23,9 +23,13 @@ from apps.ai_core.engine.global_grounded import GLOBAL_INSTRUCTIONS, HISTORY_INS
 from apps.ai_core.engine.sectioned import UnsupportedSectionNumber
 from apps.ai_core.engine.grounded import PhaseBDisabled
 from apps.ai_core.gateway import InputError, validate
+from apps.ai_core.chat_input_budget import global_budget
 from apps.ai_core.global_budget import reserve_global_request
 from apps.ai_core.global_router import UNSUPPORTED, route_question
-from apps.ai_core.providers.exceptions import GatewayError, ProviderInvalidResponse, ProviderTimeout
+from apps.ai_core.providers.exceptions import (GatewayError, ProviderContextLimited,
+                                               ProviderInvalidResponse, ProviderOutputLimited,
+                                               ProviderTimeout)
+from apps.ai_core.chat_output_budget import configured_output_budget
 from apps.ai_core.providers.openai_responses import OpenAIResponsesProvider
 from apps.ai_core import response_engine_v3
 from apps.ai_core.staging_budget import reserve_staging_request
@@ -158,12 +162,13 @@ def ask_global_view(request):
         return JsonResponse({"error": "json_only"}, status=415)
     try:
         length = int(request.META.get("CONTENT_LENGTH", "0") or "0")
-        if length < 0 or length > 2048 or len(request.body) > 2048:
+        budget = global_budget()
+        if length < 0 or length > budget.body_bytes or len(request.body) > budget.body_bytes:
             return JsonResponse({"error": "request_too_large"}, status=413)
         body = json.loads(request.body, object_pairs_hook=_strict_object)
         if not isinstance(body, dict) or set(body) - {"question", "language"}:
             return JsonResponse({"error": "invalid_fields"}, status=400)
-        question, language = validate(body.get("question"), body.get("language", "fa"))
+        question, language = validate(body.get("question"), body.get("language", "fa"), input_budget=budget)
     except (ValueError, TypeError, UnicodeDecodeError, InputError):
         return JsonResponse({"error": "invalid_input"}, status=400)
     # Bind the request ID before routing, including deterministic cost-free 422s,
@@ -217,10 +222,12 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
         if settings.VORNEQ_ENV == "staging" and not shared_budget:
             reserve_staging_request()
         stage2 = response_engine_v3.stage2_enabled(settings)
+        output_budget = configured_output_budget() if stage2 else None
         provider = OpenAIResponsesProvider(
             model=os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""),
             timeout_s=_provider_timeout_for_environment(settings.VORNEQ_ENV),
-            max_output_tokens=(response_engine_v3.output_tokens(settings) if stage2
+            max_output_tokens=(output_budget.output_tokens if output_budget else
+                               response_engine_v3.output_tokens(settings) if stage2
                                else _output_cap_for_environment(settings.VORNEQ_ENV)),
             extra_instructions=_instructions_for(settings.VORNEQ_ENV, bool(prior_turns)),
             compact_sources=_compact_sources_for_environment(settings.VORNEQ_ENV),
@@ -239,7 +246,8 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
         response = ask_global(question, language, actor=request.user, provider=provider,
                               retriever=retriever, enabled=True, prior_turns=prior_turns,
                               search_question=search_question, stage2=stage2,
-                              max_answer_chars=response_engine_v3.answer_limit(settings))
+                              max_answer_chars=response_engine_v3.answer_limit(settings),
+                              **({"output_budget": output_budget} if output_budget else {}))
     except BudgetExceeded:
         return {"error": "rate_limited"}, 429, meta
     except GlobalUnsupported:
@@ -255,6 +263,10 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
         return {"error": "search_unavailable"}, 503, meta
     except ProviderTimeout:
         return {"error": "provider_timeout"}, 504, meta
+    except ProviderOutputLimited:
+        return {"error": "output_limit_reached"}, 503, meta
+    except ProviderContextLimited:
+        return {"error": "context_limit_reached"}, 413, meta
     except ProviderInvalidResponse:
         # HTTP 200 from the provider is not proof of a usable structured answer.
         # Fixed code only: do not log or return raw provider content.

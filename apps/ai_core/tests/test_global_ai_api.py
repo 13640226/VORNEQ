@@ -167,7 +167,7 @@ class GlobalApiTests(NoNetworkMixin, TestCase):
 
     def test_settings_flag_default_off(self):
         self.assertIn('env_bool("VORNEQ_GLOBAL_AI_ENABLED", False)',
-                      (Path(settings.BASE_DIR) / "config" / "settings.py").read_text())
+                      (Path(settings.BASE_DIR) / "config" / "settings.py").read_text(encoding="utf-8"))
 
     # --- unchanged request controls ---
     def test_auth_csrf_method_and_input_controls(self):

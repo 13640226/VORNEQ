@@ -102,16 +102,19 @@ def _insufficient(language, route):
 
 
 def ask_global(question, fallback_language, *, actor, provider, retriever, enabled=False, prior_turns=(),
-               search_question=None, max_answer_chars=1000, stage2=False):
+               search_question=None, max_answer_chars=1000, stage2=False, output_budget=None):
     if not enabled:
         raise GlobalUnsupported("Global AI disabled")
     if actor is None or not getattr(actor, "is_authenticated", False):
         raise GlobalUnsupported("actor not authenticated")
+    from apps.ai_core.chat_input_budget import global_budget
+    budget = global_budget()
     route = route_question(question, fallback_language)
     if route.kind == OFFICIAL_VORNEQ:
         result = dict(ask_grounded(question, route.language, actor=actor,
                                    provider=provider, enabled=True,
-                                   max_answer_chars=max_answer_chars))
+                                   max_answer_chars=max_answer_chars,
+                                   input_budget=budget))
         result["route"] = OFFICIAL_VORNEQ
         return result
     if route.kind != GENERAL_PUBLIC:
@@ -121,6 +124,13 @@ def ask_global(question, fallback_language, *, actor, provider, retriever, enabl
     # searched and ranked; the model still receives the user's real question and
     # all validation below still runs against the retrieved sources.
     query = search_question or question
+    if budget.question_utf8_bytes:
+        from apps.ai_core.chat_search_query import bounded_query
+        from apps.ai_core.sanitization import UnsafePrompt
+        try:
+            query = bounded_query(query, language, max_chars=budget.question_chars)
+        except UnsafePrompt as exc:
+            raise GlobalUnsupported("unsafe search query") from exc
     result_limit, excerpt_limit = (5, 1500) if stage2 else (MAX_RESULTS, MAX_EXCERPT)
     evidence = retriever.search(query, language, limit=result_limit)
     source_types = _source_types(retriever)
@@ -158,12 +168,14 @@ def ask_global(question, fallback_language, *, actor, provider, retriever, enabl
             ]}
             for source in sources
         ]
-        output = provider.generate(question=screen_and_redact(question, limit=200),
+        output = provider.generate(question=screen_and_redact(question, limit=budget.question_chars),
                                    language=language, sources=with_passages, mode="sectioned", **extra)
         result = validate_sectioned(output, passages=passages, sources=sources, language=language,
-                                    question=question, max_chars=max_answer_chars)
+                                    question=question,
+                                    max_chars=(output_budget.answer_chars if output_budget else max_answer_chars),
+                                    **({"output_budget": output_budget} if output_budget else {}))
     else:
-        output = provider.generate(question=screen_and_redact(question, limit=200),
+        output = provider.generate(question=screen_and_redact(question, limit=budget.question_chars),
                                    language=language, sources=sources, **extra)
         result = validate_generated(output, sources=sources, language=language,
                                     max_answer_chars=max_answer_chars)

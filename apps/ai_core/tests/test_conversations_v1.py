@@ -94,7 +94,7 @@ class ConversationApiTests(ConversationMixin, TestCase):
         from pathlib import Path
 
         from django.conf import settings
-        text = (Path(settings.BASE_DIR) / "config" / "settings.py").read_text()
+        text = (Path(settings.BASE_DIR) / "config" / "settings.py").read_text(encoding="utf-8")
         self.assertIn('env_bool("VORNEQ_AI_CONVERSATIONS_ENABLED", False)', text)
 
     def test_csrf_enforced_for_every_mutation(self):

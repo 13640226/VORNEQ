@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>Offline chat DOM regression tests</title></head>
+<body data-result="RUNNING">
+<div data-vq-chat data-vq-language="en" data-vq-rich-text="true" data-vq-answer-limit="6400" data-vq-section-limit="1400" data-vq-citation-limit="5">
+<form data-vq-chat-form action="/offline-only/"><input name="csrfmiddlewaretoken" value="synthetic"><textarea data-vq-chat-input></textarea><button data-vq-chat-send type="submit">Send</button><button data-vq-chat-clear type="button">Clear</button></form>
+<div data-vq-chat-log></div><div data-vq-chat-status></div>
+</div>
+<pre id="results"></pre>
+<script src="../../../../assets/js/phase-c-chat.js"></script>
+<script src="chat_markdown.js"></script>
+</body></html>
