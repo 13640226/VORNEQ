@@ -186,6 +186,11 @@ def process_next_image_job():
             if not _paid_gate(paid_worker) or not actor_allowed(job.owner, worker=worker_mode):
                 raise ImageProviderError("paid provider gate closed", code="paid_disabled",
                                          request_sent=False)
+            from apps.ai_ledger.service import reservation_still_open
+            if not reservation_still_open(reservation):
+                # Owner stop (or any ledger doubt) after reserving: provably not sent.
+                raise ImageProviderError("ledger stopped before call", code="ledger_stopped",
+                                         request_sent=False)
             provider = OpenAIImageProvider()
         else:
             provider = MockImageProvider()

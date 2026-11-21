@@ -73,6 +73,10 @@ class ImageSettlementWorkerTests(TestCase):
             ))
             settle = patches.enter_context(patch("apps.ai_ledger.service.settle",
                                                  return_value="finalized"))
+            # Synthetic reservation: the real pre-call ledger re-check is covered
+            # on PostgreSQL in apps.ai_ledger.tests.test_ledger_image_worker_client.
+            patches.enter_context(patch("apps.ai_ledger.service.reservation_still_open",
+                                        return_value=True))
             provider = patches.enter_context(patch.object(service, "OpenAIImageProvider"))
             provider.return_value.generate.return_value = ImageResult(
                 _synthetic_png(), input_tokens=11, output_tokens=27,

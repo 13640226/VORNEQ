@@ -172,23 +172,40 @@ def reserve(*, actor_id: int, model: str, input_bytes: int, max_output_tokens: i
 
 
 _WORKER_SERVICE = re.compile(r"srv-[a-z0-9]{20,32}\Z")
+# Same format as the paid-worker owner grant in image policy. Duplicated ON
+# PURPOSE: the ledger re-validates independently of the caller (defense in
+# depth) and never imports apps.ai_core.image_generation (no import cycle).
+_PAID_WORKER_GRANT = re.compile(r"OWNER-AUTH-AI-IMAGE-PAID-WORKER-STAGING-[A-Z0-9-]{6,100}\Z")
 
 
-def _image_worker_client(config: LedgerConfig, environment, service_id) -> bool:
+def _image_worker_client(config: LedgerConfig, environment, service_id, git_sha) -> bool:
     """The ONLY non-web ledger client: the separate paid Staging image Worker.
 
-    Restricted to the configured image account (never the chat account), the
-    staging environment and the configured worker service ID, which must also
-    be the identity of the running process. The account itself must still be
-    staging-only (checked under lock in reserve_with_config).
+    Re-validated here, independently of the image policy: staging runtime,
+    paid-worker switch and owner grant, configured worker service ID equal to
+    the running process identity, authorized SHA equal to both the running
+    commit and the SHA recorded on the reservation, and the configured image
+    account (never the chat account). The account itself must still be
+    staging-only and not stopped (checked under lock in reserve_with_config).
     """
     import os
     worker_id = getattr(settings, "VORNEQ_AI_IMAGE_WORKER_SERVICE_ID", "")
+    authorized_sha = getattr(settings, "VORNEQ_AI_IMAGE_AUTHORIZED_SHA", "")
+    grant = getattr(settings, "VORNEQ_AI_IMAGE_PAID_WORKER_OWNER_AUTH", "")
     if (environment != "staging"
+            or getattr(settings, "VORNEQ_ENV", "") != "staging"
+            or getattr(settings, "DEBUG", True) is not False
+            or getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", False)
+            or getattr(settings, "VORNEQ_AI_IMAGE_ENABLED", False) is not True
+            or getattr(settings, "VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED", False) is not True
+            or getattr(settings, "VORNEQ_AI_IMAGE_PROVIDER", "") != "openai"
             or getattr(settings, "VORNEQ_AI_IMAGE_PAID_WORKER_ENABLED", False) is not True
+            or not isinstance(grant, str) or not _PAID_WORKER_GRANT.fullmatch(grant)
             or not isinstance(worker_id, str) or not _WORKER_SERVICE.fullmatch(worker_id)
             or worker_id in EXPECTED_SERVICES.values()
-            or service_id != worker_id or os.environ.get("RENDER_SERVICE_ID") != worker_id):
+            or service_id != worker_id or os.environ.get("RENDER_SERVICE_ID") != worker_id
+            or not isinstance(authorized_sha, str) or not _SHA.fullmatch(authorized_sha)
+            or git_sha != authorized_sha or os.environ.get("RENDER_GIT_COMMIT") != authorized_sha):
         return False
     try:
         image_id = uuid.UUID(str(getattr(settings, "VORNEQ_AI_IMAGE_LEDGER_ID", "")))
@@ -198,17 +215,34 @@ def _image_worker_client(config: LedgerConfig, environment, service_id) -> bool:
     return config.ledger_id == image_id and image_id != chat_id
 
 
-def _approved_client(config: LedgerConfig, environment, service_id) -> bool:
+def _approved_client(config: LedgerConfig, environment, service_id, git_sha) -> bool:
     if EXPECTED_SERVICES.get(environment) is not None and service_id == EXPECTED_SERVICES[environment]:
         return True
-    return _image_worker_client(config, environment, service_id)
+    return _image_worker_client(config, environment, service_id, git_sha)
+
+
+def reservation_still_open(reservation: Reservation) -> bool:
+    """Read-only re-check right before an irreversible provider call.
+
+    True only if the reservation is still RESERVED and its account is not
+    emergency-stopped. Any error is False (fail closed). Closes the window in
+    which an owner stop between reserve and call would otherwise be ignored.
+    """
+    from apps.ai_ledger.models import BudgetReservation
+    try:
+        with transaction.atomic(using=LEDGER_ALIAS):
+            row = (BudgetReservation.objects.using(LEDGER_ALIAS).select_related("account")
+                   .get(id=reservation.id))
+            return row.status == BudgetReservation.RESERVED and not row.account.emergency_stop
+    except Exception:
+        return False
 
 
 def reserve_with_config(config: LedgerConfig, *, environment, service_id, git_sha, actor_id, model,
                         input_bytes, max_output_tokens, staging_daily=None) -> Reservation:
     from apps.ai_ledger.models import BudgetAccount, BudgetReservation
 
-    if not _approved_client(config, environment, service_id):
+    if not _approved_client(config, environment, service_id, git_sha):
         raise LedgerUnavailable("runtime is not an approved ledger client")
     if not isinstance(git_sha, str) or not _SHA.fullmatch(git_sha):
         raise LedgerUnavailable("runtime SHA unavailable")
