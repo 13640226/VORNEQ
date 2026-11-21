@@ -49,10 +49,10 @@ Real Chromium/Edge DOM tests:
 apps/ai_core/tests/browser/chat_markdown.html and chat_markdown.js.
 Open the HTML file locally in an isolated browser; it loads the actual chat
 JavaScript, replaces fetch with synthetic responses, and uses a CSP with
-connect-src none. Check body data-result=PASS and PASS_COUNT=22. Test includes
+connect-src none. Check body data-result=PASS and PASS_COUNT=26. Test includes
 script/HTML/event-handler/SVG/javascript URL payloads, table limits,
 unclosed fences, mixed RTL/LTR, exact code, and the section rendering path.
-No browser dependency was added. Syntax check alone is insufficient.
+The aggregate passage bound is 24, including storage, history replay and browser rendering. Boundary tests cover 8, 9, 24 and 25 passages across sources. No browser dependency was added. Syntax check alone is insufficient.
 Optional OpenAI SDK mock tests are run where the optional dependencies are
 installed; the core CI dependency lock does not install them.
 

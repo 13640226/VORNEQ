@@ -146,7 +146,12 @@
       container.appendChild(title);
       const list = document.createElement("ul");
       list.className = "vq-chat__sources";
-      for (const source of citations.slice(0, citationLimit)) {
+      const selectedSources = citations.slice(0, citationLimit);
+      // Match engine/passages.py MAX_PASSAGES, including stored pilot answers.
+      const maxPassages = 24;
+      const passageCount = selectedSources.reduce((sum, source) =>
+        sum + (source && Array.isArray(source.passages) ? source.passages.length : 0), 0);
+      for (const source of selectedSources) {
         if (!source || typeof source !== "object") continue;
         const li = document.createElement("li");
         li.dir = textDirection(String(source.title || ""));
@@ -179,7 +184,7 @@
           quote.textContent = source.evidence_quote;
           li.appendChild(quote);
         }
-        if (Array.isArray(source.passages) && source.passages.length <= 8) {
+        if (passageCount <= maxPassages && Array.isArray(source.passages)) {
           const passages = document.createElement("ul");
           passages.className = "vq-chat__passages";
           for (const p of source.passages) {

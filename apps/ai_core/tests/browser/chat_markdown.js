@@ -67,7 +67,20 @@ window.addEventListener("DOMContentLoaded", async () => {
     check(node.dir==="auto" && node.querySelector("pre").dir==="ltr" && node.querySelector("code").textContent===mixed, "RTL/LTR and unicode code preservation");
     node = await render({...response("Long section"),format_version:2,sections:[{kind:"answer",heading:"Title",text:"**Section**",refs:["S1.P1"]}]});
     check(node.querySelector("strong").textContent==="Section" && log.querySelector(".vq-chat__section-refs").textContent==="S1.P1","section path and reference rendering");
-    check(calls===14, "exactly one synthetic POST per response");
+    for (const count of [8, 9, 24, 25]) {
+      const citations = [];
+      let remaining = count;
+      for (let n=1; n<=3 && remaining; n++) {
+        const size = Math.min(9, remaining);
+        citations.push({source_id:"S"+n,title:"Synthetic source",passages:
+          Array.from({length:size},(_,i)=>({passage_id:"S"+n+".P"+(i+1),quote:"x".repeat(80),section_indices:[Math.floor(i/4)]}))});
+        remaining -= size;
+      }
+      await render({...response("Synthetic answer"),format_version:2,citations});
+      check(log.querySelectorAll(".vq-chat__passages li").length === (count<=24 ? count : 0),
+        "passage aggregate bound: "+count);
+    }
+    check(calls===18, "exactly one synthetic POST per response");
     document.body.dataset.result="PASS";
     output.textContent += "PASS_COUNT="+count;
   } catch(error) {

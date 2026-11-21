@@ -223,6 +223,39 @@ class Stage2Compatibility(SimpleTestCase):
         self.assertEqual(replay["answer"], "Long answer")
         self.assertNotIn("sections", replay)
 
+    def test_pilot_passage_bounds_preserved_in_storage_and_replay(self):
+        for count in (8, 9, 24, 25):
+            with self.subTest(count=count):
+                citations = []
+                remaining = count
+                for source_number in range(1, 4):
+                    size = min(9, remaining)
+                    if not size:
+                        break
+                    sid = f"S{source_number}"
+                    citations.append({
+                        "source_id": sid, "title": "Synthetic source",
+                        "evidence_digest": "a" * 64, "evidence_quote": "x" * 80,
+                        "passages": [{"passage_id": f"{sid}.P{i+1}", "quote": "x" * 80,
+                                      "section_indices": [i // 4]}
+                                     for i in range(size)],
+                    })
+                    remaining -= size
+                result = {"mode": "grounded_draft", "format_version": 2,
+                          "answer": "Synthetic answer", "citations": citations}
+                status, content, _, stored = classify(result, 200)
+                msg = SimpleNamespace(status=status, content=content, citations=stored)
+                conv = SimpleNamespace(id="a", language="en")
+                replay, code = stored_response(msg, conv)
+                self.assertEqual(code, 200)
+                if count <= 24:
+                    self.assertEqual(stored, citations)
+                    self.assertEqual(replay["citations"], citations)
+                    self.assertEqual(replay["format_version"], 2)
+                else:
+                    self.assertTrue(all("passages" not in c for c in stored))
+                    self.assertNotIn("format_version", replay)
+
     def test_invalid_passage_metadata_is_discarded(self):
         fake = {"passage_id": "S3.P1", "quote": "x" * 80,
                 "section_indices": [-1], "unknown": "abc"}
