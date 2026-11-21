@@ -43,3 +43,18 @@ Das Chat-Konto ist für die Worker-Identität nie erreichbar, auch wenn es stagi
    Preflight einen aktiven Worker erkennt (`no_worker_identity`).
 4. `ai_ledger_image_control resume` nur nach Freigabe; `stop` bei jeder Unklarheit.
 5. Erst Mock-Lauf, dann ein einzelner bezahlter Job eines Allowlist-Nutzers.
+
+## Härtung (Defense in Depth, Folge-PR)
+
+- `reserve_with_config()` ruft nur zwei Stellen auf: `ledger.reserve()` (Chat, immer
+  Chat-Konto) und den Bild-Worker. Die Worker-Ausnahme prüft jetzt **im Ledger selbst**,
+  unabhängig von der Image-Policy: staging-Runtime, `DEBUG=False`, globaler Stop aus,
+  Bild-/Paid-Flags, Provider `openai`, Paid-Worker-Schalter und -Grant, Worker-ID =
+  laufende Identität, `VORNEQ_AI_IMAGE_AUTHORIZED_SHA` = laufender Commit = SHA der
+  Reservierung, Bild-Konto ≠ Chat-Konto.
+- Kein Import der Image-Policy im Ledger (kein Zyklus); das Grant-Format ist bewusst
+  dupliziert.
+- TOCTOU: Render-Variablen ändern sich nur mit Neustart; die einzige Laufzeit-Sperre ist
+  `emergency_stop` des Kontos. Neu: `reservation_still_open()` direkt vor dem
+  Provider-Aufruf – ist das Konto inzwischen gestoppt oder die Reservierung nicht mehr
+  offen, wird nicht gesendet und freigegeben (`ledger_stopped`).

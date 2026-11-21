@@ -150,6 +150,8 @@ class PaidWorkerQueueTests(TestCase):
                                                 return_value="finalized"))
         self.release = stack.enter_context(patch("apps.ai_ledger.service.release",
                                                  return_value="released"))
+        self.still_open = stack.enter_context(patch("apps.ai_ledger.service.reservation_still_open",
+                                                    return_value=True))
         self.provider = stack.enter_context(patch.object(service, "OpenAIImageProvider"))
         self.provider.return_value.generate.return_value = ImageResult(
             _synthetic_png(), input_tokens=19, output_tokens=824, is_mock=False)
@@ -194,6 +196,16 @@ class PaidWorkerQueueTests(TestCase):
         job.refresh_from_db()
         self.assertEqual((job.status, job.attempts), (AIImageJob.STATUS_QUEUED, 0))
         self.reserve.assert_not_called()
+
+    def test_ledger_stop_after_reservation_releases_without_provider_call(self):
+        job = self.job()
+        self.still_open.return_value = False
+        self.assertEqual(service.process_next_image_job(), job.pk)
+        job.refresh_from_db()
+        self.assertEqual((job.status, job.error_code), (AIImageJob.STATUS_FAILED, "ledger_stopped"))
+        self.provider.return_value.generate.assert_not_called()
+        self.release.assert_called_once()
+        self.settle.assert_not_called()
 
     def test_closed_gate_claims_nothing(self):
         self.gate.return_value = False
