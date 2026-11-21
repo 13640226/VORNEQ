@@ -2,9 +2,10 @@
 
 Baseline: c09c1ab597bd2d4b9ff6d316279a0d6acdadb6be.
 
-This is intentionally a partial draft. It does not implement or authorize
-the larger response engine, Markdown, streaming, memory or production image
-work. No environment setting is changed by the patch.
+This documents Phase 2 part 1. Part 2 is described separately in
+[CHAT_OUTPUT_BUDGET_PILOT.md](CHAT_OUTPUT_BUDGET_PILOT.md). Neither part
+authorizes runtime activation, streaming, memory or production images.
+No environment setting is changed by the patches.
 
 ## Before / after
 

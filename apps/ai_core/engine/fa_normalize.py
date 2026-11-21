@@ -8,7 +8,11 @@ from __future__ import annotations
 import re
 
 _ARABIC = str.maketrans({"ي": "ی", "ك": "ک"})
-_URL = re.compile(r"(?:https?://|www\.)[^\s<>]+", re.IGNORECASE)
+_PROTECTED = re.compile(
+    r"^[ \t]*\x60{3}[^\n]*\n[\s\S]*?(?:^[ \t]*\x60{3}[ \t]*(?:\n|$)|\Z)"
+    r"|\x60[^\x60\n]+\x60|(?:https?://|www\.)[^\s<>]+",
+    re.IGNORECASE | re.MULTILINE,
+)
 _PREFIX = re.compile(r"(?<![\w\u200c])((?:ن)?می)[ \t]+(?=[آ-ی][آ-ی])")
 _SUFFIX = re.compile(r"(?<=[آ-ی])[ \t]+(هایی|های|ها|ترین|تر|دان)(?![\w\u200c])")
 
@@ -20,12 +24,12 @@ def _text(fragment: str) -> str:
 
 
 def prose(text: str) -> str:
-    """Normalize only prose spans, preserving any URL character-for-character."""
+    """Normalize only prose spans; preserve URLs and Markdown code spans."""
     if not isinstance(text, str):
         raise TypeError("Persian prose must be text")
     segments = []
     last = 0
-    for match in _URL.finditer(text):
+    for match in _PROTECTED.finditer(text):
         segments.extend((_text(text[last:match.start()]), match.group(0)))
         last = match.end()
     segments.append(_text(text[last:]))

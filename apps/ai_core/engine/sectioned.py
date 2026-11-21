@@ -31,7 +31,13 @@ def _safe(value: str, limit: int) -> str:
         raise GeneratedAnswerRejected("unsafe answer section") from exc
 
 
-def validate_sectioned(output, *, passages, sources, language, question="", max_chars=2400):
+def validate_sectioned(output, *, passages, sources, language, question="", max_chars=2400, output_budget=None):
+    from apps.ai_core.chat_output_budget import configured_output_budget
+    if output_budget is not None and output_budget != configured_output_budget():
+        raise GeneratedAnswerRejected("unauthorized response budget")
+    answer_bound = output_budget.answer_chars if output_budget else 2400
+    section_bound = min(answer_bound, 1400) if output_budget else 700
+    max_distinct = 24 if output_budget else 8
     if not isinstance(output, dict) or set(output) != _FIELDS:
         raise GeneratedAnswerRejected("invalid sectioned response fields")
     if (output["language"] != language or output["verified"] is not False
@@ -39,7 +45,7 @@ def validate_sectioned(output, *, passages, sources, language, question="", max_
             or output["grounded_status"] != "proposed"
             or output["error_code"] != ""):
         raise GeneratedAnswerRejected("untrusted sectioned response status")
-    if type(max_chars) is not int or not 1 <= max_chars <= 2400:
+    if type(max_chars) is not int or not 1 <= max_chars <= answer_bound:
         raise GeneratedAnswerRejected("invalid answer bound")
     sections = output["sections"]
     if not isinstance(sections, list) or not 1 <= len(sections) <= 6:
@@ -72,9 +78,9 @@ def validate_sectioned(output, *, passages, sources, language, question="", max_
         kind, heading, content, refs = (section[k] for k in ("kind", "heading", "text", "passage_ids"))
         if (kind not in ("answer", "gap") or not isinstance(heading, str)
                 or not isinstance(content, str) or not isinstance(refs, list)
-                or len(heading) > 80 or not 1 <= len(content.strip()) <= 700):
+                or len(heading) > 80 or not 1 <= len(content.strip()) <= section_bound):
             raise GeneratedAnswerRejected("invalid answer section")
-        heading, content = _safe(heading, 80), _safe(content, 700)
+        heading, content = _safe(heading, 80), _safe(content, section_bound)
         if kind == "gap":
             if (refs or len(content) > 200
                     or numeric_tokens(heading + " " + content)):
@@ -87,7 +93,9 @@ def validate_sectioned(output, *, passages, sources, language, question="", max_
                     or len(set(refs)) != len(refs)):
                 raise CitationIdentityRejected("unknown or duplicate passage")
             distinct.update(refs)
-            if len(distinct) > 8:
+            if output_budget and len(content) > min(section_bound, 400 + 250 * len(refs)):
+                raise GeneratedAnswerRejected("section exceeds evidence-backed length")
+            if len(distinct) > max_distinct:
                 raise CitationIdentityRejected("too many referenced passages")
         if language == "fa":
             heading, content = prose(heading), prose(content)
@@ -102,7 +110,7 @@ def validate_sectioned(output, *, passages, sources, language, question="", max_
 
     text = "\n\n".join((s["heading"] + "\n" if s["heading"] else "") + s["text"]
                        for s in normalized)
-    evidence_bound = min(2400, 400 + 250 * len(distinct))
+    evidence_bound = min(answer_bound, 400 + 250 * len(distinct))
     if len(text) > min(max_chars, evidence_bound):
         raise GeneratedAnswerRejected("answer exceeds evidence-backed length")
 

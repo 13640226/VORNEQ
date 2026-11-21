@@ -9,6 +9,7 @@ from django.views.decorators.http import require_GET
 
 from .chat_strings import chat_labels
 from .chat_input_budget import LEGACY, global_budget
+from .chat_output_budget import configured_output_budget
 from .response_engine_v3 import answer_limit, stage2_enabled
 from .staging_policy import hosted_runtime, trial_enabled, actor_allowed
 from .production_policy import production_actor_allowed
@@ -50,6 +51,7 @@ def chat_page(request):
     request.LANGUAGE_CODE = language
     global_ai = global_ai_available()
     budget = global_budget() if global_ai else LEGACY
+    output_budget = configured_output_budget() if global_ai else None
     # Persistent conversations ride on Global AI; off unless explicitly enabled.
     from .views_conversations import may_start
     conversations_on = bool(global_ai and getattr(settings, "VORNEQ_AI_CONVERSATIONS_ENABLED", False)
@@ -63,7 +65,9 @@ def chat_page(request):
             "chat_endpoint": reverse("ai_core:ask-global" if global_ai else "ai_core:ask-grounded"),
             "chat_source_hosts": " ".join(sorted(WikipediaRetriever.allowed_hosts)) if global_ai else "",
             "chat_v3_enabled": answer_limit(settings) > 1000,
-            "chat_answer_limit": answer_limit(settings),
+            "chat_answer_limit": output_budget.answer_chars if output_budget else answer_limit(settings),
+            "chat_rich_text": output_budget is not None,
+            "chat_section_limit": min(output_budget.answer_chars, 1400) if output_budget else 700,
             "chat_citation_limit": 5 if stage2_enabled(settings) else 3,
             "chat_staging": settings.VORNEQ_ENV == "staging",
             "chat_production": settings.VORNEQ_ENV == "production",

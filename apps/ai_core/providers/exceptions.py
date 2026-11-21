@@ -11,3 +11,11 @@ class ProviderTimeout(GatewayError):
 
 class ProviderInvalidResponse(GatewayError):
     code = "invalid_provider_response"
+
+
+class ProviderOutputLimited(ProviderInvalidResponse):
+    code = "output_limit_reached"
+
+
+class ProviderContextLimited(ProviderUnavailable):
+    code = "context_limit_reached"

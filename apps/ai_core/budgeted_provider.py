@@ -31,6 +31,9 @@ class BudgetedProvider:
                          if mode == "sectioned" else effective(self.inner, question, language))
                         if callable(effective) else getattr(self.inner, "instructions", ""))
         input_bytes = len(instructions.encode("utf-8")) + len(payload.encode("utf-8"))
+        check_context = getattr(type(self.inner), "check_context_budget", None)
+        if callable(check_context):
+            check_context(self.inner, input_bytes)
         reservation = ledger.reserve(actor_id=self.actor_id, model=self.inner.model,
                                      input_bytes=input_bytes,
                                      max_output_tokens=self.inner.max_output_tokens)

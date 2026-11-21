@@ -102,7 +102,7 @@ def _insufficient(language, route):
 
 
 def ask_global(question, fallback_language, *, actor, provider, retriever, enabled=False, prior_turns=(),
-               search_question=None, max_answer_chars=1000, stage2=False):
+               search_question=None, max_answer_chars=1000, stage2=False, output_budget=None):
     if not enabled:
         raise GlobalUnsupported("Global AI disabled")
     if actor is None or not getattr(actor, "is_authenticated", False):
@@ -171,7 +171,9 @@ def ask_global(question, fallback_language, *, actor, provider, retriever, enabl
         output = provider.generate(question=screen_and_redact(question, limit=budget.question_chars),
                                    language=language, sources=with_passages, mode="sectioned", **extra)
         result = validate_sectioned(output, passages=passages, sources=sources, language=language,
-                                    question=question, max_chars=max_answer_chars)
+                                    question=question,
+                                    max_chars=(output_budget.answer_chars if output_budget else max_answer_chars),
+                                    **({"output_budget": output_budget} if output_budget else {}))
     else:
         output = provider.generate(question=screen_and_redact(question, limit=budget.question_chars),
                                    language=language, sources=sources, **extra)

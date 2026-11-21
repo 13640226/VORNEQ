@@ -27,6 +27,8 @@
       unsupported: root.dataset.vqUnsupported,
       rejectedEvidence: root.dataset.vqRejectedEvidence,
       rejectedOutput: root.dataset.vqRejectedOutput,
+      outputLimited: root.dataset.vqOutputLimited,
+      contextLimited: root.dataset.vqContextLimited,
       citationIdentity: root.dataset.vqCitationIdentity,
       citationDigest: root.dataset.vqCitationDigest,
       citationQuote: root.dataset.vqCitationQuote,
@@ -58,8 +60,12 @@
       ? root.dataset.vqLanguage : "en";
     // Trusted template values, bounded to the existing server policy.
     const rawAnswerLimit = Number(root.dataset.vqAnswerLimit);
+    const richText = root.dataset.vqRichText === "true";
     const answerLimit = Number.isInteger(rawAnswerLimit) && rawAnswerLimit >= 1000 &&
-      rawAnswerLimit <= 2400 ? rawAnswerLimit : 1000;
+      rawAnswerLimit <= (richText ? 6400 : 2400) ? rawAnswerLimit : 1000;
+    const rawSectionLimit = Number(root.dataset.vqSectionLimit);
+    const sectionLimit = richText && Number.isInteger(rawSectionLimit) &&
+      rawSectionLimit >= 700 && rawSectionLimit <= 1400 ? rawSectionLimit : 700;
     const citationLimit = root.dataset.vqCitationLimit === "5" ? 5 : 3;
     // Prefer the script of the question over the surrounding UI language.
     // Mixed Latin brand names (e.g. VORNEQ) must not override Persian text.
@@ -197,13 +203,145 @@
       container.appendChild(list);
     }
 
+    // A deliberately small Markdown subset. All content enters text nodes;
+    // no model-created markup, attributes, URLs or executable code.
+    function appendInline(parent, value) {
+      const pattern = /(\*\*[^*\n]+\*\*|\x60[^\x60\n]+\x60)/g;
+      let start = 0;
+      for (const match of value.matchAll(pattern)) {
+        parent.appendChild(document.createTextNode(value.slice(start, match.index)));
+        const tag = document.createElement(match[0].startsWith("**") ? "strong" : "code");
+        tag.textContent = match[0].startsWith("**") ? match[0].slice(2, -2) : match[0].slice(1, -1);
+        parent.appendChild(tag);
+        start = match.index + match[0].length;
+      }
+      parent.appendChild(document.createTextNode(value.slice(start)));
+    }
+
+    function renderMarkdown(value) {
+      const content = document.createElement("div");
+      content.className = "vq-chat__rich";
+      content.dir = "auto";
+      const source = String(value);
+      const lines = source.split(/\r?\n/);
+      if (lines.length > 256 || Array.from(source).length > 6400) {
+        const plain = document.createElement("p");
+        plain.textContent = source;
+        content.appendChild(plain);
+        return content;
+      }
+      const cells = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "")
+        .split("|").map((cell) => cell.trim());
+      const tableLine = (line) => /^\s*\|.*\|\s*$/.test(line);
+      const separator = (line) => tableLine(line) && cells(line).every(
+        (cell) => /^:?-{3,}:?$/.test(cell));
+      const fence = /^\s*\x60{3}(?:[A-Za-z0-9_+.-]{0,24})\s*$/;
+      const closingFence = /^\s*\x60{3}\s*$/;
+      const headingLine = /^(#{1,4})\s+(.+)$/;
+      const listLine = /^\s*(?:([-+*])|(\d{1,3})\.)\s+(.+)$/;
+
+      for (let i = 0; i < lines.length;) {
+        const line = lines[i];
+        if (!line.trim()) { i++; continue; }
+        if (fence.test(line)) {
+          let end = i + 1;
+          while (end < lines.length && !closingFence.test(lines[end])) end++;
+          if (end === lines.length) {
+            // Unclosed fence: preserve the complete string as literal text.
+            const p = document.createElement("p");
+            p.textContent = lines.slice(i).join("\n");
+            content.appendChild(p);
+            break;
+          }
+          const pre = document.createElement("pre");
+          pre.dir = "ltr";
+          const code = document.createElement("code");
+          code.textContent = lines.slice(i + 1, end).join("\n");
+          pre.appendChild(code);
+          content.appendChild(pre);
+          i = end + 1;
+          continue;
+        }
+        const heading = headingLine.exec(line);
+        if (heading) {
+          const node = document.createElement(heading[1].length <= 2 ? "h3" : "h4");
+          appendInline(node, heading[2]);
+          content.appendChild(node);
+          i++;
+          continue;
+        }
+        if (tableLine(line) && i + 1 < lines.length && separator(lines[i + 1])) {
+          const headers = cells(line);
+          if (headers.length > 0 && headers.length <= 12 && headers.length === cells(lines[i + 1]).length) {
+            let lastRow = i + 2;
+            while (lastRow < lines.length && tableLine(lines[lastRow]) &&
+                   cells(lines[lastRow]).length === headers.length) lastRow++;
+            if (lastRow - i - 2 > 100) {
+              const plain = document.createElement("p");
+              plain.textContent = lines.slice(i, lastRow).join("\n");
+              content.appendChild(plain);
+              i = lastRow;
+              continue;
+            }
+            const wrap = document.createElement("div");
+            wrap.className = "vq-chat__table-wrap";
+            const table = document.createElement("table");
+            const head = document.createElement("thead");
+            const body = document.createElement("tbody");
+            function row(parent, values, tag) {
+              const tr = document.createElement("tr");
+              for (const cell of values) {
+                const td = document.createElement(tag);
+                if (tag === "th") td.scope = "col";
+                appendInline(td, cell);
+                tr.appendChild(td);
+              }
+              parent.appendChild(tr);
+            }
+            row(head, headers, "th");
+            i += 2;
+            while (i < lines.length && tableLine(lines[i]) && cells(lines[i]).length === headers.length) {
+              row(body, cells(lines[i]), "td");
+              i++;
+            }
+            table.appendChild(head);
+            table.appendChild(body);
+            wrap.appendChild(table);
+            content.appendChild(wrap);
+            continue;
+          }
+        }
+        const item = listLine.exec(line);
+        if (item) {
+          const ordered = Boolean(item[2]);
+          const list = document.createElement(ordered ? "ol" : "ul");
+          if (ordered) list.start = Number(item[2]);
+          while (i < lines.length) {
+            const next = listLine.exec(lines[i]);
+            if (!next || Boolean(next[2]) !== ordered) break;
+            const li = document.createElement("li");
+            appendInline(li, next[3]);
+            list.appendChild(li);
+            i++;
+          }
+          content.appendChild(list);
+          continue;
+        }
+        const p = document.createElement("p");
+        appendInline(p, line);
+        content.appendChild(p);
+        i++;
+      }
+      return content;
+    }
+
     function renderSections(bubble, sections) {
       if (!Array.isArray(sections) || sections.length < 1 || sections.length > 6) return;
       const rootSections = document.createElement("div");
       rootSections.className = "vq-chat__sections";
       for (const section of sections) {
         if (!section || !["answer", "gap"].includes(section.kind) ||
-            typeof section.text !== "string" || section.text.length > 700 ||
+            typeof section.text !== "string" || Array.from(section.text).length > sectionLimit ||
             typeof section.heading !== "string" || section.heading.length > 80) return;
         const block = document.createElement("section");
         block.className = "vq-chat__section";
@@ -215,7 +353,7 @@
         }
         const p = document.createElement("p");
         p.textContent = section.text;
-        block.appendChild(p);
+        block.appendChild(richText ? renderMarkdown(section.text) : p);
         if (Array.isArray(section.refs) && section.refs.length <= 4 &&
             section.refs.every((ref) => typeof ref === "string" && /^S[1-5]\.P[1-9][0-9]?$/.test(ref))) {
           const ids = document.createElement("small");
@@ -230,7 +368,9 @@
       if (original && rootSections.childElementCount) {
         original.hidden = true;
         bubble.insertBefore(rootSections, original.nextSibling);
+        return true;
       }
+      return false;
     }
 
     // Only an opaque UUID and timestamp are kept in tab-scoped storage; no prompt,
@@ -268,6 +408,8 @@
     // reason text, prompt, model output or exception messages in failure bubbles.
     function rejectionMessage(data) {
       if (!data || typeof data !== "object") return labels.error || "Request failed";
+      if (data.error === "output_limit_reached") return labels.outputLimited || labels.error;
+      if (data.error === "context_limit_reached") return labels.contextLimited || labels.error;
       if (data.error === "UNSUPPORTED_QUESTION") {
         return labels.unsupported || "Question unsupported; no model request was sent.";
       }
@@ -290,7 +432,7 @@
         ? (safeReasons[data.reason_code] || labels.rejectedEvidence)
         : (labels.rejectedEvidence || "Answer failed evidence checks; check usage before retrying.");
     }
-    function renderData(data) {
+    function renderData(data, stored = false) {
       if (data && data.mode === "insufficient_evidence" &&
           data.verified === false && data.model_status === "not_called" &&
           data.grounded_status === "insufficient_evidence" &&
@@ -301,14 +443,22 @@
         return { completed: true, answerBubble: null };
       }
       if (!data || data.verified !== false ||
-          typeof data.answer !== "string" || data.answer.length > answerLimit ||
+          typeof data.answer !== "string" ||
+          (data.answer.length > answerLimit && Array.from(data.answer).length > (stored ? 6400 : answerLimit)) ||
           data.mode !== "grounded_draft" || !Array.isArray(data.citations)) {
         appendMessage(labels.error || "Invalid response", "assistant");
         return { completed: false, answerBubble: null };
       }
       const bubble = appendMessage(data.answer, "assistant");
-      if (data.format_version === 2 && Array.isArray(data.sections)) {
+      const sectionsRendered = data.format_version === 2 && Array.isArray(data.sections) &&
         renderSections(bubble, data.sections);
+      if (richText && !sectionsRendered) {
+        const original = bubble.querySelector("p");
+        if (original) {
+          const rich = renderMarkdown(data.answer);
+          original.hidden = true;
+          bubble.insertBefore(rich, original.nextSibling);
+        }
       }
       const note = document.createElement("small");
       note.textContent = labels.status || "Generated draft, not verified";
@@ -372,8 +522,14 @@
             appendMessage(rejectionMessage(data.response), "assistant");
             return { completed: true, answerBubble: null };
           }
+          if (data.status === "failed" && data.response &&
+              data.response.error === "context_limit_reached") {
+            appendMessage(rejectionMessage(data.response), "assistant");
+            return { completed: true, answerBubble: null };
+          }
           if (data.status === "completed" || data.status === "failed") {
-            appendMessage(labels.error || "Request could not be displayed", "assistant");
+            appendMessage(data.response && data.response.error === "output_limit_reached"
+              ? rejectionMessage(data.response) : (labels.error || "Request could not be displayed"), "assistant");
             recoveryBlocked = true;
             return { completed: false, answerBubble: null };
           }
@@ -484,14 +640,15 @@
             appendMessage(String(message.content || ""), "user");
           } else if (message.status === "completed") {
             renderData({ mode: "grounded_draft", verified: false, answer: String(message.content || ""),
-              citations: Array.isArray(message.citations) ? message.citations : [] });
+              citations: Array.isArray(message.citations) ? message.citations : [] }, true);
           } else if (message.status === "insufficient_evidence") {
             const code = String(message.error_code || "");
             if (code === "UNSUPPORTED_QUESTION") appendMessage(rejectionMessage({ error: code }), "assistant");
             else if (code === "insufficient_evidence" || code === "INSUFFICIENT_EVIDENCE") appendMessage(labels.empty || "", "assistant");
             else appendMessage(rejectionMessage({ error: "INSUFFICIENT_EVIDENCE", reason_code: code }), "assistant");
           } else {
-            appendMessage(labels.error || "Request failed", "assistant");
+            const code = String(message.error_code || "");
+            appendMessage(rejectionMessage({ error: code }), "assistant");
           }
         }
       }
@@ -716,6 +873,14 @@
         } else if (conv && response.status === 409) {
           appendMessage(conv.fullLabel(), "assistant");
           if (requestId) clearRecovery();
+        } else if (response.status === 413) {
+          let failure = null;
+          try { failure = await response.json(); } catch (_error) { /* fail closed */ }
+          appendMessage(rejectionMessage(failure), "assistant");
+          // The typed context-limit branch proves no provider call; other
+          // 413 responses do not justify clearing a claimed recovery ID.
+          completed = Boolean(failure && failure.error === "context_limit_reached");
+          if (requestId && !completed) recoveryBlocked = true;
         } else if (!response.ok) {
           // A failed provider parse may follow a billable HTTP 200. Show only a
           // fixed localized explanation; never auto-retry the original request.
