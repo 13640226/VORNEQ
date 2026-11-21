@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import os
 import uuid
 from datetime import datetime, timedelta, timezone as dt_timezone
@@ -20,6 +21,9 @@ from .providers import ImageProviderError, MockImageProvider, OpenAIImageProvide
 from .storage import image_storage, store_image
 
 
+_logger = logging.getLogger(__name__)
+
+
 class ImageQueueError(Exception):
     pass
 
@@ -29,6 +33,21 @@ def _limit(name, ceiling):
     if type(value) is not int or not 1 <= value <= ceiling:
         raise ImageQueueError("invalid image quota")
     return value
+
+
+def image_ledger_daily_limit():
+    """Independent account-wide reservation count; unset keeps legacy limit."""
+    from apps.ai_ledger.service import StagingDailyLimit
+
+    count = getattr(settings, "VORNEQ_AI_IMAGE_LEDGER_DAILY_MAX_REQUESTS", None)
+    if count is None:
+        count = getattr(settings, "VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS", 0)
+    if type(count) is not int or not 1 <= count <= 50:
+        raise ImageQueueError("invalid image ledger daily request cap")
+    return StagingDailyLimit(
+        max_requests=count,
+        cap_micro=_limit("VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD", 2_000_000_000),
+    )
 
 
 def submit_image_job(user, *, request_id: uuid.UUID, prompt: str, size: str):
@@ -150,9 +169,7 @@ def process_next_image_job():
         # Storage must exist before any model/ledger work.
         image_storage()
         if job.provider == "openai":
-            from apps.ai_ledger.service import (
-                StagingDailyLimit, reserve_with_config, settle,
-            )
+            from apps.ai_ledger.service import reserve_with_config, settle
             from .policy import image_ledger_config, max_request_micro, safety_identifier
             if (not _paid_gate(paid_worker) or not actor_allowed(job.owner, worker=worker_mode)
                     or job.model_id != getattr(
@@ -162,10 +179,7 @@ def process_next_image_job():
             safety_id = safety_identifier(job.owner_id)
             if per_request_cap is None or safety_id is None:
                 raise ImageQueueError("paid provider controls unavailable")
-            daily = StagingDailyLimit(
-                max_requests=_limit("VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS", 50),
-                cap_micro=_limit("VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD", 2_000_000_000),
-            )
+            daily = image_ledger_daily_limit()
             reservation = reserve_with_config(
                 image_ledger_config(), environment="staging",
                 service_id=os.environ.get("RENDER_SERVICE_ID", ""),
@@ -233,6 +247,16 @@ def process_next_image_job():
         from apps.ai_core.engine.budget import BudgetExceeded
         error_code = ("ledger_refused" if reservation is None and isinstance(exc, BudgetExceeded)
                       else "provider_or_storage_unavailable")
+        if error_code == "ledger_refused":
+            from apps.ai_ledger.service import (
+                BudgetExhausted, EmergencyStop, LedgerUnavailable, StagingDailyCapReached,
+            )
+            reason = ("daily_cap" if isinstance(exc, StagingDailyCapReached) else
+                      "emergency_stop" if isinstance(exc, EmergencyStop) else
+                      "allowance" if isinstance(exc, BudgetExhausted) else
+                      "identity_or_unavailable" if isinstance(exc, LedgerUnavailable) else
+                      "other_budget_refusal")
+            _logger.warning("image_ledger_reservation_refused reason=%s", reason)
         if reservation is not None and not settlement_attempted:
             from apps.ai_ledger.service import settle
             try:

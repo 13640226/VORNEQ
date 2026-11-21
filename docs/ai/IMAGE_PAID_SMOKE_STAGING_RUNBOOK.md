@@ -178,3 +178,23 @@ Korrektur:
 - Abgelehnte Einreichung wird klassifiziert (`PAID_SMOKE_SUBMIT_REJECTED_GLOBAL_DAILY_CAP`,
   `…_AUTHORIZATION`, `…_REJECTED`) – ohne Prompt, Nutzer-ID oder Antworttext.
 - Der Mock-E2E-Runner hat dieselbe feste Grenze 1 (Folgepunkt, hier nicht geändert).
+
+## Eigenständige Ledger-Tagesquote (IMGPAID-20261121-03)
+
+Der Job wurde angenommen, aber ohne Reservierung mit `ledger_refused` beendet.
+Der Runner verengte die Nutzerquote auf 1, die zuvor zugleich als konto-weites
+Ledger-Request-Limit diente. Bereits heute abgeschlossene Reservierungen bleiben
+auch nach Job-Cleanup in der Ledger-Tageszählung erhalten.
+
+- Optionaler unabhängiger Dienstwert `VORNEQ_AI_IMAGE_LEDGER_DAILY_MAX_REQUESTS`
+  (1–50); nicht gesetzt = bisherige Nutzergrenze des Dienstes, ungültig = NO_GO.
+  Eine Erhöhung ist eine eigene Owner-Entscheidung, nicht Teil dieses PR.
+- Preflight prüft Anzahl und Kosten der Staging-Reservierungen des Bildkontos
+  seit UTC-Mitternacht mit derselben Aggregation wie die Ledger-Reservierung.
+  Vor dem Einmal-Beleg wird die Prüfung im Smoke-Lock wiederholt; die endgültige
+  Reservierung prüft weiterhin unter dem Konto-Zeilenschloss.
+- Prozesslokal bleibt die Wegwerf-Nutzerquote 1; das geprüfte Ledger-Limit
+  wird unverändert übernommen. Keine Rücksetzung oder Löschung von Ledger-Zeilen;
+  Request-Kostengrenze, Tagesbetrag, Stop und Provider-Limit bleiben unverändert.
+- Bei zeitgleichem Ledger-Verbrauch nach Preflight bleibt die Reservierung fail-closed.
+  Kein Retry; sichere Fehlerkategorie im Log ohne Prompt, Schlüssel oder IDs.

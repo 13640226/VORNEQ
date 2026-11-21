@@ -260,7 +260,17 @@ def ledger_checks(checks, *, cap_micro, expected_image_ledger_id=None):
     """READ-ONLY ledger inspection inside a READ ONLY transaction."""
     from django.db import connections, transaction
     from apps.ai_core.image_generation.policy import OFFICIAL_PRICES_MICRO_PER_MTOK
-    from apps.ai_ledger.service import LEDGER_ALIAS, LedgerUnavailable, ledger_configuration
+    from apps.ai_core.image_generation.service import ImageQueueError, image_ledger_daily_limit
+    from apps.ai_ledger.service import (
+        LEDGER_ALIAS, LedgerUnavailable, _staging_usage_today, ledger_configuration,
+    )
+    try:
+        daily_limit = image_ledger_daily_limit()
+    except ImageQueueError:
+        checks.add("image_ledger_daily_limit_configured", False)
+        daily_limit = None
+    else:
+        checks.add("image_ledger_daily_limit_configured", True)
     try:
         config = ledger_configuration()
     except LedgerUnavailable:
@@ -309,6 +319,7 @@ def ledger_checks(checks, *, cap_micro, expected_image_ledger_id=None):
                                   "WHERE account_id = %s AND status IN ('reserved','uncertain')",
                                   [info["account"][0]])
                         info["open"] = c.fetchone()[0]
+                        info["daily_usage"] = _staging_usage_today(info["account"][0])
     except Exception as exc:
         checks.add("ledger_readable", False, type(exc).__name__)
         return None
@@ -330,6 +341,21 @@ def ledger_checks(checks, *, cap_micro, expected_image_ledger_id=None):
                "remaining_micro={}".format(remaining))
     checks.add("image_account_no_open_reservations", info.get("open") == 0,
                "open={}".format(info.get("open")))
+    count, committed = info.get("daily_usage", (None, None))
+    bound = getattr(settings, "VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND", 0)
+    projected = (worst_case_micro() if type(bound) is int
+                 and 1 <= bound <= OUTPUT_BOUND_CEILING else None)
+    info["daily_limit"] = daily_limit
+    checks.add("image_ledger_daily_requests_available",
+               daily_limit is not None and type(count) is int
+               and 0 <= count < daily_limit.max_requests,
+               "reservations_today={} ledger_request_cap={}".format(
+                   count, daily_limit.max_requests if daily_limit else "invalid"))
+    checks.add("image_ledger_daily_amount_available",
+               daily_limit is not None and type(committed) is int and committed >= 0
+               and projected is not None and committed + projected <= daily_limit.cap_micro,
+               "committed_micro={} next_reservation_micro={} ledger_daily_cap_micro={}".format(
+                   committed, projected, daily_limit.cap_micro if daily_limit else "invalid"))
     info["shared_with_production"] = "production" in info.get("envs", [])
     return info
 
@@ -541,7 +567,7 @@ def consume_one_use_receipt(connection, target, expected_sha):
 
 # --- One-use execution ---------------------------------------------------------------
 
-def _gate_settings(target, expected_sha, user_id, *, submitted_today):
+def _gate_settings(target, expected_sha, user_id, *, submitted_today, ledger_max_requests):
     return {
         "VORNEQ_AI_IMAGE_ENABLED": True,
         "VORNEQ_AI_IMAGE_PROVIDER": "openai",
@@ -553,6 +579,8 @@ def _gate_settings(target, expected_sha, user_id, *, submitted_today):
         "VORNEQ_AI_IMAGE_ALLOWED_USER_IDS": str(user_id),
         "VORNEQ_AI_IMAGE_WORKER_SERVICE_ID": "",
         "VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS": 1,
+        # Keep the checked account-wide cap while narrowing the user quota.
+        "VORNEQ_AI_IMAGE_LEDGER_DAILY_MAX_REQUESTS": ledger_max_requests,
         # Exactly one more submission today; never above the service-wide cap
         # (checked before the one-use receipt is consumed).
         "VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS": submitted_today + 1,
@@ -628,6 +656,17 @@ def _execute_locked(connection, target, expected_sha, *, public_host, out, fetch
     require(global_quota_available(submitted_today, global_cap),
             "PAID_SMOKE_PREFLIGHT_GLOBAL_QUOTA_EXHAUSTED submitted_today={} global_cap={}".format(
                 submitted_today, global_cap or "invalid"))
+    # Recheck the independent financial quota under the smoke lock before the receipt.
+    # The final reservation still checks the same limit under its account row lock.
+    ledger = Checks()
+    ledger_info = ledger_checks(ledger, cap_micro=target.max_cost_micro,
+                                expected_image_ledger_id=target.image_ledger_id)
+    for line in ledger.lines():
+        out(line)
+    require(ledger.go and ledger_info is not None,
+            "PAID_SMOKE_PREFLIGHT_LEDGER_REFUSED " +
+            ",".join(name for name, ok, _ in ledger.items if not ok))
+    ledger_max_requests = ledger_info["daily_limit"].max_requests
     consume(connection, target, expected_sha)
     out("PAID_SMOKE_ONE_USE_RECEIPT_CONSUMED release={}".format(target.release_id))
 
@@ -639,7 +678,8 @@ def _execute_locked(connection, target, expected_sha, *, public_host, out, fetch
         user.save()
         users.append(user)
         with override_settings(**_gate_settings(target, expected_sha, user.pk,
-                                                submitted_today=submitted_today)):
+                                                submitted_today=submitted_today,
+                                                ledger_max_requests=ledger_max_requests)):
             require(policy.enabled() and policy.paid_provider_enabled()
                     and not policy.worker_enabled(), "paid process gate state invalid", Aborted)
             report.ok("process_gate_paid_single_user", out)
