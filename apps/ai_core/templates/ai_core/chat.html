@@ -69,6 +69,9 @@
     <p class="vq-chat__kicker"><span class="vq-chat__led" aria-hidden="true"></span>VORNEQ · AI · {% if chat_production %}Generated drafts · claims not verified{% elif chat_staging %}Authorized staging trial{% else %}Development preview{% endif %}</p>
     <h1 id="vq-chat-title">{{ chat_labels.title }}</h1>
     <p class="vq-chat__intro">{{ chat_labels.intro }}</p>
+    {% if chat_image_studio_enabled %}
+    <p class="vq-chat__image-entry"><a href="{{ chat_image_studio_url }}">VORNEQ Image Studio · Staging</a></p>
+    {% endif %}
     {% if chat_conversations_enabled %}
     <div class="vq-chat__conv-bar" data-vq-conv-bar hidden>
       <h2 class="vq-chat__conv-title" data-vq-conv-title></h2>

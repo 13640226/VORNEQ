@@ -222,3 +222,7 @@
 .vq-chat__passages { padding-inline-start: 16px; }
 .vq-chat__passages li { margin-block: 6px; }
 .vq-chat__passages blockquote { margin: 4px 0; }
+
+/* Image Studio entry is visible only after separate Staging UI authorization. */
+.vq-chat__image-entry { margin: 12px 0 0; font-size: .92rem; }
+.vq-chat__image-entry a { color: var(--vq-led); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
