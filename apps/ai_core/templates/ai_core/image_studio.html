@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ labels.title }} — VORNEQ{% endblock %}
+{% block body_class %}vq-image-page{% endblock %}
+{% block meta %}
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="{{ labels.intro }}">
+{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/image-studio.css' %}">
+{% endblock %}
+{% block content %}
+<section class="vq-image" data-vq-image-studio
+  data-create-url="{{ image_create_url }}"
+  data-paid="{% if image_paid %}true{% else %}false{% endif %}">
+  <header class="vq-image__header">
+    <p class="vq-image__kicker"><span class="vq-image__led" aria-hidden="true"></span>VORNEQ · AI · STAGING</p>
+    <h1>{{ labels.title }}</h1>
+    <p>{{ labels.intro }}</p>
+    <p class="vq-image__mode">{% if image_paid %}{{ labels.mode_paid }}{% else %}{{ labels.mode_mock }}{% endif %}</p>
+  </header>
+  <div class="vq-image__layout">
+    <form class="vq-image__form" data-vq-image-form>
+      {% csrf_token %}
+      <label for="vq-image-prompt">{{ labels.prompt }}</label>
+      <textarea id="vq-image-prompt" data-vq-image-prompt rows="5" minlength="4"
+        maxlength="2000" required autocomplete="off"
+        placeholder="{{ labels.placeholder }}"></textarea>
+      <label for="vq-image-size">{{ labels.size }}</label>
+      <select id="vq-image-size" data-vq-image-size>
+        <option value="1024x1024">1024 × 1024</option>
+        <option value="1536x1024">1536 × 1024</option>
+        <option value="1024x1536">1024 × 1536</option>
+      </select>
+      <label class="vq-image__consent" for="vq-image-consent">
+        <input id="vq-image-consent" type="checkbox" data-vq-image-consent required>
+        <span>{% if image_paid %}{{ labels.consent_paid }}{% else %}{{ labels.consent_mock }}{% endif %}</span>
+      </label>
+      <p class="vq-image__warning" role="note">{% if image_paid %}{{ labels.disclosure_paid }}{% else %}{{ labels.disclosure_mock }}{% endif %}</p>
+      <button class="vq-image__submit" type="submit" data-vq-image-submit>{{ labels.send }}</button>
+    </form>
+    <section class="vq-image__result" aria-labelledby="vq-image-result-title">
+      <h2 id="vq-image-result-title">{{ labels.heading }}</h2>
+      <p class="vq-image__status" data-vq-image-status role="status" aria-live="polite"
+        data-wait="{{ labels.status_wait }}"
+        data-sending="{{ labels.status_sending }}"
+        data-queued="{{ labels.status_queued }}"
+        data-running="{{ labels.status_running }}"
+        data-completed="{{ labels.status_completed }}"
+        data-failed="{{ labels.status_failed }}"
+        data-uncertain="{{ labels.status_uncertain }}"
+        data-error="{{ labels.status_error }}"
+        data-invalid="{{ labels.status_invalid }}">{{ labels.status_wait }}</p>
+      <button type="button" class="vq-image__check" data-vq-image-check hidden>{{ labels.check }}</button>
+      <figure class="vq-image__figure" data-vq-image-figure hidden>
+        <img data-vq-image-preview alt="{{ labels.image_alt }}" referrerpolicy="no-referrer">
+        <figcaption>{{ labels.result_note }}</figcaption>
+      </figure>
+      <a class="vq-image__open" data-vq-image-open href="#" target="_blank"
+        rel="noopener noreferrer" referrerpolicy="no-referrer" hidden>{{ labels.open }}</a>
+      <p class="vq-image__one-shot">{{ labels.one_shot }}</p>
+    </section>
+  </div>
+  <p class="vq-image__back"><a href="{{ chat_url }}">{{ labels.back }}</a></p>
+  <noscript><p>{{ labels.status_error }}</p></noscript>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/image-studio.js' %}" defer></script>
+{% endblock %}
