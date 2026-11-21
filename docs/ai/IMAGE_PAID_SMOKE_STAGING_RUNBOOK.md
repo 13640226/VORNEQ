@@ -159,3 +159,22 @@ python manage.py test apps.ai_core.tests.test_image_paid_provider_v1 \
 ```
 
 Ledger- und Ausführungstests laufen nur auf PostgreSQL (auf SQLite übersprungen).
+
+## Globale Tagesquote (Befund IMGPAID-20261121-02)
+
+Ursache des Abbruchs von `IMGPAID-20261121-02` (HTTP 400, „paid submit response invalid“):
+der Runner setzte prozesslokal `VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS=1`; ein am selben
+UTC-Tag über das Image Studio eingereichter Mock-Job hatte `AIImageDailyQuota.submitted`
+bereits auf 1 gesetzt (`1 >= 1` → `global image daily cap`). Der Preflight prüfte die Quote
+nicht, daher wurde der Einmal-Beleg verbraucht; der Provider wurde nicht aufgerufen.
+
+Korrektur:
+
+- Preflight-Prüfung `global_daily_quota_available` (`submitted_today < globaler Dienst-Cap`).
+- Dieselbe Prüfung unmittelbar **vor** dem Verbrauch des Einmal-Belegs → `Refused`
+  (`PAID_SMOKE_PREFLIGHT_GLOBAL_QUOTA_EXHAUSTED`), kein Beleg, keine Reservierung, kein Aufruf.
+- Der Runner erlaubt genau **eine** weitere Einreichung auf den heutigen Stand
+  (`submitted_today + 1`), nie über dem Dienst-Cap; Quote wird weder zurückgesetzt noch entfernt.
+- Abgelehnte Einreichung wird klassifiziert (`PAID_SMOKE_SUBMIT_REJECTED_GLOBAL_DAILY_CAP`,
+  `…_AUTHORIZATION`, `…_REJECTED`) – ohne Prompt, Nutzer-ID oder Antworttext.
+- Der Mock-E2E-Runner hat dieselbe feste Grenze 1 (Folgepunkt, hier nicht geändert).
