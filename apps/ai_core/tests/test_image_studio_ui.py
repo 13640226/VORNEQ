@@ -48,7 +48,8 @@ class ImageStudioPageTests(TestCase):
         with override_settings(**flags), patch.dict(os.environ, {
             "RENDER_SERVICE_ID": STAGING_ID, "RENDER_GIT_COMMIT": BASE_SHA,
         }):
-            return self.client.get(self.url)
+            # English copy assertions must not depend on CI/user locale cookies.
+            return self.client.get(self.url + "?lang=en")
 
     def test_staging_allowlisted_mock_actor_can_view_without_starting_a_job(self):
         result = self.visit()
