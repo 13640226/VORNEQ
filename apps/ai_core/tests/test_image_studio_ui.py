@@ -60,7 +60,10 @@ class ImageStudioPageTests(TestCase):
         self.assertContains(result, reverse("ai_core:image-jobs"))
         self.assertContains(result, "data-vq-image-consent")
         self.assertContains(result, "1024x1024")
-        self.assertContains(result, "image-studio.js")
+        self.assertRegex(
+            result.content.decode("utf-8"),
+            r'<script src="[^"]*/image-studio(?:\.[0-9a-f]{12})?\.js" defer></script>',
+        )
         self.assertNotContains(result, "VORNEQ_OPENAI_IMAGE_API_KEY")
         self.assertNotContains(result, "OPENAI_API_KEY")
 
