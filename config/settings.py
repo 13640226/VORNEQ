@@ -487,6 +487,8 @@ VORNEQ_AI_CONVERSATIONS_ALLOWED_USER_IDS = os.environ.get("VORNEQ_AI_CONVERSATIO
 # Context-aware retrieval for follow-up questions (deterministic, no model call).
 # Default OFF until measured; see docs/ai/PERSISTENT_CONVERSATION_V1_DESIGN.md.
 VORNEQ_AI_CONTEXT_RETRIEVAL_ENABLED = env_bool("VORNEQ_AI_CONTEXT_RETRIEVAL_ENABLED", False)
+# Opt-in development/staging-only input pilot. Missing or malformed = legacy.
+VORNEQ_AI_CHAT_INPUT_TOKEN_BUDGET = os.environ.get("VORNEQ_AI_CHAT_INPUT_TOKEN_BUDGET", "")
 VORNEQ_AI_CONVERSATION_MAX_MESSAGES = 500
 VORNEQ_AI_CONVERSATIONS_PER_USER = 200
 VORNEQ_AI_CONVERSATION_TRASH_DAYS = 30

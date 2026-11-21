@@ -79,11 +79,15 @@ def route_question(question: str, fallback_language: str = "en") -> Route:
     language = detect_language(question, fallback_language)
     if not isinstance(question, str):
         return Route(UNSUPPORTED, language, "not_text")
+    from apps.ai_core.chat_input_budget import global_budget
+    budget = global_budget()
+    if budget.question_utf8_bytes and not budget.accepts(question):
+        return Route(UNSUPPORTED, language, "length")
     normalized = " ".join(question.split())
-    if not normalized or len(normalized) > 200:
+    if not normalized or not budget.accepts(normalized):
         return Route(UNSUPPORTED, language, "length")
     try:
-        screen_and_redact(normalized, limit=200)
+        screen_and_redact(normalized, limit=budget.question_chars)
     except UnsafePrompt:
         return Route(UNSUPPORTED, language, "unsafe")
     if _PRIVATE.search(normalized):

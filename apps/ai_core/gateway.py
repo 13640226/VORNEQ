@@ -19,12 +19,16 @@ class InputError(ValueError):
     pass
 
 
-def validate(question, language):
+def validate(question, language, *, input_budget=None):
+    from apps.ai_core.chat_input_budget import LEGACY
+    budget = input_budget or LEGACY
     if not isinstance(question, str):
         raise InputError("question must be text")
+    if budget.question_utf8_bytes and not budget.accepts(question):
+        raise InputError("question exceeds input budget")
     question = " ".join(question.split())
-    if not question or len(question) > 200 or any(ord(c) < 32 for c in question):
-        raise InputError("question must be 1-200 printable characters")
+    if not question or not budget.accepts(question) or any(ord(c) < 32 for c in question):
+        raise InputError("question exceeds input budget or contains controls")
     if language not in MESSAGES:
         raise InputError("unsupported language")
     return question, language

@@ -23,6 +23,7 @@ from apps.ai_core.engine.global_grounded import GLOBAL_INSTRUCTIONS, HISTORY_INS
 from apps.ai_core.engine.sectioned import UnsupportedSectionNumber
 from apps.ai_core.engine.grounded import PhaseBDisabled
 from apps.ai_core.gateway import InputError, validate
+from apps.ai_core.chat_input_budget import global_budget
 from apps.ai_core.global_budget import reserve_global_request
 from apps.ai_core.global_router import UNSUPPORTED, route_question
 from apps.ai_core.providers.exceptions import GatewayError, ProviderInvalidResponse, ProviderTimeout
@@ -158,12 +159,13 @@ def ask_global_view(request):
         return JsonResponse({"error": "json_only"}, status=415)
     try:
         length = int(request.META.get("CONTENT_LENGTH", "0") or "0")
-        if length < 0 or length > 2048 or len(request.body) > 2048:
+        budget = global_budget()
+        if length < 0 or length > budget.body_bytes or len(request.body) > budget.body_bytes:
             return JsonResponse({"error": "request_too_large"}, status=413)
         body = json.loads(request.body, object_pairs_hook=_strict_object)
         if not isinstance(body, dict) or set(body) - {"question", "language"}:
             return JsonResponse({"error": "invalid_fields"}, status=400)
-        question, language = validate(body.get("question"), body.get("language", "fa"))
+        question, language = validate(body.get("question"), body.get("language", "fa"), input_budget=budget)
     except (ValueError, TypeError, UnicodeDecodeError, InputError):
         return JsonResponse({"error": "invalid_input"}, status=400)
     # Bind the request ID before routing, including deterministic cost-free 422s,

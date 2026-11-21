@@ -47,7 +47,9 @@
     for (const example of root.querySelectorAll("[data-vq-chat-example]")) {
       example.addEventListener("click", () => {
         if (busy) return;
-        input.value = String(example.textContent || "").trim().slice(0, limit);
+        const exampleQuestion = String(example.textContent || "").trim();
+        if (!fitsQuestion(exampleQuestion)) return;
+        input.value = exampleQuestion;
         update();
         input.focus();
       });
@@ -71,7 +73,16 @@
     function textDirection(text) {
       return /[\u0600-\u06FF]/u.test(text) ? "rtl" : "ltr";
     }
-    const limit = 200;
+    const rawLimit = Number(root.dataset.vqQuestionLimit);
+    const limit = Number.isInteger(rawLimit) && rawLimit >= 200 && rawLimit <= 8192 ? rawLimit : 200;
+    const rawBytes = Number(root.dataset.vqQuestionBytes);
+    const byteLimit = Number.isInteger(rawBytes) && rawBytes === limit && rawBytes >= 512 ? rawBytes : 0;
+    function inputCount(value) {
+      return byteLimit ? new TextEncoder().encode(value).length : Array.from(value).length;
+    }
+    function fitsQuestion(value) {
+      return Array.from(value).length <= limit && inputCount(value) <= (byteLimit || limit);
+    }
     const recoveryEnabled = root.dataset.vqRecoveryEnabled === "true";
     const recoveryEndpoint = root.dataset.vqRecoveryEndpoint || "";
     const recoveryKey = "vq-ai-chat-recovery-v1";
@@ -79,8 +90,8 @@
     let recoveryBlocked = false;
 
     function update() {
-      if (count) count.textContent = String(input.value.length) + "/" + limit;
-      send.disabled = busy || recoveryBlocked || !input.value.trim();
+      if (count) count.textContent = String(inputCount(input.value)) + "/" + (byteLimit || limit) + (byteLimit ? " B" : "");
+      send.disabled = busy || recoveryBlocked || !input.value.trim() || !fitsQuestion(input.value);
       clear.disabled = busy;
       input.disabled = busy;
       root.classList.toggle("vq-chat--busy", busy);
@@ -640,8 +651,8 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (busy || recoveryBlocked) return;
-      const question = input.value.trim().slice(0, limit);
-      if (!question) { input.focus(); return; }
+      const question = input.value.trim();
+      if (!question || !fitsQuestion(input.value)) { input.focus(); return; }
       // Conversation mode: create the (cost-free) conversation before any billable request.
       if (conv) {
         busy = true;
