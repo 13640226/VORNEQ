@@ -14,6 +14,7 @@ from .production_policy import production_actor_allowed
 from .views_global import global_ai_available
 from .web_retrieval import WikipediaRetriever
 from .request_recovery import enabled as recovery_enabled
+from .image_generation.page import image_studio_allowed
 
 
 def is_chat_enabled():
@@ -65,6 +66,8 @@ def chat_page(request):
             "chat_recovery_enabled": global_ai and recovery_enabled(),
             "chat_recovery_endpoint": reverse("ai_core:request-status"),
             "chat_conversations_enabled": conversations_on,
+            "chat_image_studio_enabled": image_studio_allowed(request.user),
+            "chat_image_studio_url": reverse("ai_core:image-studio"),
             "chat_conversations_endpoint": reverse("ai_core:conversations") if conversations_on else "",
         })
     response["Cache-Control"] = "no-store, private"

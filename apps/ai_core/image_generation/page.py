@@ -109,6 +109,7 @@ def image_studio_page(request):
     if language not in LABELS:
         language = "en"
     provider = getattr(settings, "VORNEQ_AI_IMAGE_PROVIDER", "mock")
+    request.LANGUAGE_CODE = language
     with override(language):
         result = render(request, "ai_core/image_studio.html", {
             "labels": LABELS[language],
