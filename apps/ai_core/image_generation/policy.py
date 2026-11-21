@@ -13,6 +13,7 @@ PRODUCTION_SERVICE_ID = "srv-dadn07eq1p3s73eccau0"
 _WORKER_ID = re.compile(r"srv-[a-z0-9]{20,32}\Z")
 _SHA = re.compile(r"[0-9a-f]{40}\Z")
 _OWNER = re.compile(r"OWNER-AUTH-AI-IMAGE-STAGING-[A-Z0-9-]{6,100}\Z")
+_PAID_WORKER_OWNER = re.compile(r"OWNER-AUTH-AI-IMAGE-PAID-WORKER-STAGING-[A-Z0-9-]{6,100}\Z")
 MODELS = frozenset({
     "gpt-image-2", "gpt-image-2.5-flare",
     "gpt-image-2.5-sunburst", "gpt-image-2.6-flare",
@@ -95,12 +96,28 @@ def enabled():
     )
 
 
+def _worker_identity(owner_setting, owner_pattern):
+    """Separate Render Worker identity: own service ID, pinned SHA, owner grant."""
+    worker_id = getattr(settings, "VORNEQ_AI_IMAGE_WORKER_SERVICE_ID", "")
+    expected = getattr(settings, "VORNEQ_AI_IMAGE_AUTHORIZED_SHA", "")
+    owner = getattr(settings, owner_setting, "")
+    return bool(
+        isinstance(worker_id, str) and _WORKER_ID.fullmatch(worker_id)
+        and worker_id not in (STAGING_SERVICE_ID, PRODUCTION_SERVICE_ID)
+        and os.getenv("RENDER_SERVICE_ID") == worker_id
+        and isinstance(expected, str) and _SHA.fullmatch(expected)
+        and os.getenv("RENDER_GIT_COMMIT") == expected
+        and isinstance(owner, str) and owner_pattern.fullmatch(owner)
+        and _ids()
+    )
+
+
 def worker_enabled():
     """Explicitly separate, MOCK-ONLY background-worker identity.
 
     A Render worker never inherits the web-service grant. Its own service ID
     must be configured after separately authorized provisioning. No Production
-    or paid-worker route is granted by this function.
+    or paid-worker route is granted by this function (see paid_worker_enabled).
     """
     if (not getattr(settings, "VORNEQ_AI_IMAGE_ENABLED", False)
             or getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", False)
@@ -109,22 +126,30 @@ def worker_enabled():
             or getattr(settings, "VORNEQ_AI_IMAGE_PROVIDER", "") != "mock"
             or getattr(settings, "VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED", False)):
         return False
-    worker_id = getattr(settings, "VORNEQ_AI_IMAGE_WORKER_SERVICE_ID", "")
-    expected = getattr(settings, "VORNEQ_AI_IMAGE_AUTHORIZED_SHA", "")
-    owner = getattr(settings, "VORNEQ_AI_IMAGE_OWNER_AUTH", "")
-    return bool(
-        isinstance(worker_id, str) and _WORKER_ID.fullmatch(worker_id)
-        and worker_id not in (STAGING_SERVICE_ID, PRODUCTION_SERVICE_ID)
-        and os.getenv("RENDER_SERVICE_ID") == worker_id
-        and isinstance(expected, str) and _SHA.fullmatch(expected)
-        and os.getenv("RENDER_GIT_COMMIT") == expected
-        and isinstance(owner, str) and _OWNER.fullmatch(owner)
-        and _ids()
-    )
+    return _worker_identity("VORNEQ_AI_IMAGE_OWNER_AUTH", _OWNER)
+
+
+def paid_worker_enabled():
+    """Separate PAID Staging Worker. Default OFF; never Production.
+
+    Requires its own switch and its own owner grant (the web grant and the
+    mock-worker grant are never sufficient), the separate worker identity and
+    every paid-provider control. Mutually exclusive with worker_enabled().
+    """
+    if (not getattr(settings, "VORNEQ_AI_IMAGE_ENABLED", False)
+            or getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", False)
+            or getattr(settings, "VORNEQ_ENV", "") != "staging"
+            or getattr(settings, "DEBUG", True)
+            or getattr(settings, "VORNEQ_AI_IMAGE_PAID_WORKER_ENABLED", False) is not True):
+        return False
+    if not _worker_identity("VORNEQ_AI_IMAGE_PAID_WORKER_OWNER_AUTH", _PAID_WORKER_OWNER):
+        return False
+    return _paid_controls_ready()
 
 
 def actor_allowed(user, *, worker=False):
-    if not (worker_enabled() if worker else enabled()) or not (
+    gate = (worker_enabled() or paid_worker_enabled()) if worker else enabled()
+    if not gate or not (
         getattr(user, "is_authenticated", False)
         and getattr(user, "is_active", False)
     ):
@@ -149,7 +174,15 @@ def image_ledger_config():
 
 
 def paid_provider_enabled():
+    """Paid route on the Staging WEB service (submit, one-use smoke)."""
     if not enabled() or getattr(settings, "VORNEQ_ENV", "") != "staging":
+        return False
+    return _paid_controls_ready()
+
+
+def _paid_controls_ready():
+    """Every paid-provider control except the runtime identity gate."""
+    if getattr(settings, "VORNEQ_ENV", "") != "staging":
         return False
     if getattr(settings, "VORNEQ_AI_IMAGE_PROVIDER", "") != "openai":
         return False

@@ -5,7 +5,7 @@ wake signal. Claim once; RUNNING/UNCERTAIN jobs must be reconciled manually.
 """
 import time
 from django.core.management.base import BaseCommand, CommandError
-from apps.ai_core.image_generation.policy import enabled, worker_enabled
+from apps.ai_core.image_generation.policy import enabled, paid_worker_enabled, worker_enabled
 from apps.ai_core.image_generation.service import process_next_image_job
 
 
@@ -17,7 +17,7 @@ class Command(BaseCommand):
         parser.add_argument("--poll-seconds", type=float, default=3.0)
 
     def handle(self, *args, **options):
-        if not (enabled() or worker_enabled()):
+        if not (enabled() or worker_enabled() or paid_worker_enabled()):
             raise CommandError("image generation gate is closed")
         delay = options["poll_seconds"]
         if not 1.0 <= delay <= 60.0:

@@ -540,8 +540,12 @@ VORNEQ_AI_IMAGE_MODEL = os.environ.get("VORNEQ_AI_IMAGE_MODEL", "gpt-image-2.6-f
 VORNEQ_AI_IMAGE_ALLOWED_USER_IDS = os.environ.get("VORNEQ_AI_IMAGE_ALLOWED_USER_IDS", "")
 VORNEQ_AI_IMAGE_AUTHORIZED_SHA = os.environ.get("VORNEQ_AI_IMAGE_AUTHORIZED_SHA", "")
 VORNEQ_AI_IMAGE_OWNER_AUTH = os.environ.get("VORNEQ_AI_IMAGE_OWNER_AUTH", "")
-# Separate MOCK-only Render Background Worker identity; defaults to no Worker.
+# Separate Render Background Worker identity; defaults to no Worker. MOCK-only
+# unless the independent paid-worker switch and owner grant below are also set.
 VORNEQ_AI_IMAGE_WORKER_SERVICE_ID = os.environ.get("VORNEQ_AI_IMAGE_WORKER_SERVICE_ID", "")
+# Paid Staging Worker: OFF by default, own owner grant, never inherited from the web grant.
+VORNEQ_AI_IMAGE_PAID_WORKER_ENABLED = env_bool("VORNEQ_AI_IMAGE_PAID_WORKER_ENABLED", False)
+VORNEQ_AI_IMAGE_PAID_WORKER_OWNER_AUTH = os.environ.get("VORNEQ_AI_IMAGE_PAID_WORKER_OWNER_AUTH", "")
 VORNEQ_AI_IMAGE_LEDGER_ID = os.environ.get("VORNEQ_AI_IMAGE_LEDGER_ID", "")
 
 

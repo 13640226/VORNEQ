@@ -13,7 +13,9 @@ from django.db import connection, transaction
 from django.utils import timezone
 
 from apps.ai_core.models import AIImageDailyQuota, AIImageJob
-from .policy import SIZES, actor_allowed, enabled, worker_enabled, paid_provider_enabled
+from .policy import (
+    SIZES, actor_allowed, enabled, paid_provider_enabled, paid_worker_enabled, worker_enabled,
+)
 from .providers import ImageProviderError, MockImageProvider, OpenAIImageProvider
 from .storage import image_storage, store_image
 
@@ -102,16 +104,26 @@ def serialize_job(job):
     return result
 
 
+def _paid_gate(paid_worker):
+    """Re-evaluated before reserving and again just before the provider call."""
+    return paid_worker_enabled() if paid_worker else paid_provider_enabled()
+
+
 def process_next_image_job():
     """Run exactly one job. A claimed/uncertain job is NEVER auto-retried."""
-    worker_mode = worker_enabled()
+    mock_worker = worker_enabled()
+    paid_worker = not mock_worker and paid_worker_enabled()
+    worker_mode = mock_worker or paid_worker
     if not (enabled() or worker_mode):
         return None
     with transaction.atomic():
         qs = AIImageJob.objects.filter(status=AIImageJob.STATUS_QUEUED).order_by("created_at")
         # A mock-only Worker MUST NOT claim paid provider jobs.
-        if worker_mode:
+        if mock_worker:
             qs = qs.filter(provider="mock")
+        elif paid_worker:
+            # A paid Worker only claims paid jobs; it never processes mock work.
+            qs = qs.filter(provider="openai")
         if connection.features.has_select_for_update_skip_locked:
             qs = qs.select_for_update(skip_locked=True)
         elif connection.features.has_select_for_update:
@@ -142,7 +154,7 @@ def process_next_image_job():
                 StagingDailyLimit, reserve_with_config, settle,
             )
             from .policy import image_ledger_config, max_request_micro, safety_identifier
-            if (not paid_provider_enabled() or not actor_allowed(job.owner, worker=worker_mode)
+            if (not _paid_gate(paid_worker) or not actor_allowed(job.owner, worker=worker_mode)
                     or job.model_id != getattr(
                         settings, "VORNEQ_AI_IMAGE_MODEL", "")):
                 raise ImageQueueError("paid provider disabled")
@@ -171,7 +183,7 @@ def process_next_image_job():
                 # Worst-case cost exceeds the per-request ceiling: provably not sent.
                 raise ImageProviderError("request over cost ceiling",
                                          code="cost_ceiling_exceeded", request_sent=False)
-            if not paid_provider_enabled() or not actor_allowed(job.owner, worker=worker_mode):
+            if not _paid_gate(paid_worker) or not actor_allowed(job.owner, worker=worker_mode):
                 raise ImageProviderError("paid provider gate closed", code="paid_disabled",
                                          request_sent=False)
             provider = OpenAIImageProvider()

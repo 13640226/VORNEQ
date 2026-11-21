@@ -171,11 +171,44 @@ def reserve(*, actor_id: int, model: str, input_bytes: int, max_output_tokens: i
         input_bytes=input_bytes, max_output_tokens=max_output_tokens, staging_daily=staging_daily)
 
 
+_WORKER_SERVICE = re.compile(r"srv-[a-z0-9]{20,32}\Z")
+
+
+def _image_worker_client(config: LedgerConfig, environment, service_id) -> bool:
+    """The ONLY non-web ledger client: the separate paid Staging image Worker.
+
+    Restricted to the configured image account (never the chat account), the
+    staging environment and the configured worker service ID, which must also
+    be the identity of the running process. The account itself must still be
+    staging-only (checked under lock in reserve_with_config).
+    """
+    import os
+    worker_id = getattr(settings, "VORNEQ_AI_IMAGE_WORKER_SERVICE_ID", "")
+    if (environment != "staging"
+            or getattr(settings, "VORNEQ_AI_IMAGE_PAID_WORKER_ENABLED", False) is not True
+            or not isinstance(worker_id, str) or not _WORKER_SERVICE.fullmatch(worker_id)
+            or worker_id in EXPECTED_SERVICES.values()
+            or service_id != worker_id or os.environ.get("RENDER_SERVICE_ID") != worker_id):
+        return False
+    try:
+        image_id = uuid.UUID(str(getattr(settings, "VORNEQ_AI_IMAGE_LEDGER_ID", "")))
+        chat_id = uuid.UUID(str(getattr(settings, "VORNEQ_AI_LEDGER_ID", "")))
+    except ValueError:
+        return False
+    return config.ledger_id == image_id and image_id != chat_id
+
+
+def _approved_client(config: LedgerConfig, environment, service_id) -> bool:
+    if EXPECTED_SERVICES.get(environment) is not None and service_id == EXPECTED_SERVICES[environment]:
+        return True
+    return _image_worker_client(config, environment, service_id)
+
+
 def reserve_with_config(config: LedgerConfig, *, environment, service_id, git_sha, actor_id, model,
                         input_bytes, max_output_tokens, staging_daily=None) -> Reservation:
     from apps.ai_ledger.models import BudgetAccount, BudgetReservation
 
-    if EXPECTED_SERVICES.get(environment) is None or service_id != EXPECTED_SERVICES[environment]:
+    if not _approved_client(config, environment, service_id):
         raise LedgerUnavailable("runtime is not an approved ledger client")
     if not isinstance(git_sha, str) or not _SHA.fullmatch(git_sha):
         raise LedgerUnavailable("runtime SHA unavailable")
@@ -195,6 +228,8 @@ def reserve_with_config(config: LedgerConfig, *, environment, service_id, git_sh
                 raise EmergencyStop("emergency stop (ledger)")
             if environment not in account.allowed_environments.split(","):
                 raise LedgerUnavailable("environment not allowed by ledger")
+            if service_id not in EXPECTED_SERVICES.values() and account.allowed_environments != "staging":
+                raise LedgerUnavailable("worker client requires a staging-only account")
             if account.model_id != model:
                 raise LedgerUnavailable("model not approved by ledger")
             if account.total_allowance_micro <= 0 or account.total_allowance_micro > MAX_TOTAL_MICRO:
