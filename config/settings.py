@@ -558,6 +558,11 @@ def _image_int(name, default):
 VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND = _image_int("VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND", 0)
 VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD = _image_int("VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD", 0)
 VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS = _image_int("VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS", 3)
+# Optional independent account-wide paid reservation count; unset preserves legacy limit.
+VORNEQ_AI_IMAGE_LEDGER_DAILY_MAX_REQUESTS = (
+    _image_int("VORNEQ_AI_IMAGE_LEDGER_DAILY_MAX_REQUESTS", 0)
+    if "VORNEQ_AI_IMAGE_LEDGER_DAILY_MAX_REQUESTS" in os.environ else None
+)
 VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS = _image_int("VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS", 10)
 # Paid path only (all default closed): worst-case ledger reservation per request
 # must not exceed this; 0 keeps paid generation disabled.

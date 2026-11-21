@@ -134,6 +134,7 @@ PAID_SETTINGS = dict(
     VORNEQ_AI_IMAGE_COMPLEXITY="low", VORNEQ_AI_IMAGE_SAFETY_ID_KEY=KEY,
     VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND=2_000, VORNEQ_AI_IMAGE_MAX_REQUEST_MICROUSD=100_000,
     VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD=100_000, VORNEQ_AI_IMAGE_WORKER_SERVICE_ID="",
+    VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS=1, VORNEQ_AI_IMAGE_LEDGER_DAILY_MAX_REQUESTS=None,
 )
 
 
@@ -251,6 +252,18 @@ class SettingsChecksTests(SimpleTestCase):
         self.assertIn("image_openai_key_present",
                       [name for name, ok, _ in checks.items if not ok])
 
+    def test_ledger_limit_unset_inherits_service_limit_invalid_fails_closed(self):
+        from apps.ai_core.image_generation.service import ImageQueueError, image_ledger_daily_limit
+        with override_settings(VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS=1,
+                               VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD=200_000,
+                               VORNEQ_AI_IMAGE_LEDGER_DAILY_MAX_REQUESTS=None):
+            self.assertEqual(image_ledger_daily_limit().max_requests, 1)
+            for invalid in (0, -1, 51, "2", True):
+                with self.subTest(invalid=invalid), \
+                        override_settings(VORNEQ_AI_IMAGE_LEDGER_DAILY_MAX_REQUESTS=invalid):
+                    with self.assertRaises(ImageQueueError):
+                        image_ledger_daily_limit()
+
     def test_bound_and_caps(self):
         self.assertNotIn("worst_case_within_cap", self.failing())
         self.assertIn("worst_case_within_cap",
@@ -360,9 +373,14 @@ class PaidExecuteTests(TransactionTestCase):
 
     def test_daily_cap_refuses_reservation_before_any_call(self):
         sdk = FakeSDK()
-        with override_settings(VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND=10_000):
-            lines, error = self.run_smoke(sdk)
-        self.assertIn("ledger_refused", error)
+        with override_settings(VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND=10_000), \
+                patch.dict(sys.modules, {"openai": sdk.module()}), \
+                self.assertRaises(smoke.Refused) as ctx:
+            smoke.execute_once(None, TARGET, SHA, public_host=HOST, out=lambda _: None,
+                               fetch=self.fetcher.fetch, consume=self.consume,
+                               endpoint_host=R2_HOST)
+        self.assertIn("image_ledger_daily_amount_available", str(ctx.exception))
+        self.consume.assert_not_called()
         self.assertIsNone(sdk.ctor_kwargs)
         self.assertFalse(BudgetReservation.objects.using(LEDGER_ALIAS).filter(
             account__ledger_id=IMAGE_LEDGER).exists())
@@ -423,10 +441,73 @@ class PaidExecuteTests(TransactionTestCase):
         self.assertEqual(AIImageDailyQuota.objects.get(
             day_utc=datetime.now(timezone.utc).date()).submitted, 1)
 
+
+    def seed_paid_reservation_today(self, observed_micro=24_815):
+        account = BudgetAccount.objects.using(LEDGER_ALIAS).get(ledger_id=IMAGE_LEDGER)
+        row = BudgetReservation.objects.using(LEDGER_ALIAS).create(
+            id=uuid.uuid4(), account=account, environment="staging", service_id=e2e.SERVICE,
+            git_sha=SHA, actor_id=7, reserved_micro=87_938, observed_micro=observed_micro,
+            status="finalized", outcome="completed")
+        BudgetAccount.objects.using(LEDGER_ALIAS).filter(pk=account.pk).update(
+            finalized_micro=observed_micro)
+        return row
+
+    def test_full_ledger_count_refuses_before_receipt_even_with_global_capacity(self):
+        self.seed_completed_mock_job_today()
+        prior = self.seed_paid_reservation_today()
+        sdk = FakeSDK()
+        with override_settings(VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS=2,
+                               VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD=200_000), \
+                patch.dict(sys.modules, {"openai": sdk.module()}), \
+                self.assertRaises(smoke.Refused) as ctx:
+            smoke.execute_once(None, TARGET, SHA, public_host=HOST, out=lambda _: None,
+                               fetch=self.fetcher.fetch, consume=self.consume,
+                               endpoint_host=R2_HOST)
+        self.assertIn("image_ledger_daily_requests_available", str(ctx.exception))
+        self.consume.assert_not_called()
+        self.assertEqual(sdk.image_calls(), [])
+        self.assertEqual(BudgetReservation.objects.using(LEDGER_ALIAS).get(
+            account__ledger_id=IMAGE_LEDGER).pk, prior.pk)
+        self.assertEqual(AIImageJob.objects.count(), 1)
+
+    def test_explicit_ledger_count_two_records_one_new_call_without_reset(self):
+        self.seed_completed_mock_job_today()
+        prior = self.seed_paid_reservation_today()
+        sdk = FakeSDK()
+        with override_settings(VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS=2,
+                               VORNEQ_AI_IMAGE_LEDGER_DAILY_MAX_REQUESTS=2,
+                               VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD=200_000):
+            lines, error = self.run_smoke(sdk)
+        self.assertIsNone(error, lines)
+        self.consume.assert_called_once()
+        self.assertEqual(len(sdk.image_calls()), 1)
+        rows = BudgetReservation.objects.using(LEDGER_ALIAS).filter(
+            account__ledger_id=IMAGE_LEDGER)
+        self.assertEqual(rows.count(), 2)
+        self.assertTrue(rows.filter(pk=prior.pk, observed_micro=24_815).exists())
+        self.assertEqual(AIImageJob.objects.count(), 1)
+
+    def test_prior_spend_plus_reserve_over_amount_cap_refuses_even_with_count_room(self):
+        self.seed_paid_reservation_today()
+        sdk = FakeSDK()
+        with override_settings(VORNEQ_AI_IMAGE_LEDGER_DAILY_MAX_REQUESTS=2,
+                               VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD=100_000), \
+                patch.dict(sys.modules, {"openai": sdk.module()}), \
+                self.assertRaises(smoke.Refused) as ctx:
+            smoke.execute_once(None, TARGET, SHA, public_host=HOST, out=lambda _: None,
+                               fetch=self.fetcher.fetch, consume=self.consume,
+                               endpoint_host=R2_HOST)
+        self.assertIn("image_ledger_daily_amount_available", str(ctx.exception))
+        self.consume.assert_not_called()
+        self.assertEqual(sdk.image_calls(), [])
+        self.assertEqual(BudgetReservation.objects.using(LEDGER_ALIAS).filter(
+            account__ledger_id=IMAGE_LEDGER).count(), 1)
+
     def test_gate_allows_one_submission_on_top_of_today_never_above_service_cap(self):
-        gate = smoke._gate_settings(TARGET, SHA, 7, submitted_today=4)
+        gate = smoke._gate_settings(TARGET, SHA, 7, submitted_today=4, ledger_max_requests=2)
         self.assertEqual(gate["VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS"], 5)
         self.assertEqual(gate["VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS"], 1)
+        self.assertEqual(gate["VORNEQ_AI_IMAGE_LEDGER_DAILY_MAX_REQUESTS"], 2)
         for submitted, cap, ok in ((0, 1, True), (1, 1, False), (4, 5, True), (5, 5, False),
                                    (0, None, False), (-1, 5, False)):
             with self.subTest(submitted=submitted, cap=cap):
