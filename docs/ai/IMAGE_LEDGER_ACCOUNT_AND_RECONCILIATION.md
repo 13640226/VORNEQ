@@ -93,3 +93,21 @@ Abschlusskriterien je Reservierung:
   micro-USD ≈ 0,035 USD).
 
 Kein Code in diesem PR verändert diese Reservierungen.
+
+## D. Emergency Stop des Bild-Kontos (`ai_ledger_image_control`)
+
+`ai_ledger stop|resume` ist an das Chat-Konto gebunden und darf für das Bild-Konto
+nicht verwendet werden. Für das Bild-Konto gibt es ausschließlich:
+
+```
+python manage.py ai_ledger_image_control status --ledger-id <UUID>          # READ ONLY
+python manage.py ai_ledger_image_control resume --ledger-id <UUID> --confirm-ledger-id <UUID>
+python manage.py ai_ledger_image_control stop   --ledger-id <UUID> --confirm-ledger-id <UUID>
+```
+
+- Die ID muss `VORNEQ_AI_IMAGE_LEDGER_ID` entsprechen und sich von der Chat-ID unterscheiden.
+- Geändert wird nur `emergency_stop` genau einer Zeile; das Chat-Konto ist nicht wählbar.
+- Abgelehnt, ohne Änderung: Konto nicht staging-only, falsches Modell, abweichende Preise.
+- `resume` zusätzlich abgelehnt, solange `reserved_micro` oder `uncertain_micro` > 0 ist.
+- `resume` erst unmittelbar vor dem freigegebenen Paid Smoke, `stop` direkt danach;
+  beides schreibt in den gemeinsamen Ledger und braucht eine ausdrückliche Freigabe.
