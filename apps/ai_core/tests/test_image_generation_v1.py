@@ -114,16 +114,100 @@ class ImageGenerationTests(TestCase):
         self.assertEqual(self.submit(request_id=rid).status_code, 202)
         self.assertEqual(self.submit(request_id=rid, prompt="different prompt").status_code, 400)
 
+    def assert_rejected_without_side_effects(self, submit, status, code):
+        counts = (AIImageJob.objects.count(),
+                  list(AIImageDailyQuota.objects.values_list("day_utc", "submitted")))
+        with patch("apps.ai_ledger.service.reserve_with_config") as reserve, \
+                patch("apps.ai_ledger.service.reserve_prepaid_image") as prepaid, \
+                patch("apps.ai_core.image_generation.service.OpenAIImageProvider") as provider, \
+                patch("apps.ai_core.image_generation.service.MockImageProvider") as mock:
+            response = submit()
+        for call in (reserve, prepaid, provider, mock):
+            call.assert_not_called()
+        self.assertEqual(response.status_code, status)
+        self.assertEqual(response.json()["error_code"], code)
+        self.assertIs(response.json()["request_rejected"], True)
+        self.assertEqual(counts, (AIImageJob.objects.count(),
+                                  list(AIImageDailyQuota.objects.values_list("day_utc", "submitted"))))
+        self.assertFalse(AIImageJob.objects.exclude(reservation_id=None).exists())
+        return response
+
     def test_rate_limit_one_per_minute(self):
         self.assertEqual(self.submit().status_code, 202)
-        self.assertEqual(self.submit().status_code, 400)
+        limited = self.assert_rejected_without_side_effects(self.submit, 429, "rate_limited")
+        retry = limited.json()["retry_after_seconds"]
+        self.assertTrue(1 <= retry <= 60)
+        self.assertEqual(limited["Retry-After"], str(retry))
         self.assertEqual(AIImageJob.objects.count(), 1)
+
+    @override_settings(VORNEQ_AI_IMAGE_PROVIDER="openai", VORNEQ_AI_IMAGE_STAGING_PREPAID_ONLY=True)
+    def test_paid_admission_refusal_never_reserves_or_constructs_provider(self):
+        with patch("apps.ai_core.image_generation.policy.enabled", return_value=True), \
+                patch("apps.ai_core.image_generation.service.paid_provider_enabled", return_value=True), \
+                patch("apps.ai_core.image_generation.service.prepaid_only_requested", return_value=True):
+            self.assertEqual(self.submit().status_code, 202)
+            self.assert_rejected_without_side_effects(self.submit, 429, "rate_limited")
+
+    def test_explicit_validation_codes(self):
+        for kwargs, code in (
+                ({"prompt": "x"}, "invalid_prompt"),
+                ({"size": "64000x64000"}, "unsupported_size"),
+                ({"size": []}, "unsupported_size"),
+                ({"request_id": uuid.uuid1()}, "invalid_request_id")):
+            self.assert_rejected_without_side_effects(lambda: self.submit(**kwargs), 400, code)
+
+    @override_settings(VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS=0)
+    def test_invalid_quota_is_definite_503(self):
+        self.assert_rejected_without_side_effects(self.submit, 503, "service_misconfigured")
+
+    @override_settings(VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS=1)
+    def test_user_daily_cap_is_429(self):
+        self.assertEqual(self.submit().status_code, 202)
+        limited = self.assert_rejected_without_side_effects(self.submit, 429, "user_daily_cap")
+        self.assertEqual(limited["Retry-After"], str(limited.json()["retry_after_seconds"]))
+
+    def test_active_list_and_latest_are_owner_scoped(self):
+        rid = self.submit().json()["id"]
+        active = self.url + "?active=1"
+        latest = self.url + "?latest=1"
+        self.assertEqual(self.client.get(active).json()["results"][0]["id"], rid)
+        self.assertEqual(self.client.get(latest).json(), {"id": rid})
+        AIImageJob.objects.filter(pk=rid).update(status="running")
+        self.assertEqual(self.client.get(active).json()["results"][0]["status"], "running")
+        for state in ("completed", "failed", "uncertain"):
+            AIImageJob.objects.filter(pk=rid).update(status=state)
+            self.assertEqual(self.client.get(active).json(), {"results": []})
+            self.assertEqual(self.client.get(latest).json(), {"id": rid})
+        self.client.force_login(self.other)
+        self.assertEqual(self.client.get(active).json(), {"results": []})
+        self.assertEqual(self.client.get(latest).json(), {"id": None})
+        self.client.logout()
+        for path in (active, latest):
+            self.assertEqual(self.client.get(path).status_code, 401)
+
+    def test_recovery_is_bounded_and_does_not_disclose_secrets(self):
+        for _ in range(12):
+            AIImageJob.objects.create(owner=self.owner, prompt="secret", prompt_digest="0"*64,
+                                      model_id="mock", status="queued")
+        response = self.client.get(self.url + "?active=1")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Cache-Control"], "no-store")
+        results = response.json()["results"]
+        self.assertEqual(len(results), 10)
+        for job in results:
+            self.assertFalse(set(job) & {"prompt", "storage_key", "reservation_id", "image_url"})
+
+    @override_settings(VORNEQ_AI_IMAGE_ENABLED=False)
+    def test_recovery_preserves_existing_gate(self):
+        self.assertEqual(self.client.get(self.url + "?active=1").status_code, 404)
+        self.assertEqual(self.client.get(self.url + "?latest=1").status_code, 404)
 
     @override_settings(VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS=1)
     def test_global_daily_cap_cross_actor(self):
         self.assertEqual(self.submit().status_code, 202)
         self.client.force_login(self.other)
-        self.assertEqual(self.submit().status_code, 400)
+        limited = self.assert_rejected_without_side_effects(self.submit, 429, "global_daily_cap")
+        self.assertEqual(limited["Retry-After"], str(limited.json()["retry_after_seconds"]))
 
     def test_invalid_prompt_and_size(self):
         self.assertEqual(self.submit(prompt="x").status_code, 400)
