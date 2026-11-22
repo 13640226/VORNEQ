@@ -14,6 +14,7 @@ from django.conf import settings
 
 from apps.ai_ledger.service import EXPECTED_SERVICES, ledger_enabled
 from apps.ai_core.request_recovery import enabled as recovery_enabled
+from apps.ai_core.deploy_authorization import release_allowed
 
 EXPECTED_PRODUCTION_SERVICE_ID = EXPECTED_SERVICES["production"]
 _SHA = re.compile(r"[0-9a-f]{40}\Z")
@@ -44,7 +45,7 @@ def production_enabled() -> bool:
     ):
         return False
     sha = getattr(settings, "VORNEQ_AI_PRODUCTION_AUTHORIZED_SHA", "")
-    if not isinstance(sha, str) or not _SHA.fullmatch(sha) or os.environ.get("RENDER_GIT_COMMIT") != sha:
+    if not release_allowed("production", sha):
         return False
     owner = getattr(settings, "VORNEQ_AI_PRODUCTION_OWNER_AUTH", "")
     if not isinstance(owner, str) or not _OWNER_REF.fullmatch(owner):

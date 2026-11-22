@@ -163,7 +163,14 @@ def reserve(*, actor_id: int, model: str, input_bytes: int, max_output_tokens: i
     environment = getattr(settings, "VORNEQ_ENV", "")
     # Staging always carries its own daily ceiling, independent of the shared
     # allowance and of every request-quota or "unmetered" flag. Production is unchanged.
-    staging_daily = staging_daily_limit() if environment == "staging" else None
+    staging_daily = None
+    if environment == "staging":
+        if getattr(settings, "VORNEQ_AI_CHAT_STAGING_PREPAID_ONLY", False) is True:
+            from apps.ai_core.staging_policy import trial_enabled
+            if not trial_enabled():
+                raise LedgerUnavailable("prepaid-only chat not authorized")
+        else:
+            staging_daily = staging_daily_limit()
     return reserve_with_config(
         ledger_configuration(), environment=environment,
         service_id=os.environ.get("RENDER_SERVICE_ID", ""),

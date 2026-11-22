@@ -11,6 +11,7 @@ import os
 import re
 
 from django.conf import settings
+from apps.ai_core.deploy_authorization import release_allowed
 
 EXPECTED_STAGING_SERVICE_ID = "srv-dbm7dvc9v7es7393g70g"
 _SHA = re.compile(r"[0-9a-f]{40}\Z")
@@ -53,10 +54,7 @@ def trial_enabled():
     ):
         return False
     sha = getattr(settings, "VORNEQ_AI_STAGING_AUTHORIZED_SHA", "")
-    if (
-        not isinstance(sha, str) or not _SHA.fullmatch(sha)
-        or os.environ.get("RENDER_GIT_COMMIT") != sha
-    ):
+    if not release_allowed("staging", sha):
         return False
     owner_ref = getattr(settings, "VORNEQ_AI_STAGING_OWNER_AUTH", "")
     if not isinstance(owner_ref, str) or not _OWNER_REF.fullmatch(owner_ref):

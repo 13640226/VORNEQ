@@ -218,6 +218,10 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
     # inside the locked reservation transaction: apps.ai_ledger.service.reserve().
     shared_budget = hosted and ledger_enabled()
     try:
+        if (settings.VORNEQ_ENV == "staging"
+                and getattr(settings, "VORNEQ_AI_CHAT_STAGING_PREPAID_ONLY", False)
+                and not shared_budget):
+            raise BudgetExceeded("prepaid-only chat requires shared ledger")
         reserve_global_request(request.user.pk, burst_only=shared_budget)
         if settings.VORNEQ_ENV == "staging" and not shared_budget:
             reserve_staging_request()
