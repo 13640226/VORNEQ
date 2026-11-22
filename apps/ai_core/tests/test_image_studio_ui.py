@@ -125,14 +125,16 @@ class ImageStudioStaticContractTests(SimpleTestCase):
             self.assertEqual(set(LABELS[language]), expected)
             self.assertTrue(all(LABELS[language].values()))
 
-    def test_one_post_no_automatic_retry_and_no_browser_persistence(self):
+    def test_one_post_get_only_recovery_and_minimal_browser_identity(self):
         self.assertEqual(JS.count('method: "POST"'), 1)
         self.assertEqual(JS.count('method: "GET"'), 1)
         self.assertIn("sentOnce = true", JS)
         self.assertIn("currentId = window.crypto.randomUUID()", JS)
         self.assertIn('"X-CSRFToken": csrf.value', JS)
         self.assertIn('credentials: "same-origin"', JS)
-        for forbidden in ("localStorage", "sessionStorage", "innerHTML",
+        self.assertIn('JSON.stringify({id: currentId, acknowledged})', JS)
+        self.assertIn('"vq.image.recovery." + userId', JS)
+        for forbidden in ("sessionStorage", "innerHTML",
                           "api.openai.com", "setInterval(", "window.location.reload("):
             self.assertNotIn(forbidden, JS)
 

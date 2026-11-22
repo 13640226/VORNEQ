@@ -12,6 +12,7 @@
 {% block content %}
 <section class="vq-image" data-vq-image-studio
   data-create-url="{{ image_create_url }}"
+  data-user-id="{{ request.user.pk }}"
   data-paid="{% if image_paid %}true{% else %}false{% endif %}">
   <header class="vq-image__header">
     <p class="vq-image__kicker"><span class="vq-image__led" aria-hidden="true"></span>VORNEQ · AI · STAGING</p>
@@ -50,8 +51,18 @@
         data-failed="{{ labels.status_failed }}"
         data-uncertain="{{ labels.status_uncertain }}"
         data-error="{{ labels.status_error }}"
+        data-rejected="{{ labels.status_rejected }}"
+        data-rate-limited="{{ labels.status_rate_limited }}"
+        data-daily-limit="{{ labels.status_daily_limit }}"
+        data-misconfigured="{{ labels.status_misconfigured }}"
+        data-poll-stopped="{{ labels.status_poll_stopped }}"
+        data-recovery-error="{{ labels.status_recovery_error }}"
+        data-acknowledged="{{ labels.status_acknowledged }}"
+        data-unknown-missing="{{ labels.status_unknown_missing }}"
         data-invalid="{{ labels.status_invalid }}">{{ labels.status_wait }}</p>
       <button type="button" class="vq-image__check" data-vq-image-check hidden>{{ labels.check }}</button>
+      <label data-vq-image-ack-label hidden><input type="checkbox" data-vq-image-ack> {{ labels.ack }}</label>
+      <button type="button" class="vq-image__check" data-vq-image-new hidden>{{ labels.new_request }}</button>
       <figure class="vq-image__figure" data-vq-image-figure hidden>
         <img data-vq-image-preview alt="{{ labels.image_alt }}" referrerpolicy="no-referrer">
         <figcaption>{{ labels.result_note }}</figcaption>

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import math
 import os
 import uuid
 from datetime import datetime, timedelta, timezone as dt_timezone
@@ -26,13 +27,16 @@ _logger = logging.getLogger(__name__)
 
 
 class ImageQueueError(Exception):
-    pass
+    def __init__(self, message, *, code="invalid_request", retry_after=None):
+        super().__init__(message)
+        self.code = code
+        self.retry_after = retry_after
 
 
 def _limit(name, ceiling):
     value = getattr(settings, name, 0)
     if type(value) is not int or not 1 <= value <= ceiling:
-        raise ImageQueueError("invalid image quota")
+        raise ImageQueueError("invalid image quota", code="service_misconfigured")
     return value
 
 
@@ -59,13 +63,13 @@ def submit_image_job(user, *, request_id: uuid.UUID, prompt: str, size: str):
     if not actor_allowed(user):
         raise PermissionError("image capability disabled or unauthorized")
     if type(request_id) is not uuid.UUID or request_id.version != 4:
-        raise ImageQueueError("invalid request id")
+        raise ImageQueueError("invalid request id", code="invalid_request_id")
     if not isinstance(prompt, str) or not 4 <= len(prompt) <= 2000:
-        raise ImageQueueError("invalid prompt")
+        raise ImageQueueError("invalid prompt", code="invalid_prompt")
     if any(ord(ch) < 32 and ch not in "\n\t" for ch in prompt):
-        raise ImageQueueError("invalid prompt")
-    if size not in SIZES:
-        raise ImageQueueError("invalid image size")
+        raise ImageQueueError("invalid prompt", code="invalid_prompt")
+    if not isinstance(size, str) or size not in SIZES:
+        raise ImageQueueError("invalid image size", code="unsupported_size")
     provider = getattr(settings, "VORNEQ_AI_IMAGE_PROVIDER", "")
     model = getattr(settings, "VORNEQ_AI_IMAGE_MODEL", "")
     if provider == "openai" and not paid_provider_enabled():
@@ -77,7 +81,6 @@ def submit_image_job(user, *, request_id: uuid.UUID, prompt: str, size: str):
     digest = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
     day = datetime.now(dt_timezone.utc).date()
     first = datetime.combine(day, datetime.min.time(), tzinfo=dt_timezone.utc)
-    now = timezone.now()
     with transaction.atomic():
         # One global row lock serializes requests and quota accounting among actors.
         quota, _ = AIImageDailyQuota.objects.get_or_create(day_utc=day)
@@ -86,18 +89,24 @@ def submit_image_job(user, *, request_id: uuid.UUID, prompt: str, size: str):
         if existing:
             if (existing.owner_id != user.pk or existing.prompt_digest != digest
                     or existing.image_size != size):
-                raise ImageQueueError("request id conflict")
+                raise ImageQueueError("request id conflict", code="request_id_conflict")
             return existing, False
         if not (provider == "openai" and prepaid_only_requested()):
             if quota.submitted >= _limit("VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS", 500):
-                raise ImageQueueError("global image daily cap")
+                raise ImageQueueError("global image daily cap", code="global_daily_cap",
+                                      retry_after=max(1, math.ceil((first + timedelta(days=1) - timezone.now()).total_seconds())))
             today_count = AIImageJob.objects.filter(owner=user, created_at__gte=first).count()
             if today_count >= _limit("VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS", 50):
-                raise ImageQueueError("user image daily cap")
+                raise ImageQueueError("user image daily cap", code="user_daily_cap",
+                                      retry_after=max(1, math.ceil((first + timedelta(days=1) - timezone.now()).total_seconds())))
         # One submission per minute, per user; no token/cache rate-limit bypass.
-        recent = AIImageJob.objects.filter(owner=user, created_at__gte=now-timedelta(seconds=60))
-        if recent.exists():
-            raise ImageQueueError("image request rate limit")
+        now = timezone.now()
+        newest = (AIImageJob.objects.filter(owner=user, created_at__gte=now-timedelta(seconds=60))
+                  .order_by("-created_at").values_list("created_at", flat=True).first())
+        if newest is not None:
+            wait = math.ceil((newest + timedelta(seconds=60) - now).total_seconds())
+            raise ImageQueueError("image request rate limit", code="rate_limited",
+                                  retry_after=max(1, min(60, wait)))
         job = AIImageJob.objects.create(
             pk=request_id, owner=user, prompt=prompt, prompt_digest=digest,
             model_id=model, image_size=size, provider=provider,
