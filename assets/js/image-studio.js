@@ -35,6 +35,8 @@
     ["unsupported_size", [400, "rejected"]],
     ["request_id_conflict", [400, "rejected"]],
     ["rate_limited", [429, "rateLimited"]],
+    ["active_queue_full", [429, "queueFull"]],
+    ["global_active_queue_full", [429, "queueFull"]],
     ["global_daily_cap", [429, "dailyLimit"]],
     ["user_daily_cap", [429, "dailyLimit"]],
     ["service_misconfigured", [503, "misconfigured"]]
@@ -337,7 +339,7 @@
         const refusal = body && body.request_rejected === true && refusals.get(body.error_code);
         if (refusal && refusal[0] === response.status && body.error === body.error_code) {
           const seconds = body.retry_after_seconds;
-          if (refusal[1] === "rateLimited" &&
+          if (response.status === 429 &&
               (!Number.isInteger(seconds) || seconds < 1 || String(seconds) !== response.headers.get("Retry-After"))) {
             unknown("error");
           } else {

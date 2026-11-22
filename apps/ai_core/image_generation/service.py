@@ -17,7 +17,7 @@ from django.utils import timezone
 from apps.ai_core.models import AIImageDailyQuota, AIImageJob
 from .policy import (
     SIZES, actor_allowed, enabled, paid_provider_enabled, paid_worker_enabled, worker_enabled,
-    prepaid_only_requested,
+    prepaid_only_requested, min_interval_seconds, max_active_jobs_per_user, max_active_jobs_global,
 )
 from .providers import ImageProviderError, MockImageProvider, OpenAIImageProvider
 from .storage import image_storage, store_image
@@ -82,6 +82,10 @@ def submit_image_job(user, *, request_id: uuid.UUID, prompt: str, size: str):
     day = datetime.now(dt_timezone.utc).date()
     first = datetime.combine(day, datetime.min.time(), tzinfo=dt_timezone.utc)
     with transaction.atomic():
+        # Stable admission lock across UTC quota rows. Never change its IDs.
+        if connection.vendor == "postgresql":
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT pg_advisory_xact_lock(%s, %s)", [0x564F, 0x51454E])
         # One global row lock serializes requests and quota accounting among actors.
         quota, _ = AIImageDailyQuota.objects.get_or_create(day_utc=day)
         quota = AIImageDailyQuota.objects.select_for_update().get(pk=quota.pk)
@@ -99,14 +103,23 @@ def submit_image_job(user, *, request_id: uuid.UUID, prompt: str, size: str):
             if today_count >= _limit("VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS", 50):
                 raise ImageQueueError("user image daily cap", code="user_daily_cap",
                                       retry_after=max(1, math.ceil((first + timedelta(days=1) - timezone.now()).total_seconds())))
-        # One submission per minute, per user; no token/cache rate-limit bypass.
-        now = timezone.now()
-        newest = (AIImageJob.objects.filter(owner=user, created_at__gte=now-timedelta(seconds=60))
-                  .order_by("-created_at").values_list("created_at", flat=True).first())
-        if newest is not None:
-            wait = math.ceil((newest + timedelta(seconds=60) - now).total_seconds())
-            raise ImageQueueError("image request rate limit", code="rate_limited",
-                                  retry_after=max(1, min(60, wait)))
+        active = AIImageJob.objects.filter(status__in=(
+            AIImageJob.STATUS_QUEUED, AIImageJob.STATUS_RUNNING,
+        ))
+        if active.count() >= max_active_jobs_global():
+            raise ImageQueueError("global image queue full", code="global_active_queue_full", retry_after=30)
+        if active.filter(owner=user).count() >= max_active_jobs_per_user():
+            raise ImageQueueError("image queue full", code="active_queue_full", retry_after=30)
+        interval = min_interval_seconds()
+        if interval:
+            now = timezone.now()
+            window = timedelta(seconds=interval)
+            newest = (AIImageJob.objects.filter(owner=user, created_at__gte=now-window)
+                      .order_by("-created_at").values_list("created_at", flat=True).first())
+            if newest is not None:
+                wait = math.ceil((newest + window - now).total_seconds())
+                raise ImageQueueError("image request rate limit", code="rate_limited",
+                                      retry_after=max(1, min(interval, wait)))
         job = AIImageJob.objects.create(
             pk=request_id, owner=user, prompt=prompt, prompt_digest=digest,
             model_id=model, image_size=size, provider=provider,

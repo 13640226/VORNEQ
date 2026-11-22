@@ -6,6 +6,8 @@ import hashlib
 import sys
 import types
 from unittest.mock import patch
+from datetime import timedelta
+from django.utils import timezone
 
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
@@ -31,6 +33,10 @@ FLAGS = {
     "VORNEQ_AI_EMERGENCY_STOP": False,
     "VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS": 3,
     "VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS": 10,
+    "VORNEQ_AI_IMAGE_MIN_INTERVAL_SECONDS": 60,
+    "VORNEQ_AI_IMAGE_ALLOW_ZERO_INTERVAL": False,
+    "VORNEQ_AI_IMAGE_MAX_ACTIVE_JOBS_PER_USER": 3,
+    "VORNEQ_AI_IMAGE_MAX_ACTIVE_JOBS_GLOBAL": 50,
     "STORAGES": STORES,
 }
 
@@ -76,6 +82,37 @@ class ImageGenerationTests(TestCase):
                 "prompt": prompt, "size": size,
             }), content_type="application/json",
         )
+
+    @override_settings(VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS=10)
+    def test_queue_capacity_and_replay(self):
+        rid = uuid.uuid4()
+        self.assertEqual(self.submit(request_id=rid).status_code, 202)
+        for status in (AIImageJob.STATUS_QUEUED, AIImageJob.STATUS_RUNNING):
+            AIImageJob.objects.create(owner=self.owner, prompt="test", prompt_digest="a"*64,
+                                      model_id="mock", status=status)
+        self.assert_rejected_without_side_effects(self.submit, 429, "active_queue_full")
+        self.assertEqual(self.submit(request_id=rid).status_code, 200)
+        AIImageJob.objects.filter(owner=self.owner).update(created_at=timezone.now()-timedelta(seconds=61))
+        AIImageJob.objects.filter(pk=rid).update(status=AIImageJob.STATUS_COMPLETED)
+        self.assertEqual(self.submit().status_code, 202)
+
+    @override_settings(VORNEQ_AI_IMAGE_MAX_ACTIVE_JOBS_GLOBAL=1)
+    def test_global_queue_capacity(self):
+        AIImageJob.objects.create(owner=self.other, prompt="test", prompt_digest="a"*64, model_id="mock")
+        self.assert_rejected_without_side_effects(self.submit, 429, "global_active_queue_full")
+
+    @override_settings(VORNEQ_ENV="staging", VORNEQ_AI_IMAGE_PROVIDER="openai",
+                       VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED=True,
+                       VORNEQ_AI_IMAGE_STAGING_PREPAID_ONLY=True,
+                       VORNEQ_AI_IMAGE_ALLOW_ZERO_INTERVAL=True)
+    def test_real_interval_policy(self):
+        from apps.ai_core.image_generation.policy import min_interval_seconds
+        with patch("apps.ai_core.image_generation.policy.paid_provider_enabled", return_value=True):
+            for value, expected in [(0,0),(10,10),(-1,60),(True,60),("bad",60),(4000,3600)]:
+                with self.subTest(value=value), override_settings(VORNEQ_AI_IMAGE_MIN_INTERVAL_SECONDS=value):
+                    self.assertEqual(min_interval_seconds(), expected)
+            with override_settings(VORNEQ_AI_IMAGE_MIN_INTERVAL_SECONDS=0, VORNEQ_AI_IMAGE_ALLOW_ZERO_INTERVAL=False):
+                self.assertEqual(min_interval_seconds(),60)
 
     def test_anonymous_is_denied(self):
         self.client.logout()
