@@ -585,6 +585,19 @@ VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS = _image_int("VORNEQ_AI_IMAGE_GLOBAL_D
 # Paid path only (all default closed): worst-case ledger reservation per request
 # must not exceed this; 0 keeps paid generation disabled.
 VORNEQ_AI_IMAGE_MAX_REQUEST_MICROUSD = _image_int("VORNEQ_AI_IMAGE_MAX_REQUEST_MICROUSD", 0)
+
+def _image_interval():
+    try:
+        value = int(os.environ.get("VORNEQ_AI_IMAGE_MIN_INTERVAL_SECONDS", "60"))
+    except (TypeError, ValueError):
+        return 60
+    return min(value, 3600) if value >= 0 else 60
+
+VORNEQ_AI_IMAGE_MIN_INTERVAL_SECONDS = _image_interval()
+VORNEQ_AI_IMAGE_ALLOW_ZERO_INTERVAL = env_bool("VORNEQ_AI_IMAGE_ALLOW_ZERO_INTERVAL", False)
+VORNEQ_AI_IMAGE_MAX_ACTIVE_JOBS_PER_USER = _image_int("VORNEQ_AI_IMAGE_MAX_ACTIVE_JOBS_PER_USER", 3)
+VORNEQ_AI_IMAGE_MAX_ACTIVE_JOBS_GLOBAL = _image_int("VORNEQ_AI_IMAGE_MAX_ACTIVE_JOBS_GLOBAL", 50)
+
 VORNEQ_AI_IMAGE_COMPLEXITY = os.environ.get("VORNEQ_AI_IMAGE_COMPLEXITY", "low")
 # Server-side secret for HMAC safety_identifier; missing keeps paid generation disabled.
 VORNEQ_AI_IMAGE_SAFETY_ID_KEY = os.environ.get("VORNEQ_AI_IMAGE_SAFETY_ID_KEY", "")

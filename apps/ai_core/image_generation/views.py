@@ -22,6 +22,7 @@ _REFUSALS = {
     "invalid_request": 400, "invalid_request_id": 400,
     "invalid_prompt": 400, "unsupported_size": 400, "request_id_conflict": 400,
     "rate_limited": 429, "global_daily_cap": 429, "user_daily_cap": 429,
+    "active_queue_full": 429, "global_active_queue_full": 429,
     "service_misconfigured": 503,
 }
 

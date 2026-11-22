@@ -31,7 +31,7 @@ function page({owner = "3", storage = new Map(), responses = []} = {}) {
   elements.consent.checked = true;
   elements.status.dataset = Object.fromEntries(
     ["wait", "sending", "queued", "running", "completed", "failed", "uncertain", "error",
-     "invalid", "rejected", "rateLimited", "dailyLimit", "misconfigured", "pollStopped",
+     "invalid", "rejected", "rateLimited", "dailyLimit", "queueFull", "misconfigured", "pollStopped",
      "recoveryError", "acknowledged", "unknownMissing"].map(k => [k, k === "rateLimited" ? "rate {seconds}" : k]));
   const root = {
     dataset: {createUrl: base, userId: owner},
@@ -166,4 +166,13 @@ test("invalid detail identity never displays a different job", async () => {
   assert.equal(p.elements.preview.src, undefined);
   assert.equal(p.elements.status.textContent, "invalid");
   assert.equal(p.elements.submit.disabled, true);
+});
+
+test("queue refusal is definitive and never auto retries", async () => {
+  const p = page({responses: [...empty(), reply(429, {error: "active_queue_full",
+    error_code: "active_queue_full", request_rejected: true, retry_after_seconds: 30}, 30)]});
+  await flush(); await p.fire("form", "submit"); await flush();
+  assert.equal(p.elements.status.textContent, "queueFull");
+  assert.equal(p.calls.filter(c => c.method === "POST").length, 1);
+  assert.equal(p.storage.has("vq.image.recovery.3"), false);
 });

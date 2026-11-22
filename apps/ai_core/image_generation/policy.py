@@ -219,3 +219,27 @@ def _paid_controls_ready():
     except (ValueError, TypeError, ImportError):
         return False
     return True
+
+
+def min_interval_seconds():
+    if not prepaid_only_requested() or not paid_provider_enabled():
+        return 60
+    value = getattr(settings, "VORNEQ_AI_IMAGE_MIN_INTERVAL_SECONDS", 60)
+    if type(value) is not int or value < 0:
+        return 60
+    if value == 0 and getattr(settings, "VORNEQ_AI_IMAGE_ALLOW_ZERO_INTERVAL", False) is not True:
+        return 60
+    return min(value, 3600)
+
+
+def _active_limit(name, default, ceiling):
+    value = getattr(settings, name, default)
+    return min(value, ceiling) if type(value) is int and value >= 1 else default
+
+
+def max_active_jobs_per_user():
+    return _active_limit("VORNEQ_AI_IMAGE_MAX_ACTIVE_JOBS_PER_USER", 3, 20)
+
+
+def max_active_jobs_global():
+    return _active_limit("VORNEQ_AI_IMAGE_MAX_ACTIVE_JOBS_GLOBAL", 50, 1000)
