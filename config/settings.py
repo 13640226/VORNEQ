@@ -560,6 +560,9 @@ VORNEQ_AI_PHASE_C_ENABLED = (
 VORNEQ_AI_IMAGE_ENABLED = env_bool("VORNEQ_AI_IMAGE_ENABLED", False)
 # Independent UI gate. OFF by default even when a one-use paid smoke is authorized.
 VORNEQ_AI_IMAGE_UI_ENABLED = env_bool("VORNEQ_AI_IMAGE_UI_ENABLED", False)
+# Production Image Studio is a separate, default-closed feature; not a paid grant.
+VORNEQ_AI_IMAGE_PRODUCTION_UI_ENABLED = env_bool("VORNEQ_AI_IMAGE_PRODUCTION_UI_ENABLED", False)
+VORNEQ_AI_IMAGE_PRODUCTION_ENABLED = env_bool("VORNEQ_AI_IMAGE_PRODUCTION_ENABLED", False)
 VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED = env_bool("VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED", False)
 # Paid image API key is read directly from VORNEQ_OPENAI_IMAGE_API_KEY.
 # It must never fall back to OPENAI_API_KEY used by chat.
