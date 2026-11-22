@@ -26,8 +26,9 @@ and never authorizes migration. Unexpected post-state or drift is denied.
 
 ## Remaining release work (NO-GO)
 
-1. Dedicated Production migration one-use owner proof, backup/restore,
-   locking, durable receipt and TOCTOU checks, isolated PostgreSQL rehearsal.
+1. Dedicated Production migration one-use runner and proof are implemented in code;
+   isolated PostgreSQL rehearsal, actual fresh backup/restore evidence, owner review
+   and release remain pending.
 2. Production-default-off Web and Worker policy, separate Production-only
    image ledger (not staging or chat), atomic independent daily reservation
    count/amount and per-request ceiling; no retry on uncertain output.
@@ -39,3 +40,24 @@ and never authorizes migration. Unexpected post-state or drift is denied.
 5. Owner approval for merge, official deployment, exact migration scope,
    operational gates and one paid smoke. No resource creation, migration,
    activation or OpenAI request is authorized by this PR.
+
+## Draft phase 2: guarded one-use executor
+
+The separate command migrate_ai_image_0004_production_once is read-only
+without --commit. Its write path is deliberately NOT a release approval.
+An exact unedited owner comment in issue #679 (header
+PRODUCTION_IMAGE_0004_OWNER_RELEASE_V1) is authenticated at point of use,
+with exact Production service, database/login/execution role, SHA, migration,
+fresh export and restore timestamps, digest, evidence and a maximum 30-minute
+TTL. The Production-specific arm must match, and image, chat and conversation
+write gates must be closed. All checks occur again with the transaction locked.
+A durable audit receipt in a separate autocommit session, on the same observed
+server, consumes the release ID once even when DDL rolls back. Owner proof is
+re-fetched before DDL and before commit. Same-session identity and exact
+schema/state are checked before and after. An uncertain result is never retried
+automatically. Operational URL identity is not cryptographic attestation.
+
+No live owner permit, arm, migration, resource provisioning or model call was
+issued. The executor remains subject to isolated PostgreSQL rehearsal,
+review, fresh backup and restoration, separate release authorization and
+official deployment. Existing Staging behavior is unchanged.
