@@ -120,6 +120,37 @@ def release_allowed(environment, authorized_sha):
             or settings.DEBUG is not False or os.environ.get("RENDER_SERVICE_ID") != SERVICES[environment]
             or not SHA.fullmatch(live)):
         return False
+    return _verified_release(environment, live)
+
+
+def image_release_allowed(authorized_sha, *, worker=False):
+    """Paid image release binding, independently opted in from chat.
+
+    A separate worker must run the latest officially owner-deployed Staging
+    web SHA. Its identity and paid worker grant are separately checked by the
+    caller (and by the ledger); a web release alone never grants worker access.
+    """
+    live = os.environ.get("RENDER_GIT_COMMIT", "")
+    if (getattr(settings, "VORNEQ_AI_IMAGE_FOLLOW_OWNER_DEPLOYMENTS", False) is not True
+            or getattr(settings, "VORNEQ_AI_IMAGE_PROVIDER", "") != "openai"):
+        return bool(isinstance(authorized_sha, str) and SHA.fullmatch(authorized_sha)
+                    and live == authorized_sha)
+    if (getattr(settings, "VORNEQ_ENV", "") != "staging"
+            or getattr(settings, "DEBUG", True) is not False
+            or not SHA.fullmatch(live)):
+        return False
+    service = SERVICES["staging"]
+    if worker:
+        service = getattr(settings, "VORNEQ_AI_IMAGE_WORKER_SERVICE_ID", "")
+        if (not isinstance(service, str) or not re.fullmatch(r"srv-[a-z0-9]{20,32}", service)
+                or service in SERVICES.values()):
+            return False
+    if os.environ.get("RENDER_SERVICE_ID") != service:
+        return False
+    return _verified_release("staging", live)
+
+
+def _verified_release(environment, live):
     token = os.environ.get("VORNEQ_AI_DEPLOY_READ_TOKEN", "")
     if not token:
         return False

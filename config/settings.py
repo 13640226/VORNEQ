@@ -566,6 +566,10 @@ def _image_int(name, default):
         return 0  # fail closed without crashing Django on bad disabled-feature env
 
 VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND = _image_int("VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND", 0)
+# Separate owner-authorized release policy for the paid image web and worker.
+VORNEQ_AI_IMAGE_FOLLOW_OWNER_DEPLOYMENTS = (
+    VORNEQ_ENV == "staging" and env_bool("VORNEQ_AI_IMAGE_FOLLOW_OWNER_DEPLOYMENTS", False)
+)
 # Explicit opt-in for paid Staging images only. Default retains all daily caps.
 VORNEQ_AI_IMAGE_STAGING_PREPAID_ONLY = (
     VORNEQ_ENV == "staging" and env_bool("VORNEQ_AI_IMAGE_STAGING_PREPAID_ONLY", False)
