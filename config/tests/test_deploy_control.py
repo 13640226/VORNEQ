@@ -214,6 +214,15 @@ class HardeningTests(TestCase):
         with self.assertRaises(dc.DeployRejected):
             dc.authorization_used(None, "X-01")
 
+    def test_manual_live_recovery_requires_new_sha(self):
+        """Manual Render deploy must not be laundered into official deployment proof."""
+        with self.assertRaisesRegex(dc.DeployRejected, "reviewed new commit on main"):
+            dc.preflight(self._gh(), "staging", SHA, 448, OWNER, OWNER, live_release=SHA)
+        # A genuinely new, authorized SHA may pass normal preflight; no bypass flag.
+        self.assertEqual(
+            dc.preflight(self._gh(), "staging", SHA, 448, OWNER, OWNER, live_release=OTHER),
+            "OWNER-AUTH-DEPLOY-TEST-01",
+        )
     def test_sha_already_live_is_rejected(self):
         with self.assertRaises(dc.DeployRejected):
             dc.preflight(self._gh(), "staging", SHA, 448, OWNER, OWNER, live_release=SHA)
