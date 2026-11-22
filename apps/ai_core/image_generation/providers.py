@@ -109,8 +109,10 @@ class OpenAIImageProvider:
 
     def generate(self, *, prompt: str, model: str, size: str,
                  safety_identifier: str | None = None) -> ImageResult:
-        from .policy import MODELS, SIZES, paid_provider_enabled
-        if (not paid_provider_enabled() or model not in MODELS or size not in SIZES
+        from .policy import MODELS, SIZES, paid_provider_enabled, paid_worker_enabled
+        # Both routes independently verify their own runtime identity and grant.
+        # A worker must never need (or inherit) the web service identity.
+        if (not (paid_provider_enabled() or paid_worker_enabled()) or model not in MODELS or size not in SIZES
                 or model != getattr(settings, "VORNEQ_AI_IMAGE_MODEL", "")):
             raise ImageProviderError("paid image generation disabled",
                                      code="paid_disabled", request_sent=False)
