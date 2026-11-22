@@ -474,6 +474,24 @@ VORNEQ_AI_LEDGER_ENABLED = (
 )
 VORNEQ_AI_LEDGER_ID = os.environ.get("VORNEQ_AI_LEDGER_ID", "")
 VORNEQ_AI_LEDGER_DB_NAME = os.environ.get("VORNEQ_AI_LEDGER_DB_NAME", "")
+# Voice PR 1: independent mock-only gate, default OFF and production hard-blocked.
+# Parse strictly so malformed values cannot accidentally enable the pilot.
+VORNEQ_AI_VOICE_ENABLED = (
+    VORNEQ_ENV in ("development", "staging")
+    and os.environ.get("VORNEQ_AI_VOICE_ENABLED", "").strip().lower() in ("true", "1")
+)
+VORNEQ_AI_VOICE_PROVIDER = os.environ.get("VORNEQ_AI_VOICE_PROVIDER", "mock")
+VORNEQ_AI_VOICE_PAID_CALLS_ENABLED = (
+    os.environ.get("VORNEQ_AI_VOICE_PAID_CALLS_ENABLED", "false").strip().lower()
+    not in ("false", "0", "off", "no", "")
+)
+_voice_ttl_raw = os.environ.get("VORNEQ_AI_VOICE_SESSION_TTL_SECONDS", "300")
+VORNEQ_AI_VOICE_SESSION_TTL_SECONDS = (
+    int(_voice_ttl_raw) if _voice_ttl_raw.isascii() and _voice_ttl_raw.isdecimal()
+    and 1 <= len(_voice_ttl_raw) <= 4 and 30 <= int(_voice_ttl_raw) <= 3600 else None
+)
+VORNEQ_AI_VOICE_ALLOWED_USER_IDS = os.environ.get("VORNEQ_AI_VOICE_ALLOWED_USER_IDS", "")
+
 # Kill switch: blocks every new model call in Staging and Production.
 VORNEQ_AI_EMERGENCY_STOP = env_bool("VORNEQ_AI_EMERGENCY_STOP", False)
 # Persistent AI conversations V1 (docs/ai/PERSISTENT_CONVERSATION_V1_DESIGN.md).
