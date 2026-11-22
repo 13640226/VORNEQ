@@ -76,6 +76,23 @@ class ImageStudioPageTests(TestCase):
     def test_production_never_serves_ui(self):
         self.assertEqual(self.visit(VORNEQ_ENV="production").status_code, 404)
 
+    def test_production_flags_cannot_unlock_ui_or_provider(self):
+        """Production flags alone must not activate paid image calls or UI."""
+        from apps.ai_core.image_generation.policy import production_enabled, enabled
+        from apps.ai_core.image_generation.page import image_studio_allowed
+        with override_settings(
+            VORNEQ_ENV="production", DEBUG=False,
+            VORNEQ_AI_IMAGE_ENABLED=True, VORNEQ_AI_IMAGE_UI_ENABLED=True,
+            VORNEQ_AI_IMAGE_PRODUCTION_ENABLED=True,
+            VORNEQ_AI_IMAGE_PRODUCTION_UI_ENABLED=True,
+            VORNEQ_AI_IMAGE_PROVIDER="openai",
+            VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED=True,
+            VORNEQ_AI_EMERGENCY_STOP=False,
+        ), patch.dict(os.environ, {"RENDER_SERVICE_ID": "srv-dadn07eq1p3s73eccau0"}):
+            self.assertFalse(production_enabled())
+            self.assertFalse(enabled())
+            self.assertFalse(image_studio_allowed(self.owner))
+            self.assertEqual(self.client.get(self.url).status_code, 404)
     def test_unlisted_user_cannot_view_ui(self):
         self.client.force_login(self.other)
         self.assertEqual(self.visit().status_code, 404)

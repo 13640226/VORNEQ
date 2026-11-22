@@ -70,6 +70,29 @@ def _ids():
     return set(values) if len(set(values)) == len(values) and min(values) > 0 else set()
 
 
+def production_readiness():
+    """Read-only, fail-closed foundation for a future Production image rollout.
+
+    This is NOT a provider authorization: Production paid web/worker policies,
+    independent deployment attestation and prepaid ledger controls are not yet
+    implemented. No combination of env vars may open those routes in this PR.
+    """
+    return {
+        "environment": getattr(settings, "VORNEQ_ENV", "") == "production",
+        "production_switch": getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_ENABLED", False) is True,
+        "ui_switch": getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_UI_ENABLED", False) is True,
+        "emergency_stop_clear": getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", True) is False,
+        "debug_off": getattr(settings, "DEBUG", True) is False,
+        "production_service": os.getenv("RENDER_SERVICE_ID") == PRODUCTION_SERVICE_ID,
+        "production_paid_policy_implemented": False,
+        "production_worker_authorized": False,
+    }
+
+
+def production_enabled():
+    """No Production image API until independent paid/worker release gates exist."""
+    return all(production_readiness().values())
+
 def enabled():
     """No staging or production access can be unlocked by the chat AI flag."""
     if not getattr(settings, "VORNEQ_AI_IMAGE_ENABLED", False):

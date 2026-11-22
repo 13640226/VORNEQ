@@ -1,4 +1,4 @@
-"""Staging-only Image Studio. A UI gate never grants provider or Ledger access."""
+"""Image Studio: Staging only until independent Production paid gates exist."""
 from django.conf import settings
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
