@@ -64,6 +64,18 @@
     </div>
   </form>
 
+  {% if phase_c_chat_enabled %}
+  {# A GET handoff only: the guarded chat page owns authenticated CSRF-protected POST. #}
+  <form class="vq-home__chat-handoff" method="get" action="{% url 'ai_core:chat' %}" data-vq-chat-handoff>
+    <input type="hidden" name="lang" value="{{ request.LANGUAGE_CODE|slice:':2' }}">
+    <label for="vq-home-chat-question">{% trans "Ask VORNEQ AI" %}</label>
+    <textarea id="vq-home-chat-question" name="question" rows="2" maxlength="200" required
+      autocomplete="off" placeholder="{% trans 'Write a question for AI chat…' %}"></textarea>
+    <button class="vq-composer__send" type="submit">{% trans "Continue to AI chat" %}</button>
+    <p>{% trans "Your question opens the protected chat page for review. It is not sent automatically." %}</p>
+  </form>
+  {% endif %}
+
   <p class="vq-home__note" id="vq-ai-search-limitation">
     {% if phase_c_chat_enabled %}
       {% trans "This box opens Search. AI chat is a separate page; its answers are drafts whose source quotes are checked, not verified facts. Do not enter personal or confidential data." %}

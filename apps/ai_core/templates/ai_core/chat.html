@@ -118,7 +118,7 @@
     <label class="vq-chat__label" for="vq-chat-question">{{ chat_labels.question }}</label>
     <textarea id="vq-chat-question" name="question" rows="3" maxlength="{{ chat_question_limit|default:200 }}"
       required enterkeyhint="send" autocomplete="off" data-vq-chat-input
-      aria-describedby="vq-chat-limit vq-chat-hint" placeholder="{{ chat_labels.question }}"></textarea>
+      aria-describedby="vq-chat-limit vq-chat-hint" placeholder="{{ chat_labels.question }}">{{ chat_initial_question }}</textarea>
     <div class="vq-chat__actions">
       <span class="vq-chat__count" id="vq-chat-limit" data-vq-chat-count>0/{{ chat_question_limit|default:200 }}</span>
       <span class="vq-chat__hint" id="vq-chat-hint">{{ chat_labels.hint }}</span>

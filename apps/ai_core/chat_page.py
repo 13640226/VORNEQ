@@ -60,6 +60,12 @@ def chat_page(request):
         response = render(request, "ai_core/chat.html", {
             "chat_labels": chat_labels(language, environment=settings.VORNEQ_ENV),
             "chat_language": language,
+            # Handoff from homepage is inert text, never an automatic paid call.
+            "chat_initial_question": (
+                request.GET.get("question", "")[:200]
+                if len(request.GET.get("question", "").encode("utf-8")) <= 2048
+                else ""
+            ),
             "chat_question_limit": budget.question_chars,
             "chat_question_bytes": budget.question_utf8_bytes,
             "chat_endpoint": reverse("ai_core:ask-global" if global_ai else "ai_core:ask-grounded"),
