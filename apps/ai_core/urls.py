@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import ask
+from .voice.views import voice_event_view, voice_session_close_view, voice_session_create_view
 from .views_phase_b import ask_phase_b
 from .chat_page import chat_page
 from .image_generation.gallery import image_download_view, image_history_view
@@ -23,6 +24,10 @@ urlpatterns = [
     path("images/jobs/history/", image_history_view, name="image-history"),
     path("images/jobs/<uuid:job_id>/", image_job_detail_view, name="image-job-detail"),
     path("images/jobs/<uuid:job_id>/download/", image_download_view, name="image-job-download"),
+    # Separate, default-off, mock-only Voice foundation.
+    path("voice/sessions/", voice_session_create_view, name="voice-session-create"),
+    path("voice/sessions/<uuid:session_id>/events/", voice_event_view, name="voice-event"),
+    path("voice/sessions/<uuid:session_id>/close/", voice_session_close_view, name="voice-session-close"),
     path("ask-global/", ask_global_view, name="ask-global"),
     path("request-status/", recovery_status_view, name="request-status"),
     path("conversations/", conversations_view, name="conversations"),
