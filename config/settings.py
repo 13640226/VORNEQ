@@ -566,6 +566,10 @@ def _image_int(name, default):
         return 0  # fail closed without crashing Django on bad disabled-feature env
 
 VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND = _image_int("VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND", 0)
+# Explicit opt-in for paid Staging images only. Default retains all daily caps.
+VORNEQ_AI_IMAGE_STAGING_PREPAID_ONLY = (
+    VORNEQ_ENV == "staging" and env_bool("VORNEQ_AI_IMAGE_STAGING_PREPAID_ONLY", False)
+)
 VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD = _image_int("VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD", 0)
 VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS = _image_int("VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS", 3)
 # Optional independent account-wide paid reservation count; unset preserves legacy limit.

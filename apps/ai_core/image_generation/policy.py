@@ -180,6 +180,16 @@ def paid_provider_enabled():
     return _paid_controls_ready()
 
 
+def prepaid_only_requested():
+    """Never apply a chat setting, mock setting or Production flag to images."""
+    return (
+        getattr(settings, "VORNEQ_ENV", "") == "staging"
+        and getattr(settings, "VORNEQ_AI_IMAGE_PROVIDER", "") == "openai"
+        and getattr(settings, "VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED", False) is True
+        and getattr(settings, "VORNEQ_AI_IMAGE_STAGING_PREPAID_ONLY", False) is True
+    )
+
+
 def _paid_controls_ready():
     """Every paid-provider control except the runtime identity gate."""
     if getattr(settings, "VORNEQ_ENV", "") != "staging":
@@ -200,7 +210,7 @@ def _paid_controls_ready():
             return False
         if not 1 <= int(getattr(settings, "VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND", 0)) <= 10_000_000:
             return False
-        if not 1 <= int(getattr(settings, "VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD", 0)):
+        if not prepaid_only_requested() and not 1 <= int(getattr(settings, "VORNEQ_AI_IMAGE_DAILY_CAP_MICROUSD", 0)):
             return False
         if max_request_micro() is None or not safety_key_ready():
             return False

@@ -245,8 +245,44 @@ def reservation_still_open(reservation: Reservation) -> bool:
         return False
 
 
+def reserve_prepaid_image(config: LedgerConfig, *, service_id, git_sha, actor_id, model,
+                          input_bytes, max_output_tokens) -> Reservation:
+    """Paid Staging image account only; no independent daily ceiling."""
+    import os
+    if (getattr(settings, "VORNEQ_AI_IMAGE_STAGING_PREPAID_ONLY", False) is not True
+            or getattr(settings, "VORNEQ_ENV", "") != "staging"
+            or getattr(settings, "DEBUG", True) is not False
+            or getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", False)
+            or getattr(settings, "VORNEQ_AI_IMAGE_ENABLED", False) is not True
+            or getattr(settings, "VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED", False) is not True
+            or getattr(settings, "VORNEQ_AI_IMAGE_PROVIDER", "") != "openai"
+            or model != getattr(settings, "VORNEQ_AI_IMAGE_MODEL", "")
+            or service_id != os.environ.get("RENDER_SERVICE_ID")
+            or git_sha != os.environ.get("RENDER_GIT_COMMIT")
+            or git_sha != getattr(settings, "VORNEQ_AI_IMAGE_AUTHORIZED_SHA", "")):
+        raise LedgerUnavailable("prepaid-only image runtime not authorized")
+    try:
+        image_id = uuid.UUID(str(getattr(settings, "VORNEQ_AI_IMAGE_LEDGER_ID", "")))
+        chat = ledger_configuration()
+        if config.ledger_id != image_id or image_id == chat.ledger_id or config.expected_db_name != chat.expected_db_name:
+            raise LedgerUnavailable("prepaid-only image account mismatch")
+    except (ValueError, TypeError) as exc:
+        raise LedgerUnavailable("invalid image account") from exc
+    if service_id == EXPECTED_SERVICES["staging"]:
+        grant = getattr(settings, "VORNEQ_AI_IMAGE_OWNER_AUTH", "")
+        if not isinstance(grant, str) or not re.fullmatch(r"OWNER-AUTH-AI-IMAGE-STAGING-[A-Z0-9-]{6,100}", grant):
+            raise LedgerUnavailable("image web grant missing")
+    elif not _image_worker_client(config, "staging", service_id, git_sha):
+        raise LedgerUnavailable("image worker grant missing")
+    return reserve_with_config(
+        config, environment="staging", service_id=service_id, git_sha=git_sha,
+        actor_id=actor_id, model=model, input_bytes=input_bytes,
+        max_output_tokens=max_output_tokens, staging_daily=None, image_only=True,
+    )
+
+
 def reserve_with_config(config: LedgerConfig, *, environment, service_id, git_sha, actor_id, model,
-                        input_bytes, max_output_tokens, staging_daily=None) -> Reservation:
+                        input_bytes, max_output_tokens, staging_daily=None, image_only=False) -> Reservation:
     from apps.ai_ledger.models import BudgetAccount, BudgetReservation
 
     if not _approved_client(config, environment, service_id, git_sha):
@@ -269,7 +305,7 @@ def reserve_with_config(config: LedgerConfig, *, environment, service_id, git_sh
                 raise EmergencyStop("emergency stop (ledger)")
             if environment not in account.allowed_environments.split(","):
                 raise LedgerUnavailable("environment not allowed by ledger")
-            if service_id not in EXPECTED_SERVICES.values() and account.allowed_environments != "staging":
+            if (image_only or service_id not in EXPECTED_SERVICES.values()) and account.allowed_environments != "staging":
                 raise LedgerUnavailable("worker client requires a staging-only account")
             if account.model_id != model:
                 raise LedgerUnavailable("model not approved by ledger")
