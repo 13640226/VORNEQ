@@ -7,6 +7,7 @@ import os
 import re
 import uuid
 from django.conf import settings
+from apps.ai_core.deploy_authorization import image_release_allowed
 
 STAGING_SERVICE_ID = "srv-dbm7dvc9v7es7393g70g"
 PRODUCTION_SERVICE_ID = "srv-dadn07eq1p3s73eccau0"
@@ -89,8 +90,7 @@ def enabled():
     owner = getattr(settings, "VORNEQ_AI_IMAGE_OWNER_AUTH", "")
     return bool(
         os.getenv("RENDER_SERVICE_ID") == STAGING_SERVICE_ID
-        and isinstance(expected, str) and _SHA.fullmatch(expected)
-        and os.getenv("RENDER_GIT_COMMIT") == expected
+        and image_release_allowed(expected)
         and isinstance(owner, str) and _OWNER.fullmatch(owner)
         and _ids()
     )
@@ -105,8 +105,7 @@ def _worker_identity(owner_setting, owner_pattern):
         isinstance(worker_id, str) and _WORKER_ID.fullmatch(worker_id)
         and worker_id not in (STAGING_SERVICE_ID, PRODUCTION_SERVICE_ID)
         and os.getenv("RENDER_SERVICE_ID") == worker_id
-        and isinstance(expected, str) and _SHA.fullmatch(expected)
-        and os.getenv("RENDER_GIT_COMMIT") == expected
+        and image_release_allowed(expected, worker=True)
         and isinstance(owner, str) and owner_pattern.fullmatch(owner)
         and _ids()
     )

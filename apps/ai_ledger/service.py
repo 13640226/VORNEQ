@@ -196,6 +196,7 @@ def _image_worker_client(config: LedgerConfig, environment, service_id, git_sha)
     staging-only and not stopped (checked under lock in reserve_with_config).
     """
     import os
+    from apps.ai_core.deploy_authorization import image_release_allowed
     worker_id = getattr(settings, "VORNEQ_AI_IMAGE_WORKER_SERVICE_ID", "")
     authorized_sha = getattr(settings, "VORNEQ_AI_IMAGE_AUTHORIZED_SHA", "")
     grant = getattr(settings, "VORNEQ_AI_IMAGE_PAID_WORKER_OWNER_AUTH", "")
@@ -211,8 +212,8 @@ def _image_worker_client(config: LedgerConfig, environment, service_id, git_sha)
             or not isinstance(worker_id, str) or not _WORKER_SERVICE.fullmatch(worker_id)
             or worker_id in EXPECTED_SERVICES.values()
             or service_id != worker_id or os.environ.get("RENDER_SERVICE_ID") != worker_id
-            or not isinstance(authorized_sha, str) or not _SHA.fullmatch(authorized_sha)
-            or git_sha != authorized_sha or os.environ.get("RENDER_GIT_COMMIT") != authorized_sha):
+            or not image_release_allowed(authorized_sha, worker=True)
+            or git_sha != os.environ.get("RENDER_GIT_COMMIT")):
         return False
     try:
         image_id = uuid.UUID(str(getattr(settings, "VORNEQ_AI_IMAGE_LEDGER_ID", "")))
@@ -249,6 +250,7 @@ def reserve_prepaid_image(config: LedgerConfig, *, service_id, git_sha, actor_id
                           input_bytes, max_output_tokens) -> Reservation:
     """Paid Staging image account only; no independent daily ceiling."""
     import os
+    from apps.ai_core.deploy_authorization import image_release_allowed
     if (getattr(settings, "VORNEQ_AI_IMAGE_STAGING_PREPAID_ONLY", False) is not True
             or getattr(settings, "VORNEQ_ENV", "") != "staging"
             or getattr(settings, "DEBUG", True) is not False
@@ -259,7 +261,8 @@ def reserve_prepaid_image(config: LedgerConfig, *, service_id, git_sha, actor_id
             or model != getattr(settings, "VORNEQ_AI_IMAGE_MODEL", "")
             or service_id != os.environ.get("RENDER_SERVICE_ID")
             or git_sha != os.environ.get("RENDER_GIT_COMMIT")
-            or git_sha != getattr(settings, "VORNEQ_AI_IMAGE_AUTHORIZED_SHA", "")):
+            or not image_release_allowed(getattr(settings, "VORNEQ_AI_IMAGE_AUTHORIZED_SHA", ""),
+                                         worker=service_id != EXPECTED_SERVICES["staging"])):
         raise LedgerUnavailable("prepaid-only image runtime not authorized")
     try:
         image_id = uuid.UUID(str(getattr(settings, "VORNEQ_AI_IMAGE_LEDGER_ID", "")))
