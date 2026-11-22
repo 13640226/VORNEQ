@@ -278,7 +278,10 @@ def preflight(gh: GitHub, environment: str, sha: str, auth_issue: int, actor: st
         if not staged:
             raise DeployRejected("sha has no successful staging deployment")
     if release_matches(live_release, sha):
-        raise DeployRejected(f"sha is already live in {environment}; nothing to deploy")
+        raise DeployRejected(f"sha is already live in {environment}; nothing to deploy. "
+                             "Recovery: create a reviewed new commit on main, obtain a new owner "
+                             "deploy authorization for that SHA, then run the official workflow. "
+                             "Do not replay this SHA or bypass the live-release guard.")
     return decision.auth_id
 
 
