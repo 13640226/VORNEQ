@@ -16,6 +16,7 @@ from django.utils import timezone
 from apps.ai_core.models import AIImageDailyQuota, AIImageJob
 from .policy import (
     SIZES, actor_allowed, enabled, paid_provider_enabled, paid_worker_enabled, worker_enabled,
+    prepaid_only_requested,
 )
 from .providers import ImageProviderError, MockImageProvider, OpenAIImageProvider
 from .storage import image_storage, store_image
@@ -39,6 +40,10 @@ def image_ledger_daily_limit():
     """Independent account-wide reservation count; unset keeps legacy limit."""
     from apps.ai_ledger.service import StagingDailyLimit
 
+    if prepaid_only_requested():
+        if not (paid_provider_enabled() or paid_worker_enabled()):
+            raise ImageQueueError("prepaid-only image capability not authorized")
+        return None
     count = getattr(settings, "VORNEQ_AI_IMAGE_LEDGER_DAILY_MAX_REQUESTS", None)
     if count is None:
         count = getattr(settings, "VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS", 0)
@@ -76,18 +81,19 @@ def submit_image_job(user, *, request_id: uuid.UUID, prompt: str, size: str):
     with transaction.atomic():
         # One global row lock serializes requests and quota accounting among actors.
         quota, _ = AIImageDailyQuota.objects.get_or_create(day_utc=day)
-        AIImageDailyQuota.objects.select_for_update().get(pk=quota.pk)
+        quota = AIImageDailyQuota.objects.select_for_update().get(pk=quota.pk)
         existing = AIImageJob.objects.filter(pk=request_id).first()
         if existing:
             if (existing.owner_id != user.pk or existing.prompt_digest != digest
                     or existing.image_size != size):
                 raise ImageQueueError("request id conflict")
             return existing, False
-        if quota.submitted >= _limit("VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS", 500):
-            raise ImageQueueError("global image daily cap")
-        today_count = AIImageJob.objects.filter(owner=user, created_at__gte=first).count()
-        if today_count >= _limit("VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS", 50):
-            raise ImageQueueError("user image daily cap")
+        if not (provider == "openai" and prepaid_only_requested()):
+            if quota.submitted >= _limit("VORNEQ_AI_IMAGE_GLOBAL_DAILY_MAX_REQUESTS", 500):
+                raise ImageQueueError("global image daily cap")
+            today_count = AIImageJob.objects.filter(owner=user, created_at__gte=first).count()
+            if today_count >= _limit("VORNEQ_AI_IMAGE_DAILY_MAX_REQUESTS", 50):
+                raise ImageQueueError("user image daily cap")
         # One submission per minute, per user; no token/cache rate-limit bypass.
         recent = AIImageJob.objects.filter(owner=user, created_at__gte=now-timedelta(seconds=60))
         if recent.exists():
@@ -169,7 +175,7 @@ def process_next_image_job():
         # Storage must exist before any model/ledger work.
         image_storage()
         if job.provider == "openai":
-            from apps.ai_ledger.service import reserve_with_config, settle
+            from apps.ai_ledger.service import reserve_with_config, reserve_prepaid_image, settle
             from .policy import image_ledger_config, max_request_micro, safety_identifier
             if (not _paid_gate(paid_worker) or not actor_allowed(job.owner, worker=worker_mode)
                     or job.model_id != getattr(
@@ -180,15 +186,18 @@ def process_next_image_job():
             if per_request_cap is None or safety_id is None:
                 raise ImageQueueError("paid provider controls unavailable")
             daily = image_ledger_daily_limit()
-            reservation = reserve_with_config(
-                image_ledger_config(), environment="staging",
+            config = image_ledger_config()
+            kwargs = dict(
                 service_id=os.environ.get("RENDER_SERVICE_ID", ""),
                 git_sha=os.environ.get("RENDER_GIT_COMMIT", ""),
                 actor_id=job.owner_id, model=job.model_id,
                 input_bytes=len(job.prompt.encode("utf-8")),
                 max_output_tokens=getattr(settings, "VORNEQ_AI_IMAGE_OUTPUT_TOKENS_BOUND", 0),
-                staging_daily=daily,
             )
+            if daily is None:
+                reservation = reserve_prepaid_image(config, **kwargs)
+            else:
+                reservation = reserve_with_config(config, environment="staging", staging_daily=daily, **kwargs)
             # Store ledger reservation ID before the irreversible provider call.
             AIImageJob.objects.filter(pk=job_id, status=AIImageJob.STATUS_RUNNING).update(
                 reservation_id=reservation.id
