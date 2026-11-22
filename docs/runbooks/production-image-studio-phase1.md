@@ -17,3 +17,7 @@ The Production web service currently runs the image code but **must not expose I
 4. End-to-end no-paid CI, concurrent reservation tests, authorization tests and security review; separately authorized Staging pilot, then Production deploy and activation.
 
 Current `image_studio_allowed`, `enabled`, `paid_provider_enabled`, `paid_worker_enabled` remain Staging-only. This is intentional, not an environment-variable configuration bug.
+
+## Phase 2 — independent release identity (still closed)
+
+`VORNEQ_AI_IMAGE_PRODUCTION_AUTHORIZED_SHA`, `VORNEQ_AI_IMAGE_PRODUCTION_OWNER_AUTH` (pattern `OWNER-AUTH-AI-IMAGE-PRODUCTION-...`), and `VORNEQ_AI_IMAGE_PRODUCTION_ALLOWED_USER_IDS` (`1` only) are read-only identity inputs. `production_release_identity()` requires the exact Production Render service, SHA match and the successful owner-dispatched official Production GitHub deployment verified via `VORNEQ_AI_DEPLOY_READ_TOKEN`. All values default empty. They are **not** activation instructions. Production paid provider and worker remain unimplemented/closed regardless of configuration. No credentials should be committed.

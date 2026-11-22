@@ -70,6 +70,29 @@ def _ids():
     return set(values) if len(set(values)) == len(values) and min(values) > 0 else set()
 
 
+_PRODUCTION_OWNER = re.compile(r"OWNER-AUTH-AI-IMAGE-PRODUCTION-[A-Z0-9-]{6,100}\Z")
+
+
+def production_release_identity():
+    """Read-only Production identity check; never grants provider access."""
+    from apps.ai_core.deploy_authorization import SHA, _verified_release
+    expected = getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_AUTHORIZED_SHA", "")
+    owner = getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_OWNER_AUTH", "")
+    ids = getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_ALLOWED_USER_IDS", "")
+    live = os.getenv("RENDER_GIT_COMMIT", "")
+    if not (
+        getattr(settings, "VORNEQ_ENV", "") == "production"
+        and getattr(settings, "DEBUG", True) is False
+        and os.getenv("RENDER_SERVICE_ID") == PRODUCTION_SERVICE_ID
+        and isinstance(expected, str) and SHA.fullmatch(expected)
+        and live == expected
+        and isinstance(owner, str) and _PRODUCTION_OWNER.fullmatch(owner)
+        and ids == "1"
+        and os.getenv("VORNEQ_AI_DEPLOY_READ_TOKEN", "")
+    ):
+        return False
+    return _verified_release("production", live) is True
+
 def production_readiness():
     """Read-only, fail-closed foundation for a future Production image rollout.
 
@@ -84,6 +107,8 @@ def production_readiness():
         "emergency_stop_clear": getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", True) is False,
         "debug_off": getattr(settings, "DEBUG", True) is False,
         "production_service": os.getenv("RENDER_SERVICE_ID") == PRODUCTION_SERVICE_ID,
+        "production_release_identity": (getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_ENABLED", False) is True
+                                        and production_release_identity()),
         "production_paid_policy_implemented": False,
         "production_worker_authorized": False,
     }
