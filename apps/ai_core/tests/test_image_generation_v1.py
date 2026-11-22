@@ -10,7 +10,7 @@ from datetime import timedelta
 from django.utils import timezone
 
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase, override_settings
+from django.test import Client, TestCase, TransactionTestCase, override_settings, skipUnlessDBFeature
 from django.urls import reverse
 
 from apps.ai_core.models import AIImageJob, AIImageDailyQuota
@@ -329,3 +329,47 @@ class ImageGenerationTests(TestCase):
             )
         self.assertEqual(self.sdk_calls, ["OpenAI"])
         self.sdk_calls.clear()
+
+@override_settings(**{**FLAGS, "VORNEQ_AI_IMAGE_MAX_ACTIVE_JOBS_GLOBAL": 1})
+class ImageQueueConcurrencyTests(TransactionTestCase):
+    @skipUnlessDBFeature("has_select_for_update")
+    def test_parallel_admissions_across_utc_days(self):
+        from concurrent.futures import ThreadPoolExecutor
+        from threading import Barrier, local
+        from datetime import datetime, timezone as utc
+        from django.db import connections
+        from apps.ai_core.image_generation import service
+
+        users = [get_user_model().objects.create_user(username=f"queue-race-{i}") for i in range(2)]
+        barrier = Barrier(2)
+        clocks = local()
+
+        class AdmissionClock:
+            @staticmethod
+            def now(tz):
+                return clocks.value
+
+            combine = staticmethod(datetime.combine)
+            min = datetime.min
+
+        def attempt(index):
+            try:
+                clocks.value = datetime(2026, 11, 22 + index, tzinfo=utc.utc)
+                barrier.wait(timeout=10)
+                try:
+                    service.submit_image_job(users[index], request_id=uuid.uuid4(),
+                                             prompt="offline concurrent image", size="1024x1024")
+                    return "accepted"
+                except service.ImageQueueError as exc:
+                    return exc.code
+            finally:
+                connections.close_all()
+
+        with patch.object(service, "datetime", AdmissionClock), \
+                patch.dict(os.environ, {"RENDER": "", "RENDER_SERVICE_ID": ""}), \
+                patch.object(service, "OpenAIImageProvider", side_effect=AssertionError("paid provider")):
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                results = list(pool.map(attempt, range(2)))
+        self.assertCountEqual(results, ["accepted", "global_active_queue_full"])
+        self.assertEqual(AIImageJob.objects.count(), 1)
+        self.assertEqual(sum(AIImageDailyQuota.objects.values_list("submitted", flat=True)), 1)
