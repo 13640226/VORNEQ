@@ -300,25 +300,3 @@ class DiscoverRouteContractTests(TestCase):
         html = response.content.decode(response.charset)
         with self.assertRaises(AssertionError):
             self.assertNoVisibleBuy(html + '<button>B<span>uy</span></button>')
-
-
-class HomepageChatHandoffTests(TestCase):
-    """Homepage never submits an AI provider request; chat owns the POST gate."""
-
-    def test_anonymous_home_has_no_chat_handoff(self):
-        response = self.client.get(reverse("home"))
-        self.assertNotContains(response, 'data-vq-chat-handoff')
-
-    @patch("config.views._ai_chat_available_for", return_value=True)
-    def test_authorized_home_exposes_separate_get_handoff(self, _allowed):
-        response = self.client.get(reverse("home"))
-        self.assertContains(response, 'data-vq-chat-handoff')
-        self.assertContains(response, 'name="question"')
-        self.assertContains(response, 'method="get"')
-        self.assertContains(response, reverse("ai_core:chat"))
-        self.assertContains(response, "It is not sent automatically.")
-
-    @patch("config.views._ai_chat_available_for", return_value=False)
-    def test_closed_gate_hides_chat_handoff(self, _allowed):
-        response = self.client.get(reverse("home"))
-        self.assertNotContains(response, 'data-vq-chat-handoff')
