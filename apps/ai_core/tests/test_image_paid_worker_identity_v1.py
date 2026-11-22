@@ -173,6 +173,24 @@ class PaidWorkerQueueTests(TestCase):
         self.web_paid.assert_not_called()
         self.assertIsNone(service.process_next_image_job())
 
+    def test_paid_worker_queue_reaches_real_adapter_with_fake_sdk(self):
+        import sys
+        from apps.ai_core.image_generation.providers import OpenAIImageProvider
+        from apps.ai_core.tests.test_image_paid_provider_v1 import FakeSDK
+        sdk = FakeSDK()
+        job = self.job()
+        with (patch.object(service, "OpenAIImageProvider", OpenAIImageProvider),
+              patch.object(policy, "paid_provider_enabled", return_value=False),
+              patch.object(policy, "paid_worker_enabled", return_value=True),
+              patch.dict(os.environ, {"VORNEQ_OPENAI_IMAGE_API_KEY": "synthetic-never-live"}),
+              patch.dict(sys.modules, {"openai": sdk.module()})):
+            self.assertEqual(service.process_next_image_job(), job.pk)
+        job.refresh_from_db()
+        self.assertEqual((job.status, job.attempts), (AIImageJob.STATUS_COMPLETED, 1))
+        self.assertEqual(len(sdk.image_calls()), 1)
+        self.settle.assert_called_once()
+        self.release.assert_not_called()
+
     def test_paid_worker_never_claims_mock_jobs(self):
         job = self.job(provider="mock")
         self.assertIsNone(service.process_next_image_job())

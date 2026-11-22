@@ -114,6 +114,25 @@ class PaidProviderTests(SimpleTestCase):
             output_format="png", moderation="auto", complexity="low",
             safety_identifier=SAFETY)])
 
+    def test_real_provider_adapter_accepts_separately_authorized_paid_worker(self):
+        sdk = FakeSDK()
+        with (patch.dict(sys.modules, {"openai": sdk.module()}),
+              patch.dict("os.environ", {"VORNEQ_OPENAI_IMAGE_API_KEY": "synthetic-never-live"}),
+              patch.object(policy, "paid_provider_enabled", return_value=False),
+              patch.object(policy, "paid_worker_enabled", return_value=True)):
+            result = OpenAIImageProvider().generate(
+                prompt="Offline worker regression", model=MODEL, size="1024x1024",
+                safety_identifier=SAFETY)
+        self.assertFalse(result.is_mock)
+        self.assertEqual(len(sdk.image_calls()), 1)
+
+    def test_both_paid_gates_closed_never_constructs_sdk(self):
+        sdk = FakeSDK()
+        with patch.object(policy, "paid_worker_enabled", return_value=False):
+            self.assert_error(sdk, "paid_disabled", False, gate=False)
+        self.assertIsNone(sdk.ctor_kwargs)
+        self.assertEqual(sdk.image_calls(), [])
+
     def test_dedicated_image_key_never_uses_chat_key(self):
         sdk = FakeSDK()
         with (patch.dict(sys.modules, {"openai": sdk.module()}),
