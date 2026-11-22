@@ -96,6 +96,12 @@
     } catch (_error) { return null; }
   }
 
+  // Tells the independent gallery module which job finished. Never carries job state back.
+  function announce(id) {
+    if (typeof root.dispatchEvent !== "function" || typeof CustomEvent !== "function") return;
+    root.dispatchEvent(new CustomEvent("vq-image:completed", {detail: {id}}));
+  }
+
   function stopTimer() {
     if (timer !== null) clearTimeout(timer);
     timer = null;
@@ -188,6 +194,7 @@
       open.href = url;
       figure.hidden = false;
       open.hidden = false;
+      announce(job.id);
       // Keep manual status available to renew the signed URL.
       check.hidden = false;
     }
@@ -380,6 +387,7 @@
     preview.removeAttribute("src");
     open.hidden = true;
     open.removeAttribute("href");
+    announce(null);
     prompt.value = "";
     consent.checked = false;
     recover(false); // Re-check active work before permitting a new submission.
