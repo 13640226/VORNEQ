@@ -3,6 +3,7 @@ from django.urls import path
 from .views import ask
 from .views_phase_b import ask_phase_b
 from .chat_page import chat_page
+from .image_generation.gallery import image_download_view, image_history_view
 from .image_generation.views import image_jobs_view, image_job_detail_view
 from .image_generation.page import image_studio_page
 from .views_global import ask_global_view, recovery_status_view
@@ -19,7 +20,9 @@ urlpatterns = [
     # Separate, default-off image generation capability.
     path("images/studio/", image_studio_page, name="image-studio"),
     path("images/jobs/", image_jobs_view, name="image-jobs"),
+    path("images/jobs/history/", image_history_view, name="image-history"),
     path("images/jobs/<uuid:job_id>/", image_job_detail_view, name="image-job-detail"),
+    path("images/jobs/<uuid:job_id>/download/", image_download_view, name="image-job-download"),
     path("ask-global/", ask_global_view, name="ask-global"),
     path("request-status/", recovery_status_view, name="request-status"),
     path("conversations/", conversations_view, name="conversations"),

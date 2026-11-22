@@ -67,15 +67,44 @@
         <img data-vq-image-preview alt="{{ labels.image_alt }}" referrerpolicy="no-referrer">
         <figcaption>{{ labels.result_note }}</figcaption>
       </figure>
+      {% include "ai_core/_image_toolbar.html" with scope="current" %}
       <a class="vq-image__open" data-vq-image-open href="#" target="_blank"
         rel="noopener noreferrer" referrerpolicy="no-referrer" hidden>{{ labels.open }}</a>
       <p class="vq-image__one-shot">{{ labels.one_shot }}</p>
     </section>
   </div>
+  <section class="vq-gallery" data-vq-gallery data-history-url="{{ image_history_url }}"
+    aria-labelledby="vq-gallery-title">
+    <h2 id="vq-gallery-title">{{ labels.gallery_title }}</h2>
+    <p class="vq-gallery__status" data-vq-gallery-status role="status" aria-live="polite">{{ labels.gallery_loading }}</p>
+    <div class="vq-gallery__selected" data-vq-gallery-selected hidden>
+      <h3>{{ labels.selected_image }}</h3>
+      <img data-vq-gallery-selected-img alt="{{ labels.selected_image }}" referrerpolicy="no-referrer">
+      {% include "ai_core/_image_toolbar.html" with scope="selected" %}
+    </div>
+    <ul class="vq-gallery__grid" data-vq-gallery-grid></ul>
+    <button type="button" class="vq-image__check" data-vq-gallery-retry hidden>{{ labels.gallery_retry }}</button>
+    <button type="button" class="vq-image__check" data-vq-gallery-more hidden>{{ labels.load_more }}</button>
+  </section>
+  <dialog class="vq-viewer" data-vq-viewer aria-label="{{ labels.viewer_title }}">
+    <div class="vq-viewer__bar">
+      <button type="button" class="vq-image__tool" data-vq-viewer-zoom-out aria-label="{{ labels.zoom_out }}">&minus; {{ labels.zoom_out }}</button>
+      <button type="button" class="vq-image__tool" data-vq-viewer-zoom-in aria-label="{{ labels.zoom_in }}">+ {{ labels.zoom_in }}</button>
+      <button type="button" class="vq-image__tool" data-vq-viewer-zoom-reset>{{ labels.zoom_reset }}</button>
+      <button type="button" class="vq-image__tool" data-vq-viewer-native hidden>{{ labels.fullscreen }}</button>
+      <button type="button" class="vq-image__tool" data-vq-viewer-close>{{ labels.close }}</button>
+    </div>
+    <p class="vq-viewer__status" data-vq-viewer-status role="status" aria-live="polite"></p>
+    <div class="vq-viewer__stage" tabindex="0">
+      <img data-vq-viewer-img alt="{{ labels.image_alt }}" referrerpolicy="no-referrer">
+    </div>
+  </dialog>
   <p class="vq-image__back"><a href="{{ chat_url }}">{{ labels.back }}</a></p>
   <noscript><p>{{ labels.status_error }}</p></noscript>
 </section>
 {% endblock %}
 {% block extra_js %}
+{{ labels|json_script:"vq-image-labels" }}
 <script src="{% static 'js/image-studio.js' %}" defer></script>
+<script src="{% static 'js/image-studio-gallery.js' %}" defer></script>
 {% endblock %}
