@@ -1,0 +1,14 @@
+{% load i18n %}
+<section class="vq-v5-section" aria-labelledby="vq-v5-ai-title" id="vq-v5-ai">
+  <div class="vq-v5-section-head"><p class="vq-v5-eyebrow">VORNEQ AI</p><h2 id="vq-v5-ai-title">{% trans "AI Studio" %}</h2>
+    <p>{% trans "AI features require separate authorization. This page does not start paid operations." %}</p></div>
+  <div class="vq-v5-grid">
+    {% if phase_c_chat_enabled %}
+    <a class="vq-v5-card" href="{% url 'ai_core:chat' %}"><span class="vq-v5-status">{% trans "Available for your account" %}</span><h3>{% trans "AI chat" %}</h3><p>{% trans "AI answers are generated on the server, only from cited public sources. Quotes are checked; factual claims are not verified." %}</p></a>
+    {% else %}
+    <div class="vq-v5-card vq-v5-card--disabled" aria-disabled="true"><span class="vq-v5-status">{% trans "Not enabled" %}</span><h3>{% trans "AI chat" %}</h3><p>{% trans "No AI answer is generated on this page." %}</p></div>
+    {% endif %}
+    <div class="vq-v5-card vq-v5-card--disabled" aria-disabled="true"><span class="vq-v5-status">{% trans "Availability not confirmed" %}</span><h3>{% trans "Image Studio" %}</h3><p>{% trans "Check the application for current access and availability." %}</p></div>
+    <div class="vq-v5-card vq-v5-card--disabled" aria-disabled="true"><span class="vq-v5-status">{% trans "Availability not confirmed" %}</span><h3>{% trans "Voice Lab" %}</h3><p>{% trans "Check the application for current access and availability." %}</p></div>
+  </div>
+</section>

@@ -1,0 +1,10 @@
+{% load i18n %}
+<section class="vq-v5-section" aria-labelledby="vq-v5-trust-title" id="vq-v5-trust">
+  <div class="vq-v5-section-head"><p class="vq-v5-eyebrow">VORNEQ</p><h2 id="vq-v5-trust-title">{% trans "Trust Center" %}</h2>
+  <p>{% trans "Inspect sources and context. A citation is not a guarantee of truth." %}</p></div>
+  <div class="vq-v5-grid">
+    <a class="vq-v5-card" href="{% url 'orientation' %}"><h3>{% trans "Evidence vocabulary" %}</h3><p>{% trans "Terms for evidence, provenance and context." %}</p></a>
+    <a class="vq-v5-card" href="{% url 'inspect_entry' %}"><h3>{% trans "Inspect an artifact" %}</h3><p>{% trans "Open the public context of a known artifact." %}</p></a>
+    <a class="vq-v5-card" href="{% url 'discover_knowledge' %}"><h3>{% trans "Public knowledge" %}</h3><p>{% trans "Articles, library items and audio." %}</p></a>
+  </div>
+</section>
