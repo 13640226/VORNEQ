@@ -252,7 +252,7 @@ def stored_response(message, conversation):
     """Rebuild the client response of a FINAL turn (replay after cache expiry)."""
     base = {"conversation_id": str(conversation.id), "persisted": True, "replayed": True}
     if message.status == AIMessage.STATUS_COMPLETED:
-        if message.error_code == "model_knowledge":
+        if getattr(message, "error_code", "") == "model_knowledge":
             return dict(base, mode="model_knowledge", answer=message.content,
                         language=conversation.language, citations=[], verified=False,
                         model_status="generated", grounded_status="model_knowledge_unverified",
