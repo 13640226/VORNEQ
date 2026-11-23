@@ -90,7 +90,7 @@ class ProductionWorkerClosedTests(TransactionTestCase):
         with override_settings(VORNEQ_AI_IMAGE_PRODUCTION_ENABLED=True,
                                VORNEQ_AI_IMAGE_PRODUCTION_UNCAPPED_BUDGET=True,
                                VORNEQ_AI_EMERGENCY_STOP=False):
-            with patch("apps.ai_core.image_generation.production_worker.production_uncapped_budget_requested", return_value=True), patch("apps.ai_core.image_generation.production_worker.production_release_identity", return_value=True):
+            with patch("apps.ai_core.deploy_authorization._verified_release", return_value=True):
                 self.assertFalse(production_worker_preflight()["ready"])
                 self.assertFalse(production_worker_preflight()["checks"]["provider_activation_authorized"])
                 self.assertIsNone(process_production_image_job())
