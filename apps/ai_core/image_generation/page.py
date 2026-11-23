@@ -1,4 +1,4 @@
-"""Image Studio: Staging only until independent Production paid gates exist."""
+"""Image Studio: Staging generation and separate read-only Production preview."""
 from django.conf import settings
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
@@ -7,7 +7,7 @@ from django.utils.translation import get_language, override
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
-from .policy import actor_allowed, paid_provider_enabled
+from .policy import actor_allowed, paid_provider_enabled, PRODUCTION_SERVICE_ID
 
 LABELS = {
     "en": {
@@ -187,6 +187,22 @@ LABELS = {
 }
 
 
+def production_studio_preview_allowed(user):
+    """UI-only allowlist; never consults or grants the paid image policy."""
+    import os
+    return bool(
+        getattr(settings, "VORNEQ_ENV", "") == "production"
+        and getattr(settings, "DEBUG", True) is False
+        and getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_UI_ENABLED", False) is True
+        and os.environ.get("RENDER_SERVICE_ID") == PRODUCTION_SERVICE_ID
+        and getattr(user, "is_authenticated", False)
+        and getattr(user, "is_active", False)
+        and getattr(user, "is_staff", False)
+        and getattr(user, "is_superuser", False)
+        and getattr(user, "pk", None) in (1, 3)
+    )
+
+
 def image_studio_allowed(user):
     """Independent UI switch in addition to the existing server-side image gates."""
     if (getattr(settings, "VORNEQ_ENV", "") != "staging"
@@ -201,6 +217,13 @@ def image_studio_allowed(user):
 @never_cache
 @require_GET
 def image_studio_page(request):
+    if production_studio_preview_allowed(request.user):
+        result = render(request, "ai_core/image_studio_production_preview.html", {
+            "chat_url": reverse("ai_core:chat"),
+        })
+        result["Cache-Control"] = "no-store, private"
+        result["X-Robots-Tag"] = "noindex, nofollow"
+        return result
     if (getattr(settings, "VORNEQ_ENV", "") != "staging"
             or getattr(settings, "DEBUG", True)
             or not getattr(settings, "VORNEQ_AI_IMAGE_UI_ENABLED", False)):
