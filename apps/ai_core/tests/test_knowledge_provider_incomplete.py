@@ -26,8 +26,16 @@ class KnowledgeProviderIncompleteTests(SimpleTestCase):
         fake_openai.OpenAI = Mock(return_value=client)
         for name in ("APITimeoutError", "APIConnectionError", "APIStatusError", "APIError"):
             setattr(fake_openai, name, type(name, (Exception,), {}))
+        fake_pydantic = ModuleType("pydantic")
+        fake_pydantic.ValidationError = type("ValidationError", (Exception,), {})
+        fake_schema = ModuleType("apps.ai_core.schemas.response")
+        fake_schema.KnowledgeAnswerSchema = type("KnowledgeAnswerSchema", (), {})
         with patch.dict("os.environ", {"OPENAI_API_KEY": "offline-test"}), patch.dict(
-            sys.modules, {"openai": fake_openai}
+            sys.modules, {
+                "openai": fake_openai,
+                "pydantic": fake_pydantic,
+                "apps.ai_core.schemas.response": fake_schema,
+            }
         ):
             try:
                 self.provider.generate_knowledge(question="What is AI?", language="en")
