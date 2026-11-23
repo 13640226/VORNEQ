@@ -11,12 +11,14 @@
     const form = root.querySelector("[data-vq-composer]");
     const input = root.querySelector("[data-vq-composer-input]");
     const count = root.querySelector("[data-vq-composer-count]");
+    const clear = root.querySelector("[data-vq-composer-clear]");
     if (!form || !input) return;
     const send = form.querySelector('button[type="submit"]');
 
     const limit = Math.min(Number(input.maxLength) || 200, 200);
     function updateCount() {
       if (count) count.textContent = input.value.length + "/" + limit;
+      if (clear) clear.hidden = !input.value.length;
       // Progressive enhancement: native 'required' still handles no-JS users.
       if (send) send.disabled = !input.value.trim();
     }
@@ -32,6 +34,11 @@
       });
     }
 
+    if (clear) clear.addEventListener("click", () => {
+      input.value = "";
+      updateCount();
+      input.focus();
+    });
     input.addEventListener("input", updateCount);
     input.addEventListener("keydown", (event) => {
       // Enter can confirm an IME composition (e.g. Persian); never submit then.
