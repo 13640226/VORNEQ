@@ -79,6 +79,23 @@ class ProductionChatRenderingTests(TestCase):
                     self.assertNotIn("Development preview:", body)
                     self.assertIn("no-store", response["Cache-Control"])
 
+    @override_settings(
+        VORNEQ_ENV="production",
+        VORNEQ_AI_CHAT_INPUT_TOKEN_BUDGET="1024",
+        VORNEQ_AI_CHAT_PRODUCTION_EXTENDED_INPUT=True,
+    )
+    def test_production_extended_budget_is_rendered_in_textarea_and_counter(self):
+        with patch("apps.ai_core.chat_page.global_ai_available", return_value=True), \
+                patch("apps.ai_core.chat_page.production_actor_allowed", return_value=True), \
+                patch("apps.ai_ledger.service.ledger_enabled", return_value=True), \
+                patch("apps.ai_core.request_recovery.enabled", return_value=True):
+            response = self.client.get(reverse("ai_core:chat") + "?lang=fa")
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode("utf-8")
+        self.assertIn('maxlength="1024"', html)
+        self.assertIn("0/1024", html)
+        self.assertIn('data-vq-question-limit="1024"', html)
+
     @override_settings(VORNEQ_ENV="production")
     def test_homepage_uses_production_entry_label_for_eligible_actor(self):
         with override("en"), \
