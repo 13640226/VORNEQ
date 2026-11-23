@@ -46,3 +46,22 @@ class ProductionImagePreviewTests(TestCase):
                                VORNEQ_AI_IMAGE_PRODUCTION_UI_ENABLED=True), patch.dict(os.environ, {
                                    "RENDER_SERVICE_ID": "srv-dbm7dvc9v7es7393g70g"}):
             self.assertEqual(self.client.get(reverse("ai_core:image-studio")).status_code, 404)
+
+    def test_preview_denies_non_privileged_and_inactive_users(self):
+        """A matching numeric ID alone must not grant Production preview."""
+        with override_settings(VORNEQ_ENV="production", DEBUG=False,
+                               VORNEQ_AI_IMAGE_PRODUCTION_UI_ENABLED=True), patch.dict(os.environ, {
+                                   "RENDER_SERVICE_ID": "srv-dadn07eq1p3s73eccau0"}):
+            original = (self.admin1.is_staff, self.admin1.is_superuser, self.admin1.is_active)
+            try:
+                for field in ("is_staff", "is_superuser", "is_active"):
+                    setattr(self.admin1, field, False)
+                    self.admin1.save(update_fields=[field])
+                    self.assertFalse(production_studio_preview_allowed(self.admin1))
+                    self.client.force_login(self.admin1)
+                    self.assertEqual(self.client.get(reverse("ai_core:image-studio")).status_code, 404)
+                    setattr(self.admin1, field, True)
+                    self.admin1.save(update_fields=[field])
+            finally:
+                self.admin1.is_staff, self.admin1.is_superuser, self.admin1.is_active = original
+                self.admin1.save(update_fields=["is_staff", "is_superuser", "is_active"])
