@@ -86,3 +86,26 @@ class ExternalUsageRecord(models.Model):
 
     class Meta:
         constraints = [models.CheckConstraint(condition=Q(amount_micro__gt=0), name="ai_ledger_ext_positive")]
+
+class ProductionImageUsage(models.Model):
+    """Independent, uncapped image expense journal; not a prepaid allowance."""
+    RESERVED, FINALIZED, UNCERTAIN = "reserved", "finalized", "uncertain"
+    id = models.UUIDField(primary_key=True)
+    account = models.ForeignKey(BudgetAccount, on_delete=models.PROTECT, related_name="production_image_usage")
+    actor_id = models.BigIntegerField()
+    service_id = models.CharField(max_length=64)
+    git_sha = models.CharField(max_length=40)
+    model_id = models.CharField(max_length=100)
+    estimated_micro = models.BigIntegerField()
+    observed_micro = models.BigIntegerField(null=True, blank=True)
+    status = models.CharField(max_length=10, choices=[(RESERVED, RESERVED), (FINALIZED, FINALIZED), (UNCERTAIN, UNCERTAIN)], default=RESERVED)
+    outcome = models.CharField(max_length=40, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    settled_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(estimated_micro__gt=0), name="ai_ledger_prod_img_est_positive"),
+            models.CheckConstraint(condition=Q(observed_micro__gte=0) | Q(observed_micro__isnull=True), name="ai_ledger_prod_img_obs_nonneg"),
+            models.CheckConstraint(condition=Q(status__in=["reserved", "finalized", "uncertain"]), name="ai_ledger_prod_img_state_valid"),
+        ]
