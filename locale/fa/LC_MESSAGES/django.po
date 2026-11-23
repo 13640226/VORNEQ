@@ -2240,3 +2240,15 @@ msgstr "عنوان (الفبایی)"
 
 msgid "Waiting for a moderator."
 msgstr "در انتظار بررسی ناظر."
+
+msgid "Trust Infrastructure"
+msgstr "زیرساخت اعتماد"
+
+msgid "Explore a connected digital platform for knowledge, research and creation."
+msgstr "پلتفرمی دیجیتال و به‌هم‌پیوسته برای دانش، پژوهش و آفرینش را کاوش کنید."
+
+msgid "Discover Applications"
+msgstr "آشنایی با اپلیکیشن‌ها"
+
+msgid "About VORNEQ"
+msgstr "درباره VORNEQ"
