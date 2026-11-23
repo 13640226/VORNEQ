@@ -8,6 +8,7 @@
 {% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/phase-c-chat.css' %}">
+<link rel="stylesheet" href="{% static 'css/voice/mic-button.css' %}">
 {% endblock %}
 {% block content %}
 <div class="vq-chat-shell{% if chat_conversations_enabled %} vq-chat-shell--history{% endif %}">
@@ -152,4 +153,6 @@
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'js/phase-c-chat.js' %}" defer></script>
+<script src="{% static 'js/voice/mic-recorder.js' %}" defer></script>
+<script src="{% static 'js/voice/mic-button.js' %}" defer></script>
 {% endblock %}
