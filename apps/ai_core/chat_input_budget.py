@@ -32,7 +32,10 @@ MAX_PILOT_BUDGET = 8192
 
 def global_budget():
     """Invalid/absent configuration never widens access or limits."""
-    if getattr(settings, "VORNEQ_ENV", None) not in ("development", "staging"):
+    env = getattr(settings, "VORNEQ_ENV", None)
+    if env not in ("development", "staging", "production"):
+        return LEGACY
+    if env == "production" and getattr(settings, "VORNEQ_AI_CHAT_PRODUCTION_EXTENDED_INPUT", False) is not True:
         return LEGACY
     raw = getattr(settings, "VORNEQ_AI_CHAT_INPUT_TOKEN_BUDGET", "")
     if not isinstance(raw, str) or not raw.isascii() or not raw.isdecimal() or len(raw) > 4:
@@ -40,7 +43,7 @@ def global_budget():
     value = int(raw)
     if not 512 <= value <= MAX_PILOT_BUDGET:
         return LEGACY
-    if settings.VORNEQ_ENV == "staging":
+    if env in ("staging", "production"):
         # The old flat per-request reservation is insufficient for a larger
         # payload. The hosted pilot must use actual-payload ledger estimation
         # and durable request recovery. These checks are configuration-only.
