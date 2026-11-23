@@ -1,0 +1,11 @@
+{% load i18n %}
+{# Public brand orientation only; no AI inference or activation. #}
+<section class="vq-global-hero" aria-label="{% trans 'About VORNEQ' %}">
+  <p class="vq-global-hero__eyebrow">VORNEQ · {% trans "Trust Infrastructure" %}</p>
+  <p class="vq-global-hero__headline">{% trans "One Platform. Many Applications. Connected Possibilities." %}</p>
+  <p class="vq-global-hero__description">{% trans "Explore a connected digital platform for knowledge, research and creation." %}</p>
+  <div class="vq-global-hero__actions">
+    <a class="vq-global-hero__action" href="{% url 'search_page' %}">{% trans "Explore Platform" %}</a>
+    <a class="vq-global-hero__action vq-global-hero__action--secondary" href="#vq-tools-title">{% trans "Discover Applications" %}</a>
+  </div>
+</section>

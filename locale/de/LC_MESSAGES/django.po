@@ -2525,3 +2525,15 @@ msgstr "Titel A–Z"
 
 msgid "Waiting for a moderator."
 msgstr "Wartet auf die Moderation."
+
+msgid "Trust Infrastructure"
+msgstr "Vertrauensinfrastruktur"
+
+msgid "Explore a connected digital platform for knowledge, research and creation."
+msgstr "Entdecken Sie eine vernetzte digitale Plattform für Wissen, Forschung und kreatives Schaffen."
+
+msgid "Discover Applications"
+msgstr "Anwendungen entdecken"
+
+msgid "About VORNEQ"
+msgstr "Über VORNEQ"
