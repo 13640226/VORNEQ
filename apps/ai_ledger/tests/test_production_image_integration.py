@@ -1,4 +1,4 @@
-﻿import os
+import os
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
@@ -9,7 +9,7 @@ from django.test import TransactionTestCase, override_settings
 from apps.ai_ledger.models import BudgetAccount, ProductionImageUsage
 from apps.ai_ledger.service import LEDGER_ALIAS, LedgerConfig, LedgerUnavailable, EmergencyStop
 from apps.ai_ledger.production_image import record_production_image_intent, reconcile_production_image
-from apps.ai_core.image_generation.production_worker import production_worker_preflight
+from apps.ai_core.image_generation.production_worker import production_worker_preflight, process_production_image_job
 
 IS_PG = connections[LEDGER_ALIAS].vendor == "postgresql"
 
@@ -93,3 +93,4 @@ class ProductionWorkerClosedTests(TransactionTestCase):
             with patch("apps.ai_core.image_generation.production_worker.production_uncapped_budget_requested", return_value=True), patch("apps.ai_core.image_generation.production_worker.production_release_identity", return_value=True):
                 self.assertFalse(production_worker_preflight()["ready"])
                 self.assertFalse(production_worker_preflight()["checks"]["provider_activation_authorized"])
+                self.assertIsNone(process_production_image_job())
