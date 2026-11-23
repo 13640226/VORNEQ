@@ -1,5 +1,6 @@
 """Fail-closed diagnosis of HTTP-200 knowledge responses; no paid calls."""
-from types import SimpleNamespace
+import sys
+from types import ModuleType, SimpleNamespace
 from unittest.mock import Mock, patch
 
 from django.test import SimpleTestCase
@@ -21,8 +22,12 @@ class KnowledgeProviderIncompleteTests(SimpleTestCase):
         )
         client = Mock()
         client.responses.parse.return_value = response
-        with patch.dict("os.environ", {"OPENAI_API_KEY": "offline-test"}), patch(
-            "openai.OpenAI", return_value=client
+        fake_openai = ModuleType("openai")
+        fake_openai.OpenAI = Mock(return_value=client)
+        for name in ("APITimeoutError", "APIConnectionError", "APIStatusError", "APIError"):
+            setattr(fake_openai, name, type(name, (Exception,), {}))
+        with patch.dict("os.environ", {"OPENAI_API_KEY": "offline-test"}), patch.dict(
+            sys.modules, {"openai": fake_openai}
         ):
             try:
                 self.provider.generate_knowledge(question="What is AI?", language="en")
