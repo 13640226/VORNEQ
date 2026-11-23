@@ -120,6 +120,13 @@ def ask_global(question, fallback_language, *, actor, provider, retriever, enabl
     if route.kind != GENERAL_PUBLIC:
         raise GlobalUnsupported(route.reason)
     language = route.language
+    from apps.ai_core.general_knowledge_policy import general_knowledge_candidate
+    if general_knowledge_candidate(question, fallback_language):
+        if provider is None:
+            raise ProviderUnavailable("no provider configured")
+        from apps.ai_core.general_knowledge_runtime import ask_knowledge
+        return ask_knowledge(question, language, provider=provider,
+                             max_answer_chars=max_answer_chars, prior_turns=prior_turns)
     # ``search_question`` (context-aware follow-up retrieval) only changes what is
     # searched and ranked; the model still receives the user's real question and
     # all validation below still runs against the retrieved sources.
