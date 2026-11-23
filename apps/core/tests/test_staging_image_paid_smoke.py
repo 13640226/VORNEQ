@@ -217,7 +217,7 @@ class LedgerAuditTests(TransactionTestCase):
         text = "\n".join(lines)
         self.assertIn("LEDGER_AUDIT transaction_read_only=on", lines)
         self.assertIn("LEDGER_AUDIT db_matches_expected=True", lines)
-        self.assertIn("LEDGER_AUDIT ai_ledger_migrations=0001_initial", lines)
+        self.assertIn("LEDGER_AUDIT ai_ledger_migrations=0001_initial,0002_productionimageusage", lines)
         for table in ("budgetaccount", "budgetreservation", "externalusagerecord"):
             self.assertIn("LEDGER_AUDIT columns_ai_ledger_{}=MATCH".format(table), lines)
         accounts = [json.loads(l.split("=", 1)[1]) for l in lines
