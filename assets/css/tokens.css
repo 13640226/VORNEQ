@@ -37,6 +37,13 @@
   --color-warning: #d97706;
   --color-error: #b91c1c;
 
+  /* Homepage V5 application statuses (foreground text colors). */
+  --color-app-available: #15803d;
+  --color-app-limited: #92400e;
+  --color-app-beta: #1d4ed8;
+  --color-app-development: #6d28d9;
+  --color-app-planned: #475569;
+
   /* editorial-only accent; never primary CTA */
   --color-editorial: #c9852f;
   --color-editorial-subtle: #fff7ed;
@@ -187,6 +194,12 @@
   --color-success: #4ade80;
   --color-warning: #fbbf24;
   --color-error: #f87171;
+
+  --color-app-available: #4ade80;
+  --color-app-limited: #fbbf24;
+  --color-app-beta: #93c5fd;
+  --color-app-development: #c4b5fd;
+  --color-app-planned: #cbd5e1;
 
   --color-editorial: #f0b66b;
   --color-editorial-subtle: #2b2116;
