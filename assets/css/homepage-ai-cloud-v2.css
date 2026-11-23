@@ -131,6 +131,9 @@ html[dir="rtl"] .vq-home__title { letter-spacing: 0; }
 .vq-mode--link:hover { background: var(--vq-led-soft); }
 .vq-mode--soon { color: var(--color-text-secondary); border-style: dashed; cursor: default; }
 .vq-composer__end { display: flex; align-items: center; gap: 10px; margin-inline-start: auto; }
+.vq-composer__clear { min-height: 44px; padding: 6px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-pill, 999px); background: var(--color-bg-surface); color: var(--color-text-primary); font: inherit; cursor: pointer; }
+.vq-composer__clear[hidden] { display: none; }
+.vq-composer__clear:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
 .vq-composer__count { color: var(--color-text-secondary); font-size: .8rem; font-variant-numeric: tabular-nums; }
 .vq-composer__send {
   min-height: 44px; min-width: 76px; padding: 8px 18px;
