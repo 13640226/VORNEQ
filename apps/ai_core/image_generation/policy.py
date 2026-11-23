@@ -93,6 +93,21 @@ def production_release_identity():
         return False
     return _verified_release("production", live) is True
 
+def production_uncapped_budget_requested():
+    """Owner-approved policy intent, not a ledger or provider bypass.
+
+    A future independent Production ledger implementation must consume this
+    only after validating owner, SHA, actor, service and deployment evidence.
+    Never consult this flag for Staging, chat, or paid-provider authorization.
+    """
+    return (
+        getattr(settings, "VORNEQ_ENV", "") == "production"
+        and getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_UNCAPPED_BUDGET", False) is True
+        and getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_ENABLED", False) is True
+        and getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", True) is False
+        and production_release_identity() is True
+    )
+
 def production_readiness():
     """Read-only, fail-closed foundation for a future Production image rollout.
 
@@ -109,6 +124,7 @@ def production_readiness():
         "production_service": os.getenv("RENDER_SERVICE_ID") == PRODUCTION_SERVICE_ID,
         "production_release_identity": (getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_ENABLED", False) is True
                                         and production_release_identity()),
+        "production_uncapped_budget_requested": production_uncapped_budget_requested(),
         "production_paid_policy_implemented": False,
         "production_worker_authorized": False,
     }
