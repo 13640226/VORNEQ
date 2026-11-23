@@ -4,7 +4,7 @@ The reservation happens immediately before the (single, max_retries=0)
 provider call; retrieval-only paths (insufficient evidence) cost nothing.
 """
 from apps.ai_core.providers.exceptions import GatewayError
-from apps.ai_core.providers.openai_responses import build_request_payload, build_request_payload_v2
+from apps.ai_core.providers.openai_responses import build_request_payload, build_request_payload_v2, build_knowledge_payload
 from apps.ai_ledger import service as ledger
 
 
@@ -53,3 +53,27 @@ class BudgetedProvider:
             raise
         ledger.settle(reservation, usage=getattr(self.inner, "last_usage", None), outcome="completed")
         return output
+
+
+    def generate_knowledge(self, *, question, language, prior_turns=()):
+        payload = build_knowledge_payload(question, language, prior_turns=prior_turns)
+        instructions = self.inner.knowledge_instructions(language)
+        input_bytes = len(instructions.encode("utf-8")) + len(payload.encode("utf-8"))
+        self.inner.check_context_budget(input_bytes)
+        reservation = ledger.reserve(actor_id=self.actor_id, model=self.inner.model,
+                                     input_bytes=input_bytes,
+                                     max_output_tokens=self.inner.max_output_tokens)
+        self.last_reservation = reservation
+        self.inner.last_usage = None
+        try:
+            result = self.inner.generate_knowledge(
+                question=question, language=language, prior_turns=prior_turns)
+        except GatewayError as exc:
+            ledger.settle(reservation, usage=self.inner.last_usage,
+                          outcome=type(exc).__name__)
+            raise
+        except BaseException:
+            ledger.settle(reservation, usage=None, outcome="unexpected_error")
+            raise
+        ledger.settle(reservation, usage=self.inner.last_usage, outcome="completed")
+        return result

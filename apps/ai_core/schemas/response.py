@@ -40,3 +40,9 @@ class SectionedAnswerSchema(BaseModel):
     grounded_status: str
     verified: bool
     error_code: str
+
+
+class KnowledgeAnswerSchema(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    answer: str
+    language: str

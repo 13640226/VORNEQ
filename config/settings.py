@@ -507,6 +507,8 @@ VORNEQ_AI_CONVERSATIONS_ALLOWED_USER_IDS = os.environ.get("VORNEQ_AI_CONVERSATIO
 VORNEQ_AI_CONTEXT_RETRIEVAL_ENABLED = env_bool("VORNEQ_AI_CONTEXT_RETRIEVAL_ENABLED", False)
 # Opt-in development/staging-only input pilot. Missing or malformed = legacy.
 VORNEQ_AI_CHAT_INPUT_TOKEN_BUDGET = os.environ.get("VORNEQ_AI_CHAT_INPUT_TOKEN_BUDGET", "")
+# Classification-only groundwork; no provider mode is enabled by this flag yet.
+VORNEQ_AI_GENERAL_KNOWLEDGE_ENABLED = os.environ.get("VORNEQ_AI_GENERAL_KNOWLEDGE_ENABLED", "") == "true"
 VORNEQ_AI_CHAT_BUDGET_MODEL = os.environ.get("VORNEQ_AI_CHAT_BUDGET_MODEL", "")
 VORNEQ_AI_CHAT_OUTPUT_TOKEN_BUDGET = os.environ.get("VORNEQ_AI_CHAT_OUTPUT_TOKEN_BUDGET", "")
 VORNEQ_AI_CHAT_MODEL_CONTEXT_TOKENS = os.environ.get("VORNEQ_AI_CHAT_MODEL_CONTEXT_TOKENS", "")

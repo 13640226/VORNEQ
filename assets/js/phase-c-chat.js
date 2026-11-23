@@ -447,10 +447,15 @@
         appendMessage(labels.empty || "Insufficient evidence", "assistant");
         return { completed: true, answerBubble: null };
       }
+      const modelKnowledge = data && data.mode === "model_knowledge" &&
+        data.grounded_status === "model_knowledge_unverified" &&
+        data.model_status === "generated" && data.verified === false &&
+        data.error_code === "" && data.route === "general_public" &&
+        Array.isArray(data.citations) && data.citations.length === 0;
       if (!data || data.verified !== false ||
           typeof data.answer !== "string" ||
           (data.answer.length > answerLimit && Array.from(data.answer).length > (stored ? 6400 : answerLimit)) ||
-          data.mode !== "grounded_draft" || !Array.isArray(data.citations)) {
+          (!modelKnowledge && data.mode !== "grounded_draft") || !Array.isArray(data.citations)) {
         appendMessage(labels.error || "Invalid response", "assistant");
         return { completed: false, answerBubble: null };
       }
@@ -466,7 +471,12 @@
         }
       }
       const note = document.createElement("small");
-      note.textContent = labels.status || "Generated draft, not verified";
+      note.textContent = modelKnowledge
+        ? ({ fa: "بدون منبع؛ بر اساس دانش مدل، راستی‌آزمایی نشده",
+             de: "Ohne Quellen – Modellwissen, nicht verifiziert",
+             en: "No sources – model knowledge, not verified" }[document.documentElement.lang] ||
+           "No sources – model knowledge, not verified")
+        : (labels.status || "Generated draft, not verified");
       bubble.appendChild(note);
       showSources(bubble, data.citations);
       addCopyButton(bubble, data.answer);
@@ -644,8 +654,14 @@
           if (message.role === "user") {
             appendMessage(String(message.content || ""), "user");
           } else if (message.status === "completed") {
-            renderData({ mode: "grounded_draft", verified: false, answer: String(message.content || ""),
-              citations: Array.isArray(message.citations) ? message.citations : [] }, true);
+            if (message.error_code === "model_knowledge") {
+              renderData({ mode: "model_knowledge", verified: false, answer: String(message.content || ""),
+                language: document.documentElement.lang, citations: [], model_status: "generated",
+                grounded_status: "model_knowledge_unverified", error_code: "", route: "general_public" }, true);
+            } else {
+              renderData({ mode: "grounded_draft", verified: false, answer: String(message.content || ""),
+                citations: Array.isArray(message.citations) ? message.citations : [] }, true);
+            }
           } else if (message.status === "insufficient_evidence") {
             const code = String(message.error_code || "");
             if (code === "UNSUPPORTED_QUESTION") appendMessage(rejectionMessage({ error: code }), "assistant");

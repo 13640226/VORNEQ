@@ -135,6 +135,12 @@ def _v2_citation(source):
 def classify(result, http_status):
     """Map the exact client response to (status, content, error_code, citations)."""
     result = result if isinstance(result, dict) else {}
+    if (http_status == 200 and result.get("mode") == "model_knowledge"
+            and result.get("verified") is False
+            and result.get("grounded_status") == "model_knowledge_unverified"
+            and result.get("citations") == []
+            and isinstance(result.get("answer"), str) and result["answer"]):
+        return AIMessage.STATUS_COMPLETED, result["answer"], "model_knowledge", []
     if http_status == 200 and result.get("mode") == "grounded_draft":
         if result.get("format_version") == 2:
             raw = result.get("citations")
@@ -246,6 +252,11 @@ def stored_response(message, conversation):
     """Rebuild the client response of a FINAL turn (replay after cache expiry)."""
     base = {"conversation_id": str(conversation.id), "persisted": True, "replayed": True}
     if message.status == AIMessage.STATUS_COMPLETED:
+        if getattr(message, "error_code", "") == "model_knowledge":
+            return dict(base, mode="model_knowledge", answer=message.content,
+                        language=conversation.language, citations=[], verified=False,
+                        model_status="generated", grounded_status="model_knowledge_unverified",
+                        error_code="", route="general_public"), 200
         v2 = any(isinstance(c, dict) and isinstance(c.get("passages"), list)
                  for c in (message.citations or []))
         response = dict(base, mode="grounded_draft", answer=message.content, language=conversation.language,
