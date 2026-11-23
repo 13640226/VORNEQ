@@ -241,10 +241,18 @@ class OpenAIResponsesProvider:
         usage = getattr(response, "usage", None)
         tokens = (getattr(usage, "input_tokens", None), getattr(usage, "output_tokens", None))
         self.last_usage = tokens if all(type(t) is int and t >= 0 for t in tokens) else None
-        if getattr(response, "status", None) != "completed":
+        status = getattr(response, "status", None)
+        if status != "completed":
+            details = getattr(response, "incomplete_details", None)
+            reason = getattr(details, "reason", None)
+            if status == "incomplete" and reason == "max_output_tokens":
+                _logger.warning("ai_knowledge_response_rejected reason=output_token_limit")
+                raise ProviderOutputLimited("knowledge response reached output token limit")
+            _logger.warning("ai_knowledge_response_rejected reason=incomplete_or_refused")
             raise ProviderInvalidResponse("provider response incomplete")
         parsed = getattr(response, "output_parsed", None)
         if not isinstance(parsed, KnowledgeAnswerSchema):
+            _logger.warning("ai_knowledge_response_rejected reason=missing_structured_output")
             raise ProviderInvalidResponse("invalid knowledge response")
         return parsed.model_dump()
 
