@@ -391,3 +391,70 @@
     animation: none;
   }
 }
+/* Compact mobile global header: two rows, no wrapped utility row. */
+@media (max-width: 639px) {
+  .standalone-nav__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 6px;
+    row-gap: 0;
+    min-height: 0;
+    padding: 4px 8px 0;
+  }
+  .standalone-nav__brand {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    min-block-size: 44px;
+  }
+  .standalone-nav__symbol {
+    inline-size: 26px;
+    block-size: 26px;
+    flex-basis: 26px;
+    margin-inline-end: 4px;
+  }
+  .standalone-nav__wordmark { font-size: 1.125rem; }
+  .standalone-nav__actions {
+    grid-column: 2;
+    grid-row: 1;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    margin: 0;
+    min-width: 0;
+    max-width: none;
+    gap: 2px;
+  }
+  .standalone-nav__user {
+    inline-size: 36px;
+    block-size: 36px;
+    flex-basis: 36px;
+  }
+  .standalone-nav__language-trigger {
+    min-block-size: 44px;
+    padding-inline: 3px;
+  }
+  .standalone-nav__action {
+    min-block-size: 40px;
+    padding: 4px 6px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+  .standalone-nav__menu {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    order: initial;
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+  }
+  .standalone-nav__list { gap: 16px; padding-block: 0; }
+  .standalone-nav__link { min-block-size: 42px; }
+  .standalone-nav__language { position: relative; }
+  .standalone-nav__language-menu {
+    position: absolute;
+    inset-inline-end: 0;
+    width: min(240px, calc(100vw - 16px));
+    max-width: calc(100vw - 16px);
+  }
+}
