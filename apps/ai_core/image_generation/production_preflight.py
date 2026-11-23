@@ -13,15 +13,11 @@ def production_image_preflight(user):
     """Return independently auditable booleans without exposing secrets."""
     import os
 
-    project = getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_PROJECT_BUDGET_MICROUSD", None)
-    daily = getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_DAILY_CAP_MICROUSD", None)
-    request = getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_MAX_REQUEST_MICROUSD", None)
-    budget_valid = (
-        type(project) is int and project == 5_000_000
-        and type(daily) is int and daily == 200_000
-        and type(request) is int and 1 <= request <= 100_000
-        and request <= daily <= project
-    )
+    # Owner-requested uncapped policy intent. This is NOT ledger admission,
+    # provider authorization, or permission to bypass emergency controls.
+    uncapped_intent = getattr(
+        settings, "VORNEQ_AI_IMAGE_PRODUCTION_UNCAPPED_BUDGET", False
+    ) is True
     return {
         "environment": getattr(settings, "VORNEQ_ENV", "") == "production",
         "debug_disabled": getattr(settings, "DEBUG", True) is False,
@@ -36,7 +32,7 @@ def production_image_preflight(user):
             and user.pk == 1
         ),
         "emergency_stop_clear": getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", True) is False,
-        "financial_caps_configured": budget_valid,
+        "uncapped_policy_requested": uncapped_intent,
         "paid_route_implemented": False,
         "production_worker_authorized": False,
     }
