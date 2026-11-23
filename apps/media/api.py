@@ -45,6 +45,21 @@ def _parse_limit(value):
     return limit
 
 
+def _authorization_error(request):
+    """Default-deny caller check. Runs only after the hold/DEBUG gate.
+
+    Interim policy (NOT tenant isolation): authenticated, active user holding
+    Django's built-in model permission ``media.view_mediaasset``. No schema
+    change is required for this permission.
+    """
+    user = getattr(request, "user", None)
+    if user is None or not user.is_authenticated:
+        return JsonResponse({"error": "authentication_required"}, status=401)
+    if not (user.is_active and user.has_perm("media.view_mediaasset")):
+        return JsonResponse({"error": "forbidden"}, status=403)
+    return None
+
+
 def _unavailable_response():
     return JsonResponse(
         {
@@ -64,6 +79,11 @@ def search_by_image(request):
     service = _service()
     if service is None:
         return _unavailable_response()
+
+    # Authorization precedes any access to request.FILES / request.POST.
+    denied = _authorization_error(request)
+    if denied is not None:
+        return denied
 
     image = request.FILES.get("image")
     if image is None:
@@ -97,10 +117,17 @@ def search_by_text(request):
     if service is None:
         return _unavailable_response()
 
+    # Authorization precedes any access to request.body / request.POST.
+    denied = _authorization_error(request)
+    if denied is not None:
+        return denied
+
     if request.content_type == "application/json":
         try:
             payload = json.loads(request.body or b"{}")
         except json.JSONDecodeError:
+            return JsonResponse({"error": "invalid_json"}, status=400)
+        if not isinstance(payload, dict):
             return JsonResponse({"error": "invalid_json"}, status=400)
     else:
         payload = request.POST

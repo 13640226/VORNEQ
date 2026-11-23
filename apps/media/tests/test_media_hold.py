@@ -246,6 +246,8 @@ class MediaSimilarityApiHoldTests(_HoldFixture):
             "/api/media/search/image/",
             {"image": SimpleUploadedFile("q.png", b"x", content_type="image/png")},
         )
+        request.user = mock.Mock(is_authenticated=True, is_active=True)
+        request.user.has_perm.return_value = True
         with override_settings(DEBUG=True), mock.patch.object(
             media_api, "MEDIA_SIMILARITY_API_HOLD", False
         ), mock.patch.object(
