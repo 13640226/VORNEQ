@@ -310,3 +310,23 @@ html[dir="rtl"] .vq-composer__arrow { display: inline-block; transform: scaleX(-
   .vq-global-hero__actions { flex-direction: column; }
   .vq-global-hero__action { width: 100%; }
 }
+
+/* Homepage V5: full-width discovery below the existing three-column shell. */
+.vq-v5-sections { width: min(100% - 32px, 1200px); margin: 56px auto 72px; display: grid; gap: 64px; }
+.vq-v5-section { min-width: 0; }
+.vq-v5-section-head { max-width: 70ch; margin-bottom: 22px; }
+.vq-v5-section-head h2, .vq-v5-philosophy h2 { margin: 0 0 12px; font-size: clamp(1.5rem, 3vw, 2.3rem); line-height: 1.2; color: var(--color-text-primary); }
+.vq-v5-section-head p, .vq-v5-philosophy p { color: var(--color-text-secondary); line-height: 1.6; }
+.vq-v5-eyebrow { margin: 0 0 8px; font-weight: 750; letter-spacing: .06em; color: var(--color-accent) !important; }
+.vq-v5-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.vq-v5-card { min-width: 0; padding: 24px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-bg-surface); color: var(--color-text-primary); text-decoration: none; overflow-wrap: anywhere; }
+.vq-v5-card h3 { margin: 12px 0; font-size: 1.2rem; }
+.vq-v5-card p { margin: 0; color: var(--color-text-secondary); line-height: 1.55; }
+.vq-v5-card[href]:hover { border-color: var(--color-accent); }
+.vq-v5-card[href]:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 3px; }
+.vq-v5-card--disabled { opacity: .8; }
+.vq-v5-status { display: inline-block; padding: 4px 10px; border-radius: var(--radius-pill); border: 1px solid var(--color-border); font-size: .78rem; font-weight: 650; }
+.vq-v5-philosophy { padding: clamp(24px, 4vw, 48px); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-bg-surface); }
+@media (max-width: 900px) { .vq-v5-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 600px) { .vq-v5-sections { width: min(100% - 24px, 1200px); margin-block: 36px 52px; gap: 44px; } .vq-v5-grid { grid-template-columns: 1fr; } .vq-v5-card { padding: 20px; } }
+@media (prefers-reduced-motion: reduce) { .vq-v5-card { transition: none; } }

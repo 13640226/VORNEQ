@@ -2537,3 +2537,39 @@ msgstr "Anwendungen entdecken"
 
 msgid "About VORNEQ"
 msgstr "Über VORNEQ"
+
+msgid "Application Explorer"
+msgstr "Anwendungen entdecken"
+
+msgid "Explore public destinations and your private workspace when signed in."
+msgstr "Entdecken Sie öffentliche Bereiche und nach der Anmeldung Ihren privaten Arbeitsbereich."
+
+msgid "AI Studio"
+msgstr "KI-Studio"
+
+msgid "AI features require separate authorization. This page does not start paid operations."
+msgstr "KI-Funktionen erfordern eine gesonderte Freigabe. Diese Seite startet keine kostenpflichtigen Vorgänge."
+
+msgid "Availability not confirmed"
+msgstr "Verfügbarkeit nicht bestätigt"
+
+msgid "Image Studio"
+msgstr "Bildstudio"
+
+msgid "Voice Lab"
+msgstr "Sprachlabor"
+
+msgid "Check the application for current access and availability."
+msgstr "Prüfen Sie die Anwendung auf aktuellen Zugang und Verfügbarkeit."
+
+msgid "Trust Center"
+msgstr "Vertrauenszentrum"
+
+msgid "Inspect sources and context. A citation is not a guarantee of truth."
+msgstr "Prüfen Sie Quellen und Kontext. Ein Zitat garantiert keine Wahrheit."
+
+msgid "Platform Philosophy"
+msgstr "Plattformphilosophie"
+
+msgid "Our direction emphasizes user control, scoped authorization and inspectable evidence. Philosophy V4.1 remains a proposal, not a claim of completed features."
+msgstr "Unsere Ausrichtung betont Nutzerkontrolle, begrenzte Berechtigungen und prüfbare Belege. Philosophie V4.1 bleibt ein Vorschlag und keine Behauptung fertiggestellter Funktionen."

@@ -2252,3 +2252,39 @@ msgstr "آشنایی با اپلیکیشن‌ها"
 
 msgid "About VORNEQ"
 msgstr "درباره VORNEQ"
+
+msgid "Application Explorer"
+msgstr "کاوش اپلیکیشن‌ها"
+
+msgid "Explore public destinations and your private workspace when signed in."
+msgstr "بخش‌های عمومی و در صورت ورود، فضای کاری خصوصی خود را کاوش کنید."
+
+msgid "AI Studio"
+msgstr "استودیوی هوش مصنوعی"
+
+msgid "AI features require separate authorization. This page does not start paid operations."
+msgstr "قابلیت‌های هوش مصنوعی به مجوز جداگانه نیاز دارند. این صفحه عملیات پولی را آغاز نمی‌کند."
+
+msgid "Availability not confirmed"
+msgstr "دسترسی تأیید نشده"
+
+msgid "Image Studio"
+msgstr "استودیوی تصویر"
+
+msgid "Voice Lab"
+msgstr "آزمایشگاه صدا"
+
+msgid "Check the application for current access and availability."
+msgstr "برای وضعیت دسترسی و قابلیت، خود اپلیکیشن را بررسی کنید."
+
+msgid "Trust Center"
+msgstr "مرکز اعتماد"
+
+msgid "Inspect sources and context. A citation is not a guarantee of truth."
+msgstr "منابع و زمینه را بررسی کنید. استناد تضمین درستی نیست."
+
+msgid "Platform Philosophy"
+msgstr "فلسفه پلتفرم"
+
+msgid "Our direction emphasizes user control, scoped authorization and inspectable evidence. Philosophy V4.1 remains a proposal, not a claim of completed features."
+msgstr "مسیر پیشنهادی ما بر کنترل کاربر، مجوز محدود و شواهد قابل بررسی تأکید دارد. فلسفه V4.1 هنوز پیشنهاد است، نه ادعای تکمیل قابلیت‌ها."
