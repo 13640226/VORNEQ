@@ -31,6 +31,19 @@ class InputBudgetTests(SimpleTestCase):
         with override_settings(VORNEQ_ENV="staging", VORNEQ_AI_CHAT_INPUT_TOKEN_BUDGET=""):
             self.assertEqual(global_budget(), LEGACY)
 
+    def test_production_opt_in_requires_ledger_recovery_and_exact_true(self):
+        with override_settings(**dict(PILOT, VORNEQ_ENV="production",
+                                     VORNEQ_AI_CHAT_PRODUCTION_EXTENDED_INPUT=True)), \
+             patch("apps.ai_ledger.service.ledger_enabled", return_value=True), \
+             patch("apps.ai_core.request_recovery.enabled", return_value=True):
+            self.assertEqual(global_budget().question_chars, 1024)
+            with patch("apps.ai_ledger.service.ledger_enabled", return_value=False):
+                self.assertEqual(global_budget(), LEGACY)
+            with patch("apps.ai_core.request_recovery.enabled", return_value=False):
+                self.assertEqual(global_budget(), LEGACY)
+            with override_settings(VORNEQ_AI_CHAT_PRODUCTION_EXTENDED_INPUT="true"):
+                self.assertEqual(global_budget(), LEGACY)
+
     @override_settings(**PILOT)
     def test_staging_requires_ledger_and_recovery(self):
         self.assertEqual(global_budget().question_utf8_bytes, 1024)
