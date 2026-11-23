@@ -3,9 +3,10 @@ DOCUMENT_ID: VORNEQ_PLATFORM_PHILOSOPHY_V4_1
 VERSION: V4.1
 DATE: 2026-11-23
 STATUS: PROPOSED / OWNER REVIEW REQUIRED
+REPOSITORY_STATUS: DOCUMENTARY REVISION MERGED INTO MAIN; NOT CONTENT APPROVAL
 SCOPE: PRODUCT PHILOSOPHY / NON-EXECUTABLE DIRECTION
 IMPLEMENTATION_AUTHORIZATION: NONE
-MERGE_AUTHORIZATION: NONE
+DOCUMENTARY_MERGE_STATUS: COMPLETED FOR V4.1; NO IMPLEMENTATION AUTHORIZATION
 DEPLOY_AUTHORIZATION: NONE
 
 ## Mission and identity
@@ -55,7 +56,7 @@ DOCUMENTARY_ACCEPTANCE != EXECUTION_AUTHORIZATION
 No philosophy document grants access, starts a paid provider call, authorizes deployment, relaxes financial gates, changes ranking, migrates data, or changes the Brand Constitution. The constitutional positioning **VORNEQ — Trust Infrastructure** remains unchanged; this document is a product-direction extension, not a brand replacement.
 
 ## V3.1 → V4.0 alignment
-| V3.1 provision | V4.0 treatment | Change type |
+| V3.1 provision | V4.1 treatment | Change type |
 | --- | --- | --- |
 | Mission and interconnected application ecosystem | Retained; explicit knowledge, creation and human-AI collaboration use cases | Clarification |
 | PHIL-01–05: apps, contracts, continuity, identity, discovery | Retained unchanged in authority and isolation | Preservation |
