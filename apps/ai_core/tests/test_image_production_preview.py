@@ -56,9 +56,12 @@ class ProductionImagePreviewTests(TestCase):
             try:
                 for field in ("is_staff", "is_superuser", "is_active"):
                     setattr(self.admin1, field, False)
+                    self.admin1.save(update_fields=[field])
                     self.assertFalse(production_studio_preview_allowed(self.admin1))
                     self.client.force_login(self.admin1)
                     self.assertEqual(self.client.get(reverse("ai_core:image-studio")).status_code, 404)
                     setattr(self.admin1, field, True)
+                    self.admin1.save(update_fields=[field])
             finally:
                 self.admin1.is_staff, self.admin1.is_superuser, self.admin1.is_active = original
+                self.admin1.save(update_fields=["is_staff", "is_superuser", "is_active"])
