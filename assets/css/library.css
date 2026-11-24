@@ -38,7 +38,7 @@ body .site-footer {
 .library-section__eyebrow,
 .audio-detail__eyebrow {
   margin: 0 0 var(--space-2);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-size: var(--font-size-caption);
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -259,7 +259,7 @@ body .site-footer {
   padding-inline: var(--space-2);
   border-radius: var(--radius-pill);
   background: var(--color-accent-subtle);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-size: var(--font-size-caption);
   font-weight: 700;
 }
@@ -278,7 +278,7 @@ body .site-footer {
 
 .library-card__title a:hover,
 .library-audio__title a:hover {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .library-card__author {

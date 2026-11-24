@@ -1,6 +1,13 @@
 /* ==========================================================
    VORNEQ MULTI-THEME PALETTES
    Palette overrides only. Structural design tokens remain in tokens.css.
+
+   Page Shell V2 (WCAG 2.2 AA): Text-, Muted- und Akzentfarben erreichen auf
+   bg-page, bg-surface und bg-elevated mindestens 4.5:1; Text auf Akzent
+   ebenfalls. Geprüft durch config/tests/test_design_tokens_contrast.py.
+   Markenblau #1E6FFF bleibt Akzent im hellen Theme (Flächen, Rahmen, Fokus,
+   Schaltflächen mit dunklem Text 4.62:1). Als Textfarbe erreicht es nur
+   4.14:1; Text in Akzentfarbe nutzt daher --color-accent-text (#165eda).
    ========================================================== */
 
 :root,
@@ -14,12 +21,12 @@
   --color-text-disabled: #657990;
   --color-border: rgba(255, 255, 255, 0.12);
   --color-border-strong: rgba(255, 255, 255, 0.20);
-  --color-accent: #4f7cff;
+  --color-accent: #4a8cff;
   --color-accent-hover: #6d94ff;
   --color-accent-muted: #7896dc;
-  --color-accent-subtle: rgba(79, 124, 255, 0.16);
-  --color-accent-border: rgba(79, 124, 255, 0.40);
-  --color-text-on-accent: #ffffff;
+  --color-accent-subtle: rgba(74, 140, 255, 0.16);
+  --color-accent-border: rgba(74, 140, 255, 0.40);
+  --color-text-on-accent: #02060c;
   --color-focus: #6d94ff;
   --color-focus-ring: rgba(109, 148, 255, 0.30);
   --color-editorial: #d5b37a;
@@ -38,7 +45,7 @@
   --color-bg-elevated: #ffffff;
   --color-text-primary: #172033;
   --color-text-secondary: #667085;
-  --color-text-muted: #98a2b3;
+  --color-text-muted: #6b7280;
   --color-text-disabled: #b0b8c4;
   --color-border: #e4e7ec;
   --color-border-strong: #d0d5dd;
@@ -89,7 +96,7 @@
   --color-bg-elevated: #2f261c;
   --color-text-primary: #f2eadc;
   --color-text-secondary: #c2b397;
-  --color-text-muted: #95856a;
+  --color-text-muted: #9d8f76;
   --color-text-disabled: #746650;
   --color-border: #3b3025;
   --color-border-strong: #51412f;
@@ -113,7 +120,7 @@
   --color-bg-elevated: #1b362c;
   --color-text-primary: #e4f2ed;
   --color-text-secondary: #a1c7b9;
-  --color-text-muted: #73a08f;
+  --color-text-muted: #79a493;
   --color-text-disabled: #557b6d;
   --color-border: #234438;
   --color-border-strong: #315d4d;
@@ -137,11 +144,11 @@
   --color-bg-elevated: #2e1f48;
   --color-text-primary: #f1eafb;
   --color-text-secondary: #c1add9;
-  --color-text-muted: #9278b0;
+  --color-text-muted: #9d86b8;
   --color-text-disabled: #705a89;
   --color-border: #3b2a59;
   --color-border-strong: #523a78;
-  --color-accent: #9b72ff;
+  --color-accent: #9f78ff;
   --color-accent-hover: #b296ff;
   --color-accent-muted: #9e88d2;
   --color-accent-subtle: rgba(139, 92, 246, 0.16);
@@ -154,3 +161,33 @@
   --color-overlay: rgba(10, 5, 20, 0.76);
   --color-bg-hover: rgba(241, 234, 251, 0.07);
 }
+
+/* Page Shell V2 — Statusfarben für alle dunklen Paletten.
+   Bisher erbten navy/blue/gold/emerald/purple die Hell-Statusfarben aus
+   tokens.css (#15803d, #b91c1c …), die auf dunklem Grund unter 4.5:1 lagen.
+   Status wird zusätzlich immer per Text/Icon vermittelt, nie nur per Farbe. */
+:root:not([data-theme]),
+[data-theme="navy"],
+[data-theme="blue"],
+[data-theme="gold"],
+[data-theme="emerald"],
+[data-theme="purple"] {
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+  --color-app-available: #4ade80;
+  --color-app-limited: #fbbf24;
+  --color-app-beta: #93c5fd;
+  --color-app-development: #c4b5fd;
+  --color-app-planned: #cbd5e1;
+  --color-text-on-error: #1f0707;
+}
+
+/* Page Shell V2 — Akzent als Textfarbe, auch auf Akzent-Tönung ≥ 4.5:1 */
+:root:not([data-theme]),
+[data-theme="navy"] { --color-accent-text: #6ba1ff; }
+[data-theme="light"],
+[data-theme="vorneq"] { --color-accent-text: #165eda; }
+[data-theme="blue"] { --color-accent-text: #6fa8ff; }
+[data-theme="emerald"] { --color-accent-text: #24c68e; }
+[data-theme="purple"] { --color-accent-text: #ac8bff; }

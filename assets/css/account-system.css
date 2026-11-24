@@ -32,7 +32,7 @@
 
 .account-experience__eyebrow {
   margin: 0 0 var(--space-2);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-size: var(--font-size-caption);
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -229,11 +229,12 @@
 
 .account-system-button--danger {
   background: var(--color-error);
-  color: #fff;
+  color: var(--color-text-on-error);
 }
 
 .account-system-button--danger:hover {
-  background: #991b1b;
+  background: var(--color-error);
+  filter: brightness(0.9);
 }
 
 .account-system-button--small {
@@ -302,7 +303,7 @@
 }
 
 .account-email-badge--primary {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   background: var(--color-accent-subtle);
 }
 
@@ -330,7 +331,7 @@
 }
 
 .account-system-link {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   text-decoration: none;
 }
 

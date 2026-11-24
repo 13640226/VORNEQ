@@ -90,7 +90,7 @@
 .standalone-nav__link:hover { color: var(--color-text-primary); }
 
 .standalone-nav__link.is-active {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   border-bottom-color: var(--color-accent);
 }
 
@@ -193,7 +193,7 @@
 }
 
 .standalone-nav__language-option.is-active {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-weight: 600;
 }
 
@@ -212,7 +212,7 @@
   overflow: hidden;
   border-radius: 50%;
   background: var(--color-accent-subtle);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-size: var(--font-size-small);
   font-weight: 600;
   text-transform: uppercase;

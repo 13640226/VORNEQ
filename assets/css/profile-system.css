@@ -83,7 +83,7 @@
   justify-content: center;
   inline-size: 44px;
   block-size: 44px;
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   background: var(--color-bg-surface);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-body);

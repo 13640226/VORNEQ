@@ -52,7 +52,7 @@
 .discovery-section-heading__kicker,
 .discovery-empty__eyebrow {
   margin: 0 0 var(--space-3);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-size: var(--font-size-caption);
   font-weight: 720;
   letter-spacing: .22em;
@@ -70,7 +70,7 @@
 }
 
 .discovery-hero__title span {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   background: linear-gradient(90deg, var(--color-accent), #7c66ff 72%, #9668ff);
   -webkit-background-clip: text;
   background-clip: text;
@@ -216,7 +216,7 @@ html[dir="rtl"] .discovery-search__wrapper { padding: 7px var(--space-4) 7px 7px
   place-items: center;
   border: 1px solid var(--color-accent-border);
   border-radius: 12px;
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   background: var(--color-accent-subtle);
   font-size: 1.45rem;
 }
@@ -247,7 +247,7 @@ html[dir="rtl"] .discovery-search__wrapper { padding: 7px var(--space-4) 7px 7px
   padding: var(--space-4) clamp(12px, 2vw, 28px);
 }
 .discovery-principles > div + div { border-inline-start: 1px solid var(--color-border); }
-.discovery-principles > div > span { color: var(--color-accent); font-size: 1.8rem; }
+.discovery-principles > div > span { color: var(--color-accent-text); font-size: 1.8rem; }
 .discovery-principles p { margin: 0; }
 .discovery-principles strong, .discovery-principles small { display: block; }
 .discovery-principles strong { font-size: .94rem; }
@@ -276,7 +276,7 @@ html[dir="rtl"] .discovery-search__wrapper { padding: 7px var(--space-4) 7px 7px
 }
 
 .discovery-section-heading__action {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-size: var(--font-size-small);
   font-weight: 650;
   text-decoration: none;

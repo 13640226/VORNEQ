@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory, SimpleTestCase
 from django.urls import reverse
+from django.utils import translation
 
 from apps.platform_shell.registry import (
     AppManifest,
@@ -61,7 +62,10 @@ class InstalledPlatformAppTests(SimpleTestCase):
         self.assertLess(slugs.index("discover"), slugs.index("marketplace"))
 
     def test_marketplace_route_is_mounted_from_manifest(self):
-        self.assertEqual(reverse("marketplace:index"), "/fa/marketplace/")
+        # Sprache explizit setzen: Der Test hing sonst von der zuletzt in diesem
+        # Testprozess aktivierten Sprache ab (bei --parallel nicht deterministisch).
+        with translation.override("fa"):
+            self.assertEqual(reverse("marketplace:index"), "/fa/marketplace/")
 
     def test_navigation_uses_manifest_urls(self):
         request = self.factory.get("/fa/")

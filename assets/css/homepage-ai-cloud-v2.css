@@ -15,7 +15,8 @@
   padding: clamp(16px, 2.4vw, 32px) clamp(12px, 2.4vw, 32px) clamp(28px, 4vw, 48px);
   color: var(--color-text-primary);
 }
-[data-theme="vorneq"] .vq-home {        /* light palette: darker emerald, 5.5:1 on white */
+[data-theme="vorneq"] .vq-home,
+[data-theme="light"] .vq-home {        /* light palettes: darker emerald, 5.5:1 on white */
   --vq-led: #047857;
   --vq-led-soft: rgba(4, 120, 87, .12);
 }
@@ -317,7 +318,7 @@ html[dir="rtl"] .vq-composer__arrow { display: inline-block; transform: scaleX(-
 .vq-v5-section-head { max-width: 70ch; margin-bottom: 22px; }
 .vq-v5-section-head h2, .vq-v5-philosophy h2 { margin: 0 0 12px; font-size: clamp(1.5rem, 3vw, 2.3rem); line-height: 1.2; color: var(--color-text-primary); }
 .vq-v5-section-head p, .vq-v5-philosophy p { color: var(--color-text-secondary); line-height: 1.6; }
-.vq-v5-eyebrow { margin: 0 0 8px; font-weight: 750; letter-spacing: .06em; color: var(--color-accent) !important; }
+.vq-v5-eyebrow { margin: 0 0 8px; font-weight: 750; letter-spacing: .06em; color: var(--color-accent-text) !important; }
 .vq-v5-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
 .vq-v5-card { min-width: 0; padding: 24px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-bg-surface); color: var(--color-text-primary); text-decoration: none; overflow-wrap: anywhere; }
 .vq-v5-card h3 { margin: 12px 0; font-size: 1.2rem; }

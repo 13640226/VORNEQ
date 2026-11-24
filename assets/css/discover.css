@@ -291,3 +291,45 @@ html[dir="rtl"] .discover-object__meta { text-transform: none; }
 .discover-page .discover-pagination a:focus-visible {
   color: #fff;
 }
+
+/* Page Shell V2 — Theme-Bindung.
+   Hero, Zähler, Leer-/Fehlerzustände und Paginierung lagen auf fest codierten
+   Hellfarben (#0B1F3D, #475569, #fff) und waren im dunklen bzw. hellen Theme
+   kaum lesbar. Lokale Variablen folgen jetzt den gemeinsamen Theme-Tokens.
+   Das blaue Suchpanel und die Blue-Glass-Karten behalten ihre eigene,
+   kontrastgeprüfte Dunkelfläche in allen Themes. */
+.discover-page {
+  --discover-navy: var(--color-text-primary);
+  --discover-blue: var(--color-accent);
+  --discover-mid: var(--color-accent-muted);
+  --discover-light: var(--color-focus);
+  --discover-border: var(--color-border);
+  color: var(--color-text-primary);
+}
+.discover-page .discover-hero > p,
+.discover-page .discover-count,
+.discover-page .discover-state p {
+  color: var(--color-text-secondary);
+}
+.discover-page .discover-state {
+  background: var(--color-bg-surface);
+  border-color: var(--color-border);
+}
+.discover-page .discover-pagination a,
+.discover-page .discover-pagination a:visited,
+.discover-page .discover-pagination a:hover,
+.discover-page .discover-pagination a:focus-visible {
+  color: var(--color-accent-text);
+}
+.discover-page .discover-eyebrow,
+.discover-page .discover-state a {
+  color: var(--color-accent-text);
+}
+/* Weiß auf Akzent erreichte nur 3.2–4.4:1; Text auf Akzent folgt dem Token */
+.discover-page .discover-search button,
+.discover-page .discover-filters a[aria-current="page"],
+.discover-page .discover-filters a[aria-current="page"]:hover,
+.discover-page .discover-action--record,
+.discover-page .discover-action--record:hover {
+  color: var(--color-text-on-accent);
+}

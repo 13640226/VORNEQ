@@ -1,13 +1,21 @@
 /*
- * Gemeinsamer Seitenrahmen (Page-Shell-Vertrag)
+ * VORNEQ Page Shell — gemeinsamer Seitenrahmen (V2)
  *
- * Wird in base.html NACH allen modulspezifischen Stylesheets geladen.
- * Ziel: Beim Wechsel zwischen Seiten bleiben linke/rechte Inhaltskante und
- * oberer Abstand identisch, damit kein sichtbarer "Sprung" entsteht.
+ * Wird in base.html NACH allen modulspezifischen Stylesheets geladen und
+ * vereinheitlicht ausschließlich Rahmen-Geometrie, Kopfbereich und
+ * Übergänge. Farben, Typografie und innere Layouts bleiben bei den Modulen.
  *
- * Referenzrahmen: --container-width (wie Notizen, Marktplatz, Profil, Apps).
- * Nur Rahmen-Geometrie wird vereinheitlicht; Farben, Typografie und
- * innere Layouts der Module bleiben unverändert.
+ * Vertrag (gemessen per Playwright, DE/FA/EN, 320–1920px):
+ *  1. Logo, Zurück-Schaltfläche, Seitenkopf und Footer liegen auf derselben
+ *     Inhaltskante (--page-shell-width, Rand = --page-gutter).
+ *  2. Der Seitenkopf (erstes Element im Rahmen) beginnt auf allen
+ *     Standardseiten auf derselben Höhe (--page-shell-pad-top).
+ *  3. Schmale Formularseiten behalten ihre Lesebreite, beginnen aber an der
+ *     gemeinsamen Kante (kein Zentrieren, das die Kante verschiebt).
+ *  4. Logische Eigenschaften (inline/block) — RTL spiegelt automatisch.
+ *
+ * Dokumentierte Ausnahmen mit eigenem Aufbau: Startseite (Hero),
+ * Anmeldung/Registrierung (zentrierte Karte), Marktplatz-Hero-Karte.
  */
 
 :root {
@@ -16,7 +24,7 @@
   --page-shell-pad-bottom: var(--space-8);
 }
 
-/* Module, deren äußerer Rahmen bisher eigene Breiten/Innenabstände hatte */
+/* 1 — Rahmenbreite und Kante: Module mit bisher eigener Breite */
 :is(.documents, .discover-page, .orientation-page) {
   box-sizing: border-box;
   width: var(--page-shell-width);
@@ -26,31 +34,125 @@
   padding-block: var(--page-shell-pad-top) var(--page-shell-pad-bottom);
 }
 
-/* Schmale Varianten: Rahmenkante bleibt, nur der Inhalt wird begrenzt */
+/* 2 — Einheitlicher oberer Abstand für alle Standardseiten */
+:is(
+  .notes,
+  .documents,
+  .discover-page,
+  .orientation-page,
+  .profile-shell,
+  .profile-edit-shell,
+  .account-experience,
+  .personal-home,
+  .app-launcher,
+  .workspace
+) {
+  padding-block-start: var(--page-shell-pad-top);
+}
+
+/* Marktplatz: mobil vorher 16px statt des gemeinsamen Kopfabstands */
+.mkt-v2.marketplace-page {
+  padding-block-start: var(--page-shell-pad-top);
+}
+
+:is(.personal-home, .profile-shell, .profile-edit-shell, .account-experience) {
+  padding-block-end: var(--page-shell-pad-bottom);
+}
+
+/* 3 — Schmale Seiten: Kante bündig, nur der Inhalt begrenzt */
+:is(.profile-edit-shell, .account-experience) {
+  box-sizing: border-box;
+  width: var(--page-shell-width);
+  max-width: none;
+  margin-inline: auto;
+  padding-inline: 0;
+}
+
+:is(.profile-edit-shell, .account-experience) > * {
+  max-width: var(--form-width);
+}
+
+.account-experience--compact > * {
+  max-width: var(--form-width-compact);
+}
+
 .documents--narrow {
   max-width: none;
 }
 
 .documents--narrow > * {
-  max-width: 760px;
+  max-width: var(--form-width);
 }
 
-/* Lesespalte der Orientierungsseite: Kante bündig, Zeilenlänge begrenzt */
 .orientation-page > * {
   max-width: 960px;
 }
 
-/* Suche: Vollflächige Szene bleibt, innerer Rahmen folgt dem Vertrag */
+/* Suche: vollflächige Szene bleibt, innerer Rahmen und Kopfabstand folgen
+   dem Vertrag (vorher bis zu 7rem Abstand über dem Titel). */
 .suchen-page__shell {
   width: var(--page-shell-width);
 }
 
-/*
- * Kopfbereich an dieselbe Kante ausrichten:
- * Logo, Zurück-Schaltfläche, Seitentitel und Footer beginnen bündig
- * an der Rahmenkante (vorher drei verschiedene Einrückungen).
- */
+.suchen-page__hero {
+  padding-block-start: var(--page-shell-pad-top);
+}
+
+/* 4 — Kopfbereich: Logo, Zurück und Titel auf derselben Kante */
 .standalone-nav__inner,
 .global-back__inner {
   padding-inline: 0;
+}
+
+/* Mobiler Kopf kompakter: Zurück-Zeile ohne zusätzlichen Leerraum */
+@media (max-width: 767px) {
+  .global-back__inner {
+    padding-block-start: var(--space-2);
+  }
+}
+
+/* 5 — Übergänge: Zurück-Zeile ist Teil des stabilen Rahmens und wird wie
+   Navigation/Footer nicht animiert (kein Aufblitzen beim Seitenwechsel). */
+.global-back {
+  view-transition-name: vorneq-back;
+}
+
+::view-transition-old(vorneq-back),
+::view-transition-new(vorneq-back) {
+  animation: none;
+}
+
+/* Marke: Logo wird in RTL nie gespiegelt */
+[dir="rtl"] :is(.standalone-nav__brand img, .standalone-nav__brand svg) {
+  transform: none;
+}
+
+/* 6 — Tablet (640–1023px): Navigation bleibt einzeilig und gleich hoch in
+   allen Sprachen. Vorher brach die deutsche Navigation bei 768px auf drei
+   Zeilen um (117px statt 64px) — beim Sprachwechsel sprang die Seite. */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .standalone-nav__inner {
+    flex-wrap: nowrap;
+  }
+
+  .standalone-nav__menu {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+
+  .standalone-nav__menu::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hinweis auf weitere, horizontal scrollbare Einträge (wie mobil) */
+  .standalone-nav__menu {
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  }
+
+  [dir="rtl"] .standalone-nav__menu {
+    mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent);
+  }
 }

@@ -11,7 +11,7 @@
 
 .workspace__eyebrow {
   margin: 0 0 var(--space-2);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-size: var(--font-size-caption);
   font-weight: 600;
   letter-spacing: .08em;
@@ -40,7 +40,7 @@
 }
 
 .workspace__back:hover {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .workspace__back:focus-visible,
@@ -82,7 +82,7 @@
   justify-content: center;
   border-radius: var(--radius-sm);
   background: var(--color-accent-subtle);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-weight: 700;
 }
 

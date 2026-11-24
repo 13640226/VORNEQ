@@ -73,7 +73,7 @@ button:disabled {
 }
 
 a {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 
   text-decoration-thickness: 0.08em;
   text-underline-offset: 0.18em;

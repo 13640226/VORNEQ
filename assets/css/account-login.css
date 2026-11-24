@@ -43,7 +43,7 @@
 .account-login__headline { max-width: 12ch; margin: 0 0 var(--space-4); color: var(--color-text-primary); font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.05; letter-spacing: -0.03em; }
 .account-login__copy { max-width: 48ch; margin: 0; color: var(--color-text-secondary); line-height: 1.75; }
 .account-login__principles { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-6); }
-.account-login__principles span { display: inline-flex; align-items: center; min-height: 30px; padding-inline: var(--space-3); color: var(--color-accent); background: var(--color-accent-subtle); border: 1px solid var(--color-border); border-radius: var(--radius-pill); font-size: var(--font-size-caption); font-weight: 700; }
+.account-login__principles span { display: inline-flex; align-items: center; min-height: 30px; padding-inline: var(--space-3); color: var(--color-accent-text); background: var(--color-accent-subtle); border: 1px solid var(--color-border); border-radius: var(--radius-pill); font-size: var(--font-size-caption); font-weight: 700; }
 .account-login__assurance { display: grid; gap: var(--space-1); margin-top: auto; padding-top: var(--space-6); color: var(--color-text-muted); font-size: var(--font-size-small); }
 .account-login__assurance strong { color: var(--color-text-primary); }
 .account-card--login { width: 100%; align-self: center; border: 0; border-radius: 0; box-shadow: none; }

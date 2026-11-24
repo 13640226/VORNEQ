@@ -14,7 +14,7 @@
 
 .notes__eyebrow {
   margin: 0 0 var(--space-2);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-size: var(--font-size-caption);
   font-weight: 600;
   letter-spacing: .08em;
@@ -145,6 +145,7 @@
 
 .notes-button--danger {
   background: var(--color-error);
+  color: var(--color-text-on-error);
 }
 
 .notes-delete-form {
