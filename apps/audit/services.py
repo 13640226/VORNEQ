@@ -4,6 +4,24 @@ from .models import AuditEvent
 
 
 EVENT_SCHEMAS = {
+    "identity.provisioning.succeeded": {
+        "required_keys": {"created"},
+        "allowed_keys": {"created": bool},
+        "reason_codes": {"VERIFIED_EMAIL"},
+        "outcomes": {AuditEvent.Outcome.SUCCEEDED},
+    },
+    "identity.provisioning.denied": {
+        "required_keys": {"created"},
+        "allowed_keys": {"created": bool},
+        "reason_codes": {"INELIGIBLE_ACCOUNT"},
+        "outcomes": {AuditEvent.Outcome.DENIED},
+    },
+    "identity.provisioning.failed": {
+        "required_keys": {"created"},
+        "allowed_keys": {"created": bool},
+        "reason_codes": {"PROVISIONING_ERROR"},
+        "outcomes": {AuditEvent.Outcome.FAILED},
+    },
     "verification.request.created": {
         "required_keys": {"new_state", "request_id"},
         "allowed_keys": {"new_state": str, "request_id": int},

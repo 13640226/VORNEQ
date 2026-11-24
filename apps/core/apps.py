@@ -8,7 +8,7 @@ class CoreConfig(AppConfig):
     verbose_name = "Core Reputation"
 
     def ready(self):
-        from . import signals  # noqa: F401
+        from . import signals, identity_signals  # noqa: F401
         from .capabilities import ReadArtifactCapability
         from apps.platform_shell.capabilities import executable_registry
 
