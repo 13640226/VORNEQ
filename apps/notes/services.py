@@ -8,15 +8,23 @@ from apps.core.models import Artifact, ArtifactIdentityRole, UserIdentity
 from .models import Note
 
 
+class IdentityBindingRequired(PermissionDenied):
+    pass
+
+
+class IdentityInactive(PermissionDenied):
+    pass
+
+
 class NoteService:
     @staticmethod
     def identity_for_user(user):
         try:
             binding = UserIdentity.objects.select_related("identity").get(user=user)
         except UserIdentity.DoesNotExist as exc:
-            raise PermissionDenied("A verified user identity binding is required.") from exc
+            raise IdentityBindingRequired("A verified user identity binding is required.") from exc
         if not binding.identity.is_active:
-            raise PermissionDenied("The bound identity is inactive.")
+            raise IdentityInactive("The bound identity is inactive.")
         return binding.identity
 
     @staticmethod

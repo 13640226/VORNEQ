@@ -2573,3 +2573,15 @@ msgstr "Plattformphilosophie"
 
 msgid "Our direction emphasizes user control, scoped authorization and inspectable evidence. Philosophy V4.1 remains a proposal, not a claim of completed features."
 msgstr "Unsere Ausrichtung betont Nutzerkontrolle, begrenzte Berechtigungen und prüfbare Belege. Philosophie V4.1 bleibt ein Vorschlag und keine Behauptung fertiggestellter Funktionen."
+
+msgid "Notes access restricted"
+msgstr "Zugriff auf Notizen eingeschraenkt"
+
+msgid "Your account requires an identity binding. Contact the platform administrator."
+msgstr "Ihr Konto benoetigt eine Identitaetsbindung. Wenden Sie sich an die Plattformadministration."
+
+msgid "Your bound identity is inactive. Contact the platform administrator."
+msgstr "Ihre gebundene Identitaet ist inaktiv. Wenden Sie sich an die Plattformadministration."
+
+msgid "You do not have access to this note."
+msgstr "Sie haben keinen Zugriff auf diese Notiz."
