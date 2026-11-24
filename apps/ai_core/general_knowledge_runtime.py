@@ -1,6 +1,7 @@
 """Isolated, uncited public-knowledge response contract."""
 from apps.ai_core.providers.exceptions import ProviderInvalidResponse
 from apps.ai_core.sanitization import screen_and_redact
+from apps.ai_core.uncited_answer_guard import find_violation
 
 
 def validate_knowledge(output, *, language, max_answer_chars):
@@ -10,8 +11,8 @@ def validate_knowledge(output, *, language, max_answer_chars):
     if (type(answer) is not str or not answer.strip() or len(answer) > max_answer_chars
             or output["language"] != language):
         raise ProviderInvalidResponse("invalid uncited answer")
-    if "http://" in answer.lower() or "https://" in answer.lower():
-        raise ProviderInvalidResponse("uncited answer contains a URL")
+    if find_violation(answer) is not None:
+        raise ProviderInvalidResponse("uncited answer contains links or source markers")
     return {
         "mode": "model_knowledge", "answer": answer, "language": language,
         "citations": [], "verified": False, "model_status": "generated",
