@@ -1762,8 +1762,6 @@ msgstr "Die aufgezeichneten öffentlichen Informationen zu einem Artefakt, einsc
 msgid "Public source reference"
 msgstr "Öffentliche Quellenangabe"
 
-
-
 # Modern homepage evidence UI
 msgid "View Evidence"
 msgstr "Evidenz ansehen"
@@ -2438,11 +2436,8 @@ msgstr "Alle Produkte"
 msgid "Apply"
 msgstr "Anwenden"
 
-
 msgid "Breadcrumb"
 msgstr "Brotkrumen-Navigation"
-
-
 
 msgid "Create your product with a description and file"
 msgstr "Produkt mit Beschreibung und Datei anlegen"
@@ -2459,19 +2454,14 @@ msgstr "Wird ein freigegebenes Produkt bearbeitet, geht es erneut in die Prüfun
 msgid "Every product is reviewed by a moderator before it is published."
 msgstr "Jedes Produkt wird vor der Veröffentlichung von einer Moderation geprüft."
 
-
 msgid "Free first"
 msgstr "Kostenlose zuerst"
-
-
 
 msgid "Latest moderation decision"
 msgstr "Letzte Moderationsentscheidung"
 
-
 msgid "Newest"
 msgstr "Neueste"
-
 
 msgid "No products have been published yet."
 msgstr "Es wurden noch keine Produkte veröffentlicht."
@@ -2479,23 +2469,17 @@ msgstr "Es wurden noch keine Produkte veröffentlicht."
 msgid "No products match your search"
 msgstr "Keine Produkte passen zu Ihrer Suche"
 
-
 msgid "Not published yet"
 msgstr "Noch nicht veröffentlicht"
 
-
 msgid "Paid product"
 msgstr "Kostenpflichtiges Produkt"
-
-
 
 msgid "Price and availability"
 msgstr "Preis und Verfügbarkeit"
 
 msgid "Product status overview"
 msgstr "Übersicht der Produktstatus"
-
-
 
 msgid "Purchasing is not available yet."
 msgstr "Ein Kauf ist noch nicht möglich."
@@ -2520,8 +2504,6 @@ msgstr "Der Marktplatz ist offen für die ersten Anbieterinnen und Anbieter. Ein
 
 msgid "Title A–Z"
 msgstr "Titel A–Z"
-
-
 
 msgid "Waiting for a moderator."
 msgstr "Wartet auf die Moderation."
@@ -2575,13 +2557,62 @@ msgid "Our direction emphasizes user control, scoped authorization and inspectab
 msgstr "Unsere Ausrichtung betont Nutzerkontrolle, begrenzte Berechtigungen und prüfbare Belege. Philosophie V4.1 bleibt ein Vorschlag und keine Behauptung fertiggestellter Funktionen."
 
 msgid "Notes access restricted"
-msgstr "Zugriff auf Notizen eingeschraenkt"
+msgstr "Zugriff auf Notizen eingeschränkt"
 
 msgid "Your account requires an identity binding. Contact the platform administrator."
-msgstr "Ihr Konto benoetigt eine Identitaetsbindung. Wenden Sie sich an die Plattformadministration."
+msgstr "Ihr Konto benötigt eine Identitätsbindung. Wenden Sie sich an den Plattformadministrator."
 
 msgid "Your bound identity is inactive. Contact the platform administrator."
-msgstr "Ihre gebundene Identitaet ist inaktiv. Wenden Sie sich an die Plattformadministration."
+msgstr "Ihre gebundene Identität ist inaktiv. Wenden Sie sich an den Plattformadministrator."
 
 msgid "You do not have access to this note."
 msgstr "Sie haben keinen Zugriff auf diese Notiz."
+
+#: apps/notes/templates/notes/list.html
+msgid "Notes - VORNEQ"
+msgstr "Notizen - VORNEQ"
+
+#: apps/notes/templates/notes/list.html
+msgid "App"
+msgstr "App"
+
+#: apps/notes/templates/notes/list.html
+msgid "Private notes owned by your bound VORNEQ identity."
+msgstr "Private Notizen Ihrer verknüpften VORNEQ-Identität."
+
+#: apps/notes/templates/notes/list.html
+msgid "New Note"
+msgstr "Neue Notiz"
+
+#: apps/notes/templates/notes/list.html
+msgid "No notes yet."
+msgstr "Noch keine Notizen."
+
+#: apps/notes/templates/notes/detail.html
+msgid "Back to Notes"
+msgstr "Zurück zu den Notizen"
+
+#: apps/notes/templates/notes/detail.html
+msgid "Note"
+msgstr "Notiz"
+
+#: apps/notes/templates/notes/detail.html
+#, python-format
+msgid "Updated %(date)s"
+msgstr "Aktualisiert am %(date)s"
+
+#: apps/notes/templates/notes/detail.html
+msgid "Delete Note"
+msgstr "Notiz löschen"
+
+#: apps/notes/templates/notes/form.html
+msgid "Edit Note"
+msgstr "Notiz bearbeiten"
+
+#: apps/notes/templates/notes/form.html
+msgid "Content"
+msgstr "Inhalt"
+
+#: apps/notes/templates/notes/form.html
+msgid "Save Note"
+msgstr "Notiz speichern"
