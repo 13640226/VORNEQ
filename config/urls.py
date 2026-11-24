@@ -14,6 +14,7 @@ from django.views.generic import RedirectView, TemplateView
 from apps.platform_shell.diagnostics import diagnostics_urlpatterns
 from apps.platform_shell.registry import registry as platform_registry
 from config.health import health_check
+from config.language_views import set_language
 from config.inspect_views import context_view, inspect_entry
 from config.metrics import metrics_view
 from config.public_graph_views import public_graph_presentation_view, public_graph_view
@@ -32,7 +33,7 @@ urlpatterns = [
     path("sitemap.xml", sitemap_xml, name="sitemap_xml"),
     path("metrics", metrics_view, name="prometheus-django-metrics"),
     path("", include("django_prometheus.urls")),
-    path("i18n/", include("django.conf.urls.i18n")),
+    path("i18n/setlang/", set_language, name="set_language"),
     path("api/", include("apps.core.urls")),
     path("api/verification/", include("apps.verification.urls")),
     path("api/media/", include("apps.media.urls")),
