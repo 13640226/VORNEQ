@@ -1,6 +1,13 @@
 """Isolated, uncited public-knowledge response contract."""
+import re
+
 from apps.ai_core.providers.exceptions import ProviderInvalidResponse
 from apps.ai_core.sanitization import screen_and_redact
+
+
+# Uncited mode must not emit links or DOI references. Scheme URLs (any case,
+# any scheme), bare www. hosts and DOI references are rejected, never rewritten.
+_URL_LIKE = re.compile(r"(?i)(?:\b[a-z][a-z0-9+.\-]*://|\bwww\.|\bdoi:\s*10\.|\bdoi\.org/)")
 
 
 def validate_knowledge(output, *, language, max_answer_chars):
@@ -10,7 +17,7 @@ def validate_knowledge(output, *, language, max_answer_chars):
     if (type(answer) is not str or not answer.strip() or len(answer) > max_answer_chars
             or output["language"] != language):
         raise ProviderInvalidResponse("invalid uncited answer")
-    if "http://" in answer.lower() or "https://" in answer.lower():
+    if _URL_LIKE.search(answer):
         raise ProviderInvalidResponse("uncited answer contains a URL")
     return {
         "mode": "model_knowledge", "answer": answer, "language": language,
