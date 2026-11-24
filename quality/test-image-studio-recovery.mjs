@@ -25,6 +25,8 @@ function page({owner = "3", storage = new Map(), responses = []} = {}) {
   const elements = Object.fromEntries(
     ["form", "prompt", "size", "consent", "submit", "check", "status", "figure",
       "preview", "open", "ack", "ack-label", "new"].map(n => [n, element(n)]));
+  elements.brand = element("brand");
+  elements.brand.dataset.state = "idle";
   elements.form.querySelector = () => ({value: "synthetic-csrf"});
   elements.prompt.value = "synthetic landscape";
   elements.size.value = "1024x1024";
@@ -36,6 +38,7 @@ function page({owner = "3", storage = new Map(), responses = []} = {}) {
   const root = {
     dataset: {createUrl: base, userId: owner},
     querySelector(selector) {
+      if (selector === "[data-vq-ai-brand]") return elements.brand;
       const match = /^\[data-vq-image-(.*)\]$/.exec(selector);
       assert.ok(match, selector);
       return elements[match[1]];
@@ -83,7 +86,9 @@ test("server recovery and completion perform GETs only", async () => {
   const p = page({responses: [reply(200, {results: [job("queued")]}), reply(200, job("running")),
     reply(200, {...job("completed"), image_url: "https://private.example.test/signed"})]});
   await flush(); assert.equal(p.elements.status.textContent, "running");
+  assert.equal(p.elements.brand.dataset.state, "thinking");
   await p.tick(); assert.equal(p.elements.figure.hidden, false);
+  assert.equal(p.elements.brand.dataset.state, "idle");
   assert.equal(p.elements.preview.src, "https://private.example.test/signed");
   assert.equal(p.timers.size, 0); getOnly(p);
 });
@@ -97,6 +102,7 @@ test("owner-scoped pending UUID survives reload and uncertain acknowledgment", a
   assert.ok(storage.get("vq.image.recovery.3").includes(uuid));
   assert.ok(!storage.get("vq.image.recovery.3").includes("synthetic landscape"));
   await p.tick(); assert.equal(p.elements.status.textContent, "uncertain");
+  assert.equal(p.elements.brand.dataset.state, "error");
   p.elements.ack.checked = true; p.fire("ack", "change");
   assert.equal(JSON.parse(storage.get("vq.image.recovery.3")).acknowledged, true);
   assert.equal(p.elements.submit.disabled, true);
