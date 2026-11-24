@@ -57,3 +57,7 @@ fi
 python manage.py makemigrations --check --dry-run
 python manage.py collectstatic --noinput
 VORNEQ_QUARANTINE_CI_DB_TEST_MODE=DISPOSABLE_DJANGO_TEST_ONLY python manage.py test
+
+if [ -n "${DATABASE_URL:-}" ]; then
+  python manage.py test apps.core.tests.test_identity_lifecycle_cil03.ConcurrentVerificationTests apps.core.tests.test_identity_lifecycle.IdentityConcurrencyTests --verbosity 2
+fi

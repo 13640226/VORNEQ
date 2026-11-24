@@ -143,3 +143,43 @@ class ConcurrentVerificationTests(TransactionTestCase):
                 future.result(timeout=30)
         self.assertEqual(UserIdentity.objects.filter(user=user).count(), 1)
         self.assertEqual(AuditEvent.objects.filter(event_name="identity.provisioning.succeeded").count(), 1)
+
+
+class SocialSignupLifecycleTests(TestCase):
+    def setUp(self):
+        from allauth.socialaccount.models import SocialAccount, SocialLogin
+        self.user = get_user_model().objects.create_user(username="socialcil", email="social@example.com")
+        self.account = SocialAccount.objects.create(user=self.user, provider="test-provider", uid="socialcil")
+        self.sociallogin = SocialLogin(user=self.user, account=self.account)
+        self.address = EmailAddress.objects.create(user=self.user, email=self.user.email, primary=True)
+
+    def signup(self, sociallogin):
+        from allauth.account.signals import user_signed_up
+        user_signed_up.send(sender=type(self.user), request=None, user=self.user, sociallogin=sociallogin)
+
+    def test_verified_social_signup(self):
+        self.address.verified = True
+        self.address.save()
+        self.signup(self.sociallogin)
+        self.signup(self.sociallogin)
+        self.assertEqual(UserIdentity.objects.filter(user=self.user).count(), 1)
+        self.assertEqual(AuditEvent.objects.get(event_name="identity.provisioning.succeeded").actor["identifier"], "allauth.social_signup")
+
+    def test_unverified_social_signup(self):
+        self.signup(self.sociallogin)
+        self.assertFalse(UserIdentity.objects.filter(user=self.user).exists())
+
+    def test_regular_signup_does_not_provision(self):
+        self.address.verified = True
+        self.address.save()
+        self.signup(None)
+        self.assertFalse(UserIdentity.objects.filter(user=self.user).exists())
+
+    def test_foreign_social_account_rejected(self):
+        other = get_user_model().objects.create_user(username="other-social")
+        self.account.user = other
+        self.account.save()
+        self.address.verified = True
+        self.address.save()
+        self.signup(self.sociallogin)
+        self.assertFalse(UserIdentity.objects.filter(user=self.user).exists())
