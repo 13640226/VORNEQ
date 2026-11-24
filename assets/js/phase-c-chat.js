@@ -574,14 +574,18 @@
       if (!saved) return;
       busy = true;
       form.setAttribute("aria-busy", "true");
+      const brand = root.querySelector("[data-vq-ai-brand]");
+      if (brand) brand.dataset.state = "thinking";
       update();
       status.textContent = labels.recoveryChecking || "Checking previous request…";
       try {
         const result = await pollRecovery(saved);
+        if (brand) brand.dataset.state = result.completed && result.answerBubble ? "idle" : "error";
         focusAnswer(result.answerBubble);
       } finally {
         status.textContent = "";
         form.removeAttribute("aria-busy");
+        if (brand && brand.dataset.state === "thinking") brand.dataset.state = "error";
         busy = false;
         update();
       }
@@ -861,6 +865,8 @@
       busy = true;
       update();
       form.setAttribute("aria-busy", "true");
+      const brand = root.querySelector("[data-vq-ai-brand]");
+      if (brand) brand.dataset.state = "thinking";
       status.textContent = labels.loading || "Loading";
       appendMessage(question, "user");
       let answerBubble = null;
@@ -933,6 +939,7 @@
         status.textContent = "";
         if (completed) input.value = "";
         form.removeAttribute("aria-busy");
+        if (brand) brand.dataset.state = completed && answerBubble && !recoveryBlocked ? "idle" : "error";
         busy = false;
         update();
         input.focus({ preventScroll: true });

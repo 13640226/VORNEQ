@@ -1,0 +1,7 @@
+.vq-ai-brand { display:inline-flex; align-items:center; justify-content:center; inline-size:40px; block-size:40px; border:2px solid var(--color-border-strong); border-radius:50%; vertical-align:middle; margin-inline-end:8px; }
+.vq-ai-brand img { inline-size:32px; block-size:32px; }
+.vq-ai-brand[data-state="thinking"] { border-color:var(--color-accent); border-style:dashed; animation:vq-ai-pulse 1.5s ease-in-out infinite; }
+.vq-ai-brand[data-state="speaking"] { border-color:var(--color-accent); border-style:double; }
+.vq-ai-brand[data-state="error"] { border-color:var(--color-error, #b91c1c); border-style:dotted; }
+@keyframes vq-ai-pulse { 50% { opacity:.65; } }
+@media (prefers-reduced-motion:reduce) { .vq-ai-brand { animation:none !important; } }
