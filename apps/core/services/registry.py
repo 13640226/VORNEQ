@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -93,6 +94,7 @@ def register_user_identity(user, *, metadata=None):
     if user is None or user.pk is None:
         raise ValidationError("Identity registration requires a saved user.")
 
+    user = get_user_model().objects.select_for_update().get(pk=user.pk)
     existing = UserIdentity.objects.select_related("identity").filter(user=user).first()
     if existing:
         return existing.identity, False
