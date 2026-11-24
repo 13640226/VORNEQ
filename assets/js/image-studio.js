@@ -54,6 +54,8 @@
   let recovering = true;
 
   function message(name, seconds) {
+    const brand = root.querySelector("[data-vq-ai-brand]");
+    if (brand) brand.dataset.state = ["sending", "queued", "running"].includes(name) ? "thinking" : ["wait", "completed"].includes(name) ? "idle" : "error";
     const text = status.dataset[name] || status.dataset.error;
     status.textContent = seconds === undefined ? text : text.replace("{seconds}", String(seconds));
   }
@@ -135,6 +137,8 @@
     if (polls >= maxPolls) {
       polling = false;
       status.textContent += " " + status.dataset.pollStopped;
+      const brand = root.querySelector("[data-vq-ai-brand]");
+      if (brand) brand.dataset.state = "error";
       return;
     }
     const token = generation;

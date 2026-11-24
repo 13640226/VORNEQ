@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="description" content="{{ labels.intro }}">
 {% endblock %}
-{% block extra_head %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/ai-brand.css' %}">
 <link rel="stylesheet" href="{% static 'css/image-studio.css' %}">
 {% endblock %}
 {% block content %}
@@ -15,6 +15,7 @@
   data-user-id="{{ request.user.pk }}"
   data-paid="{% if image_paid %}true{% else %}false{% endif %}">
   <header class="vq-image__header">
+    {% include "partials/_ai_brand.html" %}
     <p class="vq-image__kicker"><span class="vq-image__led" aria-hidden="true"></span>VORNEQ · AI · STAGING</p>
     <h1>{{ labels.title }}</h1>
     <p>{{ labels.intro }}</p>

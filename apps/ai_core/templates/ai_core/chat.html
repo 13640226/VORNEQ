@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="description" content="{{ chat_labels.intro }}">
 {% endblock %}
-{% block extra_head %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/ai-brand.css' %}">
 <link rel="stylesheet" href="{% static 'css/phase-c-chat.css' %}">
 <link rel="stylesheet" href="{% static 'css/voice/mic-button.css' %}">
 {% endblock %}
@@ -73,6 +73,7 @@
   data-vq-conv-full="{{ chat_labels.conv_full }}"
   data-vq-conv-not-saved="{{ chat_labels.conv_not_saved }}"{% endif %}>
   <header class="vq-chat__header">
+    {% include "partials/_ai_brand.html" %}
     <p class="vq-chat__kicker"><span class="vq-chat__led" aria-hidden="true"></span>VORNEQ · AI · {% if chat_production %}Generated drafts · claims not verified{% elif chat_staging %}Authorized staging trial{% else %}Development preview{% endif %}</p>
     <h1 id="vq-chat-title">{{ chat_labels.title }}</h1>
     <p class="vq-chat__intro">{{ chat_labels.intro }}</p>
