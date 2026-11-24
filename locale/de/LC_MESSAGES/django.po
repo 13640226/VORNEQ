@@ -2575,13 +2575,74 @@ msgid "Our direction emphasizes user control, scoped authorization and inspectab
 msgstr "Unsere Ausrichtung betont Nutzerkontrolle, begrenzte Berechtigungen und prüfbare Belege. Philosophie V4.1 bleibt ein Vorschlag und keine Behauptung fertiggestellter Funktionen."
 
 msgid "Notes access restricted"
-msgstr "Zugriff auf Notizen eingeschraenkt"
+msgstr "Zugriff auf Notizen eingeschränkt"
 
 msgid "Your account requires an identity binding. Contact the platform administrator."
-msgstr "Ihr Konto benoetigt eine Identitaetsbindung. Wenden Sie sich an die Plattformadministration."
+msgstr "Ihr Konto benötigt eine Identitätsbindung. Wenden Sie sich an den Plattformadministrator."
 
 msgid "Your bound identity is inactive. Contact the platform administrator."
-msgstr "Ihre gebundene Identitaet ist inaktiv. Wenden Sie sich an die Plattformadministration."
+msgstr "Ihre gebundene Identität ist inaktiv. Wenden Sie sich an den Plattformadministrator."
 
 msgid "You do not have access to this note."
 msgstr "Sie haben keinen Zugriff auf diese Notiz."
+
+#: apps/notes/templates/notes/list.html
+msgid "App"
+msgstr "App"
+
+#: apps/notes/templates/notes/list.html
+msgid "Private notes owned by your bound VORNEQ identity."
+msgstr "Private Notizen Ihrer verknüpften VORNEQ-Identität."
+
+#: apps/notes/templates/notes/list.html
+msgid "New Note"
+msgstr "Neue Notiz"
+
+#: apps/notes/templates/notes/list.html
+msgid "No notes yet."
+msgstr "Es sind noch keine Notizen vorhanden."
+
+#: apps/notes/templates/notes/detail.html
+msgid "Back to Notes"
+msgstr "Zurück zu den Notizen"
+
+#: apps/notes/templates/notes/detail.html
+msgid "Note"
+msgstr "Notiz"
+
+#: apps/notes/templates/notes/detail.html
+#, python-format
+msgid "Updated %(date)s"
+msgstr "Aktualisiert am %(date)s"
+
+#: apps/notes/templates/notes/detail.html
+msgid "Delete Note"
+msgstr "Notiz löschen"
+
+#: apps/notes/templates/notes/form.html
+msgid "Edit Note"
+msgstr "Notiz bearbeiten"
+
+#: apps/notes/templates/notes/form.html
+msgid "Content"
+msgstr "Inhalt"
+
+#: apps/notes/templates/notes/form.html
+msgid "Save Note"
+msgstr "Notiz speichern"
+
+#: templates/base.html
+msgid "Back"
+msgstr "Zurück"
+
+#: templates/base.html
+msgid "Go back to the previous page"
+msgstr "Zur vorherigen Seite zurückkehren"
+
+#: templates/partials/_standalone_nav.html
+msgid "Choose language"
+msgstr "Sprache wählen"
+
+#: templates/partials/_standalone_nav.html
+msgid "Open profile"
+msgstr "Profil öffnen"
