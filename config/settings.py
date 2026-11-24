@@ -236,6 +236,8 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 SITE_ID = 1
+VORNEQ_PUBLIC_DOMAIN = os.environ.get("VORNEQ_PUBLIC_DOMAIN", "")
+ACCOUNT_EMAIL_SUBJECT_PREFIX = "[VORNEQ] "
 
 
 AUTHENTICATION_BACKENDS = [
@@ -300,7 +302,7 @@ else:
 
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
-    "Saman Kherad <noreply@localhost>",
+    "VORNEQ <noreply@localhost>",
 )
 
 
