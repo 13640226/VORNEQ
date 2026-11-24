@@ -1762,6 +1762,8 @@ msgstr "Die aufgezeichneten öffentlichen Informationen zu einem Artefakt, einsc
 msgid "Public source reference"
 msgstr "Öffentliche Quellenangabe"
 
+
+
 # Modern homepage evidence UI
 msgid "View Evidence"
 msgstr "Evidenz ansehen"
@@ -2436,8 +2438,11 @@ msgstr "Alle Produkte"
 msgid "Apply"
 msgstr "Anwenden"
 
+
 msgid "Breadcrumb"
 msgstr "Brotkrumen-Navigation"
+
+
 
 msgid "Create your product with a description and file"
 msgstr "Produkt mit Beschreibung und Datei anlegen"
@@ -2454,14 +2459,19 @@ msgstr "Wird ein freigegebenes Produkt bearbeitet, geht es erneut in die Prüfun
 msgid "Every product is reviewed by a moderator before it is published."
 msgstr "Jedes Produkt wird vor der Veröffentlichung von einer Moderation geprüft."
 
+
 msgid "Free first"
 msgstr "Kostenlose zuerst"
+
+
 
 msgid "Latest moderation decision"
 msgstr "Letzte Moderationsentscheidung"
 
+
 msgid "Newest"
 msgstr "Neueste"
+
 
 msgid "No products have been published yet."
 msgstr "Es wurden noch keine Produkte veröffentlicht."
@@ -2469,17 +2479,23 @@ msgstr "Es wurden noch keine Produkte veröffentlicht."
 msgid "No products match your search"
 msgstr "Keine Produkte passen zu Ihrer Suche"
 
+
 msgid "Not published yet"
 msgstr "Noch nicht veröffentlicht"
 
+
 msgid "Paid product"
 msgstr "Kostenpflichtiges Produkt"
+
+
 
 msgid "Price and availability"
 msgstr "Preis und Verfügbarkeit"
 
 msgid "Product status overview"
 msgstr "Übersicht der Produktstatus"
+
+
 
 msgid "Purchasing is not available yet."
 msgstr "Ein Kauf ist noch nicht möglich."
@@ -2504,6 +2520,8 @@ msgstr "Der Marktplatz ist offen für die ersten Anbieterinnen und Anbieter. Ein
 
 msgid "Title A–Z"
 msgstr "Titel A–Z"
+
+
 
 msgid "Waiting for a moderator."
 msgstr "Wartet auf die Moderation."
@@ -2569,10 +2587,6 @@ msgid "You do not have access to this note."
 msgstr "Sie haben keinen Zugriff auf diese Notiz."
 
 #: apps/notes/templates/notes/list.html
-msgid "Notes - VORNEQ"
-msgstr "Notizen - VORNEQ"
-
-#: apps/notes/templates/notes/list.html
 msgid "App"
 msgstr "App"
 
@@ -2586,7 +2600,7 @@ msgstr "Neue Notiz"
 
 #: apps/notes/templates/notes/list.html
 msgid "No notes yet."
-msgstr "Noch keine Notizen."
+msgstr "Es sind noch keine Notizen vorhanden."
 
 #: apps/notes/templates/notes/detail.html
 msgid "Back to Notes"
@@ -2616,3 +2630,19 @@ msgstr "Inhalt"
 #: apps/notes/templates/notes/form.html
 msgid "Save Note"
 msgstr "Notiz speichern"
+
+#: templates/base.html
+msgid "Back"
+msgstr "Zurück"
+
+#: templates/base.html
+msgid "Go back to the previous page"
+msgstr "Zur vorherigen Seite zurückkehren"
+
+#: templates/partials/_standalone_nav.html
+msgid "Choose language"
+msgstr "Sprache wählen"
+
+#: templates/partials/_standalone_nav.html
+msgid "Open profile"
+msgstr "Profil öffnen"

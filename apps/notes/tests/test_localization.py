@@ -21,17 +21,19 @@ USER_TITLE = "Quarterly plan"
 USER_BODY = "\u06cc\u0627\u062f\u062f\u0627\u0634\u062a \u0645\u0646"  # Persian user text
 
 # Every English source string the Notes UI renders (templates, manifest, forbidden pages).
-LIST_IDS = ("Notes - VORNEQ", "My Notes", "Private notes owned by your bound VORNEQ identity.", "New Note")
+LIST_IDS = ("Notes \u2014 VORNEQ", "My Notes", "Private notes owned by your bound VORNEQ identity.", "New Note")
 DETAIL_IDS = ("Back to Notes", "Note", "Edit", "Delete Note")
 CREATE_IDS = ("New Note", "Notes", "Title", "Content", "Save Note", "Back to Notes")
 UPDATE_IDS = ("Edit Note", "Notes", "Title", "Content", "Save Note", "Back to Notes")
+# Shared page chrome rendered on every Notes page (base.html and standalone navigation).
+CHROME_IDS = ("Back", "Go back to the previous page", "Choose language", "Open profile")
 FORBIDDEN_IDS = {
     "missing": "Your account requires an identity binding. Contact the platform administrator.",
     "inactive": "Your bound identity is inactive. Contact the platform administrator.",
     "denied": "You do not have access to this note.",
 }
 ALL_IDS = tuple(sorted(set(
-    LIST_IDS + DETAIL_IDS + CREATE_IDS + UPDATE_IDS + ("App", "No notes yet.", "Updated %(date)s",
+    LIST_IDS + DETAIL_IDS + CREATE_IDS + UPDATE_IDS + CHROME_IDS + ("App", "No notes yet.", "Updated %(date)s",
                                                       "Notes access restricted")
     + tuple(FORBIDDEN_IDS.values())
 )))
@@ -78,8 +80,7 @@ class NotesLocalizationTests(TestCase):
         for msgid in ids:
             expected = tr(language, msgid)
             # base.html renders the title separator as an em dash.
-            variants = (escape(expected), escape(expected.replace(" - ", " \u2014 ")))
-            self.assertTrue(any(v in text for v in variants), f"{label}[{language}] missing {msgid!r}")
+            self.assertIn(escape(expected), text, f"{label}[{language}] missing {msgid!r}")
         # No leakage from the other two languages (identical words such as "App" are exempt).
         for other in LANGUAGES:
             if other == language:
@@ -102,7 +103,7 @@ class NotesLocalizationTests(TestCase):
     def test_list_page_in_every_language(self):
         for language in LANGUAGES:
             html = self.page(language, "notes:list")
-            self.assert_pure(html, language, LIST_IDS, "list")
+            self.assert_pure(html, language, LIST_IDS + CHROME_IDS, "list")
             self.assert_direction(html, language)
             self.assertIn(USER_TITLE, html)
 
@@ -171,6 +172,21 @@ class NotesLocalizationTests(TestCase):
 
 
 class NotesCatalogContractTests(SimpleTestCase):
+    def test_owner_approved_german_wording(self):
+        expected = {
+            "Back": "Zurück", "My Notes": "Meine Notizen", "New Note": "Neue Notiz",
+            "Save Note": "Notiz speichern", "Back to Notes": "Zurück zu den Notizen",
+            "Edit Note": "Notiz bearbeiten", "Delete Note": "Notiz löschen",
+            "No notes yet.": "Es sind noch keine Notizen vorhanden.",
+        }
+        for msgid, german in expected.items():
+            self.assertEqual(tr("de", msgid), german, msgid)
+
+    def test_every_template_title_msgid_exists_in_the_catalogs(self):
+        """The list title uses an em dash; a hyphen variant would never be rendered."""
+        for language in ("de", "fa"):
+            self.assertNotEqual(tr(language, "Notes \u2014 VORNEQ"), "Notes \u2014 VORNEQ", language)
+
     def test_every_notes_string_is_translated_in_de_and_fa(self):
         for language in ("de", "fa"):
             for msgid in ALL_IDS + ("Notes",):

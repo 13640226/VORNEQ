@@ -1584,6 +1584,7 @@ msgstr "اطلاعات عمومی ثبت‌شده پیرامون یک مصنوع
 msgid "Public source reference"
 msgstr "ارجاع عمومی منبع"
 
+
 msgid "Notes"
 msgstr "یادداشت‌ها"
 
@@ -2152,8 +2153,11 @@ msgstr "همهٔ محصولات"
 msgid "Apply"
 msgstr "اعمال"
 
+
 msgid "Breadcrumb"
 msgstr "مسیر صفحه"
+
+
 
 msgid "Create your product with a description and file"
 msgstr "محصول خود را با توضیحات و فایل ایجاد کنید"
@@ -2170,14 +2174,19 @@ msgstr "ویرایش محصول تأییدشده، آن را پیش از انت�
 msgid "Every product is reviewed by a moderator before it is published."
 msgstr "هر محصول پیش از انتشار توسط یک ناظر بررسی می‌شود."
 
+
 msgid "Free first"
 msgstr "ابتدا رایگان‌ها"
+
+
 
 msgid "Latest moderation decision"
 msgstr "آخرین تصمیم نظارت"
 
+
 msgid "Newest"
 msgstr "جدیدترین"
+
 
 msgid "No products have been published yet."
 msgstr "هنوز محصولی منتشر نشده است."
@@ -2185,17 +2194,23 @@ msgstr "هنوز محصولی منتشر نشده است."
 msgid "No products match your search"
 msgstr "محصولی با جست‌وجوی شما مطابقت ندارد"
 
+
 msgid "Not published yet"
 msgstr "هنوز منتشر نشده"
 
+
 msgid "Paid product"
 msgstr "محصول پولی"
+
+
 
 msgid "Price and availability"
 msgstr "قیمت و دسترس‌پذیری"
 
 msgid "Product status overview"
 msgstr "نمای کلی وضعیت محصولات"
+
+
 
 msgid "Purchasing is not available yet."
 msgstr "امکان خرید هنوز فراهم نیست."
@@ -2220,6 +2235,8 @@ msgstr "بازار برای نخستین سازندگان باز است. محص�
 
 msgid "Title A–Z"
 msgstr "عنوان (الفبایی)"
+
+
 
 msgid "Waiting for a moderator."
 msgstr "در انتظار بررسی ناظر."
@@ -2284,6 +2301,22 @@ msgstr "هویت متصل شما غیرفعال است. با مدیر پلتفر
 msgid "You do not have access to this note."
 msgstr "شما به این یادداشت دسترسی ندارید."
 
-#: apps/notes/templates/notes/list.html
-msgid "Notes - VORNEQ"
-msgstr "یادداشت‌ها - VORNEQ"
+#: templates/base.html
+msgid "Back"
+msgstr "بازگشت"
+
+#: templates/base.html
+msgid "Go back to the previous page"
+msgstr "بازگشت به صفحهٔ قبل"
+
+#: templates/partials/_standalone_nav.html
+msgid "Choose language"
+msgstr "انتخاب زبان"
+
+#: templates/partials/_standalone_nav.html
+msgid "Open profile"
+msgstr "باز کردن نمایه"
+
+#: templates/partials/_standalone_nav.html
+msgid "Language"
+msgstr "زبان"
