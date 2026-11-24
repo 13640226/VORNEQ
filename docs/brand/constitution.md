@@ -1,8 +1,8 @@
 # VORNEQ Brand Constitution
 
-**Version:** 1.0  
-**Status:** Approved  
-**Date:** 2026-09-07
+**Version:** 2.0
+**Status:** Owner-approved direction; validation pending
+**Date:** 2026-11-24
 
 ## 1. Purpose
 
@@ -118,8 +118,8 @@ The VORNEQ identity system distinguishes between the independent **Symbol** and 
 ### Final Symbol Candidate — Status
 
 - **Current Status:** Final Symbol Candidate
-- **Geometric Reference:** B1-b3 (Distinctive)
-- **Geometry Status:** Frozen; no redesign or structural change without a new technical or legal reason.
+- **Geometric Reference:** VQ Nexus (A), candidate
+- **Geometry Status:** Owner authorized retirement of frozen B1-b3 on 2026-11-24; new geometry pending validation.
 - **Similarity Review:** Pending
 - **Trademark Clearance:** Pending; no clearance claim may be published until actual review has been completed.
 - **Next Gate:** Similarity / Trademark Review
@@ -238,6 +238,8 @@ The identity should prioritize, in order:
 **Ownability → Silhouette → Scalability → Optical Balance → Meaning**
 
 “Ownability” is a design objective, not a legal conclusion. Trademark and similarity clearance remain separate requirements.
+
+Orbit (B) and Knowledge (C) are editorial artwork only, not alternative master symbols. Literal imagery is permitted in editorial artwork. Never mirror the symbol or Latin wordmark in RTL.
 
 ## 18. Motion Principles
 
