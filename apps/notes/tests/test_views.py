@@ -56,3 +56,40 @@ class NoteViewTests(TestCase):
         self.client.force_login(unbound)
         response = self.client.get(reverse("notes:list"))
         self.assertEqual(response.status_code, 403)
+
+        self.assertTemplateUsed(response, "notes/forbidden.html")
+        self.assertFalse(UserIdentity.objects.filter(user=unbound).exists())
+        self.assertEqual(self.client.get(reverse("notes:create")).status_code, 403)
+
+    def test_inactive_identity_denied(self):
+        self.identity.is_active = False
+        self.identity.save(update_fields=["is_active"])
+        response = self.client.get(reverse("notes:list"))
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.context["reason"], "inactive")
+
+    def test_missing_binding_translations(self):
+        unbound = User.objects.create_user(username="notes-i18n")
+        self.client.force_login(unbound)
+        expected = {"en": "Notes access restricted", "de": "Zugriff auf Notizen eingeschraenkt", "fa": "\u062f\u0633\u062a\u0631\u0633\u06cc \u0628\u0647 \u06cc\u0627\u062f\u062f\u0627\u0634\u062a\u200c\u0647\u0627 \u0645\u062d\u062f\u0648\u062f \u0627\u0633\u062a"}
+        for lang, heading in expected.items():
+            with self.subTest(lang=lang):
+                response = self.client.get(f"/{lang}/notes/")
+                self.assertContains(response, heading, status_code=403)
+                self.assertEqual(response.context["reason"], "missing")
+
+    def test_other_owner_cannot_read_update_or_delete(self):
+        note = NoteService.create_note(user=self.user, title="Private", content="Secret")
+        other = User.objects.create_user(username="notes-other-view")
+        identity = Identity.objects.create(kind=Identity.Kind.HUMAN, display_name="Other")
+        UserIdentity.objects.create(user=other, identity=identity)
+        self.client.force_login(other)
+        for action in ("detail", "update", "delete"):
+            url = reverse(f"notes:{action}", kwargs={"note_id": note.pk})
+            response = self.client.get(url) if action == "detail" else self.client.post(url, {"title": "Changed", "content": "Changed"})
+            self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.context["reason"], "denied")
+            self.assertNotContains(response, "Secret", status_code=403)
+        note.refresh_from_db()
+        self.assertEqual(note.title, "Private")
+        self.assertTrue(note.is_active)

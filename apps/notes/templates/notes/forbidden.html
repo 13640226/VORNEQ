@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}{% trans "Notes access restricted" %}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'notes/notes.css' %}">{% endblock %}
+{% block content %}
+<section class="notes" aria-labelledby="notes-access-title">
+<div class="note-content notes-access-card">
+<img src="{% static 'images/brand/v2/symbol.svg' %}" width="48" height="48" alt="">
+<h1 id="notes-access-title">{% trans "Notes access restricted" %}</h1>
+{% if reason == "missing" %}<p>{% trans "Your account requires an identity binding. Contact the platform administrator." %}</p>
+{% elif reason == "inactive" %}<p>{% trans "Your bound identity is inactive. Contact the platform administrator." %}</p>
+{% else %}<p>{% trans "You do not have access to this note." %}</p>{% endif %}
+</div></section>
+{% endblock %}

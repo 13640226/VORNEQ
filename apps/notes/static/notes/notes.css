@@ -169,3 +169,6 @@
     flex-direction: column;
   }
 }
+
+.notes-access-card { margin-inline: auto; max-width: 36rem; text-align: center; overflow-wrap: anywhere; }
+.notes-access-card img { margin-bottom: var(--space-3); }

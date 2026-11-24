@@ -2288,3 +2288,15 @@ msgstr "فلسفه پلتفرم"
 
 msgid "Our direction emphasizes user control, scoped authorization and inspectable evidence. Philosophy V4.1 remains a proposal, not a claim of completed features."
 msgstr "مسیر پیشنهادی ما بر کنترل کاربر، مجوز محدود و شواهد قابل بررسی تأکید دارد. فلسفه V4.1 هنوز پیشنهاد است، نه ادعای تکمیل قابلیت‌ها."
+
+msgid "Notes access restricted"
+msgstr "دسترسی به یادداشت‌ها محدود است"
+
+msgid "Your account requires an identity binding. Contact the platform administrator."
+msgstr "حساب شما به اتصال هویت نیاز دارد. با مدیر پلتفرم تماس بگیرید."
+
+msgid "Your bound identity is inactive. Contact the platform administrator."
+msgstr "هویت متصل شما غیرفعال است. با مدیر پلتفرم تماس بگیرید."
+
+msgid "You do not have access to this note."
+msgstr "شما به این یادداشت دسترسی ندارید."
