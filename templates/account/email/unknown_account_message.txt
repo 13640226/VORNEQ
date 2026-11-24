@@ -1,0 +1,6 @@
+{% extends "email/base.txt" %}{% load vq_email %}
+{% block heading %}{% vq_mail "unknown.title" %}{% endblock %}
+{% block intro %}{% vq_mail "unknown.intro" email=email %}{% endblock %}
+{% block action %}{% vq_mail "unknown.button" %}:
+{{ signup_url }}{% endblock %}
+{% block note %}{% vq_mail "unknown.ignore" %}{% endblock %}

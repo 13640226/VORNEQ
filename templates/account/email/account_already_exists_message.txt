@@ -1,0 +1,6 @@
+{% extends "email/base.txt" %}{% load vq_email %}
+{% block heading %}{% vq_mail "exists.title" %}{% endblock %}
+{% block intro %}{% vq_mail "exists.intro" email=email %}{% endblock %}
+{% block action %}{% vq_mail "exists.button" %}:
+{{ password_reset_url }}{% endblock %}
+{% block note %}{% vq_mail "exists.ignore" %}{% endblock %}

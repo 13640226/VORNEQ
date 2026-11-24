@@ -1,9 +1,6 @@
-{% load i18n %}{% get_current_language as lang %}VORNEQ
-
-{% if lang == "fa" %}لطفاً نشانی ایمیل خود را تأیید کنید.{% elif lang == "de" %}Bitte bestätigen Sie Ihre E-Mail-Adresse.{% else %}Please confirm your email address.{% endif %}
-
-{{ activate_url }}
-
-{% if lang == "fa" %}اگر این درخواست را شما ارسال نکرده‌اید، این ایمیل را نادیده بگیرید.{% elif lang == "de" %}Wenn Sie dies nicht angefordert haben, ignorieren Sie diese E-Mail.{% else %}If you did not request this, ignore this email.{% endif %}
-
-VORNEQ
+{% extends "email/base.txt" %}{% load vq_email %}
+{% block heading %}{% vq_mail "signup.title" %}{% endblock %}
+{% block intro %}{% vq_mail "signup.intro" %}{% endblock %}
+{% block action %}{% vq_mail "confirm.button" %}:
+{{ activate_url }}{% endblock %}
+{% block note %}{% vq_mail "confirm.ignore" %}{% endblock %}
