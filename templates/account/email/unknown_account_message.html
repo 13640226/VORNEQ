@@ -1,0 +1,7 @@
+{% extends "email/base.html" %}{% load vq_email %}
+{% block title %}{% vq_mail "unknown.title" %}{% endblock %}
+{% block preheader %}{% vq_mail "unknown.intro" email=email %}{% endblock %}
+{% block heading %}{% vq_mail "unknown.title" %}{% endblock %}
+{% block intro %}{% vq_mail "unknown.intro" email=email %}{% endblock %}
+{% block action %}{% vq_mail "unknown.button" as label %}{% include "email/_button.html" with url=signup_url label=label %}{% endblock %}
+{% block note %}{% vq_mail "unknown.ignore" %}{% endblock %}

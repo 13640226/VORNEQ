@@ -1,0 +1,7 @@
+{% extends "email/base.html" %}{% load vq_email %}
+{% block title %}{% vq_mail "exists.title" %}{% endblock %}
+{% block preheader %}{% vq_mail "exists.intro" email=email %}{% endblock %}
+{% block heading %}{% vq_mail "exists.title" %}{% endblock %}
+{% block intro %}{% vq_mail "exists.intro" email=email %}{% endblock %}
+{% block action %}{% vq_mail "exists.button" as label %}{% include "email/_button.html" with url=password_reset_url label=label %}{% endblock %}
+{% block note %}{% vq_mail "exists.ignore" %}{% endblock %}

@@ -1,0 +1,16 @@
+{% load vq_email %}{% autoescape off %}VORNEQ
+======
+
+{% block heading %}{% endblock %}
+
+{% block intro %}{% endblock %}
+
+{% block action %}{% endblock %}
+
+{% block note %}{% endblock %}
+
+--
+{% vq_mail "footer.security" %}
+{% vq_mail "footer.automatic" %}
+VORNEQ
+{% endautoescape %}
