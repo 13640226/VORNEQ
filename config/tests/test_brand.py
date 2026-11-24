@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from django.contrib.staticfiles import finders
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.test import TestCase
 from django.urls import reverse
 
@@ -12,17 +13,17 @@ class BrandIntegrationTests(TestCase):
 
         self.assertContains(response, 'class="standalone-nav__brand"')
         self.assertContains(response, 'class="standalone-nav__symbol"')
-        self.assertContains(response, 'class="standalone-nav__wordmark">VORNEQ</span>')
+        self.assertContains(response, 'class="standalone-nav__wordmark" dir="ltr">VORNEQ</span>')
 
         brand_start = content.index('class="standalone-nav__brand"')
         brand_end = content.index("</a>", brand_start)
         brand_markup = content[brand_start:brand_end]
-        self.assertNotIn("<img", brand_markup)
-        self.assertIn("<svg", brand_markup)
+        self.assertIn("<img", brand_markup)
+        self.assertIn(staticfiles_storage.url("images/brand/v2/symbol.svg"), brand_markup)
         self.assertIn('aria-hidden="true"', brand_markup)
-        self.assertIn('focusable="false"', brand_markup)
-        self.assertIn("vorneq-node", brand_markup)
-        self.assertIn("vorneq-traj", brand_markup)
+        self.assertIn('alt=""', brand_markup)
+        self.assertNotIn("vorneq-node", brand_markup)
+        self.assertNotIn("vorneq-traj", brand_markup)
 
     def test_ia_s_asset_is_discoverable_by_staticfiles(self):
         asset_path = finders.find("images/brand/ia-s.svg")
@@ -37,13 +38,13 @@ class BrandIntegrationTests(TestCase):
         self.assertNotIn('mask-image: url("../images/brand/ia-s.svg")', css)
         self.assertNotIn('-webkit-mask-image: url("../images/brand/ia-s.svg")', css)
         self.assertIn(".standalone-nav__symbol", css)
-        self.assertIn(".vorneq-mark", css)
-        self.assertIn(".vorneq-traj", css)
-        self.assertIn(".vorneq-node--cobalt", css)
-        self.assertIn(".vorneq-node--cyan", css)
-        self.assertIn("@keyframes vorneq-logo-rotate", css)
+        self.assertIn("unicode-bidi: isolate;", css)
+        self.assertNotIn(".vorneq-traj", css)
+        self.assertIn(".site-footer__symbol", css)
+        self.assertIn("inline-size: 32px;", css)
+        self.assertNotIn("@keyframes vorneq-logo-rotate", css)
         reduced_motion = css.split("@media (prefers-reduced-motion: reduce)", 1)[1]
-        self.assertIn("animation: none;", reduced_motion)
+        self.assertIn("transition: none;", reduced_motion)
 
         wordmark_block = css.split(".standalone-nav__wordmark {", 1)[1].split("}", 1)[0]
         self.assertIn("color: var(--color-text-primary);", wordmark_block)
@@ -68,6 +69,12 @@ class BrandIntegrationTests(TestCase):
         self.assertNotIn("--color-success", vorneq_block)
         self.assertNotIn("--color-warning", vorneq_block)
         self.assertNotIn("--color-error", vorneq_block)
+
+    def test_light_theme_has_explicit_palette(self):
+        css = Path(finders.find("css/theme-palettes.css")).read_text(encoding="utf-8")
+        self.assertIn('[data-theme="light"],\n[data-theme="vorneq"] {', css)
+        light = css.split('[data-theme="vorneq"] {', 1)[1].split("}", 1)[0]
+        self.assertIn("--color-bg-elevated: #ffffff;", light)
 
     def test_navy_is_default_runtime_theme_and_selectable_preference(self):
         project_root = Path(__file__).resolve().parents[2]

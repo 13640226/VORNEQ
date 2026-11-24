@@ -64,7 +64,7 @@
     {% if request.resolver_match.url_name != 'home' %}
     <footer class="site-footer" role="contentinfo">
         <div class="container site-footer__inner">
-            <span class="site-footer__brand">VORNEQ</span>
+            <span class="site-footer__brand">{% include 'partials/_brand_symbol.html' with symbol_class='site-footer__symbol' only %}<bdi dir="ltr">VORNEQ</bdi></span>
             <span class="site-footer__copy">
                 &copy; {% now "Y" %} — {% trans "Precision infrastructure for a trusted digital future." %}
             </span>
