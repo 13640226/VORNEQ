@@ -24,9 +24,20 @@ Prinzip: **NO PAID AI CALL WITHOUT VALID LEDGER AUTHORIZATION.**
 | Image Mock | `image_generation/service.py` (`MockImageProvider`) | lokal | nein | – | – | – | Mock-Worker beansprucht nur Mock-Jobs | – |
 | Voice | `voice/provider.py:21` | `MockVoiceProvider` | nein | – | – | – | nicht-Mock wird abgelehnt | – |
 | Public Retrieval | `web_retrieval.py`, `retrieval_registry.py` | Wikipedia (HTTP, Allowlist) | nein | – | – | – | – | – |
-| Lokale Entwicklung | `paid_provider.require_paid_text_ledger` | OpenAI Responses mit lokalem Schlüssel | ja (Betreiber) | **keins** – nur `VORNEQ_ENV=development` **und** kein gehosteter Runtime (`RENDER`/`RENDER_SERVICE_ID` leer) | Cache-Zähler | Gate | development | lokal |
+| Lokale Entwicklung | `paid_provider.require_paid_text_ledger` | Provider wird konstruiert, aber **nie bezahlt aufgerufen** | nein | keins – die Aufrufgrenze verweigert jeden SDK-Kontakt ohne Reservierung (auch mit API-Schlüssel) | – | Gate | development | lokal; nur Test-Doubles/Mocks |
 
 Kein Management Command, Scheduled Job oder Worker außer dem Image Worker konstruiert einen kostenpflichtigen Provider (AST-Inventar, `test_v4_paid_provider_boundary`).
+
+## Aufrufgrenze (Nachtrag vor Merge)
+
+Die Konstruktionsgrenze allein reichte nicht: lokal mit `OPENAI_API_KEY` hätte ein unverpackter Provider einen echten Aufruf senden können. Deshalb zusätzlich:
+
+* `apps/ai_ledger/call_authorization.py`: `authorized_paid_call(reservation, kind)` (ContextVar, pro Thread/Task, nach dem Aufruf garantiert zurückgesetzt) und `require_authorized_paid_call(kind)`.
+* Freigabe setzen nur `BudgetedProvider.generate`/`generate_knowledge` (nach `ledger.reserve`) und der Image-Worker (nach `reserve_with_config`/`reserve_prepaid_image`).
+* `OpenAIResponsesProvider.generate`/`generate_knowledge` und `OpenAIImageProvider.generate` prüfen die Freigabe **vor** Schlüsselprüfung, SDK-Import und Client-Konstruktion. Text: `ProviderUnavailable` (HTTP 503 `provider_unavailable`), Bild: `ledger_authorization_missing`, `request_sent=False`.
+* AST-Test: Freigabe nur an den drei Ledger-Aufrufstellen; jeder bezahlte Adapter prüft vor `OpenAI(...)`.
+
+Damit gilt das Prinzip unabhängig von `VORNEQ_ENV`, Render-Variablen oder Umgebungserkennung.
 
 ## Änderungen
 

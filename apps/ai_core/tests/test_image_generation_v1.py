@@ -320,8 +320,13 @@ class ImageGenerationTests(TestCase):
     def test_sdk_tripwire_is_active_and_detected(self):
         # Guard for the guard: if every runtime gate were bypassed, the tripwire
         # must be hit and recorded even though the provider swallows the error.
+        from apps.ai_core.tests.ledger_fakes import fake_reservation
+        from apps.ai_ledger.call_authorization import authorized_paid_call
+
+        # V4-01: "alle Gates umgangen" schließt jetzt auch die Ledger-Freigabe ein.
         with patch("apps.ai_core.image_generation.policy.paid_provider_enabled", return_value=True), \
              patch.dict(os.environ, {"VORNEQ_OPENAI_IMAGE_API_KEY": "synthetic-never-live"}), \
+             authorized_paid_call(fake_reservation(), kind="image"), \
              self.assertRaises(ImageProviderError):
             OpenAIImageProvider().generate(
                 prompt="A harmless landscape", model="gpt-image-2.6-flare", size="1024x1024",

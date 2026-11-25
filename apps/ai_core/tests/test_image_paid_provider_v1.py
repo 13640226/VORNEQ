@@ -14,6 +14,7 @@ from PIL import Image
 from django.test import SimpleTestCase, override_settings
 
 from apps.ai_core.image_generation import policy
+from apps.ai_core.tests.ledger_fakes import allow_paid_adapter_calls
 from apps.ai_core.image_generation.providers import (
     ImageProviderError, OpenAIImageProvider, classify_provider_exception,
 )
@@ -87,6 +88,11 @@ PAID = dict(VORNEQ_AI_IMAGE_MODEL=MODEL, VORNEQ_AI_IMAGE_COMPLEXITY="low",
 
 @override_settings(**PAID)
 class PaidProviderTests(SimpleTestCase):
+
+    def setUp(self):
+        super().setUp()
+        # V4-01: Adapter-Unit-Test mit gemocktem SDK -> synthetische Ledger-Freigabe.
+        allow_paid_adapter_calls(self, "image")
     def run_provider(self, sdk, *, safety=SAFETY, gate=True):
         with patch.dict(sys.modules, {"openai": sdk.module()}), \
                 patch.dict("os.environ", {"VORNEQ_OPENAI_IMAGE_API_KEY": "synthetic-never-live"}), \
@@ -228,6 +234,11 @@ class PaidProviderTests(SimpleTestCase):
 
 
 class SafetyIdentifierTests(SimpleTestCase):
+
+    def setUp(self):
+        super().setUp()
+        # V4-01: Adapter-Unit-Test mit gemocktem SDK -> synthetische Ledger-Freigabe.
+        allow_paid_adapter_calls(self, "image")
     def test_hmac_is_stable_keyed_and_not_a_plain_hash(self):
         with override_settings(VORNEQ_AI_IMAGE_SAFETY_ID_KEY=KEY):
             first, again = policy.safety_identifier(42), policy.safety_identifier(42)
@@ -253,6 +264,11 @@ class SafetyIdentifierTests(SimpleTestCase):
 
 class PaidGateConfigurationTests(SimpleTestCase):
     """paid_provider_enabled stays False unless every new money control is set."""
+
+    def setUp(self):
+        super().setUp()
+        # V4-01: Adapter-Unit-Test mit gemocktem SDK -> synthetische Ledger-Freigabe.
+        allow_paid_adapter_calls(self, "image")
 
     BASE = dict(VORNEQ_AI_IMAGE_MAX_REQUEST_MICROUSD=50_000, VORNEQ_AI_IMAGE_SAFETY_ID_KEY=KEY,
                 VORNEQ_AI_IMAGE_COMPLEXITY="low", VORNEQ_ENV="staging",

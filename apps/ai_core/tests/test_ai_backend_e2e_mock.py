@@ -15,6 +15,8 @@ from django.urls import reverse
 
 from apps.ai_core.engine.citation import authorized_context
 from apps.ai_core.gateway import Citation
+from apps.ai_core.tests.ledger_fakes import fake_reservation
+from apps.ai_ledger.call_authorization import authorized_paid_call
 
 SDK_READY = all(importlib.util.find_spec(name) is not None
                 for name in ("openai", "httpx2", "pydantic"))
@@ -46,7 +48,9 @@ class OfflineDjangoOpenAIIntegration(TestCase):
         self.assertIn("csrftoken", browser.cookies)
         return browser, browser.cookies["csrftoken"].value
 
-    def test_real_sdk_mock_http_through_csrf_protected_backend(self):
+    def _run_grounded_request(self, *, authorized):
+        import contextlib
+
         import httpx2
         from openai import OpenAI
 
@@ -107,7 +111,11 @@ class OfflineDjangoOpenAIIntegration(TestCase):
         }):
             with patch("apps.ai_core.engine.grounded.retrieve_public",
                        return_value=(SOURCE,)):
-                with patch("openai.OpenAI", return_value=offline_client):
+                # V4-01: authorized=True simuliert die Freigabe, die sonst nur
+                # BudgetedProvider nach einer Ledger-Reservierung setzt.
+                gate = (authorized_paid_call(fake_reservation(), kind="text") if authorized
+                        else contextlib.nullcontext())
+                with patch("openai.OpenAI", return_value=offline_client) as sdk, gate:
                     response = browser.post(
                         reverse("ai_core:ask-grounded"),
                         data=json.dumps({
@@ -116,6 +124,17 @@ class OfflineDjangoOpenAIIntegration(TestCase):
                         }), content_type="application/json",
                         HTTP_X_CSRFTOKEN=csrf,
                     )
+        return response, observed, sdk, context
+
+    def test_local_api_key_without_ledger_never_reaches_the_sdk(self):
+        """V4-01: lokal mit API-Schlüssel, ohne Ledger-Reservierung -> kein HTTP-Aufruf."""
+        response, observed, sdk, _context = self._run_grounded_request(authorized=False)
+        self.assertEqual((response.status_code, response.json()), (503, {"error": "provider_unavailable"}))
+        sdk.assert_not_called()
+        self.assertEqual(observed, [])
+
+    def test_real_sdk_mock_http_through_csrf_protected_backend(self):
+        response, observed, _sdk, context = self._run_grounded_request(authorized=True)
         self.assertEqual(response.status_code, 200, response.content[:500])
         result = response.json()
         self.assertIs(result["verified"], False)

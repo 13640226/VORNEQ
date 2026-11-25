@@ -14,6 +14,7 @@ from django.test import SimpleTestCase
 from apps.ai_core.engine.citation import authorized_context
 from apps.ai_core.gateway import Citation
 from apps.ai_core.providers.openai_responses import OpenAIResponsesProvider
+from apps.ai_core.tests.ledger_fakes import allow_paid_adapter_calls
 
 
 _HAS_SDK = (importlib.util.find_spec("openai") is not None
@@ -23,6 +24,11 @@ _HAS_SDK = (importlib.util.find_spec("openai") is not None
 
 @skipUnless(_HAS_SDK, "OpenAI/Pydantic SDK only installed in isolated dev environment")
 class OfflineRealSDKIntegrationTests(SimpleTestCase):
+
+    def setUp(self):
+        super().setUp()
+        # V4-01: Adapter-Unit-Test mit gemocktem SDK -> synthetische Ledger-Freigabe.
+        allow_paid_adapter_calls(self, "text")
     def test_real_responses_parse_against_only_mock_transport(self):
         import httpx2
         from openai import OpenAI

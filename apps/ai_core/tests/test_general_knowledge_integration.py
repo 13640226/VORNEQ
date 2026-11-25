@@ -5,10 +5,13 @@ from apps.ai_core.providers.exceptions import ProviderInvalidResponse
 from apps.ai_core.general_knowledge_runtime import validate_knowledge
 from apps.ai_core.budgeted_provider import BudgetedProvider
 from apps.ai_core.providers.openai_responses import build_knowledge_payload
+from apps.ai_core.tests.ledger_fakes import allow_paid_adapter_calls
 
 
 class KnowledgeIntegrationTests(SimpleTestCase):
     def setUp(self):
+        # V4-01: Adapter-Unit-Test mit gemocktem SDK -> synthetische Ledger-Freigabe.
+        allow_paid_adapter_calls(self, "text")
         self.actor = Mock(is_authenticated=True)
         self.retriever = Mock()
         self.retriever.retrievers = ()

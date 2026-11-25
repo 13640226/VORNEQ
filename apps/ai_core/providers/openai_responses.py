@@ -143,6 +143,17 @@ def _instructions_for_language(base_instructions: str, language: str) -> str:
     return base_instructions
 
 
+def _require_ledger_reservation():
+    """V4-01 Aufrufgrenze: vor jedem SDK-Kontakt eine aktive Ledger-Reservierung
+    verlangen (gesetzt nur von ``BudgetedProvider``). Gilt in jeder Umgebung,
+    auch lokal mit vorhandenem API-Schlüssel."""
+    from apps.ai_ledger.call_authorization import UnauthorizedPaidCall, require_authorized_paid_call
+    try:
+        require_authorized_paid_call("text")
+    except UnauthorizedPaidCall as exc:
+        raise ProviderUnavailable("paid provider call requires a ledger reservation") from exc
+
+
 class OpenAIResponsesProvider:
     def __init__(self, *, model: str, timeout_s: float, max_output_tokens: int,
                  extra_instructions: str = "", compact_sources: bool = False,
@@ -213,6 +224,7 @@ class OpenAIResponsesProvider:
 
     def generate_knowledge(self, *, question, language, prior_turns=()):
         self.last_usage = None
+        _require_ledger_reservation()
         if not os.environ.get("OPENAI_API_KEY"):
             raise ProviderUnavailable("provider credential unavailable")
         from openai import OpenAI, APITimeoutError, APIConnectionError, APIStatusError, APIError
@@ -265,6 +277,7 @@ class OpenAIResponsesProvider:
     def generate(self, *, question: str, language: str, sources: list[dict],
                  prior_turns=(), mode="grounded") -> dict:
         self.last_usage = None
+        _require_ledger_reservation()
         if mode not in ("grounded", "sectioned") or (mode == "sectioned" and not self.response_stage2_enabled):
             raise ProviderUnavailable("response mode disabled")
         key = os.environ.get("OPENAI_API_KEY", "")

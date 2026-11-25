@@ -135,6 +135,9 @@ class OutputBudgetTests(SimpleTestCase):
 
     @skipUnless(HAS_PROVIDER_DEPS, "OpenAI/Pydantic optional SDK unavailable")
     def test_provider_incomplete_does_not_return_partial_json(self):
+        from apps.ai_core.tests.ledger_fakes import allow_paid_adapter_calls
+
+        allow_paid_adapter_calls(self)  # V4-01: Adapter direkt, SDK gemockt
         provider = self.provider()
         response = SimpleNamespace(status="incomplete",
             incomplete_details=SimpleNamespace(reason="max_output_tokens"),

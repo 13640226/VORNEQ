@@ -12,11 +12,18 @@ Architekturregel: NO PAID AI CALL WITHOUT VALID LEDGER AUTHORIZATION.
   wendet in Staging seine eigene Tagesobergrenze unabhängig davon an
   (``apps.ai_ledger.service.reserve``).
 * Lokale Entwicklung (``development`` und **kein** gehosteter Runtime,
-  d. h. weder ``RENDER`` noch ``RENDER_SERVICE_ID`` gesetzt): unverändert ohne
-  Ledger, weil das gemeinsame Ledger PostgreSQL in der Staging/Production-
-  Infrastruktur ist und lokal nie berührt werden darf. Kosten trägt dort der
-  lokale Betreiber mit eigenem Schlüssel; auf Render ist dieser Pfad gesperrt.
+  d. h. weder ``RENDER`` noch ``RENDER_SERVICE_ID`` gesetzt): der Provider wird
+  ohne Ledger konstruiert, aber **nie bezahlt aufgerufen** – auch nicht mit
+  vorhandenem API-Schlüssel. Die Aufrufgrenze
+  (``apps.ai_ledger.call_authorization``) verlangt vor jedem SDK-Client eine
+  aktive Ledger-Reservierung, die nur ``BudgetedProvider`` setzt. Lokal sind
+  damit nur Test-Doubles/Mocks möglich; das gemeinsame Ledger wird lokal nie
+  berührt.
 * Jede andere Kombination wird abgelehnt.
+
+Zwei unabhängige Grenzen: Konstruktion (hier) und Aufruf (Adapter). Fällt die
+Umgebungserkennung falsch aus oder fehlen Render-Variablen, verhindert die
+Aufrufgrenze den bezahlten Aufruf trotzdem.
 
 Der Architekturtest ``apps/ai_core/tests/test_v4_paid_provider_boundary.py``
 erzwingt per AST, dass ``OpenAIResponsesProvider`` nur hier konstruiert wird.

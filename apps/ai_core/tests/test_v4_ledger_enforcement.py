@@ -323,3 +323,131 @@ class MockProviderRegressionTests(SimpleTestCase):
         self.assertEqual((provider.name, provider.paid), ("mock", False))
         with override_settings(VORNEQ_AI_VOICE_PROVIDER="openai"), self.assertRaises(VoiceProviderBlocked):
             get_provider()
+
+
+def _sdk_tripwire():
+    """Ersetzt das OpenAI-SDK-Modul; jede Client-Konstruktion wird protokolliert
+    und abgebrochen (funktioniert mit und ohne installiertes SDK)."""
+    import sys
+    import types
+
+    calls = []
+    module = types.ModuleType("openai")
+
+    def construct(*_a, **_k):
+        calls.append("OpenAI")
+        raise AssertionError("real OpenAI client constructed")
+
+    module.OpenAI = construct
+    for name in ("APITimeoutError", "APIConnectionError", "APIStatusError", "APIError"):
+        setattr(module, name, type(name, (Exception,), {}))
+    return patch.dict(sys.modules, {"openai": module}), calls
+
+
+class InvocationBoundaryTests(SimpleTestCase):
+    """V4-01 Nachtrag: nicht nur die Konstruktion, auch der Aufruf ist ledger-gebunden."""
+
+    def provider(self):
+        return OpenAIResponsesProvider(model="synthetic-model", timeout_s=30, max_output_tokens=512)
+
+    @override_settings(VORNEQ_ENV="development")
+    def test_local_development_with_api_key_never_sends_without_ledger(self):
+        clean = {k: v for k, v in os.environ.items() if not k.startswith("RENDER")}
+        clean.update({"OPENAI_API_KEY": "sk-synthetic-local-key", "VORNEQ_AI_PHASE_B_MODEL": "synthetic-model"})
+        sdk_patch, calls = _sdk_tripwire()
+        with patch.dict(os.environ, clean, clear=True), sdk_patch:
+            provider = paid_provider.paid_text_provider(actor_id=1, model="synthetic-model",
+                                                        timeout_s=15, max_output_tokens=512)
+            self.assertNotIsInstance(provider, BudgetedProvider)
+            from apps.ai_core.providers.exceptions import ProviderUnavailable
+            with self.assertRaises(ProviderUnavailable):
+                provider.generate(question="q", language="en", sources=[])
+            with self.assertRaises(ProviderUnavailable):
+                provider.generate_knowledge(question="q", language="en")
+        self.assertEqual(calls, [])
+
+    def test_environment_misdetection_cannot_enable_a_paid_call(self):
+        """Fehlende Render-Variablen / falsche Umgebung: der Adapter verweigert trotzdem."""
+        from apps.ai_core.providers.exceptions import ProviderUnavailable
+
+        sdk_patch, calls = _sdk_tripwire()
+        for environment in ("development", "staging", "production", "unexpected"):
+            with self.subTest(environment=environment), override_settings(VORNEQ_ENV=environment, DEBUG=False), \
+                    patch.dict(os.environ, {"OPENAI_API_KEY": "sk-synthetic", "RENDER": "", "RENDER_SERVICE_ID": ""}), \
+                    sdk_patch, self.assertRaises(ProviderUnavailable):
+                self.provider().generate(question="q", language="en", sources=[])
+        self.assertEqual(calls, [])
+
+    def test_direct_image_adapter_call_without_reservation_is_not_sent(self):
+        from apps.ai_core.image_generation.providers import ImageProviderError, OpenAIImageProvider
+
+        sdk_patch, calls = _sdk_tripwire()
+        with patch("apps.ai_core.image_generation.policy.paid_provider_enabled", return_value=True), \
+                patch.dict(os.environ, {"VORNEQ_OPENAI_IMAGE_API_KEY": "synthetic-never-live"}), sdk_patch, \
+                self.assertRaises(ImageProviderError) as ctx:
+            OpenAIImageProvider().generate(prompt="synthetic", model="gpt-image-2.6-flare", size="1024x1024",
+                                           safety_identifier="vq_" + "0" * 64)
+        self.assertEqual((ctx.exception.code, ctx.exception.request_sent), ("ledger_authorization_missing", False))
+        self.assertEqual(calls, [])
+
+    def test_authorization_is_scoped_to_the_ledger_call_and_reset_afterwards(self):
+        from apps.ai_ledger.call_authorization import UnauthorizedPaidCall, require_authorized_paid_call
+
+        inner = SimpleNamespace(model="m", max_output_tokens=10, instructions="", compact_sources=False,
+                                last_usage=None)
+        seen = []
+        inner.generate = lambda **_k: seen.append(require_authorized_paid_call("text")) or {"answer": "a"}
+        with patch("apps.ai_core.budgeted_provider.ledger.reserve", return_value=fake_reservation()), \
+                patch("apps.ai_core.budgeted_provider.ledger.settle"):
+            BudgetedProvider(inner, actor_id=3).generate(question="q", language="en", sources=[])
+            inner.generate = lambda **_k: (_ for _ in ()).throw(RuntimeError("synthetic"))
+            with self.assertRaises(RuntimeError):
+                BudgetedProvider(inner, actor_id=3).generate(question="q", language="en", sources=[])
+        self.assertEqual(len(seen), 1)
+        with self.assertRaises(UnauthorizedPaidCall):
+            require_authorized_paid_call("text")  # nach dem Aufruf und nach Fehlern zurückgesetzt
+
+    def test_authorization_does_not_leak_across_threads_or_kinds(self):
+        import threading
+
+        from apps.ai_ledger.call_authorization import (UnauthorizedPaidCall, authorized_paid_call,
+                                                       require_authorized_paid_call)
+
+        results = []
+
+        def other_thread():
+            try:
+                require_authorized_paid_call("text")
+                results.append("leaked")
+            except UnauthorizedPaidCall:
+                results.append("isolated")
+
+        with authorized_paid_call(fake_reservation(), kind="text"):
+            worker = threading.Thread(target=other_thread)
+            worker.start()
+            worker.join()
+            with self.assertRaises(UnauthorizedPaidCall):
+                require_authorized_paid_call("image")
+        self.assertEqual(results, ["isolated"])
+        with self.assertRaises(UnauthorizedPaidCall), authorized_paid_call(None, kind="text"):
+            pass
+
+    @override_settings(**CHAT)
+    def test_unledgered_ask_global_in_development_returns_provider_unavailable(self):
+        """Ende-zu-Ende über die View (lokal, Schlüssel vorhanden): kein SDK-Kontakt."""
+        from apps.ai_core.views_global import run_global_pipeline
+
+        sdk_patch, calls = _sdk_tripwire()
+        request = SimpleNamespace(user=SimpleNamespace(pk=5))
+        clean = {k: v for k, v in os.environ.items() if not k.startswith("RENDER")}
+        clean.update({"OPENAI_API_KEY": "sk-synthetic", "VORNEQ_AI_PHASE_B_MODEL": "synthetic-model"})
+        with override_settings(VORNEQ_ENV="development"), patch.dict(os.environ, clean, clear=True), sdk_patch, \
+                patch("apps.ai_core.views_global.route_question", return_value=SimpleNamespace(kind="GENERAL_PUBLIC")), \
+                patch("apps.ai_core.views_global.reserve_global_request"), \
+                patch("apps.ai_core.views_global.default_retriever", return_value=FakeRetriever(evidence("en"))), \
+                patch("apps.ai_core.views_global.ask_global",
+                      side_effect=lambda q, l, *, provider, **_k: provider.generate(
+                          question=q, language=l, sources=[])):
+            body, status, meta = run_global_pipeline(request, "What is quantum computing?", "en")
+        self.assertEqual((body, status, meta["budgeted"]), ({"error": "provider_unavailable"}, 503, None))
+        self.assertEqual(calls, [])

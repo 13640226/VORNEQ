@@ -11,6 +11,7 @@ from unittest.mock import patch
 from django.test import SimpleTestCase
 
 from apps.ai_core.providers.exceptions import ProviderUnavailable
+from apps.ai_core.tests.ledger_fakes import allow_paid_adapter_calls
 from apps.ai_core.providers.openai_responses import (
     OpenAIResponsesProvider,
     _log_safe_api_status,
@@ -18,6 +19,11 @@ from apps.ai_core.providers.openai_responses import (
 
 
 class SafeOpenAIHttpLogTests(SimpleTestCase):
+
+    def setUp(self):
+        super().setUp()
+        # V4-01: Adapter-Unit-Test mit gemocktem SDK -> synthetische Ledger-Freigabe.
+        allow_paid_adapter_calls(self, "text")
     def test_expected_operational_fields_only(self):
         error = SimpleNamespace(
             status_code=401,
@@ -78,6 +84,11 @@ _HAS_SDK = bool(importlib.util.find_spec("openai")
 
 @skipUnless(_HAS_SDK, "OpenAI/httpx2 optional SDK not installed in standard CI")
 class OfflineProviderHttpErrorIntegrationTests(SimpleTestCase):
+
+    def setUp(self):
+        super().setUp()
+        # V4-01: Adapter-Unit-Test mit gemocktem SDK -> synthetische Ledger-Freigabe.
+        allow_paid_adapter_calls(self, "text")
     def test_actual_sdk_status_error_is_caught_and_safely_logged(self):
         import httpx2
         from openai import APIStatusError

@@ -38,6 +38,18 @@ ALLOWED_CONSTRUCTION = {
 }
 SDK_RESOURCES = {"responses", "images", "audio", "embeddings", "completions", "realtime"}
 ALLOWED_SDK_FILES = {"apps/ai_core/providers/openai_responses.py", "apps/ai_core/image_generation/providers.py"}
+# Nur Ledger-Aufrufer dürfen die Aufruf-Freigabe setzen (V4-01 Aufrufgrenze).
+ALLOWED_AUTHORIZATION = {
+    ("apps/ai_core/budgeted_provider.py", "BudgetedProvider.generate"),
+    ("apps/ai_core/budgeted_provider.py", "BudgetedProvider.generate_knowledge"),
+    ("apps/ai_core/image_generation/service.py", "process_next_image_job"),
+}
+# Bezahlte Adapter: Prüfung der Freigabe vor jedem SDK-Client.
+GUARDED_ADAPTERS = {
+    ("apps/ai_core/providers/openai_responses.py", "OpenAIResponsesProvider.generate"): "_require_ledger_reservation",
+    ("apps/ai_core/providers/openai_responses.py", "OpenAIResponsesProvider.generate_knowledge"): "_require_ledger_reservation",
+    ("apps/ai_core/image_generation/providers.py", "OpenAIImageProvider.generate"): "require_authorized_paid_call",
+}
 # Die Ledger-Reservierung muss im selben Funktionskörper VOR dem Bild-Provider stehen.
 IMAGE_LEDGER_CALLS = {"reserve_with_config", "reserve_prepaid_image"}
 
@@ -84,6 +96,11 @@ def scan_source(source: str, rel: str):
             if (any(k.arg == "provider_class" for k in node.keywords)
                     and name != "paid_text_provider"):
                 violations.append(f"{rel}:{node.lineno} {scope}: provider_class an {name}() statt paid_text_provider")
+            if name == "authorized_paid_call" and (rel, scope) not in ALLOWED_AUTHORIZATION:
+                violations.append(f"{rel}:{node.lineno} {scope}: authorized_paid_call außerhalb der Ledger-Aufrufer")
+            if name in ("OpenAI", "AsyncOpenAI") and (rel, scope) in GUARDED_ADAPTERS \
+                    and GUARDED_ADAPTERS[(rel, scope)] not in self.function_calls:
+                violations.append(f"{rel}:{node.lineno} {scope}: SDK-Client vor der Ledger-Freigabeprüfung")
             if name:
                 self.function_calls.append(name)
             self.generic_visit(node)
@@ -160,6 +177,19 @@ class PaidProviderBoundaryTests(SimpleTestCase):
         violations = scan_source(fixture, "apps/ai_core/image_generation/service.py")
         self.assertTrue(any("completions.create" in v for v in violations))
         self.assertTrue(any("ohne vorherige Ledger-Reservierung" in v for v in violations))
+
+    def test_guard_detects_unguarded_adapter_and_foreign_authorization(self):
+        fixture = (
+            "class OpenAIResponsesProvider:\n"
+            "    def generate(self):\n"
+            "        return OpenAI(api_key='x')\n"
+            "def sneaky():\n"
+            "    with authorized_paid_call(object(), kind='text'):\n"
+            "        pass\n"
+        )
+        violations = scan_source(fixture, "apps/ai_core/providers/openai_responses.py")
+        self.assertTrue(any("vor der Ledger-Freigabeprüfung" in v for v in violations))
+        self.assertTrue(any("außerhalb der Ledger-Aufrufer" in v for v in violations))
 
     def test_guard_ignores_references_and_mock_providers(self):
         fixture = (
