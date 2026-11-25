@@ -19,6 +19,7 @@ from django.core.cache import cache
 from django.core.management import call_command
 from django.test import Client, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
+from django.utils.timezone import now as timezone_now
 
 from apps.ai_core import streaming
 from apps.ai_core.budgeted_provider import BudgetedProvider
@@ -121,10 +122,11 @@ class StreamingFlowTests(TestCase):
     def url(self, conversation=None):
         return reverse("ai_core:conversation-messages-stream", args=[(conversation or self.conversation).id])
 
-    def post(self, provider, question=QUESTION, client=None, close_after=None):
+    def post(self, provider, question=QUESTION, client=None, close_after=None, request_id=None):
+        extra = {"HTTP_X_VQ_REQUEST_ID": request_id} if request_id else {}
         with patch("apps.ai_core.views_global.paid_text_provider", return_value=provider):
             response = (client or self.client).post(self.url(), data=json.dumps({"question": question, "language": "en"}),
-                                                     content_type="application/json")
+                                                     content_type="application/json", **extra)
             if not getattr(response, "streaming", False):
                 return response, None
             chunks = []
@@ -148,6 +150,9 @@ class StreamingFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response["Content-Type"].startswith("text/event-stream"))
         self.assertEqual(response["X-Accel-Buffering"], "no")
+        self.assertIn("no-cache", response["Cache-Control"])
+        self.assertIn("no-transform", response["Cache-Control"])
+        self.assertFalse(response.has_header("Connection"))     # Hop-by-Hop: unter WSGI verboten
         events = frames(raw)
         types_ = [e["type"] for e in events]
         self.assertEqual(types_[0], "response.created")
@@ -333,6 +338,42 @@ class StreamingFlowTests(TestCase):
         self.assertEqual(response.status_code, 404)        # global_ai_available() == False
         self.assertEqual(provider.calls, 0)
 
+    def test_archived_conversation_streams_like_json_path_and_trash_is_refused(self):
+        self.conversation.archived_at = timezone_now()
+        self.conversation.save(update_fields=["archived_at"])
+        _response, raw = self.post(FakeStreamProvider(["ok"]))
+        self.assertEqual(frames(raw)[-1]["type"], "response.completed")
+        self.conversation.deleted_at = timezone_now()
+        self.conversation.save(update_fields=["deleted_at"])
+        provider = FakeStreamProvider(["never"])
+        response, _raw = self.post(provider)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(provider.calls, 0)
+
+    def test_duplicate_request_running_or_conflicting_never_calls_provider(self):
+        provider = FakeStreamProvider(["x"])
+        for prior, expected in (({"status": "running"}, 202), ({"status": "unknown"}, 409)):
+            with self.subTest(prior=prior["status"]), \
+                    patch("apps.ai_core.request_recovery.enabled", return_value=True), \
+                    patch("apps.ai_core.request_recovery.claim", return_value=prior):
+                response, _raw = self.post(provider, request_id=str(uuid.uuid4()))
+            self.assertEqual(response.status_code, expected)
+        from apps.ai_core import request_recovery
+        with patch("apps.ai_core.request_recovery.enabled", return_value=True), \
+                patch("apps.ai_core.request_recovery.claim", side_effect=request_recovery.RecoveryConflict()):
+            response, _raw = self.post(provider, request_id=str(uuid.uuid4()))
+        self.assertEqual((response.status_code, response.json()["error"]), (409, "request_id_conflict"))
+        self.assertEqual(provider.calls, 0)
+        self.assertFalse(AIMessage.objects.filter(conversation=self.conversation).exists())
+
+    def test_detached_finish_failure_is_logged_not_swallowed(self):
+        with patch.object(streaming.KnowledgeStream, "_drain", side_effect=RuntimeError("boom")), \
+                self.assertLogs("apps.ai_core.streaming", "ERROR") as logs:
+            self.post(FakeStreamProvider(["a ", "b ", "c"]), close_after=2)
+        self.assertIn("ai_stream_detached_finish_failed kind=RuntimeError", "\n".join(logs.output))
+        self.assertNotIn("boom", "\n".join(logs.output))
+        self.assertEqual(self.assistant().status, AIMessage.STATUS_PENDING)   # Reconciler übernimmt
+
     def test_ledger_refusal_before_first_byte_is_json(self):
         from apps.ai_ledger.service import LedgerUnavailable
         provider = FakeStreamProvider(["x"])
@@ -439,6 +480,75 @@ class LedgerStreamingTests(SimpleTestCase):
             with self.assertRaises(ProviderTimeout):
                 self.run_stream(self.wrapped(inner))
         self.assertEqual(settle.call_args.kwargs, {"usage": None, "outcome": "ProviderTimeout"})
+
+    def test_known_usage_after_stop_is_finalized_not_uncertain(self):
+        inner = FakeStreamProvider(["a", "b"])
+        inner.last_usage = None
+        with patch("apps.ai_core.budgeted_provider.ledger.reserve", return_value=fake_reservation()), \
+                patch("apps.ai_core.budgeted_provider.ledger.settle", return_value="finalized") as settle:
+            generator = self.wrapped(inner).stream_knowledge(question=QUESTION, language="en")
+            next(generator)
+            inner.last_usage = (11, 3)          # Provider meldete Usage vor dem Stop
+            generator.close()
+        self.assertEqual(settle.call_args.kwargs, {"usage": (11, 3), "outcome": "stream_closed"})
+
+    def test_settlement_runs_once_even_if_closing_provider_fails(self):
+        inner = FakeStreamProvider(["a", "b"])
+        with patch("apps.ai_core.budgeted_provider.ledger.reserve", return_value=fake_reservation()), \
+                patch("apps.ai_core.budgeted_provider.ledger.settle", return_value="uncertain") as settle:
+            generator = self.wrapped(inner).stream_knowledge(question=QUESTION, language="en")
+            next(generator)
+            with patch.object(FakeStreamProvider, "stream_knowledge"):
+                pass
+            generator.close()
+            generator.close()                    # zweites Schließen: keine zweite Abrechnung
+        self.assertEqual(settle.call_count, 1)
+
+    def test_settlement_happens_even_when_provider_close_raises(self):
+        class BadClose:
+            def __init__(self, inner):
+                self.gen = inner
+
+            def __iter__(self):
+                return self
+
+            def __next__(self):
+                return next(self.gen)
+
+            def close(self):
+                raise RuntimeError("close failed")
+
+        inner = FakeStreamProvider(["a", "b"])
+        original = inner.stream_knowledge
+        inner.stream_knowledge = lambda **kw: BadClose(original(**kw))
+        with patch("apps.ai_core.budgeted_provider.ledger.reserve", return_value=fake_reservation()), \
+                patch("apps.ai_core.budgeted_provider.ledger.settle", return_value="uncertain") as settle:
+            generator = self.wrapped(inner).stream_knowledge(question=QUESTION, language="en")
+            next(generator)
+            with self.assertRaises(RuntimeError):
+                generator.close()
+        self.assertEqual(settle.call_count, 1)
+
+    def test_unacknowledged_settlement_is_logged_with_reservation_id(self):
+        inner = FakeStreamProvider(["a"])
+        reservation = fake_reservation()
+        with patch("apps.ai_core.budgeted_provider.ledger.reserve", return_value=reservation), \
+                patch("apps.ai_core.budgeted_provider.ledger.settle", return_value=None), \
+                self.assertLogs("apps.ai_core.budgeted_provider", "WARNING") as logs:
+            self.run_stream(self.wrapped(inner))
+        self.assertIn(f"ai_stream_ledger_settlement_unacknowledged reservation={reservation.id}", logs.output[0])
+
+    def test_emergency_check_failure_is_logged_and_does_not_stop(self):
+        from apps.ai_ledger import service as ledger_service
+        with override_settings(VORNEQ_AI_EMERGENCY_STOP=False, VORNEQ_AI_LEDGER_ENABLED=True,
+                               VORNEQ_AI_LEDGER_ID="fba6bd94-96bb-4094-818f-84c0935ed211",
+                               VORNEQ_AI_LEDGER_DB_NAME="test_only"), \
+                patch.object(ledger_service, "ledger_configuration", side_effect=RuntimeError("db down")), \
+                self.assertLogs("apps.ai_ledger.service", "WARNING") as logs:
+            self.assertIsNone(ledger_service.emergency_stop_active())
+        self.assertIn("ai_ledger_emergency_check_unavailable kind=RuntimeError", logs.output[0])
+        with override_settings(VORNEQ_AI_EMERGENCY_STOP=True):
+            self.assertIs(ledger_service.emergency_stop_active(), True)
 
     def test_reservation_refusal_means_no_provider_call(self):
         from apps.ai_ledger.service import EmergencyStop
@@ -570,10 +680,17 @@ class FrontendStreamingTests(TestCase):
             self.assertIn("data-vq-chat-stop", html)
             self.assertIn("data-vq-stream-cancelled=", html)
         js = (ROOT / "assets" / "js" / "phase-c-chat.js").read_text(encoding="utf-8")
-        for needle in ('new TextDecoder("utf-8")', "{ stream: true }", "event.sequence_number <= lastSequence",
-                       "nearBottom()", "conv.cancelUrl(current.responseId)", "textNode.textContent = partial",
-                       "vq-chat__message--partial", "highlightCode(", "addCodeCopy("):
+        for needle in ("window.VQStreamParser.create()", "nearBottom()", "conv.cancelUrl(current.responseId)",
+                       "textNode.textContent = partial", "vq-chat__message--partial", "highlightCode(",
+                       "addCodeCopy(", "Boolean(window.VQStreamParser)"):
             self.assertIn(needle, js)
+        parser = (ROOT / "assets" / "js" / "vq-stream-parser.js").read_text(encoding="utf-8")
+        for needle in ('new TextDecoder("utf-8")', "{ stream: true }", "event.sequence_number <= lastSequence",
+                       "oversized stream buffer"):
+            self.assertIn(needle, parser)
+        self.assertNotIn("innerHTML", parser)
+        self.assertIn("/static/js/vq-stream-parser.", html)
+        self.assertIn("test-chat-stream-parser.mjs", (ROOT / "quality" / "package.json").read_text())
         start = js.index("// ------------------------------------------------------------ V7-03 streaming")
         self.assertNotIn("innerHTML", js[start:])
         self.assertNotIn("insertAdjacentHTML", js)

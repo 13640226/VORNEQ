@@ -163,6 +163,7 @@
 </div>
 {% endblock %}
 {% block extra_js %}
+{% if chat_streaming_enabled %}<script src="{% static 'js/vq-stream-parser.js' %}" defer></script>{% endif %}
 <script src="{% static 'js/phase-c-chat.js' %}" defer></script>
 <script src="{% static 'js/voice/mic-recorder.js' %}" defer></script>
 <script src="{% static 'js/voice/mic-button.js' %}" defer></script>

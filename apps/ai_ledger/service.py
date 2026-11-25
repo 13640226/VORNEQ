@@ -145,7 +145,8 @@ def emergency_stop_active() -> bool | None:
         from apps.ai_ledger.models import BudgetAccount
         flag = (BudgetAccount.objects.using(LEDGER_ALIAS).filter(ledger_id=config.ledger_id)
                 .values_list("emergency_stop", flat=True).first())
-    except Exception:
+    except Exception as exc:  # Ledger nicht erreichbar: protokollieren, nicht abbrechen
+        _logger.warning("ai_ledger_emergency_check_unavailable kind=%s", type(exc).__name__)
         return None
     return bool(flag) if flag is not None else None
 

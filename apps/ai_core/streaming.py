@@ -245,11 +245,19 @@ class KnowledgeStream:
             if outcome is None:
                 outcome, reason = "provider_unavailable", "stream_ended"
         except GeneratorExit:
-            # Browser/Proxy hat die Verbindung geschlossen: kein Stop. Ohne weitere
-            # Ausgabe zu Ende lesen (gleicher bezahlter Aufruf), dann speichern.
+            # Browser/Proxy hat die Verbindung geschlossen: kein Stop. Gunicorn (sync)
+            # ruft ``respiter.close()`` auch nach einem Schreibfehler auf; Django leitet
+            # das an diesen Generator weiter (GeneratorExit). Ohne weitere Ausgabe zu Ende
+            # lesen (gleicher bezahlter Aufruf), dann speichern. Djangos
+            # ``HttpResponse.close`` verschluckt Fehler von Closern – daher hier
+            # ausdrücklich protokollieren; die Nachricht bleibt dann PENDING und wird
+            # vom Reconciler (ai_conversations_reconcile) als uncertain/interrupted geführt.
             detached = True
-            outcome, reason = self._drain(stream, deadline)
-            self._finish(outcome, reason)
+            try:
+                outcome, reason = self._drain(stream, deadline)
+                self._finish(outcome, reason)
+            except Exception as exc:  # noqa: BLE001 – nur Fehlerklasse, kein Inhalt
+                _log.error("ai_stream_detached_finish_failed kind=%s", type(exc).__name__)
             return
         except ProviderOutputLimited:
             outcome, reason = "output_limit_reached", "max_output_tokens"

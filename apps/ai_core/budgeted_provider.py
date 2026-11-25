@@ -4,11 +4,14 @@ The reservation happens immediately before the (single, max_retries=0)
 provider call; retrieval-only paths (insufficient evidence) cost nothing.
 """
 import itertools
+import logging
 
 from apps.ai_core.providers.exceptions import GatewayError
 from apps.ai_core.providers.openai_responses import build_request_payload, build_request_payload_v2, build_knowledge_payload
 from apps.ai_ledger import service as ledger
 from apps.ai_ledger.call_authorization import authorized_paid_call
+
+_logger = logging.getLogger(__name__)
 
 
 class BudgetedProvider:
@@ -126,9 +129,22 @@ class BudgetedProvider:
             outcome = "unexpected_error"
             raise
         finally:
-            if inner is not None:
-                inner.close()
-            if getattr(self.inner, "request_sent", True) is False:
-                ledger.release(reservation, reason="not_sent")
-            else:
-                ledger.settle(reservation, usage=self.inner.last_usage, outcome=outcome[:40])
+            # COR-04: genau EINE Abrechnung je Reservierung, unabhängig vom
+            # Antwortstatus der Nachricht. Schließen des Provider-Streams darf die
+            # Abrechnung nie verhindern.
+            try:
+                if inner is not None:
+                    inner.close()
+            finally:
+                if getattr(self.inner, "request_sent", True) is False:
+                    # 3) nachweislich nicht gesendet -> Reservierung freigeben
+                    state = ledger.release(reservation, reason="not_sent")
+                else:
+                    # 1) Usage bekannt -> FINALIZED (auch nach Stop/Abbruch);
+                    # 2) gesendet, Usage unbekannt -> UNCERTAIN (nie 0)
+                    state = ledger.settle(reservation, usage=self.inner.last_usage, outcome=outcome[:40])
+                if state is None:
+                    # Nicht bestätigt (DB-Fehler oder bereits abgerechnet): Reservierung
+                    # bleibt RESERVED/unverändert -> manuelle Ledger-Abstimmung.
+                    _logger.warning("ai_stream_ledger_settlement_unacknowledged reservation=%s outcome=%s",
+                                    reservation.id, outcome[:40])

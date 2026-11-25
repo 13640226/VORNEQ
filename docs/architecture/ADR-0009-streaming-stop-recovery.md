@@ -20,8 +20,11 @@ Worker-Timeout 100 s, `gunicorn.conf.py`), Render-Proxy, OpenAI-Responses-API.
 - Kein ASGI-Umbau, kein zusätzlicher Dienst. Ein Stream belegt einen Worker höchstens
   `STREAM_DEADLINE_SECONDS = 85` (< 100 s Worker-Timeout) – dieselbe Belegung wie ein
   heutiger nicht gestreamter Aufruf. Keine Threads.
-- Header `X-Accel-Buffering: no`, `Cache-Control: no-store, no-transform`; im Stack
-  gibt es keine GZip-Middleware, die puffern würde.
+- Header `X-Accel-Buffering: no`, `Cache-Control: private, no-cache, no-store,
+  no-transform`; im Stack gibt es keine GZip-Middleware, die puffern würde.
+  `Connection: keep-alive` wird bewusst **nicht** gesetzt (Hop-by-Hop-Header, unter WSGI
+  verboten). Ein Header allein beweist kein Streaming: das tatsächliche Verhalten des
+  Render-Proxys muss in Staging mit Mock-/Testkonto geprüft werden (NOT_VERIFIED).
 
 ## 3. Umfang des Streamings
 
@@ -96,6 +99,28 @@ den Kontext (`prior_turns` nutzt nur `completed`). `serialize_message` liefert
   liest denselben Provider-Stream **ohne weitere Ausgabe** bis Ende/Deadline weiter und
   speichert das Ergebnis. Nach Reload/Re-Login zeigt die Unterhaltung die Antwort aus
   PostgreSQL – **ohne neue bezahlte Anfrage**.
+- **Belege für dieses Verhalten (lokal geprüft):**
+  - Gunicorn 26.2.0 (`requirements.txt`), Sync-Worker: `workers/sync.py` iteriert
+    `for item in respiter: resp.write(item)` in einem `try/finally`, das
+    `respiter.close()` auch nach einem Schreibfehler (`OSError`) aufruft.
+  - Django 5.2.17 `HttpResponseBase.close()` ruft die registrierten Closer auf
+    (`StreamingHttpResponse` registriert `value.close`) **vor** `request_finished`
+    – die DB-Verbindung ist beim Weiterlesen noch offen.
+  - Lokaler Versuch mit echtem `gunicorn 26.2.0 -w 1` und einem Socket-Client, der nach
+    zwei Chunks trennt: der Generator erhielt `GeneratorExit` und konnte danach weiter
+    arbeiten (`generator_exit_received`, `drained_after_disconnect`).
+  - Test `test_browser_disconnect_drains_and_persists_without_second_call`
+    (SQLite und PostgreSQL): vollständige Antwort gespeichert, genau ein Provider-Aufruf.
+- **Grenzen dieses WSGI-Ansatzes (nicht garantiert):** Weiterlesen ist auf die
+  Deadline (85 s ab Start) und die Lebensdauer des Worker-Prozesses begrenzt. Ein
+  Neustart/Deploy/OOM des Workers beendet den Aufruf; die Nachricht bleibt `pending`
+  mit letztem Checkpoint und wird vom Reconciler `uncertain/interrupted`. Ein Abbruch
+  wird erst beim nächsten Schreibversuch erkannt. Hält der Render-Proxy die
+  Upstream-Verbindung trotz Client-Abbruch offen, läuft der Stream normal zu Ende.
+  Dauerhafte, worker-unabhängige Fortsetzung und Wiederaufnahme per `Last-Event-ID`
+  sind **V7-03.1** (Job + Background-Worker + Redis Stream + PostgreSQL-Checkpoints).
+- Fehler beim Weiterlesen werden protokolliert (`ai_stream_detached_finish_failed`),
+  nie still verschluckt; Djangos `close()` würde sie sonst ignorieren.
 - Laufende Antwort beim Reload: Teiltext aus dem Checkpoint, markiert „schreibt…“.
 - Worker-Neustart während des Streams: Nachricht bleibt `pending` mit letztem
   Checkpoint; der bestehende Reconciler (`ai_conversations_reconcile --apply`) setzt
@@ -183,6 +208,11 @@ Code-Revert ohne Migration und ohne Datenänderung möglich.
 - Synchrone Worker: viele gleichzeitige Streams belegen Worker (wie heute lange Aufrufe).
 - Bei Verbindungsabbruch läuft der Aufruf bis zu 85 s weiter (bewusst, für Recovery).
 - Stop ohne Usage-Ereignis → Kosten UNCERTAIN (manuelle Ledger-Abstimmung).
+- Nicht bestätigte Abrechnung (`settle`/`release` liefert `None`) wird mit
+  Reservierungs-ID protokolliert (`ai_stream_ledger_settlement_unacknowledged`); die
+  Reservierung bleibt RESERVED bis zur manuellen Abstimmung, nie automatisch 0.
+- Das SSE-Parsing liegt in `assets/js/vq-stream-parser.js` (DOM-frei) und ist mit
+  `quality/test-chat-stream-parser.mjs` an jeder möglichen Byte-Grenze getestet.
 - Belegte Antworten streamen nicht tokenweise; Heartbeats nur im Wissenspfad.
 - Proxy-Verhalten von Render für lange SSE-Antworten ist lokal nicht prüfbar
   (Staging-Test erforderlich).

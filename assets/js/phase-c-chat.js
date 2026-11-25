@@ -901,11 +901,10 @@
     }
 
     // ------------------------------------------------------------ V7-03 streaming
-    const streamingEnabled = Boolean(conv) && root.dataset.vqStreaming === "true";
+    // Streaming needs the parser module; without it the JSON path stays active.
+    const streamingEnabled = Boolean(conv) && root.dataset.vqStreaming === "true" &&
+      Boolean(window.VQStreamParser) && typeof TextDecoder === "function";
     const stopButton = root.querySelector("[data-vq-chat-stop]");
-    const STREAM_TYPES = new Set(["response.created", "response.started", "response.delta", "response.section",
-      "response.citation", "response.usage", "response.completed", "response.incomplete",
-      "response.cancelled", "response.failed", "heartbeat"]);
     const uuidLike = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
     let activeStream = null;
     function nearBottom() {
@@ -944,19 +943,6 @@
         window.setTimeout(() => { if (activeStream === current) current.controller.abort(); }, 12000);
       });
     }
-    function parseFrame(frame) {
-      let data = "";
-      for (const line of frame.split("\n")) {
-        if (line.startsWith("data:")) data += line.slice(5).trimStart();
-      }
-      if (!data || data.length > 65536) return null;
-      try {
-        const event = JSON.parse(data);
-        if (!event || typeof event !== "object" || !STREAM_TYPES.has(event.type) ||
-            !Number.isInteger(event.sequence_number) || typeof event.payload !== "object") return null;
-        return event;
-      } catch (_error) { return null; }
-    }
     async function streamAnswer(question, requestId, controller) {
       const headers = { "Content-Type": "application/json", "Accept": "text/event-stream, application/json",
         "X-CSRFToken": token.value };
@@ -983,24 +969,16 @@
       const textNode = bubble.querySelector("p");
       status.textContent = root.dataset.vqStreamWriting || labels.loading || "";
       const reader = response.body.getReader();
-      const decoder = new TextDecoder("utf-8");   // stream: true keeps split UTF-8 sequences intact
-      let buffer = "";
-      let lastSequence = 0;
+      // vq-stream-parser.js: TextDecoder("utf-8") with { stream: true }, SSE frame
+      // reassembly, sequence check (event.sequence_number <= lastSequence dropped).
+      const parser = window.VQStreamParser.create();
       let partial = "";
       let finalState = null;
       try {
         while (finalState === null) {
           const { value, done } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          if (buffer.length > 262144) throw new Error("oversized stream buffer");
-          let cut;
-          while ((cut = buffer.indexOf("\n\n")) !== -1) {
-            const frame = buffer.slice(0, cut);
-            buffer = buffer.slice(cut + 2);
-            const event = parseFrame(frame);
-            if (!event || event.sequence_number <= lastSequence) continue;   // replayed / out of order
-            lastSequence = event.sequence_number;
+          const events = done ? parser.end() : parser.feed(value);
+          for (const event of events) {
             if (event.type === "response.created" && typeof event.response_id === "string" &&
                 uuidLike.test(event.response_id)) current.responseId = event.response_id;
             if (event.type === "response.delta" && typeof event.payload.text === "string") {
@@ -1019,8 +997,8 @@
             }
             if (finalState) break;
           }
+          if (done) break;
         }
-        buffer += decoder.decode();
       } catch (_error) {
         // Network loss, local abort or oversized/invalid stream: never a confirmed stop.
         // The server keeps the paid request's result; reloading the conversation shows it.

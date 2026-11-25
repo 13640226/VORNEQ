@@ -52,7 +52,9 @@ def _single_event_stream(encoder, body, status):
 
 def _response(generator):
     reply = StreamingHttpResponse(generator, content_type=streaming.CONTENT_TYPE)
-    reply["Cache-Control"] = "private, no-store, no-transform"
+    # COR-01: no-cache/no-store und no-transform (keine Proxy-Kompression/Pufferung).
+    # "Connection" ist ein Hop-by-Hop-Header und unter WSGI verboten – nie setzen.
+    reply["Cache-Control"] = "private, no-cache, no-store, no-transform"
     reply["X-Accel-Buffering"] = "no"           # Proxies/Render: nicht puffern
     reply["X-Content-Type-Options"] = "nosniff"
     return reply
