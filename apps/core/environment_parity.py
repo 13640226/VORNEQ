@@ -147,6 +147,7 @@ CATALOG: tuple[Var, ...] = (
     # KI – Production
     _v("VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED", "flag", "production"),
     _v("VORNEQ_AI_CHAT_RECOVERY_PRODUCTION_ENABLED", "flag", "production"),
+    _v("VORNEQ_AI_CHAT_PRODUCTION_EXTENDED_INPUT", "flag", "production"),
     _v("VORNEQ_AI_PRODUCTION_AUTHORIZED_SHA", "pin", "production"),
     _v("VORNEQ_AI_PRODUCTION_OWNER_AUTH", "reference", "production"),
     _v("VORNEQ_AI_PRODUCTION_APPROVED_MODEL", "config", "production"),

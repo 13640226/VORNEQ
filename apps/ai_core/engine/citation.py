@@ -102,7 +102,8 @@ def validate_generated(output, *, sources, language, max_answer_chars=1000):
     if (output["model_status"] != "generated" or
             output["grounded_status"] != "proposed" or output["error_code"] != ""):
         raise GeneratedAnswerRejected("untrusted status claim")
-    if type(max_answer_chars) is not int or not 1 <= max_answer_chars <= 2400:
+    from apps.ai_core.model_limits import MAX_VALIDATED_ANSWER_CHARS
+    if type(max_answer_chars) is not int or not 1 <= max_answer_chars <= MAX_VALIDATED_ANSWER_CHARS:
         raise GeneratedAnswerRejected("invalid answer bound")
     answer = output["answer"]
     if not isinstance(answer, str) or not 1 <= len(answer.strip()) <= max_answer_chars:

@@ -325,7 +325,7 @@ class StagingEndpointDailyCapTests(TransactionTestCase):
         self.assertIn("ai_ledger_staging_daily_cap_reached kind=requests", "\n".join(logs.output))
         self.assertEqual([(r.status_code, c) for r, c in results], [(200, 1), (200, 1), (429, 0)],
                          [r.content[:200] for r, _ in results])
-        self.assertEqual(results[2][0].json(), {"error": "rate_limited"})
+        self.assertEqual(results[2][0].json(), {"error": "rate_limited", "reason": "BUDGET_REFUSED"})
         replay, calls = self.ask(first_id)
         self.assertEqual((replay.status_code, calls), (200, 0))
         self.assertEqual(staging_rows().count(), 2)

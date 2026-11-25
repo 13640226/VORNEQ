@@ -97,11 +97,11 @@ class OutputBudgetTests(SimpleTestCase):
                 "apps.ai_core.budgeted_provider.ledger.reserve") as reserve, patch("apps.ai_core.providers.openai_responses.OpenAIResponsesProvider.generate") as sdk:
             response = ask_global_view(request)
         self.assertEqual(response.status_code, 413)
-        self.assertEqual(json.loads(response.content), {"error": "context_limit_reached"})
+        self.assertEqual(json.loads(response.content), {"error": "context_limit_reached", "reason": "CONTEXT_LIMIT_EXCEEDED"})
         reserve.assert_not_called()
         sdk.assert_not_called()
         finish.assert_called_once_with(request, "synthetic", http_status=413,
-                                       response={"error": "context_limit_reached"})
+                                       response={"error": "context_limit_reached", "reason": "CONTEXT_LIMIT_EXCEEDED"})
 
     def test_larger_cap_is_reserved_exactly_and_only_one_call(self):
         provider = self.provider()

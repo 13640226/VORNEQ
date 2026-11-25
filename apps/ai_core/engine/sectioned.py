@@ -36,7 +36,7 @@ def validate_sectioned(output, *, passages, sources, language, question="", max_
     if output_budget is not None and output_budget != configured_output_budget():
         raise GeneratedAnswerRejected("unauthorized response budget")
     answer_bound = output_budget.answer_chars if output_budget else 2400
-    section_bound = min(answer_bound, 1400) if output_budget else 700
+    section_bound = output_budget.section_chars if output_budget else 700
     max_distinct = 24 if output_budget else 8
     if not isinstance(output, dict) or set(output) != _FIELDS:
         raise GeneratedAnswerRejected("invalid sectioned response fields")

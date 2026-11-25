@@ -12,8 +12,16 @@ class OutputBudget:
 
     @property
     def answer_chars(self):
-        # Independent text safety bound, NOT an exact tokenizer.
-        return min(6400, 2 * self.output_tokens)
+        # V7-02: Validierungsgrenze aus dem Token-Budget (kein fester 6400-Deckel).
+        # Die harte Grenze bleibt max_output_tokens beim Provider; ein Token kann
+        # mehrere Zeichen tragen, daher großzügig (kein Tokenizer, keine Kürzung).
+        from apps.ai_core.model_limits import ANSWER_CHARS_PER_TOKEN
+        return ANSWER_CHARS_PER_TOKEN * self.output_tokens
+
+    @property
+    def section_chars(self):
+        """Obergrenze je Antwortabschnitt (bis zu 6 Abschnitte); mindestens die bisherigen 1400."""
+        return max(1400, self.answer_chars // 6)
 
     def fits_context(self, input_bytes, overhead):
         return input_bytes + overhead + self.output_tokens <= self.context_tokens
@@ -38,7 +46,14 @@ def configured_output_budget():
         return None
     if model != os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""):
         return None
-    cap = _bounded(getattr(settings, "VORNEQ_AI_CHAT_OUTPUT_TOKEN_BUDGET", ""), 1536, 8192)
+    # V7-02: Oberhalb des bisherigen Pilotdeckels (8192) nur, wenn die zentrale
+    # Modell-Policy vollständig konfiguriert ist (Registry-/Kontextgrenzen geprüft).
+    from apps.ai_core.model_limits import HARD_MAX_OUTPUT_TOKENS, chat_limits
+    limits = chat_limits()
+    upper = 8192
+    if limits.extended and limits.model_id == model:
+        upper = min(HARD_MAX_OUTPUT_TOKENS, limits.max_output_tokens)
+    cap = _bounded(getattr(settings, "VORNEQ_AI_CHAT_OUTPUT_TOKEN_BUDGET", ""), 1536, max(upper, 8192))
     context = _bounded(getattr(settings, "VORNEQ_AI_CHAT_MODEL_CONTEXT_TOKENS", ""), 8192, 1000000)
     if cap is None or context is None or context < cap + 4096:
         return None

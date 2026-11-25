@@ -29,6 +29,7 @@
       rejectedOutput: root.dataset.vqRejectedOutput,
       outputLimited: root.dataset.vqOutputLimited,
       contextLimited: root.dataset.vqContextLimited,
+      inputTooLarge: root.dataset.vqInputTooLarge,
       citationIdentity: root.dataset.vqCitationIdentity,
       citationDigest: root.dataset.vqCitationDigest,
       citationQuote: root.dataset.vqCitationQuote,
@@ -58,14 +59,18 @@
     }
     const language = ["fa", "de", "en"].includes(root.dataset.vqLanguage)
       ? root.dataset.vqLanguage : "en";
-    // Trusted template values, bounded to the existing server policy.
+    // Trusted template values from the central server policy (V7-02, model_limits).
+    // The backend stays authoritative; these hard ceilings only guard against
+    // absurd values and match model_limits.MAX_VALIDATED_ANSWER_CHARS.
+    const HARD_MAX_ANSWER_CHARS = 1048576;
+    const HARD_MAX_QUESTION = 2097152;
     const rawAnswerLimit = Number(root.dataset.vqAnswerLimit);
     const richText = root.dataset.vqRichText === "true";
     const answerLimit = Number.isInteger(rawAnswerLimit) && rawAnswerLimit >= 1000 &&
-      rawAnswerLimit <= (richText ? 6400 : 2400) ? rawAnswerLimit : 1000;
+      rawAnswerLimit <= (richText ? HARD_MAX_ANSWER_CHARS : 2400) ? rawAnswerLimit : 1000;
     const rawSectionLimit = Number(root.dataset.vqSectionLimit);
     const sectionLimit = richText && Number.isInteger(rawSectionLimit) &&
-      rawSectionLimit >= 700 && rawSectionLimit <= 1400 ? rawSectionLimit : 700;
+      rawSectionLimit >= 700 && rawSectionLimit <= answerLimit ? rawSectionLimit : 700;
     const citationLimit = root.dataset.vqCitationLimit === "5" ? 5 : 3;
     // Prefer the script of the question over the surrounding UI language.
     // Mixed Latin brand names (e.g. VORNEQ) must not override Persian text.
@@ -80,7 +85,7 @@
       return /[\u0600-\u06FF]/u.test(text) ? "rtl" : "ltr";
     }
     const rawLimit = Number(root.dataset.vqQuestionLimit);
-    const limit = Number.isInteger(rawLimit) && rawLimit >= 200 && rawLimit <= 8192 ? rawLimit : 200;
+    const limit = Number.isInteger(rawLimit) && rawLimit >= 200 && rawLimit <= HARD_MAX_QUESTION ? rawLimit : 200;
     const rawBytes = Number(root.dataset.vqQuestionBytes);
     const byteLimit = Number.isInteger(rawBytes) && rawBytes === limit && rawBytes >= 512 ? rawBytes : 0;
     function inputCount(value) {
@@ -229,7 +234,9 @@
       content.dir = "auto";
       const source = String(value);
       const lines = source.split(/\r?\n/);
-      if (lines.length > 256 || Array.from(source).length > 6400) {
+      // Bounded parse: long answers (V7-02) are rendered up to the server's
+      // answer limit; beyond that the text stays plain (never truncated).
+      if (lines.length > 4096 || Array.from(source).length > Math.max(6400, answerLimit)) {
         const plain = document.createElement("p");
         plain.textContent = source;
         content.appendChild(plain);
@@ -415,6 +422,7 @@
       if (!data || typeof data !== "object") return labels.error || "Request failed";
       if (data.error === "output_limit_reached") return labels.outputLimited || labels.error;
       if (data.error === "context_limit_reached") return labels.contextLimited || labels.error;
+      if (data.reason === "INPUT_TOO_LARGE") return labels.inputTooLarge || labels.error;
       if (data.error === "UNSUPPORTED_QUESTION") {
         return labels.unsupported || "Question unsupported; no model request was sent.";
       }
@@ -454,7 +462,7 @@
         Array.isArray(data.citations) && data.citations.length === 0;
       if (!data || data.verified !== false ||
           typeof data.answer !== "string" ||
-          (data.answer.length > answerLimit && Array.from(data.answer).length > (stored ? 6400 : answerLimit)) ||
+          (data.answer.length > answerLimit && Array.from(data.answer).length > (stored ? Math.max(answerLimit, 6400) : answerLimit)) ||
           (!modelKnowledge && data.mode !== "grounded_draft") || !Array.isArray(data.citations)) {
         appendMessage(labels.error || "Invalid response", "assistant");
         return { completed: false, answerBubble: null };
@@ -908,6 +916,13 @@
           // 413 responses do not justify clearing a claimed recovery ID.
           completed = Boolean(failure && failure.error === "context_limit_reached");
           if (requestId && !completed) recoveryBlocked = true;
+        } else if (response.status === 400) {
+          // Deterministic validation refusal before any provider/ledger work:
+          // show a fixed label and KEEP the typed text (COR-08).
+          let failure = null;
+          try { failure = await response.json(); } catch (_error) { /* fail closed */ }
+          appendMessage(rejectionMessage(failure), "assistant");
+          if (requestId) clearRecovery();
         } else if (!response.ok) {
           // A failed provider parse may follow a billable HTTP 200. Show only a
           // fixed localized explanation; never auto-retry the original request.
@@ -937,7 +952,8 @@
       } finally {
         window.clearTimeout(timeout);
         status.textContent = "";
-        if (completed) input.value = "";
+        // Clear the composer only after a rendered answer; every error keeps the text.
+        if (completed && answerBubble) input.value = "";
         form.removeAttribute("aria-busy");
         if (brand) brand.dataset.state = completed && answerBubble && !recoveryBlocked ? "idle" : "error";
         busy = false;

@@ -1,4 +1,4 @@
-"""Opt-in bounded global-chat input pilot; production retains legacy limits.
+"""Global-chat input budget (V7-02: from the central model limit policy).
 
 UTF-8 bytes are a conservative token-cost proxy, not exact model tokenization.
 The existing ledger still reserves against the actual serialized provider
@@ -27,26 +27,19 @@ class InputBudget:
 
 
 LEGACY = InputBudget()
+# Historische Pilot-Obergrenze; V7-02: größere Budgets nur mit Kontextfenster
+# über ``apps.ai_core.model_limits`` (zentrale Policy).
 MAX_PILOT_BUDGET = 8192
 
 
 def global_budget():
-    """Invalid/absent configuration never widens access or limits."""
-    if getattr(settings, "VORNEQ_ENV", None) not in ("development", "staging"):
+    """Invalid/absent configuration never widens access or limits.
+
+    V7-02: delegiert an die zentrale, modellabhängige Policy
+    (``model_limits.chat_limits``); ``LEGACY`` bleibt der Fallback.
+    """
+    from apps.ai_core.model_limits import chat_limits
+    limits = chat_limits()
+    if not limits.widened_input:
         return LEGACY
-    raw = getattr(settings, "VORNEQ_AI_CHAT_INPUT_TOKEN_BUDGET", "")
-    if not isinstance(raw, str) or not raw.isascii() or not raw.isdecimal() or len(raw) > 4:
-        return LEGACY
-    value = int(raw)
-    if not 512 <= value <= MAX_PILOT_BUDGET:
-        return LEGACY
-    if settings.VORNEQ_ENV == "staging":
-        # The old flat per-request reservation is insufficient for a larger
-        # payload. The hosted pilot must use actual-payload ledger estimation
-        # and durable request recovery. These checks are configuration-only.
-        from apps.ai_ledger.service import ledger_enabled
-        from apps.ai_core.request_recovery import enabled as recovery_enabled
-        if not ledger_enabled() or not recovery_enabled():
-            return LEGACY
-    # JSON escaping can consume up to six bytes per ASCII input byte.
-    return InputBudget(value, value, 6 * value + 512)
+    return InputBudget(limits.max_message_characters, limits.max_input_tokens, limits.max_request_bytes)

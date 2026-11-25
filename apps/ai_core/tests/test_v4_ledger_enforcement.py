@@ -92,7 +92,7 @@ class WithoutLedgerTests(HostedPaidPathMixin, TestCase):
     def test_02_staging_chat_without_ledger_and_without_prepaid_only_is_refused(self):
         with patch("apps.ai_core.views_global.reserve_global_request") as quota:
             response = self.chat()
-        self.assertEqual((response.status_code, response.json()), (429, {"error": "rate_limited"}))
+        self.assertEqual((response.status_code, response.json()), (429, {"error": "rate_limited", "reason": "LEDGER_UNAVAILABLE"}))
         self.assert_no_paid_call()
         quota.assert_not_called()
 
@@ -141,7 +141,8 @@ class WithLedgerTests(HostedPaidPathMixin, TestCase):
             with self.subTest(refusal=type(refusal).__name__):
                 self.reserve.side_effect = refusal
                 response = self.chat()
-                self.assertEqual((response.status_code, response.json()), (429, {"error": "rate_limited"}))
+                self.assertEqual((response.status_code, response.json()),
+                                 (429, {"error": "rate_limited", "reason": "BUDGET_REFUSED"}))
         self.generate.assert_not_called()
         self.settle.assert_not_called()
 
@@ -232,7 +233,7 @@ class ProductionRegressionTests(SimpleTestCase):
                 patch("apps.ai_core.views_global.reserve_global_request") as quota, \
                 patch("apps.ai_core.views_global.OpenAIResponsesProvider") as provider:
             body, status, meta = run_global_pipeline(request, "Who was Ibn Sina?", "en")
-        self.assertEqual((body, status, meta["budgeted"]), ({"error": "rate_limited"}, 429, None))
+        self.assertEqual((body, status, meta["budgeted"]), ({"error": "rate_limited", "reason": "LEDGER_UNAVAILABLE"}, 429, None))
         provider.assert_not_called()
         quota.assert_not_called()
 

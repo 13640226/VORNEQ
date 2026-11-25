@@ -67,7 +67,7 @@ def chat_page(request):
             "chat_v3_enabled": answer_limit(settings) > 1000,
             "chat_answer_limit": output_budget.answer_chars if output_budget else answer_limit(settings),
             "chat_rich_text": output_budget is not None,
-            "chat_section_limit": min(output_budget.answer_chars, 1400) if output_budget else 700,
+            "chat_section_limit": output_budget.section_chars if output_budget else 700,
             "chat_citation_limit": 5 if stage2_enabled(settings) else 3,
             "chat_staging": settings.VORNEQ_ENV == "staging",
             "chat_production": settings.VORNEQ_ENV == "production",

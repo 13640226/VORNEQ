@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET, require_POST
 
 from apps.ai_core.engine.budget import BudgetExceeded
+from apps.ai_core.error_contracts import CONTEXT_LIMIT_EXCEEDED, budget_reason, input_too_large
 from apps.ai_core.engine.citation import (
     EvidenceRejected, GeneratedAnswerRejected, CitationIdentityRejected,
     CitationDigestRejected, CitationQuoteRejected,
@@ -22,7 +23,7 @@ from apps.ai_core.engine.citation import (
 from apps.ai_core.engine.global_grounded import GLOBAL_INSTRUCTIONS, HISTORY_INSTRUCTIONS, GlobalUnsupported, UnsupportedNumericClaim, ask_global
 from apps.ai_core.engine.sectioned import UnsupportedSectionNumber
 from apps.ai_core.engine.grounded import PhaseBDisabled
-from apps.ai_core.gateway import InputError, validate
+from apps.ai_core.gateway import InputError, InputTooLarge, validate
 from apps.ai_core.chat_input_budget import global_budget
 from apps.ai_core.global_budget import reserve_global_request
 from apps.ai_core.global_router import UNSUPPORTED, route_question
@@ -162,12 +163,17 @@ def ask_global_view(request):
     try:
         length = int(request.META.get("CONTENT_LENGTH", "0") or "0")
         budget = global_budget()
-        if length < 0 or length > budget.body_bytes or len(request.body) > budget.body_bytes:
-            return JsonResponse({"error": "request_too_large"}, status=413)
+        if length < 0 or length > budget.body_bytes:
+            # Vor dem Lesen des Bodys ablehnen (keine teure Verarbeitung großer Eingaben).
+            return JsonResponse(input_too_large("request_too_large", limit_bytes=budget.body_bytes), status=413)
+        if len(request.body) > budget.body_bytes:
+            return JsonResponse(input_too_large("request_too_large", limit_bytes=budget.body_bytes), status=413)
         body = json.loads(request.body, object_pairs_hook=_strict_object)
         if not isinstance(body, dict) or set(body) - {"question", "language"}:
             return JsonResponse({"error": "invalid_fields"}, status=400)
         question, language = validate(body.get("question"), body.get("language", "fa"), input_budget=budget)
+    except InputTooLarge:
+        return JsonResponse(input_too_large("invalid_input", limit_chars=budget.question_chars), status=400)
     except (ValueError, TypeError, UnicodeDecodeError, InputError):
         return JsonResponse({"error": "invalid_input"}, status=400)
     # Bind the request ID before routing, including deterministic cost-free 422s,
@@ -246,8 +252,8 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
                               search_question=search_question, stage2=stage2,
                               max_answer_chars=response_engine_v3.answer_limit(settings),
                               **({"output_budget": output_budget} if output_budget else {}))
-    except BudgetExceeded:
-        return {"error": "rate_limited"}, 429, meta
+    except BudgetExceeded as exc:
+        return {"error": "rate_limited", "reason": budget_reason(exc)}, 429, meta
     except GlobalUnsupported:
         return {"error": "UNSUPPORTED_QUESTION"}, 422, meta
     except (EvidenceRejected, PhaseBDisabled) as exc:
@@ -264,7 +270,7 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
     except ProviderOutputLimited:
         return {"error": "output_limit_reached"}, 503, meta
     except ProviderContextLimited:
-        return {"error": "context_limit_reached"}, 413, meta
+        return {"error": "context_limit_reached", "reason": CONTEXT_LIMIT_EXCEEDED}, 413, meta
     except ProviderInvalidResponse:
         # HTTP 200 from the provider is not proof of a usable structured answer.
         # Fixed code only: do not log or return raw provider content.
