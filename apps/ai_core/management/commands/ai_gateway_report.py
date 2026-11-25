@@ -96,6 +96,27 @@ def build_report():
         "registry_activation_note": "A catalog entry is not an authorization to call a provider.",
         "chat_limits": _chat_limits_section(),
         "streaming": _streaming_section(),
+        "chat_jobs": _chat_jobs_section(),
+    }
+
+
+def _chat_jobs_section():
+    """V7-03.1a: Status der dauerhaften Job-Queue (Konfiguration only, ohne DB-Zugriff)."""
+    from apps.ai_core import chat_jobs
+    env = getattr(settings, "VORNEQ_ENV", None)
+    return {
+        "enabled": chat_jobs.enabled(),
+        "flag": ("VORNEQ_AI_CHAT_JOBS_PRODUCTION_ENABLED" if env == "production"
+                 else "VORNEQ_AI_CHAT_JOBS_ENABLED"),
+        "queue": "PostgreSQL (SELECT FOR UPDATE SKIP LOCKED); Redis only optional wake-up",
+        "max_active_global": chat_jobs.max_active_global(),
+        "max_active_per_user": chat_jobs.max_active_per_user(),
+        "lease_seconds": chat_jobs.lease_seconds(),
+        "deadline_seconds": chat_jobs.deadline_seconds(),
+        "fencing": "worker_id + fencing_token + lease_until on every worker write",
+        "worker_command": "manage.py run_chat_jobs (not provisioned on Render)",
+        "http_endpoints": "NONE (V7-03.1b)",
+        "active_jobs": "NOT_REPORTED (report performs no database queries)",
     }
 
 

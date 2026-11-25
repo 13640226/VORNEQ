@@ -207,6 +207,11 @@ def _instructions_for(environment, with_history):
 
 
 def prepare_paid_text(request, prior_turns=()):
+    """HTTP-Variante: Akteur ist der angemeldete Nutzer der Anfrage."""
+    return prepare_paid_text_for_actor(request.user, prior_turns)
+
+
+def prepare_paid_text_for_actor(actor, prior_turns=()):
     """Gemeinsame Vorbereitung jedes bezahlten Text-Aufrufs (Pipeline und V7-03-Stream).
 
     Reihenfolge unverändert: Ledger-Pflicht/Not-Aus -> Quote -> Ausgabe-Policy ->
@@ -214,7 +219,7 @@ def prepare_paid_text(request, prior_turns=()):
     Ausnahmen (BudgetExceeded, GatewayError) gehen unverändert an den Aufrufer.
     """
     shared_budget = require_paid_text_ledger(ledger_check=ledger_enabled)
-    reserve_global_request(request.user.pk, burst_only=shared_budget)
+    reserve_global_request(actor.pk, burst_only=shared_budget)
     stage2 = response_engine_v3.stage2_enabled(settings)
     output_budget = configured_output_budget() if stage2 else None
     model_name = os.environ.get("VORNEQ_AI_PHASE_B_MODEL", "")
@@ -226,7 +231,7 @@ def prepare_paid_text(request, prior_turns=()):
     answer_chars = (min(MAX_VALIDATED_ANSWER_CHARS, ANSWER_CHARS_PER_TOKEN * policy_output)
                     if policy_output else response_engine_v3.answer_limit(settings))
     provider = paid_text_provider(
-        actor_id=request.user.pk,
+        actor_id=actor.pk,
         provider_class=OpenAIResponsesProvider,
         ledger_check=ledger_enabled,
         model=model_name,

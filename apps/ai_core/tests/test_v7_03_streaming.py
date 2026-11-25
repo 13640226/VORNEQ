@@ -384,6 +384,19 @@ class StreamingFlowTests(TestCase):
         self.assertEqual(provider.calls, 0)
         self.assertEqual(self.assistant().status, AIMessage.STATUS_FAILED)
 
+    def test_reservation_refusal_in_first_stream_step_fails_cleanly(self):
+        from apps.ai_ledger.service import BudgetExhausted
+        inner = FakeStreamProvider(["never"])
+        provider = BudgetedProvider(inner, actor_id=self.user.pk)
+        with patch("apps.ai_core.budgeted_provider.ledger.reserve", side_effect=BudgetExhausted("low")):
+            response, raw = self.post(provider)
+        last = frames(raw)[-1]
+        self.assertEqual((last["type"], last["payload"]["error"], last["payload"]["reason"]),
+                         ("response.failed", "rate_limited", "BUDGET_REFUSED"))
+        self.assertEqual(inner.calls, 0)
+        message = self.assistant()
+        self.assertEqual((message.status, message.error_code), (AIMessage.STATUS_FAILED, "rate_limited"))
+
     def test_feature_gate_and_grounded_route(self):
         with override_settings(VORNEQ_AI_CHAT_STREAMING_ENABLED=False):
             response, _raw = self.post(FakeStreamProvider(["x"]))

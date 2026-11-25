@@ -19,6 +19,7 @@ class BudgetedProvider:
         self.inner = inner
         self.actor_id = actor_id
         self.last_reservation = None
+        self.last_settlement = None
 
     def generate(self, *, question, language, sources, prior_turns=(), mode="grounded"):
         # The reservation covers the exact payload, including conversation context.
@@ -143,6 +144,8 @@ class BudgetedProvider:
                     # 1) Usage bekannt -> FINALIZED (auch nach Stop/Abbruch);
                     # 2) gesendet, Usage unbekannt -> UNCERTAIN (nie 0)
                     state = ledger.settle(reservation, usage=self.inner.last_usage, outcome=outcome[:40])
+                # V7-03.1a: Abrechnungszustand für die Job-Bindung (unabhängig vom Job-Status).
+                self.last_settlement = state if state is not None else "unacknowledged"
                 if state is None:
                     # Nicht bestätigt (DB-Fehler oder bereits abgerechnet): Reservierung
                     # bleibt RESERVED/unverändert -> manuelle Ledger-Abstimmung.

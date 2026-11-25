@@ -189,3 +189,92 @@ class AIImageDailyQuota(models.Model):
     """Global day lock serializes quotas across users and worker processes."""
     day_utc = models.DateField(primary_key=True)
     submitted = models.PositiveIntegerField(default=0)
+
+
+class AIChatJob(models.Model):
+    """V7-03.1a: dauerhafter Antwort-Job (PostgreSQL-Queue, ADR-0010).
+
+    Ein Job erzeugt genau eine Assistant-Antwort in einer Unterhaltung. Die Queue
+    ist PostgreSQL selbst (``SELECT … FOR UPDATE SKIP LOCKED``); Redis ist nie die
+    Quelle der Wahrheit. ``status`` ist der Lebenszyklus des Jobs, ``ledger_state``
+    der davon unabhängige finanzielle Zustand der Reservierung. Jede Schreib-
+    operation eines Workers ist an ``worker_id`` + ``fencing_token`` + gültige
+    Lease gebunden; ein veralteter Worker kann nichts mehr ändern.
+    Inhalte (Frage/Antwort) liegen nur in ``AIMessage``; Jobs speichern keine Texte.
+    """
+
+    QUEUED = "queued"
+    CLAIMED = "claimed"
+    RUNNING = "running"
+    CANCEL_REQUESTED = "cancel_requested"
+    COMPLETED = "completed"
+    INCOMPLETE = "incomplete"
+    CANCELLED = "cancelled"
+    FAILED = "failed"
+    UNCERTAIN = "uncertain"
+    STATES = [(s, s) for s in (QUEUED, CLAIMED, RUNNING, CANCEL_REQUESTED, COMPLETED,
+                               INCOMPLETE, CANCELLED, FAILED, UNCERTAIN)]
+    ACTIVE = (QUEUED, CLAIMED, RUNNING, CANCEL_REQUESTED)
+    TERMINAL = (COMPLETED, INCOMPLETE, CANCELLED, FAILED, UNCERTAIN)
+
+    LEDGER_NONE = "none"
+    LEDGER_RESERVED = "reserved"
+    LEDGER_FINALIZED = "finalized"
+    LEDGER_UNCERTAIN = "uncertain"
+    LEDGER_RELEASED = "released"
+    LEDGER_UNACKNOWLEDGED = "unacknowledged"
+    LEDGER_STATES = [(s, s) for s in (LEDGER_NONE, LEDGER_RESERVED, LEDGER_FINALIZED,
+                                      LEDGER_UNCERTAIN, LEDGER_RELEASED, LEDGER_UNACKNOWLEDGED)]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                              related_name="ai_chat_jobs")
+    # Audit bleibt beim Löschen der Unterhaltung erhalten (Finanzbelege im Ledger).
+    conversation = models.ForeignKey(AIConversation, on_delete=models.SET_NULL, null=True,
+                                     related_name="chat_jobs")
+    user_message = models.ForeignKey(AIMessage, on_delete=models.SET_NULL, null=True,
+                                     related_name="+")
+    assistant_message = models.OneToOneField(AIMessage, on_delete=models.SET_NULL, null=True,
+                                             related_name="chat_job")
+    request_id = models.UUIDField(unique=True)
+    fingerprint = models.CharField(max_length=64)
+    language = models.CharField(max_length=2, default="fa")
+    status = models.CharField(max_length=20, choices=STATES, default=QUEUED)
+    worker_id = models.CharField(max_length=64, blank=True, default="")
+    fencing_token = models.PositiveBigIntegerField(default=0)
+    lease_until = models.DateTimeField(null=True, blank=True)
+    heartbeat_at = models.DateTimeField(null=True, blank=True)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    provider_request_sent = models.BooleanField(default=False)
+    reservation_id = models.UUIDField(null=True, blank=True)
+    ledger_state = models.CharField(max_length=16, choices=LEDGER_STATES, default=LEDGER_NONE)
+    checkpoint_sequence = models.PositiveIntegerField(default=0)
+    checkpoint_chars = models.PositiveIntegerField(default=0)
+    error_code = models.CharField(max_length=40, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    claimed_at = models.DateTimeField(null=True, blank=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["status", "created_at"], name="ai_chatjob_queue_idx"),
+            models.Index(fields=["owner", "status"], name="ai_chatjob_owner_idx"),
+            models.Index(fields=["status", "lease_until"], name="ai_chatjob_lease_idx"),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(status__in=["queued", "claimed", "running", "cancel_requested", "completed",
+                                        "incomplete", "cancelled", "failed", "uncertain"]),
+                name="ai_chatjob_status_valid"),
+            models.CheckConstraint(
+                condition=Q(ledger_state__in=["none", "reserved", "finalized", "uncertain", "released",
+                                              "unacknowledged"]),
+                name="ai_chatjob_ledger_state_valid"),
+            # Laufende Jobs haben immer einen Worker und eine Lease.
+            models.CheckConstraint(
+                condition=(~Q(status__in=["claimed", "running"])
+                           | (Q(lease_until__isnull=False) & ~Q(worker_id=""))),
+                name="ai_chatjob_running_has_lease"),
+        ]
