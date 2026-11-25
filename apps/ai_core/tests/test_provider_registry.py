@@ -39,3 +39,11 @@ class RegistryTests(TestCase):
         self.assertTrue(legacy_model_matches("openai-text", Capability.TEXT, "m", ("m",)))
         self.assertFalse(legacy_model_matches("openai-text", Capability.TEXT, "other", ("m",)))
         self.assertFalse(legacy_model_matches("openai-text", Capability.TEXT, "", ("",)))
+
+    def test_image_model_allowlist(self):
+        from apps.ai_core.provider_resolution import legacy_model_matches
+        from apps.ai_core.provider_registry import CapabilityMissing
+        self.assertTrue(legacy_model_matches("openai-image", Capability.IMAGE, "approved", {"approved"}))
+        self.assertFalse(legacy_model_matches("openai-image", Capability.IMAGE, "unknown", {"approved"}))
+        with self.assertRaises(CapabilityMissing):
+            legacy_model_matches("openai-text", Capability.IMAGE, "approved", {"approved"})
