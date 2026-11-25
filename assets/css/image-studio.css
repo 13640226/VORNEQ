@@ -39,7 +39,7 @@
 .vq-image__figure { margin: 18px 0; }
 .vq-image__figure img { display: block; max-inline-size: 100%; block-size: auto; border-radius: 14px; background: var(--color-bg-elevated); }
 .vq-image__figure figcaption, .vq-image__one-shot { margin-block: 10px; font-size: .85rem; color: var(--color-text-secondary); }
-.vq-image__open, .vq-image__back a { color: var(--color-accent); text-decoration: underline; }
+.vq-image__open, .vq-image__back a { color: var(--color-accent-text); text-decoration: underline; }
 .vq-image__back { margin-block-start: 20px; }
 .vq-image [hidden] { display: none !important; }
 @media (max-width: 800px) {

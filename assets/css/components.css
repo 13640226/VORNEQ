@@ -97,7 +97,7 @@
 }
 
 .site-nav a[aria-current="page"] {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 
@@ -305,7 +305,7 @@ html[dir="rtl"] .drawer {
 
 .drawer__nav-link:hover {
   background: var(--color-bg-hover);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .drawer__arrow {
@@ -374,7 +374,7 @@ html[dir="rtl"] .drawer {
 .pg-kicker {
   margin-bottom: var(--space-5);
 
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 
   font-size: var(--font-size-caption);
   font-weight: 800;
@@ -401,7 +401,7 @@ html[dir="rtl"] .pg-display {
 }
 
 .pg-display .accent {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .pg-intro {
@@ -712,7 +712,7 @@ html[dir="rtl"] .pg-display {
   background:
     var(--color-accent-subtle);
 
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 
   font-size: var(--font-size-caption);
   font-weight: 750;
@@ -776,7 +776,7 @@ html[dir="rtl"] .pg-display {
 .pg-summary__label {
   margin-bottom: var(--space-3);
 
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 
   font-size: var(--font-size-caption);
   font-weight: 800;
@@ -897,13 +897,13 @@ html[dir="rtl"] .pg-display {
 }
 
 .accordion-item__trigger:hover {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .accordion-icon {
   flex: 0 0 auto;
 
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 
   transition:
     transform
@@ -950,7 +950,7 @@ html[dir="rtl"] .pg-display {
 }
 
 .pg-section__index {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 
   font-size: var(--font-size-small);
   font-weight: 800;
@@ -1014,7 +1014,7 @@ html[dir="rtl"] .pg-display {
 .editorial-card__eyebrow {
   margin-bottom: auto;
 
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 
   font-size: var(--font-size-caption);
   font-weight: 800;
@@ -1073,7 +1073,7 @@ html[dir="rtl"] .pg-display {
 }
 
 .method-row__number {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 
   font-size: var(--font-size-h3);
   font-weight: 800;
@@ -1193,7 +1193,7 @@ html[dir="rtl"] .pg-display {
 .article-card__meta {
   margin-bottom: var(--space-2);
 
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 
   font-size: var(--font-size-caption);
   font-weight: 750;

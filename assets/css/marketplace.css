@@ -170,7 +170,7 @@
 }
 
 .marketplace-toolbar__clear {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-weight: 600;
   text-decoration: none;
 }
@@ -231,7 +231,7 @@
 .marketplace-card__category {
   display: inline-flex;
   padding: 0.1rem var(--space-2);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   background: var(--color-accent-subtle);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-caption);
@@ -258,7 +258,7 @@
 }
 
 .marketplace-card__link:hover {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .marketplace-card__seller {
@@ -445,7 +445,7 @@
 .marketplace-detail__category {
   display: inline-flex;
   padding: 0.1rem var(--space-2);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   background: var(--color-accent-subtle);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-caption);
@@ -745,7 +745,7 @@
 }
 
 .marketplace-review-card__category {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   background: var(--color-accent-subtle);
 }
 

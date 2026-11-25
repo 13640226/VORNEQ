@@ -28,9 +28,22 @@
   --color-accent-border: rgba(79, 110, 247, 0.32);
 
   --color-text-on-accent: #ffffff;
+  /* Akzent als Textfarbe auf Fläche/Akzent-Tönung (AA ≥ 4.5:1) */
+  --color-accent-text: var(--color-accent);
+  /* Text auf --color-error (z. B. Löschen-Schaltflächen) */
+  --color-text-on-error: #ffffff;
 
   --color-focus: #4f6ef7;
   --color-focus-ring: rgba(79, 110, 247, 0.22);
+
+  /* Markenreferenz VORNEQ (Konstanten, themenunabhängig).
+     Für Logo und dekorative Flächen; Textfarben kommen aus den Theme-Tokens. */
+  --color-brand-primary: #1e6fff;
+  --color-brand-secondary: #4a8cff;
+  --color-brand-dark: #0b1120;
+  --color-brand-light: #f8fafc;
+  --color-brand-text-secondary: #64748b;
+  --color-brand-text-muted: #94a3b8;
 
   /* semantic only */
   --color-success: #15803d;
@@ -109,11 +122,32 @@
      LAYOUT
      ========================================================== */
 
-  --container-width: min(1280px, calc(100vw - 48px));
-  --reading-width: min(72ch, calc(100vw - 48px));
+  /* Page Shell V2: ein gemeinsamer Seitenrand für alle Module.
+     Der Rand wächst mit dem Viewport (16px mobil … 40px Desktop) statt eines
+     festen Werts für alle Breakpoints. 100vw ist hier korrekt, weil
+     html { scrollbar-gutter: stable } die Scrollleiste immer reserviert. */
+  --page-max-width: 1280px;
+  --page-gutter: clamp(16px, calc(2.5vw + 8px), 40px);
+  --container-width: min(var(--page-max-width), calc(100vw - 2 * var(--page-gutter)));
+  --reading-width: min(72ch, calc(100vw - 2 * var(--page-gutter)));
+  --form-width: 760px;
+  --form-width-compact: 560px;
 
   --header-height: 60px;
   --control-height: 44px;
+  --button-height-sm: 36px;
+  --button-height-md: 44px;
+  --button-height-lg: 52px;
+  --icon-size-sm: 16px;
+  --icon-size-md: 20px;
+  --icon-size-lg: 24px;
+  --border-width: 1px;
+  --border-width-strong: 2px;
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+
+  /* Breakpoints (Referenz; Media Queries können keine Variablen lesen):
+     sm 480px · md 768px · lg 1024px · xl 1280px · 2xl 1600px */
 
   /* ==========================================================
      RADIUS
@@ -166,7 +200,10 @@
 /* ==========================================================
    COLOR — VORNEQ DARK
    ========================================================== */
-[data-theme="dark"] {
+/* Page Shell V2: :root[...] statt [...] — sonst überschrieb der navy-Block
+   (":root, [data-theme=navy]" in theme-palettes.css, später geladen, gleiche
+   Spezifität) das Dark-Theme vollständig. */
+:root[data-theme="dark"] {
   --color-bg-page: #0b1120;
   --color-bg-surface: #111827;
   --color-bg-elevated: #131c2e;
@@ -186,7 +223,7 @@
   --color-accent-subtle: #172554;
   --color-accent-border: rgba(107, 140, 255, 0.38);
 
-  --color-text-on-accent: #ffffff;
+  --color-text-on-accent: #02060c;
 
   --color-focus: #83a0ff;
   --color-focus-ring: rgba(131, 160, 255, 0.28);
@@ -194,6 +231,7 @@
   --color-success: #4ade80;
   --color-warning: #fbbf24;
   --color-error: #f87171;
+  --color-text-on-error: #1f0707;
 
   --color-app-available: #4ade80;
   --color-app-limited: #fbbf24;
