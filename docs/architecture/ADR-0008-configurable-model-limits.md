@@ -173,3 +173,42 @@ Ohne gesetzte Variablen ist das Verhalten identisch mit vorher (Legacy). Rollbac
 Betrieb: `VORNEQ_AI_CHAT_INPUT_TOKEN_BUDGET` leeren bzw.
 `VORNEQ_AI_CHAT_PRODUCTION_EXTENDED_INPUT` entfernen. Code-Rollback: Revert dieses PRs;
 keine Migration, keine Datenänderung.
+
+## 15. Nachtrag V7-02.1 (Korrekturen nach dem Production-Deploy)
+
+Befunde auf `main` 13842837 (Code-Belege, Mock-Tests in
+`apps/ai_core/tests/test_v7_02_1_output_context_newlines.py`):
+
+1. **Production-Ausgabe:** Ohne Stage 2 (Production) übergab `run_global_pipeline`
+   immer `_output_cap_for_environment` = 2048 Tokens und validierte Antworten mit
+   `answer_limit` = 1000 Zeichen – unabhängig von `ModelLimits.max_output_tokens`
+   (8192). Ledger-Reservierung und Provider-Deckel folgten ebenfalls 2048.
+   **Korrektur:** `model_limits.policy_output_tokens(model)` liefert bei vollständiger
+   Policy (Production: exaktes Opt-in + Ledger + Recovery) die konfigurierte Ausgabe;
+   Pipeline, Provider-Deckel, Antwortvalidierung (8 Zeichen/Token), Chat-Seite und
+   Ledger-Reservierung verwenden denselben Wert. Ohne Policy bleibt alles wie bisher.
+2. **Verlaufsbudget:** Die Retrieval-Reserve war fest 30 000 Tokens (Stage 2: 5 × 1500),
+   obwohl Production nur 3 Quellen × 500 Zeichen abruft. Sie folgt jetzt
+   `response_engine_v3.retrieval_limits` (Production: 3 × (4 × 880 + 512) = 12 096).
+   Statisches Verlaufsbudget mit 65536/8192/8192: 11 876 → 29 780 Tokens.
+3. **Dynamische Zuteilung:** `history_budget(limits, question)` zieht nur die
+   tatsächliche Größe der aktuellen Frage ab (nie weniger als das statische Budget;
+   Summe ≤ Kontextfenster). `conversations.context.prior_turns(question=…)` nutzt es.
+4. **Kontextprüfung:** `check_context_budget` prüft bei vollständiger Policy nun in
+   jedem Pfad (auch ohne Stage 2) inkl. Sicherheitsmarge – vor der Reservierung.
+5. **Zeilenumbrüche:** `gateway.normalize_multiline` erhält Absätze, Einrückung,
+   Code, JSON/YAML/SQL/XML und Tabellen. Routing und Injection-Prüfung arbeiten
+   weiter zusätzlich auf der zusammengefassten Fassung.
+6. **Bericht:** `ai_gateway_report` zeigt `pipeline_output_tokens` und deren Quelle.
+
+Externe Modellangaben (OpenAI-Dokumentation, gpt-5-mini): Kontext 400 000,
+max. Ausgabe 128 000, max. Eingabe 272 000; die Registry bleibt dennoch
+`NOT_VERIFIED`, bis der Eigentümer die Werte freigibt. Die Seite markiert das Modell
+als „Deprecated“ – Ablösung einplanen.
+
+**Betriebsrisiko:** Mit der aktuellen Render-Konfiguration aktiviert ein Deploy dieses
+Nachtrags sofort bis zu 8192 Ausgabe-Tokens in Production (Ledger-Reservierung je
+Anfrage ca. 4× höher). Der Provider-Timeout bleibt 60 s; lange Antworten eines
+Reasoning-Modells können ihn überschreiten (Ergebnis `provider_timeout`, Kosten
+unsicher, Ledger-Abrechnung wie bisher). Streaming (V7-03) adressiert das.
+Rollback: `VORNEQ_AI_CHAT_OUTPUT_TOKEN_BUDGET` entfernen oder auf 2048 setzen.

@@ -106,7 +106,19 @@ def _chat_limits_section():
     limits = chat_limits()
     section = describe(limits)
     output = configured_output_budget()
+    import os
+    from apps.ai_core import response_engine_v3
+    from apps.ai_core.model_limits import policy_output_tokens
+    stage2 = response_engine_v3.stage2_enabled(settings)
+    hosted_cap = 2048 if settings.VORNEQ_ENV in ("staging", "production") else 512
+    policy_output = None if stage2 else policy_output_tokens(os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""))
+    # V7-02.1: tatsächlich an den Provider übergebener Wert (Pipeline-Logik).
+    pipeline_output = (output.output_tokens if output else
+                       response_engine_v3.output_tokens(settings) if stage2 else policy_output or hosted_cap)
     section.update({
+        "pipeline_output_tokens": pipeline_output,
+        "pipeline_output_source": ("STAGE2_BUDGET" if output else "STAGE2_DEFAULT" if stage2
+                                   else "MODEL_LIMITS_POLICY" if policy_output else "LEGACY_CAP"),
         "effective_output_tokens": output.output_tokens if output else limits.max_output_tokens,
         "effective_answer_chars": output.answer_chars if output else limits.answer_chars,
         "effective_section_chars": output.section_chars if output else None,
@@ -155,6 +167,7 @@ class Command(BaseCommand):
         self.stdout.write(
             f"chat limits: source={cl['source']}; context={cl['context_window']}; "
             f"input={cl['max_input_tokens']}; output={cl['effective_output_tokens']}; "
+            f"pipeline_output={cl['pipeline_output_tokens']} ({cl['pipeline_output_source']}); "
             f"history={cl['max_history_tokens']}; request_bytes={cl['max_request_bytes']}; "
             f"message_chars={cl['max_message_characters']}; tokenizer={cl['tokenizer_strategy']}; "
             f"verification={cl['verification_status']}; ledger={cl['ledger_status']}; "

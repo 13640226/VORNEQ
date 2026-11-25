@@ -128,7 +128,8 @@ class CentralPolicyTests(ModelEnvMixin, SimpleTestCase):
             limits = ml.chat_limits()
         self.assertTrue(limits.extended)
         self.assertIn("input_budget_above_context", limits.conflicts)
-        self.assertEqual(limits.max_input_tokens, 400000 - 16000 - 4000 - 30000 - 20000)
+        # V7-02.1: Retrieval-Reserve folgt den wirksamen Retrieval-Grenzen.
+        self.assertEqual(limits.max_input_tokens, 400000 - 16000 - 4000 - ml.retrieval_reserve_tokens() - 20000)
         self.assertLessEqual(limits.max_request_bytes, ml.HARD_MAX_REQUEST_BYTES)
 
     def test_small_window_falls_back_to_bounded_pilot(self):
@@ -358,7 +359,10 @@ class ConversationContextTests(ModelEnvMixin, TestCase):
         self.assertEqual(turns[-2]["content"][:9], "Frage 29 ")
         self.assertEqual([t["role"] for t in turns[:2]], ["user", "assistant"])
         used = sum(ml.estimate_message_tokens(t["content"]) for t in turns)
-        self.assertLessEqual(used, ml.chat_limits().max_history_tokens)
+        # V7-02.1: dynamisches Budget (Frage leer) – nie kleiner als das statische.
+        limits = ml.chat_limits()
+        self.assertLessEqual(used, ml.history_budget(limits, ""))
+        self.assertGreaterEqual(ml.history_budget(limits, ""), limits.max_history_tokens)
         self.assertEqual(AIMessage.objects.filter(conversation=self.conversation).count(), 60)  # Speicher unverändert
 
     def test_legacy_history_unchanged(self):

@@ -16,6 +16,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from apps.ai_core.engine.budget import BudgetExceeded
 from apps.ai_core.error_contracts import CONTEXT_LIMIT_EXCEEDED, budget_reason, input_too_large
+from apps.ai_core.model_limits import ANSWER_CHARS_PER_TOKEN, MAX_VALIDATED_ANSWER_CHARS, policy_output_tokens
 from apps.ai_core.engine.citation import (
     EvidenceRejected, GeneratedAnswerRejected, CitationIdentityRejected,
     CitationDigestRejected, CitationQuoteRejected,
@@ -227,15 +228,23 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
         reserve_global_request(request.user.pk, burst_only=shared_budget)
         stage2 = response_engine_v3.stage2_enabled(settings)
         output_budget = configured_output_budget() if stage2 else None
+        model_name = os.environ.get("VORNEQ_AI_PHASE_B_MODEL", "")
+        # V7-02.1 (COR-08): Ohne Stage 2 (u. a. Production) galt bisher immer der
+        # feste Deckel 2048 Tokens / 1000 Zeichen, unabhängig von ModelLimits.
+        # Mit vollständiger Policy (Production: exaktes Opt-in + Ledger + Recovery)
+        # gilt jetzt deren Ausgabegrenze; der Ledger reserviert genau diesen Wert.
+        policy_output = None if stage2 else policy_output_tokens(model_name)
+        answer_chars = (min(MAX_VALIDATED_ANSWER_CHARS, ANSWER_CHARS_PER_TOKEN * policy_output)
+                        if policy_output else response_engine_v3.answer_limit(settings))
         provider = paid_text_provider(
             actor_id=request.user.pk,
             provider_class=OpenAIResponsesProvider,
             ledger_check=ledger_enabled,
-            model=os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""),
+            model=model_name,
             timeout_s=_provider_timeout_for_environment(settings.VORNEQ_ENV),
             max_output_tokens=(output_budget.output_tokens if output_budget else
                                response_engine_v3.output_tokens(settings) if stage2
-                               else _output_cap_for_environment(settings.VORNEQ_ENV)),
+                               else policy_output or _output_cap_for_environment(settings.VORNEQ_ENV)),
             extra_instructions=_instructions_for(settings.VORNEQ_ENV, bool(prior_turns)),
             compact_sources=_compact_sources_for_environment(settings.VORNEQ_ENV),
             response_v3_enabled=response_engine_v3.enabled(settings),
@@ -250,7 +259,7 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
         response = ask_global(question, language, actor=request.user, provider=provider,
                               retriever=retriever, enabled=True, prior_turns=prior_turns,
                               search_question=search_question, stage2=stage2,
-                              max_answer_chars=response_engine_v3.answer_limit(settings),
+                              max_answer_chars=answer_chars,
                               **({"output_budget": output_budget} if output_budget else {}))
     except BudgetExceeded as exc:
         return {"error": "rate_limited", "reason": budget_reason(exc)}, 429, meta

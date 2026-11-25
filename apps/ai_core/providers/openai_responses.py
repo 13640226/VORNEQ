@@ -165,6 +165,12 @@ class OpenAIResponsesProvider:
         self.output_budget = pilot if pilot and pilot.model == model and pilot.output_tokens == max_output_tokens else None
         max_allowed = self.output_budget.output_tokens if self.output_budget else (
             3072 if response_stage2_enabled is True else 2048)
+        if response_stage2_enabled is not True:
+            # V7-02.1: vollständige Modell-Policy (u. a. Production mit Opt-in).
+            from apps.ai_core.model_limits import policy_output_tokens
+            policy_output = policy_output_tokens(model)
+            if policy_output:
+                max_allowed = max(max_allowed, policy_output)
         if (type(timeout_s) not in (int, float) or not 1 <= timeout_s <= 90
                 or type(max_output_tokens) is not int or not 64 <= max_output_tokens <= max_allowed):
             raise ProviderUnavailable("invalid provider limits")
@@ -270,17 +276,17 @@ class OpenAIResponsesProvider:
         return parsed.model_dump()
 
     def check_context_budget(self, input_bytes):
-        if self.output_budget:
-            from apps.ai_ledger.service import INPUT_OVERHEAD_TOKENS
-            if not self.output_budget.fits_context(input_bytes, INPUT_OVERHEAD_TOKENS):
-                raise ProviderContextLimited("configured context budget exceeded")
-            # V7-02: mit vollständiger Modell-Policy zusätzlich die Sicherheitsmarge
-            # einhalten (konservativ; vor jeder Reservierung, ohne Provider-Aufruf).
-            from apps.ai_core.model_limits import chat_limits, fits_input_bytes
-            limits = chat_limits()
-            if (limits.extended and limits.model_id == self.model
-                    and not fits_input_bytes(limits, input_bytes, INPUT_OVERHEAD_TOKENS)):
-                raise ProviderContextLimited("context window incl. safety margin exceeded")
+        from apps.ai_ledger.service import INPUT_OVERHEAD_TOKENS
+        if self.output_budget and not self.output_budget.fits_context(input_bytes, INPUT_OVERHEAD_TOKENS):
+            raise ProviderContextLimited("configured context budget exceeded")
+        # V7-02/V7-02.1: mit vollständiger Modell-Policy in JEDEM Pfad (auch ohne
+        # Stage 2, z. B. Production) die Kontextgrenze inkl. Sicherheitsmarge
+        # einhalten – vor jeder Reservierung, ohne Provider-Aufruf.
+        from apps.ai_core.model_limits import chat_limits, fits_input_bytes
+        limits = chat_limits()
+        if (limits.extended and limits.model_id == self.model
+                and not fits_input_bytes(limits, input_bytes, INPUT_OVERHEAD_TOKENS)):
+            raise ProviderContextLimited("context window incl. safety margin exceeded")
 
     def generate(self, *, question: str, language: str, sources: list[dict],
                  prior_turns=(), mode="grounded") -> dict:
