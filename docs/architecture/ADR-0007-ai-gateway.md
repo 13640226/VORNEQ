@@ -11,3 +11,5 @@ New paid model activation requires separately verified pricing and policy.
 Existing configured models remain governed by existing policy; migration to
 model-level resolution is outstanding. Privacy, DPA and availability are not verified.
 Rollback: revert the eventual merge commit after compatibility checks.
+
+Follow-up: registered-model preflight checks provider/model enablement, capability, actor identifier, environment and trusted route policy. It is not wired to paid routes yet; existing approved-model paths remain authoritative. No new model is activated.

@@ -29,6 +29,8 @@ class ProviderSpec:
     data_retention_status: str = "NOT_VERIFIED"
     dpa_status: str = "NOT_VERIFIED"
     verified_at: str | None = None
+    enabled: bool = True
+    provider_type: str = "NOT_VERIFIED"
 
 @dataclass(frozen=True)
 class ModelSpec:
@@ -43,6 +45,11 @@ class ModelSpec:
     max_output_tokens: int | None = None
     pricing_verified_at: str | None = None
     availability_status: str = "NOT_VERIFIED"
+    input_modalities: tuple[str, ...] = ()
+    output_modalities: tuple[str, ...] = ()
+    streaming_supported: bool | None = None
+    tool_calling_supported: bool | None = None
+    structured_output_supported: bool | None = None
 
 class RegistryError(ValueError):
     pass
@@ -52,6 +59,10 @@ class ProviderUnavailable(RegistryError):
 
 class CapabilityMissing(RegistryError):
     pass
+
+class ProviderDisabled(RegistryError):
+    pass
+
 
 class ModelUnavailable(RegistryError):
     pass
@@ -80,6 +91,8 @@ class Registry:
         spec = self._providers.get(provider_id)
         if spec is None:
             raise ProviderUnavailable("unknown provider")
+        if not spec.enabled:
+            raise ProviderDisabled("provider disabled")
         if capability not in spec.capabilities:
             raise CapabilityMissing("unsupported capability")
         return spec
@@ -88,6 +101,7 @@ class Registry:
         spec = self._models.get((provider_id, model_id))
         if spec is None:
             raise ModelUnavailable("unknown model")
+        self.provider(provider_id, spec.capability)
         if not spec.enabled:
             raise ModelDisabled("model disabled")
         return spec
