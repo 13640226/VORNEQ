@@ -21,6 +21,11 @@ class MockVoiceProvider:
 def get_provider() -> MockVoiceProvider:
     if getattr(settings, "VORNEQ_AI_VOICE_PROVIDER", "mock") != "mock":
         raise VoiceProviderBlocked("only the mock Voice provider exists in this release")
-    from apps.ai_core.provider_resolution import resolve, Capability
-    resolve("mock-voice", Capability.VOICE_MOCK)
+    from apps.ai_core.provider_registry import Capability, RegistryError
+    from apps.ai_core.provider_resolution import resolve
+    try:
+        resolve(Capability.VOICE_MOCK, actor=None, environment=getattr(settings, "VORNEQ_ENV", ""),
+                provider_id="mock-voice", model_id="mock")
+    except RegistryError as exc:
+        raise VoiceProviderBlocked(f"voice provider resolution refused: {exc.code}") from None
     return MockVoiceProvider()

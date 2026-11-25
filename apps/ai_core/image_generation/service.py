@@ -156,12 +156,31 @@ def _paid_gate(paid_worker):
     return paid_worker_enabled() if paid_worker else paid_provider_enabled()
 
 
+def _resolve_image_provider(job, provider_id, *, ledger_bound, feature_enabled):
+    """V7-01 Gateway-Auflösung vor dem Provider; nie nach einem Aufruf.
+
+    Eine Ablehnung ist nachweislich "nicht gesendet": eine bestehende
+    Reservierung wird über den normalen Fehlerpfad freigegeben.
+    """
+    from apps.ai_core.provider_registry import Capability, RegistryError
+    from apps.ai_core.provider_resolution import resolve
+    try:
+        return resolve(Capability.IMAGE_GENERATION, actor=job.owner_id,
+                       environment=getattr(settings, "VORNEQ_ENV", ""), model_id=job.model_id,
+                       provider_id=provider_id, ledger_bound=ledger_bound,
+                       feature_enabled=feature_enabled)
+    except RegistryError as exc:
+        raise ImageProviderError("provider resolution refused", code=exc.code,
+                                 request_sent=False) from None
+
+
 def process_next_image_job():
     """Run exactly one job. A claimed/uncertain job is NEVER auto-retried."""
     mock_worker = worker_enabled()
     paid_worker = not mock_worker and paid_worker_enabled()
     worker_mode = mock_worker or paid_worker
-    if not (enabled() or worker_mode):
+    feature_on = bool(enabled() or worker_mode)
+    if not feature_on:
         return None
     with transaction.atomic():
         qs = AIImageJob.objects.filter(status=AIImageJob.STATUS_QUEUED).order_by("created_at")
@@ -236,12 +255,10 @@ def process_next_image_job():
                 # Owner stop (or any ledger doubt) after reserving: provably not sent.
                 raise ImageProviderError("ledger stopped before call", code="ledger_stopped",
                                          request_sent=False)
-            from apps.ai_core.provider_resolution import resolve, Capability
-            resolve("openai-image", Capability.IMAGE)
+            _resolve_image_provider(job, "openai-image", ledger_bound=True, feature_enabled=feature_on)
             provider = OpenAIImageProvider()
         else:
-            from apps.ai_core.provider_resolution import resolve, Capability
-            resolve("mock-image", Capability.IMAGE)
+            _resolve_image_provider(job, "mock-image", ledger_bound=None, feature_enabled=feature_on)
             provider = MockImageProvider()
         provider_called = True
         if reservation is not None:

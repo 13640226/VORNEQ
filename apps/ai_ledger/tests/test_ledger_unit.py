@@ -159,7 +159,7 @@ class BudgetedProviderTests(SimpleTestCase):
                 return {"ok": True}
             return gen
         inner, provider = self.make(behaviour)
-        res = Reservation("id", 10, 1, 1)
+        res = Reservation(uuid.uuid4(), 10, 1, 1)  # V7-01: echte Reservierungsform (UUID)
         with patch("apps.ai_ledger.service.reserve", return_value=res) as r, \
                 patch("apps.ai_ledger.service.settle") as s:
             self.assertEqual(provider.generate(question="q", language="en", sources=[{"a": "ü"}]), {"ok": True})
@@ -181,7 +181,7 @@ class BudgetedProviderTests(SimpleTestCase):
                 raise ProviderTimeout("t")
             return gen
         inner, provider = self.make(behaviour)
-        res = Reservation("id", 10, 1, 1)
+        res = Reservation(uuid.uuid4(), 10, 1, 1)  # V7-01: echte Reservierungsform (UUID)
         with patch("apps.ai_ledger.service.reserve", return_value=res), \
                 patch("apps.ai_ledger.service.settle") as s:
             with self.assertRaises(ProviderTimeout):

@@ -2,6 +2,7 @@
 
 Regression for the 2026-11-17 HTTP 500 Gunicorn WORKER TIMEOUT.
 """
+from apps.ai_core.tests.ledger_fakes import fake_reservation
 import os
 import runpy
 import sys
@@ -69,7 +70,7 @@ class ProductionHeadroomTests(SimpleTestCase):
         client, sdk, pydantic, schema = _synthetic_sdk_context(
             parse_side_effect=_SyntheticTimeout("synthetic network timeout")
         )
-        reservation = object()
+        reservation = fake_reservation()  # V7-01: strukturell gültige Reservierung
         sources = [{"source_id": "S1", "title": "Synthetic only",
                     "excerpt": "A synthetic excerpt with more than eight characters.",
                     "evidence_digest": "a" * 64, "url": "https://example.org/example"}]

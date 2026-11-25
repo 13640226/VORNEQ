@@ -1,3 +1,4 @@
+from apps.ai_core.tests.ledger_fakes import fake_reservation
 from unittest.mock import Mock, patch
 from django.test import SimpleTestCase, override_settings
 from apps.ai_core.engine.global_grounded import ask_global
@@ -69,13 +70,14 @@ class KnowledgeIntegrationTests(SimpleTestCase):
             inner.last_usage = (12, 9)
             return {"answer": "55", "language": "en"}
         inner.generate_knowledge.side_effect = call
+        reservation = fake_reservation()  # V7-01: strukturell gültige Reservierung
         with patch("apps.ai_core.budgeted_provider.ledger.reserve",
-                   return_value="reservation") as reserve, patch(
+                   return_value=reservation) as reserve, patch(
                        "apps.ai_core.budgeted_provider.ledger.settle") as settle:
             result = BudgetedProvider(inner, actor_id=1).generate_knowledge(
                 question="sum 1 to 10", language="en")
         payload = build_knowledge_payload("sum 1 to 10", "en")
         self.assertEqual(reserve.call_args.kwargs["input_bytes"],
                          len(payload.encode("utf-8")) + len("fixed instructions"))
-        settle.assert_called_once_with("reservation", usage=(12, 9), outcome="completed")
+        settle.assert_called_once_with(reservation, usage=(12, 9), outcome="completed")
         self.assertEqual(result["answer"], "55")

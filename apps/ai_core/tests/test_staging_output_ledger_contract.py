@@ -2,6 +2,7 @@
 
 SYNTHETIC ONLY: no actual network, provider key, billing, or persistent DB.
 """
+from apps.ai_core.tests.ledger_fakes import fake_reservation
 import importlib.util
 import json
 import os
@@ -70,7 +71,7 @@ class StagingPromptBudgetContractTests(SimpleTestCase):
                 return {"answer": "SYNTHETIC answer"}
 
         provider = FakeProvider()
-        reservation = object()
+        reservation = fake_reservation()  # V7-01: strukturell gültige Reservierung
         with patch("apps.ai_core.budgeted_provider.ledger.reserve", return_value=reservation) as reserve, \
                 patch("apps.ai_core.budgeted_provider.ledger.settle") as settle:
             result = BudgetedProvider(provider, actor_id=3).generate(
@@ -101,7 +102,8 @@ class StagingPromptBudgetContractTests(SimpleTestCase):
 
         provider = FakeProductionProvider()
         original_sources = [dict(item) for item in SOURCES]
-        with patch("apps.ai_core.budgeted_provider.ledger.reserve") as reserve, \
+        with patch("apps.ai_core.budgeted_provider.ledger.reserve",
+                   return_value=fake_reservation()) as reserve, \
                 patch("apps.ai_core.budgeted_provider.ledger.settle") as settle:
             result = BudgetedProvider(provider, actor_id=1).generate(
                 question="What is Berlin?", language="en", sources=SOURCES)
@@ -131,7 +133,7 @@ class IncompleteResponseLedgerTests(SimpleTestCase):
             output_parsed=None,
             usage=SimpleNamespace(input_tokens=1019, output_tokens=2048),
         )
-        reservation = object()
+        reservation = fake_reservation()  # V7-01: strukturell gültige Reservierung
         with patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-test-only"}), \
                 patch("openai.OpenAI") as factory, \
                 patch("apps.ai_core.budgeted_provider.ledger.reserve", return_value=reservation) as reserve, \
@@ -154,7 +156,7 @@ class IncompleteResponseLedgerTests(SimpleTestCase):
             status="incomplete",
             incomplete_details=SimpleNamespace(reason="max_output_tokens"),
             output_parsed=None, usage=None)
-        reservation = object()
+        reservation = fake_reservation()  # V7-01: strukturell gültige Reservierung
         with patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-test-only"}), \
                 patch("openai.OpenAI") as factory, \
                 patch("apps.ai_core.budgeted_provider.ledger.reserve", return_value=reservation), \

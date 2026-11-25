@@ -77,8 +77,15 @@ def paid_text_provider(*, actor_id: int, provider_class=OpenAIResponsesProvider,
     ledger_bound = require_paid_text_ledger(ledger_check=ledger_check)
     if type(actor_id) is not int or actor_id <= 0:
         raise LedgerUnavailable("invalid ledger actor")
-    from apps.ai_core.provider_resolution import resolve, Capability
-    resolve("openai-text", Capability.TEXT)
+    # V7-01 Gateway-Auflösung: Katalog, Umgebung, Akteur, Ledger-Bindung.
+    # Nur Auflösung, keine Freigabe; Fehler bleiben ``LedgerUnavailable`` (HTTP-Vertrag).
+    from apps.ai_core.provider_registry import Capability, RegistryError
+    from apps.ai_core.provider_resolution import resolve
+    try:
+        resolve(Capability.TEXT_GENERATION, actor=actor_id, environment=getattr(settings, "VORNEQ_ENV", ""),
+                provider_id="openai-text", ledger_bound=ledger_bound)
+    except RegistryError as exc:
+        raise LedgerUnavailable(f"provider resolution refused: {exc.code}") from exc
     provider = provider_class(**provider_kwargs)
     if ledger_bound or getattr(settings, "VORNEQ_ENV", "") in HOSTED_ENVIRONMENTS:
         return BudgetedProvider(provider, actor_id=actor_id)

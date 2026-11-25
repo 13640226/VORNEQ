@@ -4,6 +4,7 @@ No network, credentials, provider billing, Render DB or real wall-clock delays.
 Uses a synthetic OpenAI SDK module so these checks run in the normal CI
 environment where the optional OpenAI SDK is deliberately absent.
 """
+from apps.ai_core.tests.ledger_fakes import fake_reservation
 import os
 import runpy
 import sys
@@ -165,7 +166,7 @@ class SlowAndIncompleteProviderTests(SimpleTestCase):
     def invoke(self, *, parse_side_effect=None, parse_return_value=None, wrapped=True):
         client, sdk, pydantic, schema = _synthetic_sdk_context(
             parse_side_effect=parse_side_effect, parse_return_value=parse_return_value)
-        reservation = object()
+        reservation = fake_reservation()  # V7-01: strukturell gültige Reservierung
         with patch.dict(sys.modules, {
             "openai": sdk, "pydantic": pydantic,
             "apps.ai_core.schemas.response": schema,

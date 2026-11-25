@@ -1,4 +1,5 @@
 """Offline-only tests for the optional model-specific Stage 2 output budget."""
+from apps.ai_core.tests.ledger_fakes import fake_reservation
 import importlib.util
 import json
 import os
@@ -105,7 +106,8 @@ class OutputBudgetTests(SimpleTestCase):
     def test_larger_cap_is_reserved_exactly_and_only_one_call(self):
         provider = self.provider()
         provider.generate = Mock(return_value={})
-        with patch("apps.ai_core.budgeted_provider.ledger.reserve") as reserve, \
+        with patch("apps.ai_core.budgeted_provider.ledger.reserve",
+                   return_value=fake_reservation()) as reserve, \
                 patch("apps.ai_core.budgeted_provider.ledger.settle") as settle:
             BudgetedProvider(provider, actor_id=1).generate(
                 question="synthetic", language="en", sources=[], mode="sectioned")
@@ -153,7 +155,7 @@ class OutputBudgetTests(SimpleTestCase):
     @skipUnless(HAS_PROVIDER_DEPS, "OpenAI/Pydantic optional SDK unavailable")
     def test_incomplete_settles_observed_usage_without_retry(self):
         provider = self.provider()
-        reservation = object()
+        reservation = fake_reservation()  # V7-01: strukturell gültige Reservierung
         response = SimpleNamespace(status="incomplete",
             incomplete_details=SimpleNamespace(reason="max_output_tokens"),
             usage=SimpleNamespace(input_tokens=100, output_tokens=4096))
@@ -175,7 +177,7 @@ class OutputBudgetTests(SimpleTestCase):
     def test_sdk_parse_exception_without_usage_keeps_reservation_uncertain(self):
         provider = self.provider()
         provider.last_usage = (111, 222)  # stale usage must never leak into settlement
-        reservation = object()
+        reservation = fake_reservation()  # V7-01: strukturell gültige Reservierung
         with patch("openai.OpenAI") as client, patch(
                 "apps.ai_core.budgeted_provider.ledger.reserve", return_value=reservation) as reserve, patch(
                 "apps.ai_core.budgeted_provider.ledger.settle") as settle, patch(
