@@ -23,6 +23,36 @@ class InputTooLarge(InputError):
     """V7-02: Eingabe überschreitet das zentrale Budget (Grund INPUT_TOO_LARGE)."""
 
 
+_LINE_BREAKS = str.maketrans({"\r": "\n", "\u2028": "\n", "\u2029": "\n",
+                              "\x0b": "\n", "\x0c": "\n", "\x85": "\n"})
+
+
+def normalize_multiline(text):
+    """V7-02.1 (COR-09): Zeilenumbrüche, Absätze und Einrückung erhalten.
+
+    Bisher wurde jeder Leerraum zu einem Leerzeichen zusammengefasst; Code,
+    JSON, YAML, Tabellen und Absätze gingen verloren. Jetzt: CRLF/CR und
+    Unicode-Zeilentrenner werden zu ``\n``, Leerraum am Zeilenende wird
+    entfernt, mehr als zwei Leerzeilen hintereinander werden auf zwei
+    gekürzt, führender Leerraum (Einrückung) und Tabs bleiben erhalten.
+    Andere Steuerzeichen bleiben ungültig (Prüfung in ``validate``).
+    Routing und Sicherheitsprüfung arbeiten weiter auf einer zusätzlich
+    zusammengefassten Fassung (``global_router.route_question``).
+    """
+    text = text.replace("\r\n", "\n").translate(_LINE_BREAKS)
+    lines = [line.rstrip(" \t\u00a0") for line in text.split("\n")]
+    out, blank = [], 0
+    for line in lines:
+        blank = blank + 1 if not line.strip() else 0
+        if blank <= 2:
+            out.append(line if line.strip() else "")
+    if not any(line.strip() for line in out):
+        return ""
+    result = "\n".join(out).strip("\n")
+    # Einzeilige Eingaben verhalten sich wie bisher (kein führender Leerraum).
+    return result.strip() if "\n" not in result else result
+
+
 def validate(question, language, *, input_budget=None):
     from apps.ai_core.chat_input_budget import LEGACY
     budget = input_budget or LEGACY
@@ -30,10 +60,10 @@ def validate(question, language, *, input_budget=None):
         raise InputError("question must be text")
     if budget.question_utf8_bytes and not budget.accepts(question):
         raise InputTooLarge("question exceeds input budget")
-    question = " ".join(question.split())
+    question = normalize_multiline(question)
     if question and not budget.accepts(question):
         raise InputTooLarge("question exceeds input budget")
-    if not question or any(ord(c) < 32 for c in question):
+    if not question or any(ord(c) < 32 and c not in "\n\t" for c in question):
         raise InputError("question empty or contains controls")
     if language not in MESSAGES:
         raise InputError("unsupported language")

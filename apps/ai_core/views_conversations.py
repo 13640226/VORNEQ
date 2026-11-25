@@ -266,7 +266,7 @@ def conversation_message_view(request, conversation_id):
                 return _json(body, status)
             return _json({"status": prior["status"], "request_id": request_id},
                          202 if prior["status"] == "running" else 409)
-    turns = context.prior_turns(conversation)
+    turns = context.prior_turns(conversation, question=question)
     # 1) Durable request state BEFORE any quota, retrieval, ledger or provider work.
     try:
         _question_message, pending = service.begin_turn(user, conversation.id, question=question,

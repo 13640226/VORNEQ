@@ -52,6 +52,13 @@ def chat_page(request):
     global_ai = global_ai_available()
     budget = global_budget() if global_ai else LEGACY
     output_budget = configured_output_budget() if global_ai else None
+    # V7-02.1: dieselbe Ausgabe-Policy wie run_global_pipeline (ohne Stage 2).
+    from .model_limits import ANSWER_CHARS_PER_TOKEN, MAX_VALIDATED_ANSWER_CHARS, policy_output_tokens
+    import os
+    policy_output = (policy_output_tokens(os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""))
+                     if global_ai and not stage2_enabled(settings) else None)
+    policy_answer = (min(MAX_VALIDATED_ANSWER_CHARS, ANSWER_CHARS_PER_TOKEN * policy_output)
+                     if policy_output else None)
     # Persistent conversations ride on Global AI; off unless explicitly enabled.
     from .views_conversations import may_start
     conversations_on = bool(global_ai and getattr(settings, "VORNEQ_AI_CONVERSATIONS_ENABLED", False)
@@ -64,9 +71,11 @@ def chat_page(request):
             "chat_question_bytes": budget.question_utf8_bytes,
             "chat_endpoint": reverse("ai_core:ask-global" if global_ai else "ai_core:ask-grounded"),
             "chat_source_hosts": " ".join(sorted(WikipediaRetriever.allowed_hosts)) if global_ai else "",
-            "chat_v3_enabled": answer_limit(settings) > 1000,
-            "chat_answer_limit": output_budget.answer_chars if output_budget else answer_limit(settings),
-            "chat_rich_text": output_budget is not None,
+            # V7-02.1: auch die Ausgabe-Policy (ohne Stage 2) liefert Grenzen ans Frontend.
+            "chat_v3_enabled": answer_limit(settings) > 1000 or policy_answer is not None,
+            "chat_answer_limit": (output_budget.answer_chars if output_budget else
+                                  policy_answer or answer_limit(settings)),
+            "chat_rich_text": output_budget is not None or policy_answer is not None,
             "chat_section_limit": output_budget.section_chars if output_budget else 700,
             "chat_citation_limit": 5 if stage2_enabled(settings) else 3,
             "chat_staging": settings.VORNEQ_ENV == "staging",

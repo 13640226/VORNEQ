@@ -48,7 +48,13 @@ JSON_ESCAPE_FACTOR = 6              # \uXXXX: bis zu 6 Bytes je Eingabezeichen
 JSON_FRAME_BYTES = 512
 MESSAGE_FRAME_TOKENS = 8            # Rollen-/Nachrichtenrahmen je Turn (konservativ)
 SYSTEM_PROMPT_RESERVE_TOKENS = 4000  # Anweisungen + Schema (vgl. INPUT_OVERHEAD_TOKENS)
-RETRIEVAL_RESERVE_TOKENS = 5 * 1500 * 4  # max. Passagen × Zeichen × 4 UTF-8-Bytes
+RETRIEVAL_RESERVE_TOKENS = 5 * 1500 * 4  # V7-02-Wert (Stage 2), nur noch Referenz/Kompatibilität
+# V7-02.1: Retrieval-Reserve aus den tatsächlichen Retrieval-Grenzen der Umgebung.
+# Je Quelle: Excerpt + quote_hint (80) + Titel (≤ 300) in 4 UTF-8-Bytes plus
+# 512 Bytes für source_id, Digest und JSON-Rahmen (konservativ).
+SOURCE_TITLE_MAX_CHARS = 300
+SOURCE_QUOTE_HINT_CHARS = 80
+SOURCE_FRAME_BYTES = 512
 TOOL_CONTEXT_TOKENS = 0             # V7-02: keine Tools
 ATTACHMENT_BYTES = 0                # V7-02: keine Anhänge
 SAFETY_MARGIN_RATIO = 0.05
@@ -116,6 +122,8 @@ class ModelLimits:
     system_prompt_tokens: int = SYSTEM_PROMPT_RESERVE_TOKENS
     tool_context_tokens: int = TOOL_CONTEXT_TOKENS
     retrieval_context_tokens: int = RETRIEVAL_RESERVE_TOKENS
+    # V7-02.1: Ausgabe-Policy gilt für alle Pfade (nicht nur Stage 2), sobald
+    # die Policy vollständig konfiguriert ist; siehe ``policy_output_tokens``.
     token_safety_margin: int = 0
     tokenizer_strategy: str | None = None
     pricing_reference: str | None = None
@@ -181,6 +189,14 @@ def _pilot(environment, max_input, conflicts=()):
     )
 
 
+def retrieval_reserve_tokens() -> int:
+    """Obergrenze der Quellen-Tokens gemäß den wirksamen Retrieval-Grenzen."""
+    from apps.ai_core.response_engine_v3 import retrieval_limits
+    results, excerpt = retrieval_limits(settings)
+    per_source = 4 * (excerpt + SOURCE_QUOTE_HINT_CHARS + SOURCE_TITLE_MAX_CHARS) + SOURCE_FRAME_BYTES
+    return results * per_source
+
+
 def safety_margin(context_window: int) -> int:
     return max(MIN_SAFETY_MARGIN_TOKENS, int(context_window * SAFETY_MARGIN_RATIO))
 
@@ -242,7 +258,8 @@ def chat_limits() -> ModelLimits:
     if spec is not None and spec.max_output_tokens and output > spec.max_output_tokens:
         conflicts.append("output_above_registry")
         output = spec.max_output_tokens
-    available_input = context - output - SYSTEM_PROMPT_RESERVE_TOKENS - RETRIEVAL_RESERVE_TOKENS - margin
+    retrieval_reserve = retrieval_reserve_tokens()
+    available_input = context - output - SYSTEM_PROMPT_RESERVE_TOKENS - retrieval_reserve - margin
     if available_input < MIN_INPUT_TOKENS:
         # Zu kleines Fenster für die volle Planung: bisheriger Pilot (die
         # Provider-Kontextprüfung bleibt wie zuvor die harte Grenze).
@@ -259,7 +276,7 @@ def chat_limits() -> ModelLimits:
     if request_bytes < JSON_ESCAPE_FACTOR * max_input + JSON_FRAME_BYTES:
         conflicts.append("request_bytes_hard_cap")
         max_input = (request_bytes - JSON_FRAME_BYTES) // JSON_ESCAPE_FACTOR
-    history = context - output - max_input - SYSTEM_PROMPT_RESERVE_TOKENS - RETRIEVAL_RESERVE_TOKENS - margin
+    history = context - output - max_input - SYSTEM_PROMPT_RESERVE_TOKENS - retrieval_reserve - margin
     return ModelLimits(
         model_id=model, provider_id=provider_id, context_window=context,
         max_input_tokens=max_input, max_output_tokens=output, max_request_bytes=request_bytes,
@@ -267,6 +284,7 @@ def chat_limits() -> ModelLimits:
         # die Zeichengrenze ist daher nie großzügiger als die Tokengrenze.
         max_message_characters=max_input, max_history_tokens=max(0, history),
         reserved_output_tokens=output, token_safety_margin=margin, tokenizer_strategy=strategy,
+        retrieval_context_tokens=retrieval_reserve,
         pricing_reference=pricing, verification_status=status if spec else NOT_VERIFIED,
         verified_at=verified_at, source=SOURCE_CONFIGURED, conflicts=tuple(conflicts),
     )
@@ -330,7 +348,7 @@ def fits_input_bytes(limits: ModelLimits, input_bytes: int, overhead_tokens: int
             + limits.token_safety_margin) <= limits.context_window
 
 
-def select_history(pairs_newest_first, limits: ModelLimits):
+def select_history(pairs_newest_first, limits: ModelLimits, *, budget=None):
     """COR-05: Verlauf nach Token-Budget statt fester Nachrichtenzahl.
 
     ``pairs_newest_first``: [(frage, antwort), ...] ab dem neuesten Paar.
@@ -338,7 +356,7 @@ def select_history(pairs_newest_first, limits: ModelLimits):
     übernommen, die Reihenfolge bleibt erhalten, der gespeicherte Verlauf
     bleibt unverändert (nur die gesendete Auswahl wird begrenzt).
     """
-    budget = limits.max_history_tokens or 0
+    budget = (limits.max_history_tokens or 0) if budget is None else budget
     strategy = limits.tokenizer_strategy
     selected, used = [], 0
     for question, answer in pairs_newest_first:
@@ -349,6 +367,40 @@ def select_history(pairs_newest_first, limits: ModelLimits):
         selected.append(({"role": "user", "content": question}, {"role": "assistant", "content": answer}))
         used += size
     return tuple(turn for pair in reversed(selected) for turn in pair)
+
+
+def history_budget(limits: ModelLimits, user_prompt: str = "") -> int:
+    """COR-07 (V7-02.1): dynamisches Verlaufsbudget für eine konkrete Anfrage.
+
+    Statt die volle Eingabegrenze fest zu reservieren, wird nur die tatsächliche
+    Größe der aktuellen Nachricht abgezogen. Ergebnis ist nie kleiner als das
+    statische ``max_history_tokens`` und nie negativ; die Summe aller Teile bleibt
+    ≤ Kontextfenster (System, Quellen, Ausgabe und Marge bleiben reserviert).
+    """
+    if not limits.extended or limits.context_window is None:
+        return 0
+    static = limits.max_history_tokens or 0
+    prompt = estimate_message_tokens(user_prompt or "", strategy=limits.tokenizer_strategy)
+    if prompt > limits.max_input_tokens:
+        return static
+    dynamic = (limits.context_window - limits.reserved_output_tokens - limits.system_prompt_tokens
+               - limits.retrieval_context_tokens - limits.tool_context_tokens
+               - limits.max_attachment_bytes - limits.token_safety_margin - prompt)
+    return max(0, static, dynamic)
+
+
+def policy_output_tokens(model: str) -> int | None:
+    """COR-08 (V7-02.1): konfigurierte Ausgabe-Tokens für ``model``, sonst ``None``.
+
+    Nur bei vollständiger Policy (``OPERATOR_CONFIGURED``) und exakt dem
+    konfigurierten Modell; Production setzt dafür das exakte Opt-in, Ledger und
+    Recovery voraus (siehe ``chat_limits``). Die Ledger-Reservierung folgt
+    automatisch diesem Wert (``BudgetedProvider`` reserviert ``max_output_tokens``).
+    """
+    limits = chat_limits()
+    if not limits.extended or not model or limits.model_id != model:
+        return None
+    return limits.max_output_tokens
 
 
 def describe(limits: ModelLimits) -> dict:

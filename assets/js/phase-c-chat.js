@@ -67,7 +67,7 @@
     const rawAnswerLimit = Number(root.dataset.vqAnswerLimit);
     const richText = root.dataset.vqRichText === "true";
     const answerLimit = Number.isInteger(rawAnswerLimit) && rawAnswerLimit >= 1000 &&
-      rawAnswerLimit <= (richText ? HARD_MAX_ANSWER_CHARS : 2400) ? rawAnswerLimit : 1000;
+      rawAnswerLimit <= HARD_MAX_ANSWER_CHARS ? rawAnswerLimit : 1000;
     const rawSectionLimit = Number(root.dataset.vqSectionLimit);
     const sectionLimit = richText && Number.isInteger(rawSectionLimit) &&
       rawSectionLimit >= 700 && rawSectionLimit <= answerLimit ? rawSectionLimit : 700;
