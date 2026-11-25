@@ -31,7 +31,8 @@ from apps.ai_core import request_recovery
 from apps.ai_core.conversations import context, repository, service
 from apps.ai_core.conversations.repository import ConversationNotFound
 from apps.ai_core.conversations.service import ConversationLimit, ConversationNotInTrash
-from apps.ai_core.gateway import InputError, validate
+from apps.ai_core.error_contracts import input_too_large
+from apps.ai_core.gateway import InputError, InputTooLarge, validate
 from apps.ai_core.chat_input_budget import global_budget
 from apps.ai_core.models import AIMessage
 from apps.ai_core.production_policy import _ids, production_actor_allowed
@@ -221,9 +222,13 @@ def conversation_message_view(request, conversation_id):
         budget = global_budget()
         body = _body(request, {"question", "language"}, max_body=budget.body_bytes)
         question, language = validate(body.get("question"), body.get("language", "fa"), input_budget=budget)
+    except InputTooLarge:
+        return _json(input_too_large("invalid_input", limit_chars=budget.question_chars), 400)
     except ValueError as exc:
         code = str(exc) if str(exc) in ("json_only", "request_too_large", "invalid_fields") else "invalid_input"
-        return _json({"error": code}, {"json_only": 415, "request_too_large": 413}.get(code, 400))
+        if code == "request_too_large":
+            return _json(input_too_large(code, limit_bytes=budget.body_bytes), 413)
+        return _json({"error": code}, {"json_only": 415}.get(code, 400))
     except (TypeError, UnicodeDecodeError, InputError):
         return _json({"error": "invalid_input"}, 400)
     try:

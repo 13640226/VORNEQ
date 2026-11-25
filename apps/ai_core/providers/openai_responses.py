@@ -190,7 +190,8 @@ class OpenAIResponsesProvider:
             if self.output_budget:
                 stage_rules = stage_rules.replace(
                     "to 700 characters (gap at most 200),",
-                    "to the evidence-backed bound (at most 1400 characters per answer section, gap at most 200),"
+                    "to the evidence-backed bound (at most "
+                    f"{self.output_budget.section_chars} characters per answer section, gap at most 200),"
                 )
             base = (stage_rules + " " + self.extra_instructions).strip()
         elif mode == "grounded":
@@ -273,6 +274,13 @@ class OpenAIResponsesProvider:
             from apps.ai_ledger.service import INPUT_OVERHEAD_TOKENS
             if not self.output_budget.fits_context(input_bytes, INPUT_OVERHEAD_TOKENS):
                 raise ProviderContextLimited("configured context budget exceeded")
+            # V7-02: mit vollständiger Modell-Policy zusätzlich die Sicherheitsmarge
+            # einhalten (konservativ; vor jeder Reservierung, ohne Provider-Aufruf).
+            from apps.ai_core.model_limits import chat_limits, fits_input_bytes
+            limits = chat_limits()
+            if (limits.extended and limits.model_id == self.model
+                    and not fits_input_bytes(limits, input_bytes, INPUT_OVERHEAD_TOKENS)):
+                raise ProviderContextLimited("context window incl. safety margin exceeded")
 
     def generate(self, *, question: str, language: str, sources: list[dict],
                  prior_turns=(), mode="grounded") -> dict:

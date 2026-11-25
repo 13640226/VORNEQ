@@ -94,7 +94,9 @@ class V3AnswerBoundaryTests(SimpleTestCase):
         self.assertIs(answer["verified"], False)
 
     def test_rejects_invalid_limit_and_oversized_answer(self):
-        for bad in (0, True, None, "2400", 2401):
+        from apps.ai_core.model_limits import MAX_VALIDATED_ANSWER_CHARS
+        # V7-02: der feste 2400-Deckel entfällt; die Obergrenze kommt aus der Policy.
+        for bad in (0, True, None, "2400", MAX_VALIDATED_ANSWER_CHARS + 1):
             with self.subTest(bad=bad), self.assertRaises(GeneratedAnswerRejected):
                 validate_generated(generated("ok"), sources=[SOURCE],
                                    language="en", max_answer_chars=bad)

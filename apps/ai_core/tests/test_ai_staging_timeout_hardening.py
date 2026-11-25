@@ -77,7 +77,7 @@ class HostedTimeoutPolicyTests(SimpleTestCase):
              patch("apps.ai_core.views_global.default_retriever", return_value=object()) as retriever, \
              patch("apps.ai_core.views_global.ask_global") as ask:
             body, status, _meta = run_global_pipeline(request, question, "en")
-        self.assertEqual((body, status), ({"error": "rate_limited"}, 429))
+        self.assertEqual((body, status), ({"error": "rate_limited", "reason": "LEDGER_UNAVAILABLE"}, 429))
         provider_factory.assert_not_called()
         quota.assert_not_called()
         staging_quota.assert_not_called()

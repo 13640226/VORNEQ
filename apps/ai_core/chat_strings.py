@@ -320,4 +320,10 @@ def chat_labels(language, environment=None):
         ),
     }
     labels["outputLimited"], labels["contextLimited"] = messages[code]
+    # V7-02 (COR-08/09): feste, lokalisierte Meldung für INPUT_TOO_LARGE; der Text bleibt im Eingabefeld.
+    labels["inputTooLarge"] = {
+        "en": "Your message is longer than the allowed limit. Your text was kept; please shorten it.",
+        "de": "Ihre Nachricht ist l\u00e4nger als erlaubt. Ihr Text bleibt erhalten; bitte k\u00fcrzen.",
+        "fa": "\u067e\u06cc\u0627\u0645 \u0634\u0645\u0627 \u0627\u0632 \u062d\u062f \u0645\u062c\u0627\u0632 \u0637\u0648\u0644\u0627\u0646\u06cc\u200c\u062a\u0631 \u0627\u0633\u062a. \u0645\u062a\u0646 \u0634\u0645\u0627 \u062d\u0641\u0638 \u0634\u062f\u061b \u0644\u0637\u0641\u0627\u064b \u0622\u0646 \u0631\u0627 \u06a9\u0648\u062a\u0627\u0647\u200c\u062a\u0631 \u06a9\u0646\u06cc\u062f.",
+    }[code]
     return labels

@@ -94,7 +94,30 @@ def build_report():
             "fallback": "none (V7-01)",
         },
         "registry_activation_note": "A catalog entry is not an authorization to call a provider.",
+        "chat_limits": _chat_limits_section(),
     }
+
+
+def _chat_limits_section():
+    """V7-02: wirksame Chat-Grenzen aus der zentralen Policy (read-only, ohne Netzwerk/Secrets)."""
+    from apps.ai_core.chat_output_budget import configured_output_budget
+    from apps.ai_core.model_limits import chat_limits, describe
+    from apps.ai_ledger.service import ledger_enabled
+    limits = chat_limits()
+    section = describe(limits)
+    output = configured_output_budget()
+    section.update({
+        "effective_output_tokens": output.output_tokens if output else limits.max_output_tokens,
+        "effective_answer_chars": output.answer_chars if output else limits.answer_chars,
+        "effective_section_chars": output.section_chars if output else None,
+        "ledger_status": "ENABLED" if ledger_enabled() else "DISABLED",
+        "production_extended_input_opt_in": getattr(
+            settings, "VORNEQ_AI_CHAT_PRODUCTION_EXTENDED_INPUT", False) is True,
+        "disabled_reasons": ([] if limits.extended else
+                             ["legacy_limits_active" if limits.source == "LEGACY_DEFAULT" else "input_pilot_only"]),
+        "note": "Gespeicherter Verlauf bleibt vollständig; nur der gesendete Kontext wird budgetiert.",
+    })
+    return section
 
 
 class Command(BaseCommand):
@@ -128,3 +151,12 @@ class Command(BaseCommand):
         missing = [c for c, ps in report["capabilities"].items() if ps == ["NOT_IMPLEMENTED"]]
         self.stdout.write("capabilities without provider: " + ", ".join(missing))
         self.stdout.write(report["registry_activation_note"])
+        cl = report["chat_limits"]
+        self.stdout.write(
+            f"chat limits: source={cl['source']}; context={cl['context_window']}; "
+            f"input={cl['max_input_tokens']}; output={cl['effective_output_tokens']}; "
+            f"history={cl['max_history_tokens']}; request_bytes={cl['max_request_bytes']}; "
+            f"message_chars={cl['max_message_characters']}; tokenizer={cl['tokenizer_strategy']}; "
+            f"verification={cl['verification_status']}; ledger={cl['ledger_status']}; "
+            f"conflicts={','.join(cl['conflicts']) or '-'}; "
+            f"disabled_reasons={','.join(cl['disabled_reasons']) or '-'}")

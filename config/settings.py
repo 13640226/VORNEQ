@@ -511,8 +511,12 @@ VORNEQ_AI_CONVERSATIONS_ALLOWED_USER_IDS = os.environ.get("VORNEQ_AI_CONVERSATIO
 # Context-aware retrieval for follow-up questions (deterministic, no model call).
 # Default OFF until measured; see docs/ai/PERSISTENT_CONVERSATION_V1_DESIGN.md.
 VORNEQ_AI_CONTEXT_RETRIEVAL_ENABLED = env_bool("VORNEQ_AI_CONTEXT_RETRIEVAL_ENABLED", False)
-# Opt-in development/staging-only input pilot. Missing or malformed = legacy.
+# Opt-in input budget for the central model-limit policy (apps/ai_core/model_limits.py,
+# ADR-0008). Missing or malformed = legacy (200 characters / 2048 bytes).
 VORNEQ_AI_CHAT_INPUT_TOKEN_BUDGET = os.environ.get("VORNEQ_AI_CHAT_INPUT_TOKEN_BUDGET", "")
+# Production stays on legacy limits unless this is exactly "true" (semantics of PR #712);
+# ledger and request recovery remain mandatory prerequisites.
+VORNEQ_AI_CHAT_PRODUCTION_EXTENDED_INPUT = os.environ.get("VORNEQ_AI_CHAT_PRODUCTION_EXTENDED_INPUT", "") == "true"
 # Classification-only groundwork; no provider mode is enabled by this flag yet.
 VORNEQ_AI_GENERAL_KNOWLEDGE_ENABLED = os.environ.get("VORNEQ_AI_GENERAL_KNOWLEDGE_ENABLED", "") == "true"
 VORNEQ_AI_CHAT_BUDGET_MODEL = os.environ.get("VORNEQ_AI_CHAT_BUDGET_MODEL", "")

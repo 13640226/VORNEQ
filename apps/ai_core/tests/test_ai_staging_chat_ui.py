@@ -98,6 +98,6 @@ class StagingOwnerChatUITests(TestCase):
         self.assertIn("source.evidence_quote.length <= 300", js)
         self.assertIn('form.setAttribute("aria-busy", "true")', js)
         self.assertIn('form.removeAttribute("aria-busy")', js)
-        self.assertIn('if (completed) input.value = "";', js)
+        self.assertIn('if (completed && answerBubble) input.value = "";', js)
         self.assertIn('error.name === "AbortError"', js)
         self.assertNotIn("innerHTML", js)

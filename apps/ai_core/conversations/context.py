@@ -15,16 +15,29 @@ from apps.ai_core.sanitization import UnsafePrompt, screen_and_redact
 PER_MESSAGE_LIMIT = 1000
 
 
-def prior_turns(conversation, *, turns=None, max_chars=None):
-    """Return oldest->newest [{"role", "content"}] of the last completed pairs."""
+def prior_turns(conversation, *, turns=None, max_chars=None, limits=None):
+    """Return oldest->newest [{"role", "content"}] of the last completed pairs.
+
+    V7-02: Mit vollständiger Modell-Policy (``model_limits``) entscheidet das
+    Token-Budget des Verlaufs statt fester Turn-/Zeichenzahlen. Der gespeicherte
+    Verlauf bleibt unverändert; nur die gesendete Auswahl wird begrenzt.
+    """
+    from apps.ai_core.model_limits import chat_limits, select_history
+    policy = limits if limits is not None else chat_limits()
+    budgeted = policy.extended and turns is None and max_chars is None
     turns = turns if turns is not None else settings.VORNEQ_AI_CONTEXT_TURNS
     max_chars = max_chars if max_chars is not None else settings.VORNEQ_AI_CONTEXT_MAX_CHARS
-    if turns <= 0 or max_chars <= 0:
+    if not budgeted and (turns <= 0 or max_chars <= 0):
         return ()
-    rows = list(conversation.messages.order_by("-sequence")[: turns * 2 + 8])
+    if budgeted and not policy.max_history_tokens:
+        return ()
+    cap = getattr(settings, "VORNEQ_AI_CONVERSATION_MAX_MESSAGES", 500) if budgeted else turns * 2 + 8
+    rows = list(conversation.messages.order_by("-sequence")[:cap])
     by_sequence = {m.sequence: m for m in rows}
     pairs = []
-    assistant_limit = max(PER_MESSAGE_LIMIT, answer_limit(settings))
+    question_limit = policy.max_message_characters if budgeted else PER_MESSAGE_LIMIT
+    assistant_limit = (max(PER_MESSAGE_LIMIT, policy.answer_chars) if budgeted
+                       else max(PER_MESSAGE_LIMIT, answer_limit(settings)))
     for message in rows:
         if message.role != AIMessage.ROLE_ASSISTANT or message.status != AIMessage.STATUS_COMPLETED:
             continue
@@ -32,15 +45,17 @@ def prior_turns(conversation, *, turns=None, max_chars=None):
         if question is None or question.role != AIMessage.ROLE_USER:
             continue
         try:
-            pair = (screen_and_redact(question.content, limit=PER_MESSAGE_LIMIT),
+            pair = (screen_and_redact(question.content, limit=question_limit),
                     screen_and_redact(message.content, limit=assistant_limit))
         except UnsafePrompt:
             continue
         if not pair[0] or not pair[1]:
             continue
         pairs.append(pair)
-        if len(pairs) == turns:
+        if not budgeted and len(pairs) == turns:
             break
+    if budgeted:
+        return select_history(pairs, policy)
     selected, used = [], 0
     for question, answer in pairs:  # newest first
         size = len(question) + len(answer)
