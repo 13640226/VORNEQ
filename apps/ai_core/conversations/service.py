@@ -164,6 +164,12 @@ def classify(result, http_status):
         return AIMessage.STATUS_INSUFFICIENT, "", str(code)[:40], []
     code = str(result.get("error") or "failed")[:40]
     status = AIMessage.STATUS_UNCERTAIN if code in _UNCERTAIN_ERRORS else AIMessage.STATUS_FAILED
+    # V7-03: Teilantworten (Stop, Ausgabelimit, Deadline) bleiben erhalten, sind aber
+    # nie COMPLETED und gehen damit nie als vollständige Antwort in den Kontext.
+    from apps.ai_core.streaming import PARTIAL_ERROR_CODES
+    partial = result.get("partial_answer")
+    if code in PARTIAL_ERROR_CODES and result.get("complete") is False and isinstance(partial, str):
+        return status, partial, code, []
     return status, "", code, []
 
 
@@ -276,6 +282,10 @@ def stored_response(message, conversation):
         if message.error_code == "UNSUPPORTED_QUESTION":
             return dict(base, error="UNSUPPORTED_QUESTION"), 422
         return dict(base, error="INSUFFICIENT_EVIDENCE", reason_code=message.error_code), 422
+    from apps.ai_core.streaming import PARTIAL_ERROR_CODES
+    if message.error_code in PARTIAL_ERROR_CODES:
+        return dict(base, error=message.error_code, partial_answer=message.content,
+                    complete=False), message.http_status or 503
     return dict(base, error=message.error_code or "failed"), message.http_status or 503
 
 
@@ -328,6 +338,10 @@ def serialize_message(message):
         "request_id": str(message.request_id) if message.request_id else None,
         "created_at": message.created_at.isoformat(),
         "finalized": message.status != AIMessage.STATUS_PENDING,
+        # V7-03: eindeutige Kennzeichnung unvollständiger/abgebrochener Antworten.
+        "complete": message.status == AIMessage.STATUS_COMPLETED,
+        "cancel_requested": (message.status == AIMessage.STATUS_PENDING
+                             and message.error_code == "cancel_requested"),
     }
 
 

@@ -72,7 +72,15 @@
   data-vq-conv-delete-forever="{{ chat_labels.conv_delete_forever }}"
   data-vq-conv-load-error="{{ chat_labels.conv_load_error }}"
   data-vq-conv-full="{{ chat_labels.conv_full }}"
-  data-vq-conv-not-saved="{{ chat_labels.conv_not_saved }}"{% endif %}>
+  data-vq-conv-not-saved="{{ chat_labels.conv_not_saved }}"{% if chat_streaming_enabled %}
+  data-vq-streaming="true"
+  data-vq-stream-stop="{{ chat_labels.stream_stop }}"
+  data-vq-stream-stopping="{{ chat_labels.stream_stopping }}"
+  data-vq-stream-cancelled="{{ chat_labels.stream_cancelled }}"
+  data-vq-stream-incomplete="{{ chat_labels.stream_incomplete }}"
+  data-vq-stream-writing="{{ chat_labels.stream_writing }}"
+  data-vq-stream-interrupted="{{ chat_labels.stream_interrupted }}"
+  data-vq-copy-code="{{ chat_labels.copy_code }}"{% endif %}{% endif %}>
   <header class="vq-chat__header">
     {% include "partials/_ai_brand.html" %}
     <p class="vq-chat__kicker"><span class="vq-chat__led" aria-hidden="true"></span>VORNEQ · AI · {% if chat_production %}Generated drafts · claims not verified{% elif chat_staging %}Authorized staging trial{% else %}Development preview{% endif %}</p>
@@ -126,6 +134,7 @@
       <span class="vq-chat__count" id="vq-chat-limit" data-vq-chat-count>0/{{ chat_question_limit|default:200 }}</span>
       <span class="vq-chat__hint" id="vq-chat-hint">{{ chat_labels.hint }}</span>
       <button type="button" class="vq-chat__clear" data-vq-chat-clear>{{ chat_labels.clear }}</button>
+      {% if chat_streaming_enabled %}<button type="button" class="vq-chat__stop" data-vq-chat-stop hidden>{{ chat_labels.stream_stop }}</button>{% endif %}
       <button type="submit" class="vq-chat__send" data-vq-chat-send>{{ chat_labels.send }}</button>
     </div>
   </form>
@@ -154,6 +163,7 @@
 </div>
 {% endblock %}
 {% block extra_js %}
+{% if chat_streaming_enabled %}<script src="{% static 'js/vq-stream-parser.js' %}" defer></script>{% endif %}
 <script src="{% static 'js/phase-c-chat.js' %}" defer></script>
 <script src="{% static 'js/voice/mic-recorder.js' %}" defer></script>
 <script src="{% static 'js/voice/mic-button.js' %}" defer></script>

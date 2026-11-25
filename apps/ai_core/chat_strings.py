@@ -326,4 +326,26 @@ def chat_labels(language, environment=None):
         "de": "Ihre Nachricht ist l\u00e4nger als erlaubt. Ihr Text bleibt erhalten; bitte k\u00fcrzen.",
         "fa": "\u067e\u06cc\u0627\u0645 \u0634\u0645\u0627 \u0627\u0632 \u062d\u062f \u0645\u062c\u0627\u0632 \u0637\u0648\u0644\u0627\u0646\u06cc\u200c\u062a\u0631 \u0627\u0633\u062a. \u0645\u062a\u0646 \u0634\u0645\u0627 \u062d\u0641\u0638 \u0634\u062f\u061b \u0644\u0637\u0641\u0627\u064b \u0622\u0646 \u0631\u0627 \u06a9\u0648\u062a\u0627\u0647\u200c\u062a\u0631 \u06a9\u0646\u06cc\u062f.",
     }[code]
+    # V7-03: Streaming-/Stop-Zustände (echte Übersetzungen fa/de/en).
+    labels.update({
+        "en": {"stream_stop": "Stop generating", "stream_stopping": "Stopping…",
+               "stream_cancelled": "Generation stopped. The partial answer is saved and marked incomplete.",
+               "stream_incomplete": "The answer is incomplete (limit or time reached). The partial text is saved.",
+               "stream_writing": "VORNEQ AI is writing…",
+               "stream_interrupted": "The connection was interrupted. The answer continues on the server; reload the conversation to see it.",
+               "copy_code": "Copy code"},
+        "de": {"stream_stop": "Generierung stoppen", "stream_stopping": "Wird gestoppt…",
+               "stream_cancelled": "Generierung gestoppt. Die Teilantwort ist gespeichert und als unvollständig markiert.",
+               "stream_incomplete": "Die Antwort ist unvollständig (Limit oder Zeit erreicht). Der Teiltext ist gespeichert.",
+               "stream_writing": "VORNEQ KI schreibt…",
+               "stream_interrupted": "Die Verbindung wurde unterbrochen. Die Antwort läuft auf dem Server weiter; laden Sie die Unterhaltung neu.",
+               "copy_code": "Code kopieren"},
+        "fa": {"stream_stop": "\u062a\u0648\u0642\u0641 \u062a\u0648\u0644\u06cc\u062f",
+               "stream_stopping": "\u062f\u0631 \u062d\u0627\u0644 \u062a\u0648\u0642\u0641\u2026",
+               "stream_cancelled": "\u062a\u0648\u0644\u06cc\u062f \u0645\u062a\u0648\u0642\u0641 \u0634\u062f. \u067e\u0627\u0633\u062e \u0646\u0627\u0642\u0635 \u0630\u062e\u06cc\u0631\u0647 \u0648 \u0628\u0647\u200c\u0639\u0646\u0648\u0627\u0646 \u0646\u0627\u062a\u0645\u0627\u0645 \u0639\u0644\u0627\u0645\u062a\u200c\u06af\u0630\u0627\u0631\u06cc \u0634\u062f.",
+               "stream_incomplete": "\u067e\u0627\u0633\u062e \u0646\u0627\u062a\u0645\u0627\u0645 \u0627\u0633\u062a (\u0628\u0647 \u0633\u0642\u0641 \u06cc\u0627 \u0632\u0645\u0627\u0646 \u0645\u062c\u0627\u0632 \u0631\u0633\u06cc\u062f). \u0645\u062a\u0646 \u0646\u0627\u0642\u0635 \u0630\u062e\u06cc\u0631\u0647 \u0634\u062f.",
+               "stream_writing": "\u0647\u0648\u0634 \u0645\u0635\u0646\u0648\u0639\u06cc VORNEQ \u062f\u0631 \u062d\u0627\u0644 \u0646\u0648\u0634\u062a\u0646 \u0627\u0633\u062a\u2026",
+               "stream_interrupted": "\u0627\u062a\u0635\u0627\u0644 \u0642\u0637\u0639 \u0634\u062f. \u067e\u0627\u0633\u062e \u062f\u0631 \u0633\u0631\u0648\u0631 \u0627\u062f\u0627\u0645\u0647 \u0645\u06cc\u200c\u06cc\u0627\u0628\u062f\u061b \u0628\u0631\u0627\u06cc \u062f\u06cc\u062f\u0646 \u0622\u0646 \u06af\u0641\u062a\u06af\u0648 \u0631\u0627 \u062f\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0632 \u06a9\u0646\u06cc\u062f.",
+               "copy_code": "\u06a9\u067e\u06cc \u06a9\u062f"},
+    }[code])
     return labels

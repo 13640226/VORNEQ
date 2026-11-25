@@ -228,6 +228,49 @@
       parent.appendChild(document.createTextNode(value.slice(start)));
     }
 
+    // V7-03: minimal, safe syntax highlighting. Tokens become text nodes inside
+    // spans with fixed class names; model output never becomes markup or code.
+    const HL_KEYWORDS = new Set(("def class return if elif else for while in import from as try except " +
+      "finally with lambda yield async await function const let var new this null true false None True " +
+      "False SELECT FROM WHERE JOIN GROUP BY ORDER INSERT UPDATE DELETE INTO VALUES AND OR NOT public " +
+      "private static void int string bool struct fn pub use mut match impl package func interface type").split(" "));
+    function highlightCode(codeEl, text, lang) {
+      if (text.length > 20000) { codeEl.textContent = text; return; }
+      const pattern = /(#[^\n]*|\/\/[^\n]*|--[^\n]*|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|\b\d+(?:\.\d+)?\b|\b[A-Za-z_][A-Za-z0-9_]*\b)/g;
+      let last = 0;
+      for (const match of text.matchAll(pattern)) {
+        const token = match[0];
+        let cls = "";
+        if (/^(#|\/\/|--)/.test(token)) cls = (token.startsWith("#") && !["python", "py", "bash", "sh", "yaml", "yml", "ruby", "r"].includes(lang)) ? "" : "c";
+        else if (/^["']/.test(token)) cls = "s";
+        else if (/^\d/.test(token)) cls = "n";
+        else if (HL_KEYWORDS.has(token)) cls = "k";
+        if (!cls) continue;
+        codeEl.appendChild(document.createTextNode(text.slice(last, match.index)));
+        const span = document.createElement("span");
+        span.className = "vq-hl-" + cls;
+        span.textContent = token;
+        codeEl.appendChild(span);
+        last = match.index + token.length;
+      }
+      codeEl.appendChild(document.createTextNode(text.slice(last)));
+    }
+    function addCodeCopy(pre, codeEl) {
+      if (!navigator.clipboard || typeof navigator.clipboard.writeText !== "function") return;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "vq-chat__copy-code";
+      button.textContent = root.dataset.vqCopyCode || labels.copy || "Copy";
+      button.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(codeEl.textContent || "");
+          button.textContent = labels.copied || "Copied";
+          window.setTimeout(() => { button.textContent = root.dataset.vqCopyCode || labels.copy || "Copy"; }, 2000);
+        } catch (_error) { /* clipboard denied: code stays selectable */ }
+      });
+      pre.appendChild(button);
+    }
+
     function renderMarkdown(value) {
       const content = document.createElement("div");
       content.className = "vq-chat__rich";
@@ -268,9 +311,12 @@
           const pre = document.createElement("pre");
           pre.dir = "ltr";
           const code = document.createElement("code");
-          code.textContent = lines.slice(i + 1, end).join("\n");
+          const lang = (/^\s*\x60{3}([A-Za-z0-9_+.-]{0,24})/.exec(line) || [])[1] || "";
+          if (lang) code.className = "language-" + lang.toLowerCase();
+          highlightCode(code, lines.slice(i + 1, end).join("\n"), lang.toLowerCase());
           pre.appendChild(code);
           content.appendChild(pre);
+          addCodeCopy(pre, code);
           i = end + 1;
           continue;
         }
@@ -679,6 +725,20 @@
             if (code === "UNSUPPORTED_QUESTION") appendMessage(rejectionMessage({ error: code }), "assistant");
             else if (code === "insufficient_evidence" || code === "INSUFFICIENT_EVIDENCE") appendMessage(labels.empty || "", "assistant");
             else appendMessage(rejectionMessage({ error: "INSUFFICIENT_EVIDENCE", reason_code: code }), "assistant");
+          } else if (message.content && (message.status === "pending" ||
+                     ["cancelled", "output_limit_reached", "stream_timeout", "stream_interrupted",
+                      "emergency_stop", "interrupted", "cancel_requested"].includes(String(message.error_code || "")))) {
+            // V7-03: saved partial text (stopped, limit, deadline or still running) is
+            // shown as plain text and explicitly marked as incomplete – never as complete.
+            const code = String(message.error_code || "");
+            const bubble = appendMessage(String(message.content), "assistant");
+            bubble.classList.add("vq-chat__message--partial");
+            const note = document.createElement("small");
+            note.className = "vq-chat__partial-note";
+            note.textContent = code === "cancelled" ? (root.dataset.vqStreamCancelled || "") :
+              message.status === "pending" ? (root.dataset.vqStreamWriting || labels.loading || "") :
+                (root.dataset.vqStreamIncomplete || labels.error || "");
+            bubble.appendChild(note);
           } else {
             const code = String(message.error_code || "");
             appendMessage(rejectionMessage({ error: code }), "assistant");
@@ -834,8 +894,150 @@
         startNew,
         refresh: refreshList,
         messagesUrl: () => detailUrl(activeId) + "messages/",
+        streamUrl: () => detailUrl(activeId) + "messages/stream/",
+        cancelUrl: (messageId) => detailUrl(activeId) + "messages/" + messageId + "/cancel/",
         fullLabel: () => root.dataset.vqConvFull || labels.error || "",
       };
+    }
+
+    // ------------------------------------------------------------ V7-03 streaming
+    // Streaming needs the parser module; without it the JSON path stays active.
+    const streamingEnabled = Boolean(conv) && root.dataset.vqStreaming === "true" &&
+      Boolean(window.VQStreamParser) && typeof TextDecoder === "function";
+    const stopButton = root.querySelector("[data-vq-chat-stop]");
+    const uuidLike = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+    let activeStream = null;
+    function nearBottom() {
+      const scroller = log.scrollHeight > log.clientHeight + 4 ? log : document.scrollingElement;
+      if (!scroller) return true;
+      const height = scroller === log ? log.clientHeight : window.innerHeight;
+      return scroller.scrollHeight - scroller.scrollTop - height < 120;
+    }
+    function keepPinned(wasNear, bubble) {
+      // Never yank the reader down while they scroll up through the conversation.
+      if (!wasNear || !bubble) return;
+      if (typeof bubble.scrollIntoView === "function") bubble.scrollIntoView({ block: "end" });
+    }
+    function showStop(visible) {
+      if (!stopButton) return;
+      stopButton.hidden = !visible;
+      stopButton.disabled = false;
+      stopButton.textContent = root.dataset.vqStreamStop || "Stop";
+    }
+    if (stopButton) {
+      stopButton.addEventListener("click", async () => {
+        const current = activeStream;
+        if (!current || current.stopping) return;
+        current.stopping = true;
+        stopButton.disabled = true;
+        stopButton.textContent = root.dataset.vqStreamStopping || "Stopping…";
+        if (!current.responseId) { current.controller.abort(); return; }
+        try {
+          await fetch(conv.cancelUrl(current.responseId), {
+            method: "POST", credentials: "same-origin", cache: "no-store", redirect: "error",
+            headers: { "Accept": "application/json", "Content-Type": "application/json", "X-CSRFToken": token.value },
+            body: "{}",
+          });
+        } catch (_error) { /* the server stops at its next checkpoint or deadline */ }
+        // Confirmation is the stream's response.cancelled event; local fallback after 12 s.
+        window.setTimeout(() => { if (activeStream === current) current.controller.abort(); }, 12000);
+      });
+    }
+    async function streamAnswer(question, requestId, controller) {
+      const headers = { "Content-Type": "application/json", "Accept": "text/event-stream, application/json",
+        "X-CSRFToken": token.value };
+      if (requestId) headers["X-VQ-Request-ID"] = requestId;
+      const response = await fetch(conv.streamUrl(), {
+        method: "POST", credentials: "same-origin", cache: "no-store", redirect: "error", headers,
+        body: JSON.stringify({ question, language: questionLanguage(question) }), signal: controller.signal,
+      });
+      const type = response.headers.get("Content-Type") || "";
+      if (!type.startsWith("text/event-stream") || !response.body) {
+        // Replay, refusal or validation error: unchanged JSON contracts.
+        let data = null;
+        try { data = await response.json(); } catch (_error) { data = null; }
+        if (response.ok) return renderData(data);
+        appendMessage(response.status === 409 && conv ? conv.fullLabel() : rejectionMessage(data), "assistant");
+        return { completed: response.status === 400 || response.status === 422, answerBubble: null };
+      }
+      const current = { controller, responseId: null, stopping: false };
+      activeStream = current;
+      showStop(true);
+      const bubble = appendMessage("", "assistant");
+      bubble.classList.add("vq-chat__message--streaming");
+      bubble.setAttribute("aria-busy", "true");
+      const textNode = bubble.querySelector("p");
+      status.textContent = root.dataset.vqStreamWriting || labels.loading || "";
+      const reader = response.body.getReader();
+      // vq-stream-parser.js: TextDecoder("utf-8") with { stream: true }, SSE frame
+      // reassembly, sequence check (event.sequence_number <= lastSequence dropped).
+      const parser = window.VQStreamParser.create();
+      let partial = "";
+      let finalState = null;
+      try {
+        while (finalState === null) {
+          const { value, done } = await reader.read();
+          const events = done ? parser.end() : parser.feed(value);
+          for (const event of events) {
+            if (event.type === "response.created" && typeof event.response_id === "string" &&
+                uuidLike.test(event.response_id)) current.responseId = event.response_id;
+            if (event.type === "response.delta" && typeof event.payload.text === "string") {
+              const wasNear = nearBottom();
+              partial += event.payload.text;
+              if (textNode) textNode.textContent = partial;
+              keepPinned(wasNear, bubble);
+            } else if (event.type === "response.completed") {
+              finalState = { kind: "completed", data: event.payload.response };
+            } else if (event.type === "response.cancelled") {
+              finalState = { kind: "cancelled" };
+            } else if (event.type === "response.incomplete") {
+              finalState = { kind: "incomplete" };
+            } else if (event.type === "response.failed") {
+              finalState = { kind: "failed", data: event.payload };
+            }
+            if (finalState) break;
+          }
+          if (done) break;
+        }
+      } catch (_error) {
+        // Network loss, local abort or oversized/invalid stream: never a confirmed stop.
+        // The server keeps the paid request's result; reloading the conversation shows it.
+        finalState = finalState || { kind: "interrupted" };
+      } finally {
+        try { reader.releaseLock(); } catch (_error) { /* already released */ }
+        if (activeStream === current) activeStream = null;
+        showStop(false);
+        bubble.removeAttribute("aria-busy");
+        bubble.classList.remove("vq-chat__message--streaming");
+        status.textContent = "";
+      }
+      if (!finalState) finalState = { kind: "interrupted" };
+      if (finalState.kind === "completed") {
+        bubble.remove();
+        const rendered = renderData(finalState.data);
+        if (finalState.data && finalState.data.persisted === false) {
+          appendMessage(root.dataset.vqConvNotSaved || labels.error || "", "assistant");
+        }
+        return rendered;
+      }
+      if (finalState.kind === "failed") {
+        bubble.remove();
+        appendMessage(rejectionMessage(finalState.data), "assistant");
+        return { completed: true, answerBubble: null };
+      }
+      // Partial text stays visible and is explicitly marked as incomplete.
+      bubble.classList.add("vq-chat__message--partial");
+      const note = document.createElement("small");
+      note.className = "vq-chat__partial-note";
+      note.textContent = finalState.kind === "cancelled" ? (root.dataset.vqStreamCancelled || "") :
+        finalState.kind === "incomplete" ? (root.dataset.vqStreamIncomplete || "") :
+          (root.dataset.vqStreamInterrupted || labels.error || "");
+      bubble.appendChild(note);
+      if (finalState.kind === "interrupted") {
+        if (requestId) recoveryBlocked = true;
+        return { completed: false, answerBubble: null };
+      }
+      return { completed: true, answerBubble: null };
     }
 
     form.addEventListener("submit", async (event) => {
@@ -884,6 +1086,11 @@
       // provider 60 s + retrieval/ledger headroom, below the 100 s worker limit.
       const timeout = window.setTimeout(() => controller.abort(), 95000);
       try {
+        if (streamingEnabled) {
+          const streamed = await streamAnswer(question, requestId, controller);
+          completed = streamed.completed;
+          answerBubble = streamed.answerBubble;
+        } else {
         const headers = {
           "Content-Type": "application/json",
           "Accept": "application/json",
@@ -944,6 +1151,7 @@
             appendMessage(root.dataset.vqConvNotSaved || labels.error || "", "assistant");
           }
           if (!completed && requestId) recoveryBlocked = true;
+        }
         }
       } catch (error) {
         // An aborted browser fetch does not cancel or refund the provider.
