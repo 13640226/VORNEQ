@@ -131,6 +131,25 @@ def ledger_configuration() -> LedgerConfig:
     return LedgerConfig(ledger_id, name)
 
 
+def emergency_stop_active() -> bool | None:
+    """V7-03: Not-Aus während eines laufenden Streams prüfen (nur lesend).
+
+    ``True`` = Umgebung oder Ledger-Konto gestoppt, ``False`` = nicht gestoppt,
+    ``None`` = Ledger nicht erreichbar (der laufende, bereits reservierte Aufruf
+    wird dann nicht abgebrochen; neue Reservierungen scheitern ohnehin fail-closed).
+    """
+    if getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", False):
+        return True
+    try:
+        config = ledger_configuration()
+        from apps.ai_ledger.models import BudgetAccount
+        flag = (BudgetAccount.objects.using(LEDGER_ALIAS).filter(ledger_id=config.ledger_id)
+                .values_list("emergency_stop", flat=True).first())
+    except Exception:
+        return None
+    return bool(flag) if flag is not None else None
+
+
 def worst_case_cost_micro(*, input_bytes: int, max_output_tokens: int, input_price: int, output_price: int) -> int:
     """Upper bound: a BPE token covers >= 1 UTF-8 byte, so tokens <= bytes."""
     if min(input_bytes, max_output_tokens, input_price, output_price) < 0:

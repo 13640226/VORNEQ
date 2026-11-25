@@ -236,3 +236,19 @@
 .vq-chat__rich table { border-collapse: collapse; max-width: 100%; }
 .vq-chat__rich th, .vq-chat__rich td { text-align: start; border: 1px solid currentColor; padding: .35rem .55rem; }
 .vq-chat__rich ul, .vq-chat__rich ol { padding-inline-start: 1.5rem; }
+
+/* V7-03: streaming, stop, partial answers, code blocks (theme tokens only). */
+.vq-chat__stop { min-height: 44px; padding: 8px 14px; border: 1px solid var(--color-border-strong, currentColor); border-radius: 10px; background: transparent; color: var(--color-text-primary); font: inherit; cursor: pointer; }
+.vq-chat__stop:focus-visible, .vq-chat__copy-code:focus-visible { outline: 2px solid var(--color-focus, currentColor); outline-offset: 2px; }
+.vq-chat__stop[disabled] { opacity: .6; cursor: progress; }
+.vq-chat__message--streaming p::after { content: "▍"; margin-inline-start: 2px; animation: vq-caret 1s steps(2, start) infinite; }
+@keyframes vq-caret { to { visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .vq-chat__message--streaming p::after { animation: none; } }
+.vq-chat__message--partial { border-inline-start: 3px solid var(--color-warning, #b7791f); }
+.vq-chat__partial-note { display: block; margin-top: 6px; color: var(--color-text-secondary); }
+.vq-chat__rich pre { position: relative; overflow-x: auto; direction: ltr; text-align: left; }
+.vq-chat__copy-code { position: absolute; top: 6px; inset-inline-end: 6px; min-height: 32px; padding: 4px 8px; border: 1px solid var(--color-border, currentColor); border-radius: 8px; background: var(--color-surface, transparent); color: var(--color-text-primary); font: inherit; font-size: .8rem; cursor: pointer; }
+.vq-hl-k { color: var(--color-accent-strong, #7c3aed); font-weight: 600; }
+.vq-hl-s { color: var(--color-success, #15803d); }
+.vq-hl-n { color: var(--color-warning, #b45309); }
+.vq-hl-c { color: var(--color-text-secondary); font-style: italic; }

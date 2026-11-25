@@ -8,6 +8,7 @@ from .image_generation.gallery import image_download_view, image_history_view
 from .image_generation.views import image_jobs_view, image_job_detail_view
 from .image_generation.page import image_studio_page
 from .views_global import ask_global_view, recovery_status_view
+from .views_streaming import conversation_message_cancel_view, conversation_message_stream_view
 from .views_conversations import (
     conversation_detail_view, conversation_export_view, conversation_message_view,
     conversation_restore_view, conversations_view,
@@ -34,6 +35,11 @@ urlpatterns = [
     path("conversations/<uuid:conversation_id>/", conversation_detail_view, name="conversation-detail"),
     path("conversations/<uuid:conversation_id>/messages/", conversation_message_view,
          name="conversation-messages"),
+    # V7-03: gestreamte Antwort und Stop (eigene Gates, Standard aus).
+    path("conversations/<uuid:conversation_id>/messages/stream/", conversation_message_stream_view,
+         name="conversation-messages-stream"),
+    path("conversations/<uuid:conversation_id>/messages/<uuid:message_id>/cancel/",
+         conversation_message_cancel_view, name="conversation-message-cancel"),
     path("conversations/<uuid:conversation_id>/restore/", conversation_restore_view,
          name="conversation-restore"),
     path("conversations/<uuid:conversation_id>/export/", conversation_export_view,

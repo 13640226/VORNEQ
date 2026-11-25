@@ -283,7 +283,8 @@ LEGACY_OPENAI_IMAGE_MODELS = frozenset({
 })
 
 _PROVIDERS = (
-    ProviderSpec("openai-text", {Capability.TEXT_GENERATION}, True,
+    # V7-03: Streaming über dieselbe Responses-API (BudgetedProvider.stream_knowledge).
+    ProviderSpec("openai-text", {Capability.TEXT_GENERATION, Capability.STREAMING}, True,
                  display_name="OpenAI Responses (Text)"),
     ProviderSpec("openai-image", {Capability.IMAGE_GENERATION}, True,
                  display_name="OpenAI Images"),

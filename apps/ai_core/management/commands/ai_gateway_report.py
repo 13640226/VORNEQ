@@ -95,6 +95,33 @@ def build_report():
         },
         "registry_activation_note": "A catalog entry is not an authorization to call a provider.",
         "chat_limits": _chat_limits_section(),
+        "streaming": _streaming_section(),
+    }
+
+
+def _streaming_section():
+    """V7-03: Streaming-/Stop-Status (read-only, ohne DB-, Netzwerk- oder Secret-Zugriff)."""
+    from apps.ai_core import request_recovery, streaming
+    env = getattr(settings, "VORNEQ_ENV", None)
+    return {
+        "enabled": streaming.enabled(),
+        "environment": env if env in KNOWN_ENVIRONMENTS else "INVALID",
+        "flag": ("VORNEQ_AI_CHAT_STREAMING_PRODUCTION_ENABLED" if env == "production"
+                 else "VORNEQ_AI_CHAT_STREAMING_ENABLED"),
+        "requires": ["VORNEQ_AI_CONVERSATIONS_ENABLED", "global_ai_available", "actor_policy",
+                     "recovery (hosted)", "ledger reservation (hosted)"],
+        "streamed_routes": ["model_knowledge (text deltas)"],
+        "validated_routes": ["grounded_draft (single final event after citation validation)"],
+        "provider_streaming_capability": {"openai-text": "IMPLEMENTED (Responses API stream=True)"},
+        "model_streaming_capability": "NOT_VERIFIED (registry)",
+        "transport": "POST + fetch stream, SSE frames, WSGI StreamingHttpResponse",
+        "deadline_seconds": streaming.STREAM_DEADLINE_SECONDS,
+        "checkpoint": {"seconds": streaming.CHECKPOINT_SECONDS, "chars": streaming.CHECKPOINT_CHARS},
+        "cancellation": "AIMessage.error_code=cancel_requested (PostgreSQL, owner-bound, idempotent)",
+        "recovery_available": request_recovery.enabled(),
+        "active_requests": "NOT_REPORTED (report performs no database queries)",
+        "ledger_enforcement": "BudgetedProvider.stream_knowledge reserve -> single call -> settle/release",
+        "emergency_stop": bool(getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", False)),
     }
 
 
@@ -163,6 +190,9 @@ class Command(BaseCommand):
         missing = [c for c, ps in report["capabilities"].items() if ps == ["NOT_IMPLEMENTED"]]
         self.stdout.write("capabilities without provider: " + ", ".join(missing))
         self.stdout.write(report["registry_activation_note"])
+        st = report["streaming"]
+        self.stdout.write(f"streaming: enabled={st['enabled']}; flag={st['flag']}; "
+                          f"recovery={st['recovery_available']}; deadline={st['deadline_seconds']}s")
         cl = report["chat_limits"]
         self.stdout.write(
             f"chat limits: source={cl['source']}; context={cl['context_window']}; "

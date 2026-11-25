@@ -31,6 +31,8 @@ ALLOWED_CONSTRUCTION = {
     "OpenAI": {
         ("apps/ai_core/providers/openai_responses.py", "OpenAIResponsesProvider.generate"),
         ("apps/ai_core/providers/openai_responses.py", "OpenAIResponsesProvider.generate_knowledge"),
+        # V7-03: gestreamte Wissensantwort – derselbe Adapter, dieselbe Freigabeprüfung.
+        ("apps/ai_core/providers/openai_responses.py", "OpenAIResponsesProvider.stream_knowledge"),
         ("apps/ai_core/image_generation/providers.py", "OpenAIImageProvider.generate"),
     },
     "AsyncOpenAI": set(),
@@ -42,12 +44,14 @@ ALLOWED_SDK_FILES = {"apps/ai_core/providers/openai_responses.py", "apps/ai_core
 ALLOWED_AUTHORIZATION = {
     ("apps/ai_core/budgeted_provider.py", "BudgetedProvider.generate"),
     ("apps/ai_core/budgeted_provider.py", "BudgetedProvider.generate_knowledge"),
+    ("apps/ai_core/budgeted_provider.py", "BudgetedProvider.stream_knowledge"),  # V7-03
     ("apps/ai_core/image_generation/service.py", "process_next_image_job"),
 }
 # Bezahlte Adapter: Prüfung der Freigabe vor jedem SDK-Client.
 GUARDED_ADAPTERS = {
     ("apps/ai_core/providers/openai_responses.py", "OpenAIResponsesProvider.generate"): "_require_ledger_reservation",
     ("apps/ai_core/providers/openai_responses.py", "OpenAIResponsesProvider.generate_knowledge"): "_require_ledger_reservation",
+    ("apps/ai_core/providers/openai_responses.py", "OpenAIResponsesProvider.stream_knowledge"): "_require_ledger_reservation",
     ("apps/ai_core/image_generation/providers.py", "OpenAIImageProvider.generate"): "require_authorized_paid_call",
 }
 # Die Ledger-Reservierung muss im selben Funktionskörper VOR dem Bild-Provider stehen.

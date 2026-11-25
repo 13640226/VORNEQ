@@ -206,6 +206,42 @@ def _instructions_for(environment, with_history):
     return (base + " " + HISTORY_INSTRUCTIONS) if with_history else base
 
 
+def prepare_paid_text(request, prior_turns=()):
+    """Gemeinsame Vorbereitung jedes bezahlten Text-Aufrufs (Pipeline und V7-03-Stream).
+
+    Reihenfolge unverändert: Ledger-Pflicht/Not-Aus -> Quote -> Ausgabe-Policy ->
+    einziger zulässiger Provider über ``paid_text_provider`` (gehostet: BudgetedProvider).
+    Ausnahmen (BudgetExceeded, GatewayError) gehen unverändert an den Aufrufer.
+    """
+    shared_budget = require_paid_text_ledger(ledger_check=ledger_enabled)
+    reserve_global_request(request.user.pk, burst_only=shared_budget)
+    stage2 = response_engine_v3.stage2_enabled(settings)
+    output_budget = configured_output_budget() if stage2 else None
+    model_name = os.environ.get("VORNEQ_AI_PHASE_B_MODEL", "")
+    # V7-02.1 (COR-08): Ohne Stage 2 (u. a. Production) galt bisher immer der
+    # feste Deckel 2048 Tokens / 1000 Zeichen, unabhängig von ModelLimits.
+    # Mit vollständiger Policy (Production: exaktes Opt-in + Ledger + Recovery)
+    # gilt jetzt deren Ausgabegrenze; der Ledger reserviert genau diesen Wert.
+    policy_output = None if stage2 else policy_output_tokens(model_name)
+    answer_chars = (min(MAX_VALIDATED_ANSWER_CHARS, ANSWER_CHARS_PER_TOKEN * policy_output)
+                    if policy_output else response_engine_v3.answer_limit(settings))
+    provider = paid_text_provider(
+        actor_id=request.user.pk,
+        provider_class=OpenAIResponsesProvider,
+        ledger_check=ledger_enabled,
+        model=model_name,
+        timeout_s=_provider_timeout_for_environment(settings.VORNEQ_ENV),
+        max_output_tokens=(output_budget.output_tokens if output_budget else
+                           response_engine_v3.output_tokens(settings) if stage2
+                           else policy_output or _output_cap_for_environment(settings.VORNEQ_ENV)),
+        extra_instructions=_instructions_for(settings.VORNEQ_ENV, bool(prior_turns)),
+        compact_sources=_compact_sources_for_environment(settings.VORNEQ_ENV),
+        response_v3_enabled=response_engine_v3.enabled(settings),
+        response_stage2_enabled=stage2,
+    )
+    return shared_budget, provider, stage2, output_budget, answer_chars
+
+
 def run_global_pipeline(request, question, language, *, prior_turns=(), search_question=None):
     """Shared Global AI pipeline after authentication, validation and recovery claim.
 
@@ -224,32 +260,7 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
     # transaction (apps.ai_ledger.service.reserve). Local development (never on a
     # hosted runtime) keeps the cache-based counters and no ledger.
     try:
-        shared_budget = require_paid_text_ledger(ledger_check=ledger_enabled)
-        reserve_global_request(request.user.pk, burst_only=shared_budget)
-        stage2 = response_engine_v3.stage2_enabled(settings)
-        output_budget = configured_output_budget() if stage2 else None
-        model_name = os.environ.get("VORNEQ_AI_PHASE_B_MODEL", "")
-        # V7-02.1 (COR-08): Ohne Stage 2 (u. a. Production) galt bisher immer der
-        # feste Deckel 2048 Tokens / 1000 Zeichen, unabhängig von ModelLimits.
-        # Mit vollständiger Policy (Production: exaktes Opt-in + Ledger + Recovery)
-        # gilt jetzt deren Ausgabegrenze; der Ledger reserviert genau diesen Wert.
-        policy_output = None if stage2 else policy_output_tokens(model_name)
-        answer_chars = (min(MAX_VALIDATED_ANSWER_CHARS, ANSWER_CHARS_PER_TOKEN * policy_output)
-                        if policy_output else response_engine_v3.answer_limit(settings))
-        provider = paid_text_provider(
-            actor_id=request.user.pk,
-            provider_class=OpenAIResponsesProvider,
-            ledger_check=ledger_enabled,
-            model=model_name,
-            timeout_s=_provider_timeout_for_environment(settings.VORNEQ_ENV),
-            max_output_tokens=(output_budget.output_tokens if output_budget else
-                               response_engine_v3.output_tokens(settings) if stage2
-                               else policy_output or _output_cap_for_environment(settings.VORNEQ_ENV)),
-            extra_instructions=_instructions_for(settings.VORNEQ_ENV, bool(prior_turns)),
-            compact_sources=_compact_sources_for_environment(settings.VORNEQ_ENV),
-            response_v3_enabled=response_engine_v3.enabled(settings),
-            response_stage2_enabled=stage2,
-        )
+        shared_budget, provider, stage2, output_budget, answer_chars = prepare_paid_text(request, prior_turns)
         if shared_budget:
             meta["budgeted"] = provider
         meta["model"] = getattr(provider, "model", "") or getattr(getattr(provider, "inner", None), "model", "")

@@ -202,42 +202,45 @@ def _finish(request, request_id, data, status):
     return _json(data, status)
 
 
-@never_cache
-@csrf_protect
-@require_POST
-def conversation_message_view(request, conversation_id):
+def _prepare_message(request, conversation_id):
+    """Gemeinsame Vorprüfung für normale und gestreamte Nachrichten (V7-03).
+
+    Rückgabe ``(response, None)`` bei Ablehnung/Replay, sonst
+    ``(None, (user, conversation, question, language, request_id))``.
+    Reihenfolge und Semantik unverändert gegenüber V7-02.
+    """
     user = _enabled_user(request)
     if user is None:
-        return _json({"error": "authentication_required"}, 401)
+        return _json({"error": "authentication_required"}, 401), None
     if not global_ai_available():
         raise Http404("Global AI disabled")
     if not (_may_ask(user) and may_start(user)):
-        return _json({"error": "forbidden"}, 403)
+        return _json({"error": "forbidden"}, 403), None
     # Hosted environments may invoke a billable provider. A durable recovery
     # claim and request UUID are mandatory BEFORE any provider/ledger work.
     # Development retains the existing offline fake-provider test path.
     if settings.VORNEQ_ENV in ("production", "staging") and not request_recovery.enabled():
-        return _json({"error": "recovery_unavailable"}, 503)
+        return _json({"error": "recovery_unavailable"}, 503), None
     try:
         budget = global_budget()
         body = _body(request, {"question", "language"}, max_body=budget.body_bytes)
         question, language = validate(body.get("question"), body.get("language", "fa"), input_budget=budget)
     except InputTooLarge:
-        return _json(input_too_large("invalid_input", limit_chars=budget.question_chars), 400)
+        return _json(input_too_large("invalid_input", limit_chars=budget.question_chars), 400), None
     except ValueError as exc:
         code = str(exc) if str(exc) in ("json_only", "request_too_large", "invalid_fields") else "invalid_input"
         if code == "request_too_large":
-            return _json(input_too_large(code, limit_bytes=budget.body_bytes), 413)
-        return _json({"error": code}, {"json_only": 415}.get(code, 400))
+            return _json(input_too_large(code, limit_bytes=budget.body_bytes), 413), None
+        return _json({"error": code}, {"json_only": 415}.get(code, 400)), None
     except (TypeError, UnicodeDecodeError, InputError):
-        return _json({"error": "invalid_input"}, 400)
+        return _json({"error": "invalid_input"}, 400), None
     try:
         conversation = repository.get_conversation(user, conversation_id)
         service.ensure_capacity(conversation)
     except ConversationNotFound:
-        return _json({"error": "not_found"}, 404)
+        return _json({"error": "not_found"}, 404), None
     except ConversationLimit:
-        return _json({"error": "conversation_full"}, 409)
+        return _json({"error": "conversation_full"}, 409), None
     request_id = None
     if request_recovery.enabled():
         request_id = request.headers.get("X-VQ-Request-ID", "")
@@ -247,15 +250,15 @@ def conversation_message_view(request, conversation_id):
             prior = request_recovery.claim(request, request_id,
                                            question=f"{conversation.id}\u241f{question}", language=language)
         except request_recovery.RecoveryInvalid:
-            return _json({"error": "invalid_request_id"}, 400)
+            return _json({"error": "invalid_request_id"}, 400), None
         except request_recovery.RecoveryNotFound:
-            return _json({"error": "not_found"}, 404)
+            return _json({"error": "not_found"}, 404), None
         except request_recovery.RecoveryConflict:
-            return _json({"error": "request_id_conflict"}, 409)
+            return _json({"error": "request_id_conflict"}, 409), None
         except request_recovery.RecoveryUnavailable:
-            return _json({"error": "recovery_unavailable"}, 503)
+            return _json({"error": "recovery_unavailable"}, 503), None
         if prior["status"] in ("completed", "failed"):
-            return _json(prior["response"], prior["http_status"])
+            return _json(prior["response"], prior["http_status"]), None
         if prior["status"] != "claimed":
             # Redis no longer holds the result: PostgreSQL is authoritative.
             stored = (AIMessage.objects.filter(request_id=request_id, conversation=conversation,
@@ -263,9 +266,20 @@ def conversation_message_view(request, conversation_id):
                       .exclude(status=AIMessage.STATUS_PENDING).first())
             if stored is not None:
                 body, status = service.stored_response(stored, conversation)
-                return _json(body, status)
+                return _json(body, status), None
             return _json({"status": prior["status"], "request_id": request_id},
-                         202 if prior["status"] == "running" else 409)
+                         202 if prior["status"] == "running" else 409), None
+    return None, (user, conversation, question, language, request_id)
+
+
+@never_cache
+@csrf_protect
+@require_POST
+def conversation_message_view(request, conversation_id):
+    refusal, prepared = _prepare_message(request, conversation_id)
+    if refusal is not None:
+        return refusal
+    user, conversation, question, language, request_id = prepared
     turns = context.prior_turns(conversation, question=question)
     # 1) Durable request state BEFORE any quota, retrieval, ledger or provider work.
     try:
@@ -287,12 +301,19 @@ def conversation_message_view(request, conversation_id):
         _log.warning("ai_conversation_pipeline_interrupted")
         raise
     reservation = getattr(meta.get("budgeted"), "last_reservation", None)
-    # 3) Final turn + guard transition in ONE PostgreSQL transaction.
+    body, _persisted = persist_turn(request, user, conversation, pending, request_id, data, status,
+                                    reservation=reservation, model=meta.get("model") or "")
+    return _json(body, status)
+
+
+def persist_turn(request, user, conversation, pending, request_id, data, status, *, reservation=None, model=""):
+    """Schritt 3 (unverändert aus V7-02, gemeinsam mit V7-03-Streaming):
+    finaler Turn + Guard-Übergang in EINER PostgreSQL-Transaktion, dann Redis."""
     persisted = False
     try:
         service.complete_turn(
             user, pending.id, result=data, http_status=status,
-            reservation_id=getattr(reservation, "id", None), model=meta.get("model") or "",
+            reservation_id=getattr(reservation, "id", None), model=model,
             finalize_guard=((lambda: request_recovery.finalize_guard_in_transaction(request, request_id))
                             if request_id else None))
         persisted = True
@@ -310,4 +331,4 @@ def conversation_message_view(request, conversation_id):
                 request_recovery.finish(request, request_id, http_status=status, response=body)
             except (request_recovery.RecoveryUnavailable, request_recovery.RecoveryNotFound):
                 _log.warning("ai_chat_recovery_result_unavailable")
-    return _json(body, status)
+    return body, persisted

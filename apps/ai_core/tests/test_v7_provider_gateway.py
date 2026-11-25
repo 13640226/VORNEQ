@@ -48,8 +48,10 @@ class RegistryValidationTests(SimpleTestCase):
                  "IMAGE_EDITING", "EMBEDDING", "SPEECH_TO_TEXT", "TEXT_TO_SPEECH", "REALTIME_VOICE",
                  "VIDEO_GENERATION", "MUSIC_GENERATION", "THREE_D_GENERATION"}
         self.assertTrue(names <= set(Capability.__members__))
-        for capability in (Capability.STREAMING, Capability.EMBEDDING, Capability.VIDEO_GENERATION):
+        for capability in (Capability.EMBEDDING, Capability.VIDEO_GENERATION):
             self.assertEqual(CATALOG.providers_for(capability), ())
+        # V7-03: Streaming ist für openai-text implementiert (ADR-0009).
+        self.assertEqual([p.provider_id for p in CATALOG.providers_for(Capability.STREAMING)], ["openai-text"])
         self.assertIs(Capability.TEXT, Capability.TEXT_GENERATION)  # Alias aus #743
 
     def test_duplicate_provider_and_duplicate_model(self):

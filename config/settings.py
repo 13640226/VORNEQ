@@ -517,6 +517,11 @@ VORNEQ_AI_CHAT_INPUT_TOKEN_BUDGET = os.environ.get("VORNEQ_AI_CHAT_INPUT_TOKEN_B
 # Production stays on legacy limits unless this is exactly "true" (semantics of PR #712);
 # ledger and request recovery remain mandatory prerequisites.
 VORNEQ_AI_CHAT_PRODUCTION_EXTENDED_INPUT = os.environ.get("VORNEQ_AI_CHAT_PRODUCTION_EXTENDED_INPUT", "") == "true"
+# V7-03 (ADR-0009): gestreamte Unterhaltungsantworten + Stop. Standard aus;
+# Development/Staging und Production haben getrennte Schalter (nur exakt "true").
+VORNEQ_AI_CHAT_STREAMING_ENABLED = os.environ.get("VORNEQ_AI_CHAT_STREAMING_ENABLED", "") == "true"
+VORNEQ_AI_CHAT_STREAMING_PRODUCTION_ENABLED = (
+    os.environ.get("VORNEQ_AI_CHAT_STREAMING_PRODUCTION_ENABLED", "") == "true")
 # Classification-only groundwork; no provider mode is enabled by this flag yet.
 VORNEQ_AI_GENERAL_KNOWLEDGE_ENABLED = os.environ.get("VORNEQ_AI_GENERAL_KNOWLEDGE_ENABLED", "") == "true"
 VORNEQ_AI_CHAT_BUDGET_MODEL = os.environ.get("VORNEQ_AI_CHAT_BUDGET_MODEL", "")
