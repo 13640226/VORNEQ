@@ -53,7 +53,7 @@ class ProductionDurableRecoveryTests(TestCase):
             patch("apps.ai_core.production_policy.ledger_enabled", return_value=True),
             patch("apps.ai_core.views_global.ledger_enabled", return_value=True),
             patch("apps.ai_core.views_global.reserve_global_request"),
-            patch("apps.ai_core.views_global.BudgetedProvider",
+            patch("apps.ai_core.paid_provider.BudgetedProvider",
                   side_effect=lambda provider, actor_id: provider),
             patch("apps.ai_core.views_global.default_retriever",
                   return_value=FakeRetriever(evidence("en"))),

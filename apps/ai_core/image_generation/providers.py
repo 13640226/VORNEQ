@@ -110,6 +110,13 @@ class OpenAIImageProvider:
     def generate(self, *, prompt: str, model: str, size: str,
                  safety_identifier: str | None = None) -> ImageResult:
         from .policy import MODELS, SIZES, paid_provider_enabled, paid_worker_enabled
+        from apps.ai_ledger.call_authorization import UnauthorizedPaidCall, require_authorized_paid_call
+        # V4-01 Aufrufgrenze: nur innerhalb einer Ledger-Reservierung des Workers.
+        try:
+            require_authorized_paid_call("image")
+        except UnauthorizedPaidCall:
+            raise ImageProviderError("paid image call requires a ledger reservation",
+                                     code="ledger_authorization_missing", request_sent=False) from None
         # Both routes independently verify their own runtime identity and grant.
         # A worker must never need (or inherit) the web service identity.
         if (not (paid_provider_enabled() or paid_worker_enabled()) or model not in MODELS or size not in SIZES

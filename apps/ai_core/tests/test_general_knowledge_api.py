@@ -12,7 +12,7 @@ class KnowledgePipelineApiTests(SimpleTestCase):
         with patch("apps.ai_core.views_global.ledger_enabled", return_value=True), \
              patch("apps.ai_core.views_global.reserve_global_request"), \
              patch("apps.ai_core.views_global.OpenAIResponsesProvider") as provider, \
-             patch("apps.ai_core.views_global.BudgetedProvider") as wrapper, \
+             patch("apps.ai_core.paid_provider.BudgetedProvider") as wrapper, \
              patch("apps.ai_core.views_global.default_retriever") as retriever:
             wrapper.return_value.generate_knowledge.return_value = {
                 "answer": "55", "language": "en"}

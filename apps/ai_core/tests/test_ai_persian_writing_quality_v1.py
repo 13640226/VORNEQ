@@ -14,6 +14,7 @@ from unittest.mock import patch
 from django.test import SimpleTestCase
 
 from apps.ai_core.engine.citation import CitationQuoteRejected, validate_generated
+from apps.ai_core.tests.ledger_fakes import allow_paid_adapter_calls
 from apps.ai_core.providers.openai_responses import (
     OpenAIResponsesProvider,
     _instructions_for_language,
@@ -99,6 +100,11 @@ HAS_PROVIDER_DEPS = bool(
 
 @skipUnless(HAS_PROVIDER_DEPS, "optional OpenAI/Pydantic SDK not installed")
 class PersianWritingSDKDispatchTests(SimpleTestCase):
+
+    def setUp(self):
+        super().setUp()
+        # V4-01: Adapter-Unit-Test mit gemocktem SDK -> synthetische Ledger-Freigabe.
+        allow_paid_adapter_calls(self, "text")
     def test_fa_guidance_reaches_mock_sdk_without_changing_payload(self):
         from apps.ai_core.schemas.response import GroundedAnswerSchema
 

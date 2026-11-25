@@ -64,24 +64,45 @@ class HostedTimeoutPolicyTests(SimpleTestCase):
                                     max_output_tokens=2049)
 
     @override_settings(VORNEQ_ENV="staging")
-    def test_pipeline_passes_staging_timeout_without_provider_or_ledger(self):
+    def test_pipeline_refuses_staging_without_ledger_before_quota_or_provider(self):
+        """V4-01: a ledger-less staging request is refused before any paid work."""
+        question = "What is a public encyclopedia?"
+        request = SimpleNamespace(user=SimpleNamespace(pk=3))
+        with patch("apps.ai_core.views_global.route_question", return_value=SimpleNamespace(kind="GENERAL_PUBLIC")), \
+             patch("apps.ai_core.views_global.ledger_enabled", return_value=False), \
+             patch("apps.ai_core.views_global.reserve_global_request") as quota, \
+             patch("apps.ai_core.staging_budget.reserve_staging_request") as staging_quota, \
+             patch("apps.ai_core.views_global.OpenAIResponsesProvider") as provider_factory, \
+             patch("apps.ai_core.views_global.default_retriever", return_value=object()) as retriever, \
+             patch("apps.ai_core.views_global.ask_global") as ask:
+            body, status, _meta = run_global_pipeline(request, question, "en")
+        self.assertEqual((body, status), ({"error": "rate_limited"}, 429))
+        provider_factory.assert_not_called()
+        quota.assert_not_called()
+        staging_quota.assert_not_called()
+        retriever.assert_not_called()
+        ask.assert_not_called()
+
+    @override_settings(VORNEQ_ENV="staging")
+    def test_pipeline_passes_staging_timeout_with_ledger_wrapper(self):
         question = "What is a public encyclopedia?"
         request = SimpleNamespace(user=SimpleNamespace(pk=3))
         expected = {"answer": "synthetic only"}
         with patch("apps.ai_core.views_global.route_question", return_value=SimpleNamespace(kind="GENERAL_PUBLIC")), \
-             patch("apps.ai_core.views_global.ledger_enabled", return_value=False), \
+             patch("apps.ai_core.views_global.ledger_enabled", return_value=True), \
              patch("apps.ai_core.views_global.reserve_global_request") as quota, \
-             patch("apps.ai_core.views_global.reserve_staging_request") as staging_quota, \
              patch("apps.ai_core.views_global.OpenAIResponsesProvider") as provider_factory, \
+             patch("apps.ai_core.paid_provider.BudgetedProvider") as budgeted, \
              patch("apps.ai_core.views_global.default_retriever", return_value=object()), \
              patch("apps.ai_core.views_global.ask_global", return_value=expected) as ask:
-            body, status, _meta = run_global_pipeline(request, question, "en")
+            body, status, meta = run_global_pipeline(request, question, "en")
         self.assertEqual((body, status), (expected, 200))
         self.assertEqual(provider_factory.call_count, 1)
         self.assertEqual(provider_factory.call_args.kwargs["timeout_s"], 60)
         self.assertEqual(provider_factory.call_args.kwargs["max_output_tokens"], 2048)
-        quota.assert_called_once()
-        staging_quota.assert_called_once()
+        budgeted.assert_called_once_with(provider_factory.return_value, actor_id=3)
+        self.assertIs(meta["budgeted"], budgeted.return_value)
+        self.assertEqual(quota.call_args.kwargs, {"burst_only": True})
         ask.assert_called_once()
 
 

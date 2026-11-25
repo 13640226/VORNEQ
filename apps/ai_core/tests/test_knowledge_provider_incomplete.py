@@ -7,10 +7,13 @@ from django.test import SimpleTestCase
 
 from apps.ai_core.providers.exceptions import ProviderInvalidResponse, ProviderOutputLimited
 from apps.ai_core.providers.openai_responses import OpenAIResponsesProvider
+from apps.ai_core.tests.ledger_fakes import allow_paid_adapter_calls
 
 
 class KnowledgeProviderIncompleteTests(SimpleTestCase):
     def setUp(self):
+        # V4-01: Adapter-Unit-Test mit gemocktem SDK -> synthetische Ledger-Freigabe.
+        allow_paid_adapter_calls(self, "text")
         self.provider = OpenAIResponsesProvider(model="gpt-5-mini", timeout_s=10, max_output_tokens=2048)
 
     def _call(self, status, reason=None, parsed=None):

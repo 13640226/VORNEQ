@@ -6,6 +6,7 @@ provider call; retrieval-only paths (insufficient evidence) cost nothing.
 from apps.ai_core.providers.exceptions import GatewayError
 from apps.ai_core.providers.openai_responses import build_request_payload, build_request_payload_v2, build_knowledge_payload
 from apps.ai_ledger import service as ledger
+from apps.ai_ledger.call_authorization import authorized_paid_call
 
 
 class BudgetedProvider:
@@ -43,7 +44,8 @@ class BudgetedProvider:
             extra = {"prior_turns": prior_turns} if prior_turns else {}
             if mode == "sectioned":
                 extra["mode"] = mode
-            output = self.inner.generate(question=question, language=language, sources=sources, **extra)
+            with authorized_paid_call(reservation, kind="text"):
+                output = self.inner.generate(question=question, language=language, sources=sources, **extra)
         except GatewayError as exc:
             ledger.settle(reservation, usage=getattr(self.inner, "last_usage", None),
                           outcome=type(exc).__name__)
@@ -66,8 +68,9 @@ class BudgetedProvider:
         self.last_reservation = reservation
         self.inner.last_usage = None
         try:
-            result = self.inner.generate_knowledge(
-                question=question, language=language, prior_turns=prior_turns)
+            with authorized_paid_call(reservation, kind="text"):
+                result = self.inner.generate_knowledge(
+                    question=question, language=language, prior_turns=prior_turns)
         except GatewayError as exc:
             ledger.settle(reservation, usage=self.inner.last_usage,
                           outcome=type(exc).__name__)

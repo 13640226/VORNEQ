@@ -240,8 +240,15 @@ def process_next_image_job():
         else:
             provider = MockImageProvider()
         provider_called = True
-        output = provider.generate(prompt=job.prompt, model=job.model_id, size=job.image_size,
-                                   safety_identifier=safety_id)
+        if reservation is not None:
+            # V4-01 Aufrufgrenze: der bezahlte Adapter verlangt diese Freigabe.
+            from apps.ai_ledger.call_authorization import authorized_paid_call
+            with authorized_paid_call(reservation, kind="image"):
+                output = provider.generate(prompt=job.prompt, model=job.model_id, size=job.image_size,
+                                           safety_identifier=safety_id)
+        else:
+            output = provider.generate(prompt=job.prompt, model=job.model_id, size=job.image_size,
+                                       safety_identifier=safety_id)
         key, digest = store_image(job=job, content=output.content)
         if reservation is not None:
             usage = None

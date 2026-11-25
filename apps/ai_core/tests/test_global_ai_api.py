@@ -20,6 +20,7 @@ from apps.ai_core.engine.global_grounded import authorized_web_context, evidence
 from apps.ai_core.providers.exceptions import ProviderTimeout, ProviderUnavailable
 from apps.ai_core.tests.test_ai_staging_trial import STAGING_SETTINGS, TEST_ENV
 from apps.ai_core.web_retrieval import RetrievalError, RetrievalTimeout, WebEvidence, WikipediaRetriever
+from apps.ai_core.tests.ledger_fakes import start_fake_ledger
 
 HOSTS = WikipediaRetriever.allowed_hosts
 DEV = dict(VORNEQ_ENV="development", VORNEQ_AI_CORE_ENABLED=True, VORNEQ_AI_PHASE_B_ENABLED=True,
@@ -323,6 +324,8 @@ class GlobalStagingTests(NoNetworkMixin, TestCase):
         ids.enable()
         self.addCleanup(ids.disable)
         self.url = reverse("ai_core:ask-global")
+        # V4-01: hosted chat is always ledger-bound; simulate the shared ledger.
+        start_fake_ledger(self)
 
     def post(self, user):
         self.client.force_login(user)

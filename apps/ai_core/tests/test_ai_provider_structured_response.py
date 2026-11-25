@@ -9,12 +9,15 @@ from unittest import skipUnless
 
 from apps.ai_core.providers.exceptions import ProviderInvalidResponse
 from apps.ai_core.providers.openai_responses import OpenAIResponsesProvider
+from apps.ai_core.tests.ledger_fakes import allow_paid_adapter_calls
 HAS_PROVIDER_DEPS = bool(importlib.util.find_spec('openai') and importlib.util.find_spec('pydantic'))
 
 
 @skipUnless(HAS_PROVIDER_DEPS, 'optional OpenAI/Pydantic dependencies not installed in base CI')
 class ProviderStructuredResponseTests(SimpleTestCase):
     def setUp(self):
+        # V4-01: Adapter-Unit-Test mit gemocktem SDK -> synthetische Ledger-Freigabe.
+        allow_paid_adapter_calls(self, "text")
         self.provider = OpenAIResponsesProvider(
             model="mock-only", timeout_s=5, max_output_tokens=2048)
         self.sources = [{"source_id": "S1", "source_key": "official:home",

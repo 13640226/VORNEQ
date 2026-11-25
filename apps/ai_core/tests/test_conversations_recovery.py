@@ -18,6 +18,7 @@ from apps.ai_core.conversations import service
 from apps.ai_core.models import AIChatRequestGuard, AIMessage
 from apps.ai_core.tests.test_ai_staging_trial import STAGING_SETTINGS, TEST_ENV
 from apps.ai_core.tests.test_global_ai_api import FakeRetriever, evidence, good_output
+from apps.ai_core.tests.ledger_fakes import start_fake_ledger
 
 
 @override_settings(**{**STAGING_SETTINGS, "VORNEQ_GLOBAL_AI_ENABLED": True, "VORNEQ_AI_CHAT_RECOVERY_ENABLED": True,
@@ -43,6 +44,8 @@ class ConversationRecoveryLedgerTests(TestCase):
         ids = override_settings(VORNEQ_AI_STAGING_ALLOWED_USER_IDS=str(self.owner.pk))
         ids.enable()
         self.addCleanup(ids.disable)
+        # V4-01: hosted chat is always ledger-bound; simulate the shared ledger.
+        start_fake_ledger(self)
         self.prior_seen = []
 
         def produce(self_, *, question, language, sources, prior_turns=()):

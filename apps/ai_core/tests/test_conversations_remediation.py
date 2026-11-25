@@ -29,6 +29,7 @@ from apps.ai_core.models import AIChatRequestGuard, AIConversation, AIMessage
 from apps.ai_core.providers.exceptions import ProviderTimeout
 from apps.ai_core.tests.test_ai_staging_trial import STAGING_SETTINGS, TEST_ENV
 from apps.ai_core.tests.test_global_ai_api import ANSWERS, DEV, FakeRetriever, NoNetworkMixin, evidence, good_output
+from apps.ai_core.tests.ledger_fakes import start_fake_ledger
 
 STAGING_CONV = {**STAGING_SETTINGS, "VORNEQ_GLOBAL_AI_ENABLED": True, "VORNEQ_AI_CHAT_RECOVERY_ENABLED": True,
                 "VORNEQ_AI_STAGING_UNMETERED": True, "VORNEQ_AI_CONVERSATIONS_ENABLED": True,
@@ -71,6 +72,8 @@ class StagingConversationMixin:
                          side_effect=produce)
         provider.start()
         self.addCleanup(provider.stop)
+        # V4-01: hosted chat is always ledger-bound; simulate the shared ledger.
+        start_fake_ledger(self)
         self.conversation = service.create(self.owner)
 
     def ask(self, request_id, question=Q, client=None, conversation=None):

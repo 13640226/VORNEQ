@@ -46,9 +46,9 @@ class ProductionHeadroomTests(SimpleTestCase):
                    return_value=SimpleNamespace(kind="GENERAL_PUBLIC")), \
              patch("apps.ai_core.views_global.ledger_enabled", return_value=True), \
              patch("apps.ai_core.views_global.reserve_global_request") as quota, \
-             patch("apps.ai_core.views_global.reserve_staging_request") as staging_quota, \
+             patch("apps.ai_core.staging_budget.reserve_staging_request") as staging_quota, \
              patch("apps.ai_core.views_global.OpenAIResponsesProvider") as provider, \
-             patch("apps.ai_core.views_global.BudgetedProvider") as budgeted, \
+             patch("apps.ai_core.paid_provider.BudgetedProvider") as budgeted, \
              patch("apps.ai_core.views_global.default_retriever", return_value=object()), \
              patch("apps.ai_core.views_global.ask_global", return_value=answer) as ask:
             body, code, meta = run_global_pipeline(request, "Who was Ibn Sina?", "en")
