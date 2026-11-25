@@ -710,3 +710,58 @@ class FrontendStreamingTests(TestCase):
         from apps.ai_core.chat_strings import chat_labels
         stops = {chat_labels(code)["stream_stop"] for code in ("fa", "de", "en")}
         self.assertEqual(len(stops), 3)
+
+
+@override_settings(**BASE)
+class ReservationRefusalReasonTests(TestCase):
+    """V7-03-Korrektur: jede Ablehnungsart mit eigenem Grund, kein Abbruch mitten im Stream."""
+
+    def setUp(self):
+        cache.clear()
+        self.user = get_user_model().objects.create_user(username=f"r{uuid.uuid4().hex[:8]}",
+                                                         email="r@example.invalid", password="x-1!Aa-long")
+        self.client.force_login(self.user)
+        self.conversation = AIConversation.objects.create(owner=self.user, language="en")
+        env = patch.dict(os.environ, {"VORNEQ_AI_PHASE_B_MODEL": "mock-only"})
+        env.start()
+        self.addCleanup(env.stop)
+
+    def post(self, provider):
+        url = reverse("ai_core:conversation-messages-stream", args=[self.conversation.id])
+        with patch("apps.ai_core.views_global.paid_text_provider", return_value=provider):
+            response = self.client.post(url, data=json.dumps({"question": QUESTION, "language": "en"}),
+                                        content_type="application/json")
+            raw = b"".join(response.streaming_content)
+        return frames(raw)[-1]
+
+    def test_each_refusal_kind_keeps_its_reason(self):
+        from apps.ai_ledger.service import BudgetExhausted, EmergencyStop, LedgerUnavailable
+        for exc, error, reason in ((BudgetExhausted("x"), "rate_limited", "BUDGET_REFUSED"),
+                                   (LedgerUnavailable("dsn=secret"), "rate_limited", "LEDGER_UNAVAILABLE"),
+                                   (EmergencyStop("x"), "rate_limited", "EMERGENCY_STOP_ACTIVE")):
+            with self.subTest(reason=reason):
+                cache.clear()
+                inner = FakeStreamProvider(["never"])
+                with patch("apps.ai_core.budgeted_provider.ledger.reserve", side_effect=exc) as reserve:
+                    last = self.post(BudgetedProvider(inner, actor_id=self.user.pk))
+                self.assertEqual((last["type"], last["payload"]["error"], last["payload"]["reason"]),
+                                 ("response.failed", error, reason))
+                self.assertNotIn("secret", json.dumps(last))
+                self.assertEqual((inner.calls, reserve.call_count), (0, 1))
+                message = AIMessage.objects.filter(conversation=self.conversation).latest("sequence")
+                self.assertNotEqual(message.status, AIMessage.STATUS_PENDING)
+
+    def test_authorization_failure_is_not_reported_as_rate_limited(self):
+        from apps.ai_ledger.call_authorization import UnauthorizedPaidCall
+        inner = FakeStreamProvider(["never"])
+        provider = BudgetedProvider(inner, actor_id=self.user.pk)
+        with patch("apps.ai_core.budgeted_provider.ledger.reserve", return_value=fake_reservation()), \
+                patch("apps.ai_core.budgeted_provider.ledger.settle"), \
+                patch("apps.ai_core.budgeted_provider.ledger.release", return_value="released") as release, \
+                patch("apps.ai_core.budgeted_provider.authorized_paid_call",
+                      side_effect=UnauthorizedPaidCall("bad")):
+            last = self.post(provider)
+        self.assertEqual((last["type"], last["payload"]["error"], last["payload"]["reason"]),
+                         ("response.failed", "provider_unavailable", "authorization_denied"))
+        self.assertEqual(inner.calls, 0)                  # kein SDK-Kontakt
+        release.assert_called_once()                      # nachweislich nicht gesendet

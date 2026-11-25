@@ -52,12 +52,20 @@ bedingtes UPDATE auf den alten Status; DB-Constraints sichern gültige Werte und
 - Reaper (Lease abgelaufen) ist V7-03.1c; er darf nur nachweislich nicht gesendete
   Claims (`provider_request_sent = false`) erneut freigeben.
 
-## 5. Idempotenz
+## 5. Idempotenz (eigentümer-gebunden)
 
-`request_id` (UUIDv4, eindeutig) + `fingerprint = sha256(owner, conversation, language,
-question)`. Gleiche ID + gleicher Inhalt → derselbe Job (kein zweiter Job, keine zweite
-Nachricht, keine Reservierung). Gleiche ID + anderer Inhalt/Eigentümer/Unterhaltung →
-`request_id_conflict`. Fremde Unterhaltungen → `ConversationNotFound`.
+- Eindeutigkeit `(owner, request_id)` statt global; `fingerprint = sha256(operation
+  "chat.answer.v1", owner, conversation, language, question)`.
+- Gleiche ID + gleicher Fingerabdruck → derselbe Job, auch nach `COMPLETED`/`FAILED`
+  (kein zweiter Job, keine zweite Nachricht, keine Reservierung).
+- Gleiche ID + anderer Inhalt **oder** andere Unterhaltung desselben Nutzers →
+  `request_id_conflict`.
+- Die gleiche ID eines **anderen** Nutzers ist ein eigener Namensraum: neuer Job ohne
+  Konflikt – identisches Verhalten wie für eine unbenutzte ID, daher keine Auskunft über
+  fremde Jobs oder Unterhaltungen. Fremde Unterhaltungen → `ConversationNotFound`.
+- `AIMessage.request_id` ist global eindeutig (bestehendes Schema); Job-Nachrichten
+  erhalten daher `uuid5(Namensraum, "chat.answer.v1:<owner>:<request_id>")` – nie gleich
+  einer Client-UUIDv4 und nie zwischen Nutzern kollidierend.
 
 ## 6. Kapazität
 
@@ -72,12 +80,36 @@ SQLite serialisiert Schreibzugriffe; echte Nebenläufigkeit ist nur auf PostgreS
 
 - Keine Reservierung beim Einreihen; reserviert wird erst im Worker unmittelbar vor dem
   Aufruf über `prepare_paid_text_for_actor` → `BudgetedProvider.stream_knowledge`.
+- **Crash-Fenster Reservierung ↔ Job:** Job und Ledger liegen in **getrennten**
+  Datenbanken; keine Django-Transaktion umfasst beide. Deshalb erzeugt der Worker die
+  Reservierungs-ID (UUIDv4) selbst, speichert sie fencing-geschützt am Job
+  (`ledger_state = reserving`) und übergibt sie an `ledger.reserve(reservation_id=…)`.
+  Stürzt der Worker nach der Reservierung ab, ist sie über `AIChatJob.reservation_id`
+  (Index) auffindbar; ohne Ledger-Zeile wurde nichts reserviert. Eine bereits vergebene
+  ID schlägt im Ledger fail-closed fehl (kein zweiter Betrag). Der Job bleibt aktiv und
+  wird nie automatisch neu gestartet.
+- **Abrechnung unabhängig von der Lease:** `BudgetedProvider` rechnet im `finally`
+  genau einmal ab – auch wenn die Lease inzwischen verloren ist (bekannte Usage wird
+  also nie verworfen). Nur die Bindung am Job ist fencing-geschützt; bei Verlust wird
+  `ai_chat_job_lease_lost … reservation=<id> settlement=<state>` protokolliert.
+  Parallele/doppelte Abrechnung: der Ledger sperrt die Zeile und bestätigt genau eine
+  (`LedgerCorrelationPostgresTests`).
 - `reservation_id`, `provider_request_sent` und `ledger_state` (`none/reserved/finalized/
   uncertain/released/unacknowledged`) werden fencing-geschützt am Job gespeichert,
   **unabhängig** vom Job-Status (z. B. Job `CANCELLED`, Ledger `uncertain`).
 - Usage bekannt → finalized; gesendet, Usage unbekannt → uncertain (nie 0);
   nachweislich nicht gesendet → released; nicht bestätigt → unacknowledged (Log).
 - Reservierungsablehnung (Budget/Ledger/Not-Aus) → Job `FAILED`, kein Provider-Aufruf.
+
+## 7a. Not-Aus
+
+| Grenze | Verhalten |
+|---|---|
+| vor Claim | `claim` übernimmt nichts (Jobs bleiben `QUEUED`) |
+| vor Reservierung / Provider | Prüfung in `run_claimed`; `ledger.reserve` prüft Umgebung + Konto erneut |
+| während Stream/Checkpoint | Prüfung an jedem Checkpoint → `INCOMPLETE` (`emergency_stop`) |
+| Stop | `request_cancel` bleibt erlaubt |
+| Abrechnung | nie durch Not-Aus blockiert (bekannte Usage → finalized, sonst uncertain) |
 
 ## 8. Checkpoints
 
@@ -106,11 +138,29 @@ und PostgreSQL geprüft (`MigrationTests`). Ein Rückwärtsschritt löscht die T
 Job-Historie (Ledger-Daten liegen separat); vor einem Rollback in einer Umgebung mit
 Jobs ist ein Export nötig.
 
+## 10a. Worker-Infrastruktur (nur Entwurf, nicht aktiviert)
+
+- Prozess: `manage.py run_chat_jobs --loop --poll-seconds 2` (Standard ohne `--loop`:
+  ein Job). Ein Job je Prozess gleichzeitig; Skalierung über mehrere Prozesse (SKIP
+  LOCKED). Abbruch (SIGTERM) beendet den Prozess; ein laufender Job bleibt `RUNNING`
+  mit Lease und wird vom Reaper (V7-03.1c) behandelt – kein automatischer Retry.
+- Identität: eigener Render-Dienst mit eigener `RENDER_SERVICE_ID`. Der Ledger lehnt
+  heute jeden Dienst außer Web-Diensten und dem Staging-Bild-Worker ab
+  (`_approved_client`). Eine Freigabe wäre eine bewusste Ledger-Änderung (Eigentümer).
+- Datenbank: je Worker-Prozess 1 Verbindung zur Haupt-DB + 1 zum Ledger.
+- Redis: nur Weckhinweis (`vorneq:chat-jobs:wakeup`); Polling bleibt maßgeblich.
+- Kosten/Ressourcen: nicht geschätzt (keine verifizierten Preise); Entscheidung nach
+  V7-03.1b/c.
+
 ## 11. Nebenbefund V7-03
 
 Eine Reservierungsablehnung im ersten Stream-Schritt (z. B. `BudgetExhausted`) führte in
 `KnowledgeStream.events` zu einem Abbruch mitten im Stream (PENDING-Turn). Jetzt:
-`response.failed` mit `rate_limited` + `reason`, Turn `FAILED`, kein Provider-Aufruf.
+`response.failed` mit `error = rate_limited` (bestehender Vertrag der JSON-Route) und
+unterscheidendem `reason`: `BUDGET_REFUSED`, `LEDGER_UNAVAILABLE` oder
+`EMERGENCY_STOP_ACTIVE`; eine ungültige Aufruffreigabe (`UnauthorizedPaidCall`) meldet
+`provider_unavailable` + `authorization_denied`. Turn nie `pending`, kein Provider-Aufruf,
+keine Ausnahmetexte im Ereignis.
 
 ## 12. Nächste Schritte
 

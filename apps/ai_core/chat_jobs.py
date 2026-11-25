@@ -130,9 +130,20 @@ def deadline_seconds():
     return _positive("VORNEQ_AI_CHAT_JOB_DEADLINE_SECONDS", DEFAULT_DEADLINE_SECONDS, 3600)
 
 
-def fingerprint(owner_id, conversation_id, question, language):
-    raw = f"{owner_id}␟{conversation_id}␟{language}␟{question}"
+OPERATION = "chat.answer.v1"
+# Namensraum für die interne Nachrichten-Request-ID (uuid5, nie gleich einer Client-UUIDv4).
+MESSAGE_REQUEST_NAMESPACE = uuid.UUID("7f3d6a1e-9c4b-5e2f-8a17-3b6c0d9e4f21")
+
+
+def fingerprint(owner_id, conversation_id, question, language, operation=OPERATION):
+    """Bindet eine Request-ID an Eigentümer, Unterhaltung, Operation, Sprache und Inhalt."""
+    raw = f"{operation}␟{owner_id}␟{conversation_id}␟{language}␟{question}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def message_request_id(owner_id, request_id):
+    """Eigentümer-gebundene, kollisionsfreie Request-ID für die AIMessage (global eindeutig)."""
+    return uuid.uuid5(MESSAGE_REQUEST_NAMESPACE, f"{OPERATION}:{owner_id}:{request_id}")
 
 
 # ----------------------------------------------------------------------- Enqueue
@@ -145,8 +156,11 @@ def _admission_lock():
 def enqueue(user, conversation_id, *, question, language, request_id):
     """Frage + PENDING-Antwort + QUEUED-Job in EINER Transaktion (keine Reservierung).
 
-    Rückgabe ``(job, created)``. Gleiche ``request_id`` mit gleichem Inhalt liefert
-    den bestehenden Job (kein zweiter Job, keine zweite Reservierung).
+    Rückgabe ``(job, created)``. Idempotenz ist **je Eigentümer**: gleiche
+    ``request_id`` + gleicher Fingerabdruck liefert den bestehenden Job (auch nach
+    Abschluss oder Fehler – kein zweiter Job, keine zweite Reservierung); gleiche ID +
+    anderer Inhalt/Unterhaltung -> ``RequestConflict``. Die ID eines anderen Nutzers
+    ist ein eigener Namensraum: kein Konflikt, keine Auskunft über fremde Jobs.
     """
     from apps.ai_core.conversations import repository, service
     if not enabled():
@@ -158,10 +172,9 @@ def enqueue(user, conversation_id, *, question, language, request_id):
     digest = fingerprint(user.pk, conversation_id, question, language)
     with transaction.atomic():
         _admission_lock()
-        existing = J.objects.filter(request_id=request_id).first()
+        existing = J.objects.filter(owner=user, request_id=request_id).first()
         if existing is not None:
-            if (existing.owner_id != user.pk or existing.conversation_id != conversation_id
-                    or existing.fingerprint != digest):
+            if existing.conversation_id != conversation_id or existing.fingerprint != digest:
                 raise RequestConflict()
             return existing, False
         conversation = repository.get_conversation(user, conversation_id, for_update=True)
@@ -170,8 +183,8 @@ def enqueue(user, conversation_id, *, question, language, request_id):
             raise CapacityExceeded(code="global_capacity_exceeded")
         if active.filter(owner=user).count() >= max_active_per_user():
             raise CapacityExceeded(code="user_capacity_exceeded")
-        question_message, pending = service.begin_turn(user, conversation.id, question=question,
-                                                       request_id=request_id)
+        question_message, pending = service.begin_turn(
+            user, conversation.id, question=question, request_id=message_request_id(user.pk, request_id))
         job = J.objects.create(owner=user, conversation=conversation, user_message=question_message,
                                assistant_message=pending, request_id=request_id, fingerprint=digest,
                                language=language)
@@ -194,6 +207,10 @@ def claim(worker_id, *, now=None):
     if not isinstance(worker_id, str) or not 1 <= len(worker_id) <= 64:
         raise ChatJobError(code="invalid_worker_id")
     now = now or timezone.now()
+    from apps.ai_ledger.service import emergency_stop_active
+    if not enabled() or emergency_stop_active() is True:
+        # Not-Aus oder geschlossenes Gate: nichts übernehmen (Jobs bleiben QUEUED).
+        return None
     with transaction.atomic():
         qs = J.objects.filter(status=J.QUEUED).order_by("created_at")
         if connection.features.has_select_for_update_skip_locked:
@@ -324,6 +341,7 @@ def run_claimed(lease, *, provider_factory=None, clock=None):
     from apps.ai_core.conversations import context
     from apps.ai_core.engine.budget import BudgetExceeded
     from apps.ai_core.error_contracts import budget_reason
+    from apps.ai_core.budgeted_provider import BudgetedProvider
     from apps.ai_core.providers.exceptions import GatewayError
     clock = clock or time.monotonic
     job = J.objects.select_related("owner", "conversation", "user_message", "assistant_message").get(pk=lease.job_id)
@@ -353,7 +371,17 @@ def run_claimed(lease, *, provider_factory=None, clock=None):
         return _finish(lease, job, J.FAILED, {"error": "rate_limited", "reason": budget_reason(exc)}, 429)
     except GatewayError as exc:
         return _finish(lease, job, J.FAILED, {"error": getattr(exc, "code", "provider_unavailable")}, 503)
-    session = _JobStream(lease, job, provider, question, turns, clock)
+    # COR-03: Korrelations-ID VOR der Reservierung dauerhaft am Job vermerken. Stürzt der
+    # Worker zwischen Ledger-Reservierung (eigene DB) und Bindung ab, bleibt die
+    # Reservierung über diese ID auffindbar (Reconciliation V7-03.1c).
+    reservation_id = uuid.uuid4() if isinstance(provider, BudgetedProvider) else None
+    if reservation_id is not None:
+        try:
+            bind_ledger(lease, reservation_id=reservation_id, ledger_state=J.LEDGER_RESERVING)
+        except StaleLease:
+            _log.warning("ai_chat_job_lease_lost job=%s", job.pk)
+            return None
+    session = _JobStream(lease, job, provider, question, turns, clock, reservation_id=reservation_id)
     outcome, reason = session.run()
     if outcome is None:
         return None                                # Lease verloren: keine Finalisierung
@@ -387,8 +415,9 @@ def _default_provider(job, turns):
 class _JobStream:
     """Worker-Schleife: Provider-Deltas lesen, fenced checkpointen, Stop/Not-Aus prüfen."""
 
-    def __init__(self, lease, job, provider, question, turns, clock):
+    def __init__(self, lease, job, provider, question, turns, clock, *, reservation_id=None):
         self.lease, self.job, self.provider = lease, job, provider
+        self.reservation_id = reservation_id
         self.question, self.turns, self.clock = question, turns, clock
         self.parts, self.length, self.sequence = [], 0, 0
         self.max_chars = getattr(provider, "_vq_answer_chars", None) or 8 * getattr(provider, "max_output_tokens", 1000)
@@ -409,8 +438,9 @@ class _JobStream:
             return "UNSUPPORTED_QUESTION", None
         deadline = self.clock() + deadline_seconds()
         since, last = 0, self.clock()
+        extra = {"reservation_id": self.reservation_id} if self.reservation_id is not None else {}
         stream = self.provider.stream_knowledge(question=clean, language=self.job.language,
-                                                prior_turns=self.turns)
+                                                prior_turns=self.turns, **extra)
         try:
             for kind, value in stream:
                 self._bind_reservation()
@@ -440,7 +470,9 @@ class _JobStream:
                         return "emergency_stop", "emergency_stop"
             return "provider_unavailable", "stream_ended"
         except StaleLease:
-            _log.warning("ai_chat_job_lease_lost job=%s", self.job.pk)
+            # Lease verloren: keine Job-Schreibzugriffe mehr. Die Abrechnung erfolgt
+            # trotzdem genau einmal (BudgetedProvider, finally) – mit Usage, falls bekannt.
+            self.lease_lost = True
             return None, None
         except BudgetExceeded as exc:
             # Reservierung abgelehnt (Ledger/Budget/Not-Aus): kein Provider-Aufruf.
@@ -452,6 +484,10 @@ class _JobStream:
             return getattr(exc, "code", "provider_unavailable"), None
         finally:
             stream.close()                          # BudgetedProvider rechnet genau einmal ab
+            if getattr(self, "lease_lost", False):
+                reservation = getattr(self.provider, "last_reservation", None)
+                _log.warning("ai_chat_job_lease_lost job=%s reservation=%s settlement=%s", self.job.pk,
+                             getattr(reservation, "id", None), getattr(self.provider, "last_settlement", None))
 
     def _bind_reservation(self):
         reservation = getattr(self.provider, "last_reservation", None)
@@ -465,12 +501,18 @@ class _JobStream:
         mapping = {"finalized": J.LEDGER_FINALIZED, "uncertain": J.LEDGER_UNCERTAIN,
                    "released": J.LEDGER_RELEASED, "unacknowledged": J.LEDGER_UNACKNOWLEDGED}
         reservation = getattr(self.provider, "last_reservation", None)
+        ledger_state = mapping.get(state)
+        if reservation is None and self.reservation_id is not None:
+            # Reservierung wurde abgelehnt (Transaktion im Ledger zurückgerollt): nichts
+            # reserviert. Die vermerkte Korrelations-ID bleibt für die Reconciliation stehen.
+            ledger_state = J.LEDGER_NONE
         try:
             bind_ledger(self.lease, reservation_id=getattr(reservation, "id", None),
-                        ledger_state=mapping.get(state),
+                        ledger_state=ledger_state,
                         request_sent=getattr(getattr(self.provider, "inner", self.provider), "request_sent", None))
         except StaleLease:
-            _log.warning("ai_chat_job_ledger_bind_lost job=%s", self.job.pk)
+            _log.warning("ai_chat_job_ledger_bind_lost job=%s reservation=%s settlement=%s", self.job.pk,
+                         getattr(reservation, "id", None), state)
 
     def result_completed(self):
         from apps.ai_core.general_knowledge_runtime import validate_knowledge

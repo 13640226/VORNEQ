@@ -69,7 +69,9 @@ class StateMachineAndEnqueueTests(JobFixture, TestCase):
                          (J.QUEUED, J.LEDGER_NONE, None, 0))
         self.assertEqual(job.user_message.content, QUESTION)
         self.assertEqual(job.assistant_message.status, AIMessage.STATUS_PENDING)
-        self.assertEqual(job.assistant_message.request_id, job.request_id)
+        # Eigentümer-gebundene interne ID (uuid5), nie die rohe Client-ID.
+        self.assertEqual(job.assistant_message.request_id, chat_jobs.message_request_id(self.user.pk, job.request_id))
+        self.assertEqual(job.assistant_message.request_id.version, 5)
 
     def test_idempotent_replay_and_conflicts(self):
         rid = uuid.uuid4()
@@ -79,10 +81,54 @@ class StateMachineAndEnqueueTests(JobFixture, TestCase):
         self.assertEqual(AIMessage.objects.filter(conversation=self.conversation).count(), 2)
         with self.assertRaises(RequestConflict):
             self.enqueue(rid, question="different text")
-        other_conv = AIConversation.objects.create(owner=self.other)
+        second_conv = AIConversation.objects.create(owner=self.user)
         with self.assertRaises(RequestConflict):
-            self.enqueue(rid, user=self.other, conversation=other_conv)
+            self.enqueue(rid, conversation=second_conv)             # gleiche ID, andere Unterhaltung
         self.assertEqual(J.objects.count(), 1)
+
+    def test_other_users_request_id_is_a_separate_namespace_without_oracle(self):
+        rid = uuid.uuid4()
+        mine, _ = self.enqueue(rid)
+        other_conv = AIConversation.objects.create(owner=self.other)
+        theirs, created = self.enqueue(rid, user=self.other, conversation=other_conv)
+        # Gleiches Ergebnis wie für eine unbenutzte ID: neuer eigener Job, kein Konflikt.
+        self.assertTrue(created)
+        self.assertNotEqual(theirs.pk, mine.pk)
+        self.assertEqual((theirs.owner_id, theirs.conversation_id), (self.other.pk, other_conv.id))
+        self.assertNotEqual(theirs.assistant_message.request_id, mine.assistant_message.request_id)
+        self.assertEqual(J.objects.filter(request_id=rid).count(), 2)
+
+    def test_duplicate_after_completion_or_failure_returns_existing(self):
+        for final in (J.COMPLETED, J.FAILED):
+            with self.subTest(final=final):
+                rid = uuid.uuid4()
+                job, _ = self.enqueue(rid, question=f"{final}?")
+                J.objects.filter(pk=job.pk).update(status=final)
+                again, created = self.enqueue(rid, question=f"{final}?")
+                self.assertEqual((again.pk, again.status, created), (job.pk, final, False))
+        self.assertEqual(J.objects.count(), 2)
+
+    def test_transaction_rollback_leaves_no_partial_rows(self):
+        before = AIMessage.objects.count()
+        with patch("apps.ai_core.models.AIChatJob.objects.create", side_effect=DatabaseError("x")), \
+                self.assertRaises(DatabaseError):
+            self.enqueue()
+        self.assertEqual(AIMessage.objects.count(), before)
+        self.conversation.refresh_from_db()
+        self.assertEqual(self.conversation.message_count, 0)
+
+    def test_flags_default_off_everywhere(self):
+        from django.conf import settings as dj
+        import importlib
+        import os
+        for name in ("VORNEQ_AI_CHAT_JOBS_ENABLED", "VORNEQ_AI_CHAT_JOBS_PRODUCTION_ENABLED",
+                     "VORNEQ_AI_CHAT_STREAMING_ENABLED", "VORNEQ_AI_CHAT_STREAMING_PRODUCTION_ENABLED"):
+            self.assertNotIn(name, os.environ)
+        with override_settings(VORNEQ_AI_CHAT_JOBS_ENABLED=False, VORNEQ_AI_CHAT_JOBS_PRODUCTION_ENABLED=False):
+            for env in ("development", "staging", "production"):
+                with override_settings(VORNEQ_ENV=env):
+                    self.assertFalse(chat_jobs.enabled())
+                    self.assertIsNone(chat_jobs.claim("w"))
 
     def test_cross_user_conversation_and_gates(self):
         foreign = AIConversation.objects.create(owner=self.other)
@@ -280,8 +326,43 @@ class RunAndLedgerTests(JobFixture, TestCase):
         inner = FakeStreamProvider(["never"])
         status, *_ = self.run_with(lease, inner, reserve=LedgerUnavailable("down"))
         job = J.objects.get(pk=lease.job_id)
-        self.assertEqual((status, job.ledger_state, job.reservation_id), (J.FAILED, J.LEDGER_NONE, None))
+        # Nichts reserviert; die vorab vermerkte Korrelations-ID bleibt für die Reconciliation.
+        self.assertEqual((status, job.ledger_state), (J.FAILED, J.LEDGER_NONE))
+        self.assertIsNotNone(job.reservation_id)
         self.assertEqual(inner.calls, 0)
+
+    def test_reservation_crash_window_correlation_id_is_durable_before_reserve(self):
+        lease = self.claimed()
+        seen = {}
+
+        def reserve(**kwargs):
+            job = J.objects.get(pk=lease.job_id)       # Zustand im Moment der Reservierung
+            seen.update(passed=kwargs.get("reservation_id"), stored=job.reservation_id, state=job.ledger_state)
+            raise KeyboardInterrupt("worker crash right after reserve")
+        with self.assertRaises(KeyboardInterrupt):
+            self.run_with(lease, FakeStreamProvider(["x"]), reserve=reserve)
+        self.assertIsNotNone(seen["passed"])
+        self.assertEqual((seen["stored"], seen["state"]), (seen["passed"], J.LEDGER_RESERVING))
+        job = J.objects.get(pk=lease.job_id)
+        self.assertEqual((job.reservation_id, job.ledger_state, job.status),
+                         (seen["passed"], J.LEDGER_RESERVING, J.RUNNING))   # auffindbar, nicht erneut gestartet
+        self.assertIsNone(chat_jobs.claim("other"))
+
+    def test_known_usage_after_lease_loss_is_still_settled(self):
+        lease = self.claimed()
+
+        def steal(index):
+            if index == 1:
+                J.objects.filter(pk=lease.job_id).update(lease_until=timezone.now() - timedelta(seconds=1))
+        inner = FakeStreamProvider(["a" * 2100, "b" * 2100, "c"], on_step=steal)
+        with self.assertLogs("apps.ai_core.chat_jobs", "WARNING") as logs:
+            status, reservation, _res, settle, _rel = self.run_with(lease, inner, settle_state="finalized")
+        self.assertIsNone(status)
+        self.assertEqual(settle.call_count, 1)
+        self.assertEqual(settle.call_args.kwargs["usage"], None)     # Stream wurde vor Usage beendet
+        self.assertIn(f"reservation={reservation.id}", "\n".join(logs.output))
+        job = J.objects.get(pk=lease.job_id)
+        self.assertEqual(job.ledger_state, J.LEDGER_RESERVED)           # fencing: keine Überschreibung
 
     def test_not_sent_is_released(self):
         lease = self.claimed()
@@ -313,6 +394,13 @@ class RunAndLedgerTests(JobFixture, TestCase):
             status, *_ = self.run_with(lease, inner, settle_state="uncertain")
         job = J.objects.get(pk=lease.job_id)
         self.assertEqual((status, job.error_code), (J.INCOMPLETE, "emergency_stop"))
+
+    def test_emergency_stop_before_claim_and_cancellation_still_allowed(self):
+        job, _ = self.enqueue()
+        with patch("apps.ai_ledger.service.emergency_stop_active", return_value=True):
+            self.assertIsNone(chat_jobs.claim("w"))
+            self.assertEqual(chat_jobs.request_cancel(self.user, job.pk), J.CANCELLED)
+        self.assertEqual(J.objects.get(pk=job.pk).attempts, 0)
 
     def test_cancel_before_run_sends_nothing(self):
         queued, _ = self.enqueue()
@@ -430,7 +518,18 @@ class PostgresConcurrencyTests(TransactionTestCase):
         self.assertEqual(errors, [])
         self.assertEqual(sum(1 for _job, created in results if created), 1)
         self.assertEqual(J.objects.filter(request_id=rid).count(), 1)
-        self.assertEqual(AIMessage.objects.filter(request_id=rid).count(), 1)
+        self.assertEqual(AIMessage.objects.filter(request_id=chat_jobs.message_request_id(user.pk, rid)).count(), 1)
+
+    def test_concurrent_cancellation_is_consistent(self):
+        user = make_user("f")
+        conversation = AIConversation.objects.create(owner=user)
+        job, _ = chat_jobs.enqueue(user, conversation.id, question="c?", language="en", request_id=uuid.uuid4())
+        lease = chat_jobs.claim("w")
+        chat_jobs.transition(lease, J.RUNNING)
+        results, errors = self._threads(lambda: chat_jobs.request_cancel(user, job.pk), 6)
+        self.assertEqual(errors, [])
+        self.assertEqual(set(results), {J.CANCEL_REQUESTED})
+        self.assertEqual(J.objects.get(pk=job.pk).status, J.CANCEL_REQUESTED)
 
     def test_concurrent_heartbeat_and_stale_finalization(self):
         user = make_user("e")
@@ -444,3 +543,65 @@ class PostgresConcurrencyTests(TransactionTestCase):
         results, errors = self._threads(lambda: chat_jobs.transition(lease, J.COMPLETED), 4)
         self.assertTrue(all(isinstance(e, StaleLease) for e in errors) and len(errors) == 4)
         self.assertEqual(J.objects.get(pk=lease.job_id).status, J.RUNNING)
+
+
+@skipUnless(connection.vendor == "postgresql", "echter Ledger auf PostgreSQL")
+class LedgerCorrelationPostgresTests(TransactionTestCase):
+    """Reservierung mit vorab vermerkter ID und parallele Abrechnung im echten Ledger."""
+    databases = {"default", "ai_ledger"}
+
+    def setUp(self):
+        from apps.ai_ledger.tests import helpers as h
+        self.h = h
+        override = override_settings(**h.ledger_settings())
+        override.enable()
+        self.addCleanup(override.disable)
+        h.provision(10)
+
+    def reserve(self, reservation_id):
+        from apps.ai_ledger.service import LEDGER_ALIAS, LedgerConfig, reserve_with_config
+        config = LedgerConfig(self.h.LEDGER_ID, connections[LEDGER_ALIAS].settings_dict["NAME"])
+        return reserve_with_config(config, environment="production",
+                                   service_id=self.h.runtime("production")["RENDER_SERVICE_ID"],
+                                   git_sha=self.h.SHA, actor_id=7, model=self.h.MODEL,
+                                   input_bytes=self.h.INPUT_BYTES, max_output_tokens=self.h.MAX_OUT,
+                                   reservation_id=reservation_id)
+
+    def test_explicit_id_is_used_and_duplicates_fail_closed(self):
+        from apps.ai_ledger.models import BudgetAccount, BudgetReservation
+        from apps.ai_ledger.service import LEDGER_ALIAS, LedgerUnavailable
+        rid = uuid.uuid4()
+        reservation = self.reserve(rid)
+        self.assertEqual(reservation.id, rid)
+        reserved_before = BudgetAccount.objects.using(LEDGER_ALIAS).get(ledger_id=self.h.LEDGER_ID).reserved_micro
+        with self.assertRaises(LedgerUnavailable):
+            self.reserve(rid)                                 # gleiche ID: kein zweiter Betrag
+        self.assertEqual(BudgetAccount.objects.using(LEDGER_ALIAS).get(ledger_id=self.h.LEDGER_ID).reserved_micro,
+                         reserved_before)
+        self.assertEqual(BudgetReservation.objects.using(LEDGER_ALIAS).filter(id=rid).count(), 1)
+        with self.assertRaises(LedgerUnavailable):
+            self.reserve(uuid.uuid1())                        # nur UUIDv4
+
+    def test_concurrent_settlement_is_acknowledged_exactly_once(self):
+        from apps.ai_ledger.models import BudgetReservation
+        from apps.ai_ledger.service import LEDGER_ALIAS, settle
+        reservation = self.reserve(uuid.uuid4())
+        barrier = threading.Barrier(6)
+        acks = []
+
+        def worker(i):
+            try:
+                barrier.wait(timeout=10)
+                acks.append(settle(reservation, usage=(100, 50) if i % 2 else None, outcome="race"))
+            finally:
+                connections.close_all()
+        threads = [threading.Thread(target=worker, args=(i,)) for i in range(6)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join(30)
+        self.assertEqual(len([a for a in acks if a is not None]), 1)
+        row = BudgetReservation.objects.using(LEDGER_ALIAS).get(id=reservation.id)
+        self.assertIn(row.status, ("finalized", "uncertain"))
+        if row.status == "uncertain":
+            self.assertIsNone(row.observed_micro)             # unbekannte Kosten nie 0

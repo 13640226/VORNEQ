@@ -174,7 +174,7 @@ class KnowledgeStream:
                     **({"reason": reason} if reason else {})}, status
         if outcome == "rate_limited":
             return {"error": "rate_limited", "reason": reason}, 429
-        return {"error": outcome}, 503
+        return {"error": outcome, **({"reason": reason} if reason else {})}, 503
 
     def _finish(self, outcome, reason=None):
         if self.finished:
@@ -189,6 +189,7 @@ class KnowledgeStream:
         """WSGI-Generator. Wird er vom Server geschlossen (Browser weg), läuft der
         Provider-Stream ohne Ausgabe bis zum Ende/Deadline weiter (siehe Modul-Doku)."""
         from apps.ai_core.engine.budget import BudgetExceeded
+        from apps.ai_ledger.call_authorization import UnauthorizedPaidCall
         from apps.ai_core.providers.exceptions import (GatewayError, ProviderOutputLimited,
                                                         ProviderTimeout)
         deadline = self.clock() + STREAM_DEADLINE_SECONDS
@@ -262,6 +263,9 @@ class KnowledgeStream:
             except Exception as exc:  # noqa: BLE001 – nur Fehlerklasse, kein Inhalt
                 _log.error("ai_stream_detached_finish_failed kind=%s", type(exc).__name__)
             return
+        except UnauthorizedPaidCall:
+            # Ungültige Reservierung an der Aufrufgrenze: kein SDK-Kontakt; kein 500 im Stream.
+            outcome, reason = "provider_unavailable", "authorization_denied"
         except BudgetExceeded as exc:
             # Reservierung im ersten Stream-Schritt abgelehnt (Budget/Ledger/Not-Aus):
             # kein Provider-Aufruf; sauberer Abschluss statt 500 mitten im Stream.

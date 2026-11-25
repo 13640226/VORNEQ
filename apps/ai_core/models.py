@@ -218,12 +218,13 @@ class AIChatJob(models.Model):
     TERMINAL = (COMPLETED, INCOMPLETE, CANCELLED, FAILED, UNCERTAIN)
 
     LEDGER_NONE = "none"
+    LEDGER_RESERVING = "reserving"        # Korrelations-ID vermerkt, Reservierung angefragt
     LEDGER_RESERVED = "reserved"
     LEDGER_FINALIZED = "finalized"
     LEDGER_UNCERTAIN = "uncertain"
     LEDGER_RELEASED = "released"
     LEDGER_UNACKNOWLEDGED = "unacknowledged"
-    LEDGER_STATES = [(s, s) for s in (LEDGER_NONE, LEDGER_RESERVED, LEDGER_FINALIZED,
+    LEDGER_STATES = [(s, s) for s in (LEDGER_NONE, LEDGER_RESERVING, LEDGER_RESERVED, LEDGER_FINALIZED,
                                       LEDGER_UNCERTAIN, LEDGER_RELEASED, LEDGER_UNACKNOWLEDGED)]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -236,7 +237,9 @@ class AIChatJob(models.Model):
                                      related_name="+")
     assistant_message = models.OneToOneField(AIMessage, on_delete=models.SET_NULL, null=True,
                                              related_name="chat_job")
-    request_id = models.UUIDField(unique=True)
+    # Idempotenz je Eigentümer (kein globaler Namensraum -> keine Existenz-Auskunft
+    # über fremde Jobs).
+    request_id = models.UUIDField()
     fingerprint = models.CharField(max_length=64)
     language = models.CharField(max_length=2, default="fa")
     status = models.CharField(max_length=20, choices=STATES, default=QUEUED)
@@ -262,15 +265,17 @@ class AIChatJob(models.Model):
             models.Index(fields=["status", "created_at"], name="ai_chatjob_queue_idx"),
             models.Index(fields=["owner", "status"], name="ai_chatjob_owner_idx"),
             models.Index(fields=["status", "lease_until"], name="ai_chatjob_lease_idx"),
+            models.Index(fields=["reservation_id"], name="ai_chatjob_reservation_idx"),
         ]
         constraints = [
+            models.UniqueConstraint(fields=["owner", "request_id"], name="ai_chatjob_owner_request_unique"),
             models.CheckConstraint(
                 condition=Q(status__in=["queued", "claimed", "running", "cancel_requested", "completed",
                                         "incomplete", "cancelled", "failed", "uncertain"]),
                 name="ai_chatjob_status_valid"),
             models.CheckConstraint(
-                condition=Q(ledger_state__in=["none", "reserved", "finalized", "uncertain", "released",
-                                              "unacknowledged"]),
+                condition=Q(ledger_state__in=["none", "reserving", "reserved", "finalized", "uncertain",
+                                              "released", "unacknowledged"]),
                 name="ai_chatjob_ledger_state_valid"),
             # Laufende Jobs haben immer einen Worker und eine Lease.
             models.CheckConstraint(

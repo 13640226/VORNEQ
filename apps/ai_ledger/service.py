@@ -140,6 +140,8 @@ def emergency_stop_active() -> bool | None:
     """
     if getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", False):
         return True
+    if not getattr(settings, "VORNEQ_AI_LEDGER_ENABLED", False):
+        return None          # Ledger bewusst aus (z. B. lokale Entwicklung): kein Ausfall, kein Log
     try:
         config = ledger_configuration()
         from apps.ai_ledger.models import BudgetAccount
@@ -175,8 +177,15 @@ def _verify_identity(expected_db_name: str):
         raise LedgerUnavailable("shared ledger database identity mismatch")
 
 
-def reserve(*, actor_id: int, model: str, input_bytes: int, max_output_tokens: int) -> Reservation:
-    """Reserve for the CURRENT runtime (environment, Render service and SHA)."""
+def reserve(*, actor_id: int, model: str, input_bytes: int, max_output_tokens: int,
+            reservation_id=None) -> Reservation:
+    """Reserve for the CURRENT runtime (environment, Render service and SHA).
+
+    ``reservation_id`` (V7-03.1a, optional UUIDv4): vom Aufrufer VOR der Reservierung
+    dauerhaft vermerkte Korrelations-ID (z. B. am Chat-Job). So bleibt eine
+    Reservierung auch nach einem Absturz zwischen Reservierung und Job-Bindung
+    auffindbar. Eine bereits vergebene ID schlägt fail-closed fehl.
+    """
     import os
     if getattr(settings, "VORNEQ_AI_EMERGENCY_STOP", False):
         raise EmergencyStop("emergency stop (environment)")
@@ -195,7 +204,8 @@ def reserve(*, actor_id: int, model: str, input_bytes: int, max_output_tokens: i
         ledger_configuration(), environment=environment,
         service_id=os.environ.get("RENDER_SERVICE_ID", ""),
         git_sha=os.environ.get("RENDER_GIT_COMMIT", ""), actor_id=actor_id, model=model,
-        input_bytes=input_bytes, max_output_tokens=max_output_tokens, staging_daily=staging_daily)
+        input_bytes=input_bytes, max_output_tokens=max_output_tokens, staging_daily=staging_daily,
+        reservation_id=reservation_id)
 
 
 _WORKER_SERVICE = re.compile(r"srv-[a-z0-9]{20,32}\Z")
@@ -305,7 +315,8 @@ def reserve_prepaid_image(config: LedgerConfig, *, service_id, git_sha, actor_id
 
 
 def reserve_with_config(config: LedgerConfig, *, environment, service_id, git_sha, actor_id, model,
-                        input_bytes, max_output_tokens, staging_daily=None, image_only=False) -> Reservation:
+                        input_bytes, max_output_tokens, staging_daily=None, image_only=False,
+                        reservation_id=None) -> Reservation:
     from apps.ai_ledger.models import BudgetAccount, BudgetReservation
 
     if not _approved_client(config, environment, service_id, git_sha):
@@ -316,6 +327,8 @@ def reserve_with_config(config: LedgerConfig, *, environment, service_id, git_sh
         raise LedgerUnavailable("invalid reservation request")
     if type(input_bytes) is not int or type(max_output_tokens) is not int:
         raise LedgerUnavailable("invalid reservation size")
+    if reservation_id is not None and (type(reservation_id) is not uuid.UUID or reservation_id.version != 4):
+        raise LedgerUnavailable("invalid reservation id")
     if staging_daily is not None and (environment != "staging"
                                       or not isinstance(staging_daily, StagingDailyLimit)):
         raise LedgerUnavailable("staging daily ceiling misapplied")
@@ -353,7 +366,7 @@ def reserve_with_config(config: LedgerConfig, *, environment, service_id, git_sh
             BudgetAccount.objects.using(LEDGER_ALIAS).filter(pk=account.pk).update(
                 reserved_micro=F("reserved_micro") + amount)
             reservation = BudgetReservation.objects.using(LEDGER_ALIAS).create(
-                id=uuid.uuid4(), account=account, environment=environment, service_id=service_id,
+                id=reservation_id or uuid.uuid4(), account=account, environment=environment, service_id=service_id,
                 git_sha=git_sha, actor_id=actor_id, reserved_micro=amount)
     except BudgetExceeded:
         raise
