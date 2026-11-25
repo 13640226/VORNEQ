@@ -1,0 +1,55 @@
+/* VORNEQ Product UI V6-01 — Design-Token-Aliase.
+ *
+ * Keine zweite Token-Quelle: jeder --vq-* Name verweist auf ein bestehendes
+ * Token aus tokens.css bzw. theme-palettes.css. Paletten (navy, light,
+ * vorneq, blue, gold, emerald, purple, dark) und die AA-Kontrasttests gelten
+ * damit unverändert auch für V6-Komponenten. Nur Systemschriften, keine
+ * Webfonts und keine globale "*"-Regel für reduzierte Bewegung.
+ */
+:root {
+  /* Flächen und Text */
+  --vq-bg: var(--color-bg-page);
+  --vq-surface: var(--color-bg-surface);
+  --vq-elevated: var(--color-bg-elevated);
+  --vq-hover: var(--color-bg-hover);
+  --vq-text: var(--color-text-primary);
+  --vq-text-2: var(--color-text-secondary);
+  --vq-text-muted: var(--color-text-muted);
+  --vq-border: var(--color-border);
+  --vq-border-strong: var(--color-border-strong);
+
+  /* Akzent */
+  --vq-accent: var(--color-accent);
+  --vq-accent-hover: var(--color-accent-hover);
+  --vq-accent-subtle: var(--color-accent-subtle);
+  --vq-accent-text: var(--color-accent-text);
+  --vq-on-accent: var(--color-text-on-accent);
+
+  /* Fokus */
+  --vq-focus: var(--color-focus);
+  --vq-focus-width: var(--focus-ring-width);
+  --vq-focus-offset: var(--focus-ring-offset);
+
+  /* Form und Abstand */
+  --vq-radius-sm: var(--radius-sm);
+  --vq-radius-md: var(--radius-md);
+  --vq-radius-lg: var(--radius-lg);
+  --vq-radius-pill: var(--radius-pill);
+  --vq-space-1: var(--space-1);
+  --vq-space-2: var(--space-2);
+  --vq-space-3: var(--space-3);
+  --vq-space-4: var(--space-4);
+  --vq-space-6: var(--space-6);
+  --vq-shadow: var(--shadow-medium);
+
+  /* Bewegung */
+  --vq-motion-fast: var(--motion-duration-fast);
+  --vq-ease: var(--motion-easing-standard);
+
+  /* Layout */
+  --vq-header-h: var(--header-height);
+  --vq-tap: 44px;
+  --vq-sidebar-w: 232px;
+  --vq-bottom-nav-h: 64px;
+  --vq-z-bottom-nav: var(--z-header);
+}

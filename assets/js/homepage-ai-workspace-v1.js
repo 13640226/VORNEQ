@@ -5,9 +5,30 @@
 (() => {
   "use strict";
 
+  // V6-01: tablet sidebar disclosure. Without JS the lists stay visible.
+  function startSidebar(root) {
+    const sidebar = root.querySelector("[data-vq-sidebar]");
+    const toggle = sidebar && sidebar.querySelector("[data-vq-sidebar-toggle]");
+    if (!toggle) return;
+    root.setAttribute("data-vq-js", "");
+    toggle.hidden = false;
+    toggle.addEventListener("click", () => {
+      const open = toggle.getAttribute("aria-expanded") !== "true";
+      toggle.setAttribute("aria-expanded", String(open));
+      sidebar.toggleAttribute("data-open", open);
+    });
+    sidebar.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || toggle.getAttribute("aria-expanded") !== "true") return;
+      toggle.setAttribute("aria-expanded", "false");
+      sidebar.removeAttribute("data-open");
+      toggle.focus();
+    });
+  }
+
   function start() {
     const root = document.querySelector("[data-vq-ai-workspace]");
     if (!root) return;
+    startSidebar(root);
     const form = root.querySelector("[data-vq-composer]");
     const input = root.querySelector("[data-vq-composer-input]");
     const count = root.querySelector("[data-vq-composer-count]");

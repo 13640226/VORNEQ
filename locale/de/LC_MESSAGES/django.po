@@ -2646,3 +2646,11 @@ msgstr "Sprache wählen"
 #: templates/partials/_standalone_nav.html
 msgid "Open profile"
 msgstr "Profil öffnen"
+
+#: templates/home/_rail.html
+msgid "Destinations"
+msgstr "Ziele"
+
+#: templates/home/_bottom_nav.html
+msgid "Quick navigation"
+msgstr "Schnellnavigation"
