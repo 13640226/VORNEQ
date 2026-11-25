@@ -22,6 +22,7 @@ RETIRED_STYLESHEETS = (
     "homepage-signal-nav-v2.css",
     "home-hero.css",
     "how-it-works-upgrade.css",
+    "homepage-ai-cloud-v2.css",  # V3-V6-01 homepage layout, replaced by V6-02
 )
 
 STATIC_CSS_RE = re.compile(r"""\{%\s*static\s+['"]css/([^'"]+\.css)['"]\s*%\}""")
@@ -56,4 +57,5 @@ class HomepageStylesheetContractTests(SimpleTestCase):
 
     def test_homepage_loads_single_page_stylesheet(self):
         index = (Path(settings.BASE_DIR) / "templates" / "index.html").read_text(encoding="utf-8")
-        self.assertEqual(STATIC_CSS_RE.findall(index), ["homepage-ai-cloud-v2.css"])
+        # V6-02: design system first, then the workspace layout; nothing else.
+        self.assertEqual(STATIC_CSS_RE.findall(index), ["v6-design-system.css", "v6-workspace.css"])

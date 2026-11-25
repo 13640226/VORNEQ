@@ -11,11 +11,16 @@ class BrandIntegrationTests(TestCase):
         response = self.client.get(reverse("home"))
         content = response.content.decode()
 
-        self.assertContains(response, 'class="standalone-nav__brand"')
-        self.assertContains(response, 'class="standalone-nav__symbol"')
-        self.assertContains(response, 'class="standalone-nav__wordmark" dir="ltr">VORNEQ</span>')
+        # V6-02: the homepage renders the same canonical symbol and wordmark in its
+        # compact application header; every other page keeps the site header.
+        self.assertContains(response, 'class="vq-appbar__brand"')
+        self.assertContains(response, 'class="vq-appbar__logo"')
+        self.assertContains(response, 'class="vq-appbar__wordmark" dir="ltr">VORNEQ</span>')
+        other = self.client.get(reverse("discover"))
+        self.assertContains(other, 'class="standalone-nav__brand"')
+        self.assertContains(other, 'class="standalone-nav__wordmark" dir="ltr">VORNEQ</span>')
 
-        brand_start = content.index('class="standalone-nav__brand"')
+        brand_start = content.index('class="vq-appbar__brand"')
         brand_end = content.index("</a>", brand_start)
         brand_markup = content[brand_start:brand_end]
         self.assertIn("<img", brand_markup)

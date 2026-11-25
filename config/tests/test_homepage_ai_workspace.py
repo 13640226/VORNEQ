@@ -15,10 +15,10 @@ class HomepageAIWorkspaceTests(TestCase):
             return self.client.get(reverse("home"))
 
     def test_renders_all_languages(self):
-        titles = {
-            "en": "What do you need today?",
-            "de": "Was brauchen Sie heute?",
-            "fa": "امروز به چه چیزی نیاز دارید؟",
+        titles = {  # V6-02: owner-specified product titles
+            "en": "What will you create today?",
+            "de": "Was möchten Sie heute erstellen?",
+            "fa": "امروز چه چیزی می‌خواهید بسازید؟",
         }
         for language, title in titles.items():
             with self.subTest(language=language):
@@ -47,15 +47,18 @@ class HomepageAIWorkspaceTests(TestCase):
         self.assertIn('aria-describedby="vq-ai-search-limitation"', html)
         self.assertIn('aria-label="Search across VORNEQ"', html)
         self.assertIn("data-vq-example", html)
-        self.assertIn(static("css/homepage-ai-cloud-v2.css"), html)
+        # V6-02: the homepage stylesheet is now design system + workspace layout.
+        self.assertIn(static("css/v6-design-system.css"), html)
+        self.assertIn(static("css/v6-workspace.css"), html)
+        self.assertNotIn("homepage-ai-cloud-v2.css", html)
         self.assertIn(static("js/homepage-ai-workspace-v1.js"), html)
         self.assertEqual(html.count("<h1"), 1)
 
     def test_css_js_are_local_and_non_generative(self):
         base = Path(settings.BASE_DIR)
-        css = (base / "assets/css/homepage-ai-cloud-v2.css").read_text(encoding="utf-8")
+        css = (base / "assets/css/v6-workspace.css").read_text(encoding="utf-8")  # V6-02 layout
         js = (base / "assets/js/homepage-ai-workspace-v1.js").read_text(encoding="utf-8")
-        self.assertIn("@media (max-width: 639px)", css)
+        self.assertIn("@media (max-width: 767px)", css)  # V6-02 mobile breakpoint
         self.assertIn("@media (max-width: 1023px)", css)
         self.assertIn('html[dir="rtl"]', css)
         self.assertIn("prefers-reduced-motion", css)

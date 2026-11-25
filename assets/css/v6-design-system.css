@@ -1,0 +1,219 @@
+/* ===================================================================
+ * VORNEQ Design System V6-02
+ *
+ * Opt-in per page: a page that sets body class "vq-ds" and loads this file
+ * gets the V6 palette, type scale, spacing, radii, shadows, motion, focus
+ * ring, icon sizes and breakpoints. Other pages are untouched (controlled
+ * migration in later PRs). System fonts only, no web fonts, no CDN.
+ *
+ * Contrast (WCAG 2.2 AA, measured, see config/tests/test_homepage_v6_02.py):
+ *   dark  text #F1F5F9 / text-2 #94A3B8 >= 5.8:1 on every surface
+ *   dark  white on button #6655DB 5.4:1, accent text #A99CF5 >= 6.2:1
+ *   light text-2 #56657C >= 5.2:1 (spec value #64748B was 4.2:1 on the
+ *         sidebar and was darkened), white on #6254D9 5.5:1
+ * ================================================================= */
+body.vq-ds {
+  /* Colour: dark (default; every dark palette) */
+  --ds-bg: #0b0f17;
+  --ds-side: #111722;
+  --ds-surface: #151d2b;
+  --ds-elevated: #1d2736;
+  --ds-hover: #222d3e;
+  --ds-border: #293447;
+  --ds-border-strong: #3a4860;
+  --ds-text: #f1f5f9;
+  --ds-text-2: #94a3b8;
+  --ds-text-3: #8391a7;
+  --ds-primary: #7868e6;
+  --ds-primary-btn: #6655db;
+  --ds-primary-btn-hover: #5b4bd1;
+  --ds-on-primary: #ffffff;
+  --ds-primary-text: #a99cf5;
+  --ds-primary-soft: rgba(120, 104, 230, 0.16);
+  --ds-accent: #38bdf8;
+  --ds-focus: #38bdf8;
+  --ds-success: #6ee7b7;
+  --ds-success-soft: rgba(52, 211, 153, 0.14);
+  --ds-overlay: rgba(3, 6, 12, 0.6);
+  --ds-led: #34d399;
+
+  /* Application tones (icon tiles); icon vs tile >= 4.4:1 */
+  --tone-violet: #a78bfa;
+  --tone-pink: #f472b6;
+  --tone-blue: #60a5fa;
+  --tone-teal: #2dd4bf;
+  --tone-cyan: #22d3ee;
+  --tone-amber: #fbbf24;
+  --tone-indigo: #a5b4fc;
+  --tone-slate: #94a3b8;
+  --tone-mix: 16%;
+
+  /* Typography */
+  --ds-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ds-font-fa: "Vazirmatn", "IRANSansX", Tahoma, var(--font-family-fa, system-ui), sans-serif;
+  --ds-text-xs: 0.75rem;
+  --ds-text-sm: 0.8125rem;
+  --ds-text-md: 0.9375rem;
+  --ds-text-lg: 1.125rem;
+  --ds-text-xl: 1.375rem;
+  --ds-text-display: clamp(1.6rem, 1.15rem + 1.6vw, 2.4rem);
+  --ds-weight-regular: 450;
+  --ds-weight-medium: 560;
+  --ds-weight-bold: 680;
+  --ds-leading: 1.55;
+  --ds-leading-fa: 1.85;
+
+  /* Spacing (4px grid) */
+  --ds-1: 4px;
+  --ds-2: 8px;
+  --ds-3: 12px;
+  --ds-4: 16px;
+  --ds-5: 20px;
+  --ds-6: 24px;
+  --ds-8: 32px;
+  --ds-10: 40px;
+  --ds-12: 48px;
+
+  /* Radius, shadow */
+  --ds-radius-sm: 8px;
+  --ds-radius-md: 12px;
+  --ds-radius-lg: 16px;
+  --ds-radius-xl: 22px;
+  --ds-radius-pill: 999px;
+  --ds-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --ds-shadow-md: 0 6px 18px rgba(0, 0, 0, 0.35);
+  --ds-shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.45);
+
+  /* Layout */
+  --ds-appbar-h: 56px;
+  --ds-side-w: 256px;
+  --ds-side-w-collapsed: 72px;
+  --ds-content-max: 1120px;
+  --ds-bottom-nav-h: 64px;
+  --ds-tap: 44px;
+
+  /* Icon sizes */
+  --ds-icon-16: 16px;
+  --ds-icon-20: 20px;
+  --ds-icon-24: 24px;
+  --ds-icon-32: 32px;
+
+  /* Motion */
+  --ds-fast: 120ms;
+  --ds-base: 200ms;
+  --ds-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Focus ring */
+  --ds-ring-width: 2px;
+  --ds-ring-offset: 2px;
+
+  /* Breakpoints (documentation; media queries use the literals):
+     mobile < 768px <= tablet < 1024px <= desktop < 1440px <= wide */
+
+  color-scheme: dark;
+  background: var(--ds-bg);
+  color: var(--ds-text);
+  font-family: var(--ds-font);
+  line-height: var(--ds-leading);
+}
+
+/* Colour: light (light and vorneq palettes) */
+:root[data-theme="light"] body.vq-ds,
+:root[data-theme="vorneq"] body.vq-ds {
+  --ds-bg: #f5f7fa;
+  --ds-side: #eef2f7;
+  --ds-surface: #ffffff;
+  --ds-elevated: #ffffff;
+  --ds-hover: #e7ecf3;
+  --ds-border: #dde3ec;
+  --ds-border-strong: #c3ccd9;
+  --ds-text: #172033;
+  --ds-text-2: #56657c;
+  --ds-text-3: #56657c;
+  --ds-primary: #6254d9;
+  --ds-primary-btn: #6254d9;
+  --ds-primary-btn-hover: #5a4bd3;
+  --ds-primary-text: #5a4bd3;
+  --ds-primary-soft: rgba(98, 84, 217, 0.1);
+  --ds-accent: #0284c7;
+  --ds-focus: #6254d9;
+  --ds-success: #047857;
+  --ds-success-soft: rgba(16, 185, 129, 0.12);
+  --ds-overlay: rgba(15, 23, 42, 0.35);
+  --ds-led: #047857;
+  --tone-violet: #6d28d9;
+  --tone-pink: #be185d;
+  --tone-blue: #1d4ed8;
+  --tone-teal: #0f766e;
+  --tone-cyan: #0e7490;
+  --tone-amber: #92400e;
+  --tone-indigo: #4338ca;
+  --tone-slate: #475569;
+  --tone-mix: 12%;
+  --ds-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --ds-shadow-md: 0 6px 18px rgba(15, 23, 42, 0.08);
+  --ds-shadow-lg: 0 18px 40px rgba(15, 23, 42, 0.12);
+  color-scheme: light;
+}
+
+html[dir="rtl"] body.vq-ds {
+  font-family: var(--ds-font-fa);
+  line-height: var(--ds-leading-fa);
+}
+
+/* ---------- Primitives ---------- */
+.vq-ds .vq-i {
+  width: var(--ds-icon-20); height: var(--ds-icon-20); flex: none;
+  fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+.vq-ds .vq-i-16 { width: var(--ds-icon-16); height: var(--ds-icon-16); }
+.vq-ds .vq-i-20 { width: var(--ds-icon-20); height: var(--ds-icon-20); }
+.vq-ds .vq-i-24 { width: var(--ds-icon-24); height: var(--ds-icon-24); }
+.vq-ds .vq-i-32 { width: var(--ds-icon-32); height: var(--ds-icon-32); stroke-width: 1.6; }
+html[dir="rtl"] .vq-ds .vq-flip-rtl { transform: scaleX(-1); }
+.vq-ds .vq-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.vq-ds .vq-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.vq-ds .vq-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--ds-2);
+  min-height: var(--ds-tap); padding: 0 var(--ds-4);
+  border: 1px solid transparent; border-radius: var(--ds-radius-pill);
+  font: inherit; font-size: var(--ds-text-md); font-weight: var(--ds-weight-medium);
+  text-decoration: none; cursor: pointer; white-space: nowrap;
+  transition: background-color var(--ds-fast) var(--ds-ease), border-color var(--ds-fast) var(--ds-ease);
+}
+.vq-ds .vq-btn--primary { background: var(--ds-primary-btn); color: var(--ds-on-primary); }
+.vq-ds .vq-btn--primary:hover { background: var(--ds-primary-btn-hover); }
+.vq-ds .vq-btn--ghost { background: transparent; color: var(--ds-text); border-color: var(--ds-border-strong); }
+.vq-ds .vq-btn--ghost:hover { background: var(--ds-hover); }
+
+.vq-ds :is(a, button, summary, textarea, input):focus-visible {
+  outline: var(--ds-ring-width) solid var(--ds-focus);
+  outline-offset: var(--ds-ring-offset);
+}
+
+.vq-ds .vq-led {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex: none;
+  background: var(--ds-led); box-shadow: 0 0 0 3px var(--ds-success-soft);
+}
+
+/* Tones: a tinted tile with the icon in the tone colour. */
+.vq-ds .vq-tone-violet { --tone: var(--tone-violet); }
+.vq-ds .vq-tone-pink { --tone: var(--tone-pink); }
+.vq-ds .vq-tone-blue { --tone: var(--tone-blue); }
+.vq-ds .vq-tone-teal { --tone: var(--tone-teal); }
+.vq-ds .vq-tone-cyan { --tone: var(--tone-cyan); }
+.vq-ds .vq-tone-amber { --tone: var(--tone-amber); }
+.vq-ds .vq-tone-indigo { --tone: var(--tone-indigo); }
+.vq-ds .vq-tone-slate { --tone: var(--tone-slate); }
+
+@media (prefers-reduced-motion: reduce) {
+  .vq-ds .vq-btn { transition: none; }
+}
+@media (forced-colors: active) {
+  .vq-ds .vq-led { forced-color-adjust: none; background: CanvasText; box-shadow: none; }
+  .vq-ds .vq-btn { border-color: ButtonText; }
+}

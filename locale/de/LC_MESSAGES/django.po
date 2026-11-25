@@ -2654,3 +2654,139 @@ msgstr "Ziele"
 #: templates/home/_bottom_nav.html
 msgid "Quick navigation"
 msgstr "Schnellnavigation"
+
+#: templates/home/v6
+msgid "A citation is not a guarantee of truth."
+msgstr "Eine Quellenangabe ist keine Garantie für Wahrheit."
+
+#: templates/home/v6
+msgid "AI chat · limited access"
+msgstr "KI-Chat · eingeschränkter Zugang"
+
+#: templates/home/v6
+msgid "Account menu"
+msgstr "Kontomenü"
+
+#: templates/home/v6
+msgid "Answers from cited public sources"
+msgstr "Antworten aus zitierten öffentlichen Quellen"
+
+#: templates/home/v6
+msgid "Applications"
+msgstr "Anwendungen"
+
+#: templates/home/v6
+msgid "Chat"
+msgstr "Chat"
+
+#: templates/home/v6
+msgid "Controlled testing"
+msgstr "Kontrollierter Test"
+
+#: templates/home/v6
+msgid "Create"
+msgstr "Erstellen"
+
+#: templates/home/v6
+msgid "Create and manage images"
+msgstr "Bilder erstellen und verwalten"
+
+#: templates/home/v6
+msgid "Create image"
+msgstr "Bild erstellen"
+
+#: templates/home/v6
+msgid "Ctrl + Enter to search"
+msgstr "Strg + Enter zum Suchen"
+
+#: templates/home/v6
+msgid "Dark theme"
+msgstr "Dunkles Design"
+
+#: templates/home/v6
+msgid "Get started"
+msgstr "Loslegen"
+
+#: templates/home/v6
+msgid "Knowledge, media and products"
+msgstr "Wissen, Medien und Produkte"
+
+#: templates/home/v6
+msgid "Main navigation"
+msgstr "Hauptnavigation"
+
+#: templates/home/v6
+msgid "More"
+msgstr "Mehr"
+
+#: templates/home/v6
+msgid "New chat"
+msgstr "Neuer Chat"
+
+#: templates/home/v6
+msgid "Not available yet"
+msgstr "Noch nicht verfügbar"
+
+#: templates/home/v6
+msgid "Nothing here yet"
+msgstr "Noch nichts vorhanden"
+
+#: templates/home/v6
+msgid "Recent work"
+msgstr "Zuletzt bearbeitet"
+
+#: templates/home/v6
+msgid "Search documents, products, sources or a topic…"
+msgstr "Dokumente, Produkte, Quellen oder ein Thema suchen …"
+
+#: templates/home/v6
+msgid "Spoken conversations"
+msgstr "Gesprochene Unterhaltungen"
+
+#: templates/home/v6
+msgid "This box searches VORNEQ. AI chat opens separately; its answers are drafts, not verified facts."
+msgstr "Dieses Feld durchsucht VORNEQ. Der KI-Chat öffnet sich separat; seine Antworten sind Entwürfe, keine geprüften Fakten."
+
+#: templates/home/v6
+msgid "This box searches VORNEQ. No AI answer is generated here."
+msgstr "Dieses Feld durchsucht VORNEQ. Hier wird keine KI-Antwort erzeugt."
+
+#: templates/home/v6
+msgid "Toggle sidebar"
+msgstr "Seitenleiste ein-/ausblenden"
+
+#: templates/home/v6
+msgid "VORNEQ — Precision Digital Infrastructure"
+msgstr "VORNEQ — Präzise digitale Infrastruktur"
+
+#: templates/home/v6
+msgid "Voice"
+msgstr "Sprache"
+
+#: templates/home/v6
+msgid "Welcome back"
+msgstr "Willkommen zurück"
+
+#: templates/home/v6
+msgid "What will you create today?"
+msgstr "Was möchten Sie heute erstellen?"
+
+#: templates/home/v6
+msgid "Workspace"
+msgstr "Arbeitsbereich"
+
+#: templates/home/v6
+msgid "Workspace, documents and notes"
+msgstr "Arbeitsbereich, Dokumente und Notizen"
+
+#: templates/home/v6
+msgid "Your newest documents and notes will appear here."
+msgstr "Ihre neuesten Dokumente und Notizen erscheinen hier."
+
+#: templates/home/v6
+msgid "Your personal hub"
+msgstr "Ihr persönlicher Bereich"
+
+#: templates/home/v6
+msgid "Your private work, shared only with people you choose."
+msgstr "Ihre private Arbeit, nur mit Personen geteilt, die Sie auswählen."

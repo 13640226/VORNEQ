@@ -40,7 +40,7 @@
         {% trans "Skip to main content" %}
     </a>
 
-    {% include "partials/_standalone_nav.html" %}
+    {% block site_header %}{% include "partials/_standalone_nav.html" %}{% endblock %}
 
     {% if request.resolver_match.url_name != 'home' %}
     <nav class="global-back" aria-label="{% trans 'Page navigation' %}">

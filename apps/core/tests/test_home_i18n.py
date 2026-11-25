@@ -11,8 +11,9 @@ class HomeTranslationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'lang="de"')
         self.assertContains(response, 'class="vq-home"')
-        self.assertContains(response, "Was brauchen Sie heute?")
-        self.assertContains(response, "Ihre Werkzeuge")
+        # V6-02: product title and application grid replace the V2 title and "Your tools".
+        self.assertContains(response, "Was möchten Sie heute erstellen?")
+        self.assertContains(response, "Anwendungen")
         self.assertNotContains(response, "Empfohlene Entdeckungen")
         self.assertNotContains(response, "Mehr über VORNEQ erfahren")
         self.assertNotContains(response, "Advanced filters")
@@ -26,8 +27,9 @@ class HomeTranslationTests(TestCase):
         self.assertContains(response, 'lang="fa"')
         self.assertContains(response, 'dir="rtl"')
         self.assertContains(response, 'class="vq-home"')
-        self.assertContains(response, "امروز به چه چیزی نیاز دارید؟")
-        self.assertContains(response, "ابزارهای شما")
+        # V6-02: product title and application grid replace the V2 title and "Your tools".
+        self.assertContains(response, "امروز چه چیزی می‌خواهید بسازید؟")
+        self.assertContains(response, "برنامه‌ها")
         self.assertNotContains(response, "کشف‌های برگزیده")
         self.assertNotContains(response, "درباره VORNEQ بیشتر بدانید")
         self.assertNotContains(response, "فیلترهای پیشرفته")

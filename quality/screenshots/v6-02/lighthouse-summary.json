@@ -1,0 +1,54 @@
+{
+ "after-desktop": {
+  "scores": {
+   "performance": 100,
+   "accessibility": 100,
+   "best-practices": 100
+  },
+  "LCP": "0.6\u00a0s",
+  "CLS": "0",
+  "TBT": "0\u00a0ms",
+  "lighthouse": "13.6.0",
+  "url": "local runserver (DEBUG, no compression), /en/",
+  "formFactor": "desktop"
+ },
+ "after-mobile": {
+  "scores": {
+   "performance": 98,
+   "accessibility": 100,
+   "best-practices": 100
+  },
+  "LCP": "2.0\u00a0s",
+  "CLS": "0",
+  "TBT": "0\u00a0ms",
+  "lighthouse": "13.6.0",
+  "url": "local runserver (DEBUG, no compression), /en/",
+  "formFactor": "mobile"
+ },
+ "before-desktop": {
+  "scores": {
+   "performance": 100,
+   "accessibility": 100,
+   "best-practices": 100
+  },
+  "LCP": "0.5\u00a0s",
+  "CLS": "0",
+  "TBT": "0\u00a0ms",
+  "lighthouse": "13.6.0",
+  "url": "local runserver (DEBUG, no compression), /en/",
+  "formFactor": "desktop"
+ },
+ "before-mobile": {
+  "scores": {
+   "performance": 98,
+   "accessibility": 100,
+   "best-practices": 100
+  },
+  "LCP": "1.9\u00a0s",
+  "CLS": "0",
+  "TBT": "0\u00a0ms",
+  "lighthouse": "13.6.0",
+  "url": "local runserver (DEBUG, no compression), /en/",
+  "formFactor": "mobile"
+ }
+}

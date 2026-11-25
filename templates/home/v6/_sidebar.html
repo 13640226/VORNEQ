@@ -1,0 +1,81 @@
+{% load i18n %}
+{# V6-02 application sidebar. Only real destinations; gated items follow the same server-side #}
+{# hints as the rest of the page and their views re-check every gate themselves. #}
+{# Desktop: expanded or collapsed to icons (labels become tooltips). Below 1024px: drawer. #}
+<aside class="vq-side" id="vq-side" aria-labelledby="vq-side-title" data-vq-side>
+  <h2 class="vq-sr-only" id="vq-side-title">{% trans "Applications" %}</h2>
+
+  {% if phase_c_chat_enabled %}
+  <a class="vq-side__cta" href="{% url 'ai_core:chat' %}?lang={{ request.LANGUAGE_CODE|slice:':2' }}">
+    <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-plus"></use></svg>
+    <span class="vq-side__label">{% trans "New chat" %}</span>
+  </a>
+  {% elif user.is_authenticated %}
+  <a class="vq-side__cta" href="{% url 'notes:create' %}">
+    <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-plus"></use></svg>
+    <span class="vq-side__label">{% trans "New note" %}</span>
+  </a>
+  {% else %}
+  <a class="vq-side__cta" href="{% url 'account_signup' %}">
+    <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-sparkle"></use></svg>
+    <span class="vq-side__label">{% trans "Get started" %}</span>
+  </a>
+  {% endif %}
+
+  <nav class="vq-side__nav" aria-label="{% trans 'Main navigation' %}">
+    <ul class="vq-side__list">
+      <li><a class="vq-side__link" href="{% url 'home' %}" aria-current="page">
+        <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-home"></use></svg>
+        <span class="vq-side__label">{% trans "Home" %}</span></a></li>
+      {% if phase_c_chat_enabled %}
+      <li><a class="vq-side__link" href="{% url 'ai_core:chat' %}?lang={{ request.LANGUAGE_CODE|slice:':2' }}">
+        <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-chat"></use></svg>
+        <span class="vq-side__label">{% trans "AI chat" %}</span></a></li>
+      {% endif %}
+      {% if image_studio_enabled %}
+      <li><a class="vq-side__link" href="{% url 'ai_core:image-studio' %}?lang={{ request.LANGUAGE_CODE|slice:':2' }}">
+        <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-image"></use></svg>
+        <span class="vq-side__label">{% trans "Image Studio" %}</span></a></li>
+      {% endif %}
+      <li><a class="vq-side__link" href="{% url 'search_page' %}">
+        <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-search"></use></svg>
+        <span class="vq-side__label">{% trans "Search" %}</span></a></li>
+      <li><a class="vq-side__link" href="{% url 'discover' %}">
+        <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-compass"></use></svg>
+        <span class="vq-side__label">{% trans "Discover" %}</span></a></li>
+      <li><a class="vq-side__link" href="{% url 'discover_knowledge' %}">
+        <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-books"></use></svg>
+        <span class="vq-side__label">{% trans "Library" %}</span></a></li>
+      <li><a class="vq-side__link" href="{% url 'marketplace:index' %}">
+        <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-store"></use></svg>
+        <span class="vq-side__label">{% trans "Marketplace" %}</span></a></li>
+    </ul>
+
+    {% if user.is_authenticated %}
+    <p class="vq-side__group" aria-hidden="true"><span class="vq-side__label">{% trans "Private" %}</span></p>
+    <ul class="vq-side__list">
+      <li><a class="vq-side__link" href="{% url 'platform_shell:personal_home' %}">
+        <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-layers"></use></svg>
+        <span class="vq-side__label">{% trans "My workspace" %}</span></a></li>
+      <li><a class="vq-side__link" href="{% url 'documents:list' %}">
+        <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-doc"></use></svg>
+        <span class="vq-side__label">{% trans "Documents" %}</span></a></li>
+      <li><a class="vq-side__link" href="{% url 'notes:list' %}">
+        <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-notebook"></use></svg>
+        <span class="vq-side__label">{% trans "Notes" %}</span></a></li>
+    </ul>
+    {% endif %}
+  </nav>
+
+  <div class="vq-side__foot">
+    <a class="vq-side__link" href="{% url 'orientation' %}">
+      <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-shield"></use></svg>
+      <span class="vq-side__label">{% trans "Evidence vocabulary" %}</span></a>
+    {% if user.is_authenticated %}
+    <a class="vq-side__link" href="{% url 'profile_edit' %}">
+      <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-settings"></use></svg>
+      <span class="vq-side__label">{% trans "Settings" %}</span></a>
+    {% endif %}
+  </div>
+</aside>
+<div class="vq-side-backdrop" data-vq-side-backdrop hidden></div>

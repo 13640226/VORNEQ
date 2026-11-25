@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n static %}
 
-{# AI-first workspace V3: presentation, Search handoff and gated navigation only. #}
+{# V6-02 product-first workspace: app header, sidebar, Search composer, app grid. #}
 {# No inference, no private queries and no API calls are made from this page. #}
 {% block title %}VORNEQ — {% trans "AI workspace" %}{% endblock %}
 
@@ -18,37 +18,33 @@
 <meta name="twitter:card" content="summary">
 {% endblock %}
 
+{% block body_class %}vq-workspace vq-ds{% endblock %}
+
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/homepage-ai-cloud-v2.css' %}">
+<script src="{% static 'js/v6-shell-bootstrap.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/v6-design-system.css' %}">
+<link rel="stylesheet" href="{% static 'css/v6-workspace.css' %}">
+{% endblock %}
+
+{% block site_header %}
+{% include "home/_icons.html" %}
+{% include "home/v6/_appbar.html" %}
 {% endblock %}
 
 {% block content %}
-<div class="vq-home" data-vq-ai-workspace data-vq-v6>
-  {% include "home/_icons.html" %}
-  <div class="vq-shell">
-    {# DOM order = keyboard order: workspace first, then destinations, then context. #}
-    {# The grid places the rail visually at the inline start on wide screens.        #}
-    <div class="vq-main">
-      {% include "home/_hero.html" %}
-      {% include "home/_composer.html" %}
-      {% include "home/_tools.html" %}
-      {% include "home/_account.html" %}
-    </div>
-
-    {% include "home/_rail.html" %}
-
-    {% include "home/_context.html" %}
+<div class="vq-home" data-vq-ai-workspace data-vq-v6 data-vq-v6-02>
+  {% include "home/v6/_sidebar.html" %}
+  <div class="vq-stage">
+    {% include "home/v6/_composer.html" %}
+    {% include "home/v6/_quick_actions.html" %}
+    {% include "home/v6/_apps.html" %}
+    {% include "home/v6/_activity.html" %}
   </div>
-  <div class="vq-v5-sections">
-    {% include "home/_app_explorer.html" %}
-    {% include "home/_ai_studio.html" %}
-    {% include "home/_trust_center.html" %}
-    {% include "home/_philosophy.html" %}
-  </div>
-  {% include "home/_bottom_nav.html" %}
+  {% include "home/v6/_bottom_nav.html" %}
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/homepage-ai-workspace-v1.js' %}" defer></script>
+<script src="{% static 'js/v6-workspace.js' %}" defer></script>
 {% endblock %}

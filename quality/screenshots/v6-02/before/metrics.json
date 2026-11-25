@@ -1,0 +1,299 @@
+{
+ "desktop-dark": {
+  "header": {
+   "top": 0,
+   "height": 64,
+   "width": 1425
+  },
+  "composer": {
+   "top": 512,
+   "height": 137,
+   "width": 699
+  },
+  "h1": {
+   "top": 454,
+   "height": 42,
+   "width": 699
+  },
+  "sidebar": {
+   "top": 96,
+   "height": 270,
+   "width": 232
+  },
+  "controlsAboveFold": 13,
+  "wordsInMain": 343,
+  "scrollHeight": 2889,
+  "overflowX": false,
+  "jsErrors": []
+ },
+ "desktop-light": {
+  "header": {
+   "top": 0,
+   "height": 64,
+   "width": 1425
+  },
+  "composer": {
+   "top": 512,
+   "height": 137,
+   "width": 699
+  },
+  "h1": {
+   "top": 454,
+   "height": 42,
+   "width": 699
+  },
+  "sidebar": {
+   "top": 96,
+   "height": 270,
+   "width": 232
+  },
+  "controlsAboveFold": 13,
+  "wordsInMain": 343,
+  "scrollHeight": 2889,
+  "overflowX": false,
+  "jsErrors": []
+ },
+ "mobile-dark": {
+  "header": {
+   "top": 0,
+   "height": 91,
+   "width": 375
+  },
+  "composer": {
+   "top": 556,
+   "height": 181,
+   "width": 325
+  },
+  "h1": {
+   "top": 513,
+   "height": 27,
+   "width": 325
+  },
+  "sidebar": {
+   "top": 0,
+   "height": 0,
+   "width": 0
+  },
+  "controlsAboveFold": 8,
+  "wordsInMain": 342,
+  "scrollHeight": 4694,
+  "overflowX": false,
+  "jsErrors": []
+ },
+ "mobile-light": {
+  "header": {
+   "top": 0,
+   "height": 91,
+   "width": 375
+  },
+  "composer": {
+   "top": 556,
+   "height": 181,
+   "width": 325
+  },
+  "h1": {
+   "top": 513,
+   "height": 27,
+   "width": 325
+  },
+  "sidebar": {
+   "top": 0,
+   "height": 0,
+   "width": 0
+  },
+  "controlsAboveFold": 8,
+  "wordsInMain": 342,
+  "scrollHeight": 4694,
+  "overflowX": false,
+  "jsErrors": []
+ },
+ "fa-rtl-desktop": {
+  "header": {
+   "top": 0,
+   "height": 64,
+   "width": 1425
+  },
+  "composer": {
+   "top": 512,
+   "height": 137,
+   "width": 699
+  },
+  "h1": {
+   "top": 454,
+   "height": 42,
+   "width": 614
+  },
+  "sidebar": {
+   "top": 96,
+   "height": 270,
+   "width": 232
+  },
+  "controlsAboveFold": 13,
+  "wordsInMain": 377,
+  "scrollHeight": 2813,
+  "overflowX": false,
+  "jsErrors": []
+ },
+ "fa-rtl-mobile": {
+  "header": {
+   "top": 0,
+   "height": 91,
+   "width": 375
+  },
+  "composer": {
+   "top": 531,
+   "height": 181,
+   "width": 325
+  },
+  "h1": {
+   "top": 488,
+   "height": 27,
+   "width": 325
+  },
+  "sidebar": {
+   "top": 0,
+   "height": 0,
+   "width": 0
+  },
+  "controlsAboveFold": 8,
+  "wordsInMain": 375,
+  "scrollHeight": 4549,
+  "overflowX": false,
+  "jsErrors": []
+ },
+ "de-desktop": {
+  "header": {
+   "top": 0,
+   "height": 64,
+   "width": 1425
+  },
+  "composer": {
+   "top": 538,
+   "height": 137,
+   "width": 699
+  },
+  "h1": {
+   "top": 480,
+   "height": 42,
+   "width": 699
+  },
+  "sidebar": {
+   "top": 96,
+   "height": 270,
+   "width": 232
+  },
+  "controlsAboveFold": 13,
+  "wordsInMain": 319,
+  "scrollHeight": 2961,
+  "overflowX": false,
+  "jsErrors": []
+ },
+ "en-desktop": {
+  "header": {
+   "top": 0,
+   "height": 64,
+   "width": 1425
+  },
+  "composer": {
+   "top": 512,
+   "height": 137,
+   "width": 699
+  },
+  "h1": {
+   "top": 454,
+   "height": 42,
+   "width": 699
+  },
+  "sidebar": {
+   "top": 96,
+   "height": 270,
+   "width": 232
+  },
+  "controlsAboveFold": 13,
+  "wordsInMain": 343,
+  "scrollHeight": 2889,
+  "overflowX": false,
+  "jsErrors": []
+ },
+ "guest-homepage": {
+  "header": {
+   "top": 0,
+   "height": 64,
+   "width": 1265
+  },
+  "composer": {
+   "top": 526,
+   "height": 137,
+   "width": 545
+  },
+  "h1": {
+   "top": 472,
+   "height": 38,
+   "width": 545
+  },
+  "sidebar": {
+   "top": 95,
+   "height": 270,
+   "width": 232
+  },
+  "controlsAboveFold": 10,
+  "wordsInMain": 343,
+  "scrollHeight": 2940,
+  "overflowX": false,
+  "jsErrors": []
+ },
+ "auth-workspace": {
+  "header": {
+   "top": 0,
+   "height": 64,
+   "width": 1425
+  },
+  "composer": {
+   "top": 512,
+   "height": 137,
+   "width": 699
+  },
+  "h1": {
+   "top": 454,
+   "height": 42,
+   "width": 699
+  },
+  "sidebar": {
+   "top": 96,
+   "height": 441,
+   "width": 232
+  },
+  "controlsAboveFold": 16,
+  "wordsInMain": 370,
+  "scrollHeight": 3133,
+  "overflowX": false,
+  "jsErrors": []
+ },
+ "auth-mobile": {
+  "header": {
+   "top": 0,
+   "height": 91,
+   "width": 375
+  },
+  "composer": {
+   "top": 558,
+   "height": 181,
+   "width": 325
+  },
+  "h1": {
+   "top": 488,
+   "height": 53,
+   "width": 325
+  },
+  "sidebar": {
+   "top": 0,
+   "height": 0,
+   "width": 0
+  },
+  "controlsAboveFold": 8,
+  "wordsInMain": 395,
+  "scrollHeight": 5227,
+  "overflowX": false,
+  "jsErrors": []
+ }
+}

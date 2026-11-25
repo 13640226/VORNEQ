@@ -104,14 +104,53 @@ def _ai_chat_available_for(user):
     return environment == "development"
 
 
+def _image_studio_available_for(user):
+    """Mirror the Image Studio page gates for a navigation hint; never weaker.
+
+    Anonymous visitors never reach the policy checks. The studio page and its
+    job API re-check every gate; this only decides whether a link is shown.
+    """
+    if not getattr(user, "is_authenticated", False):
+        return False
+    from apps.ai_core.image_generation.page import image_studio_allowed, production_studio_preview_allowed
+    return bool(production_studio_preview_allowed(user) or image_studio_allowed(user))
+
+
+def _recent_work_for(user, limit=3):
+    """Owner-scoped recent documents and notes for the signed-in workspace.
+
+    Reuses the domain services, so the same readability and ownership rules as
+    the list pages apply. A user without a resolvable identity gets empty lists.
+    """
+    if not getattr(user, "is_authenticated", False):
+        return [], []
+    from django.core.exceptions import PermissionDenied
+
+    from apps.documents.services import DocumentService
+    from apps.notes.services import NoteService
+    try:
+        documents = DocumentService.personal_home_recent_documents(user=user, limit=limit)
+    except PermissionDenied:
+        documents = []
+    try:
+        notes = list(NoteService.list_notes(user)[:limit])
+    except PermissionDenied:
+        notes = []
+    return documents, notes
+
+
 def home(request):
-    """AI-first workspace: Search handoff plus an AI chat link only when allowed."""
+    """Product-first workspace (V6-02): Search composer, gated AI links, own recent work."""
     chat_enabled = _ai_chat_available_for(request.user)
     labels = chat_labels(get_language(), environment=settings.VORNEQ_ENV) if chat_enabled else {}
+    recent_documents, recent_notes = _recent_work_for(request.user)
     return render(request, "index.html", {
         "phase_c_chat_enabled": chat_enabled,
         "phase_c_chat_link_label": labels.get("entry", ""),
         "phase_c_chat_warning": labels.get("warning", ""),
+        "image_studio_enabled": _image_studio_available_for(request.user),
+        "recent_documents": recent_documents,
+        "recent_notes": recent_notes,
     })
 
 

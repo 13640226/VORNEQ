@@ -2328,3 +2328,151 @@ msgstr "مقصدها"
 #: templates/home/_bottom_nav.html
 msgid "Quick navigation"
 msgstr "پیمایش سریع"
+
+#: templates/home/v6
+msgid "A citation is not a guarantee of truth."
+msgstr "ارجاع، تضمینی برای درستی نیست."
+
+#: templates/home/v6
+msgid "AI chat · limited access"
+msgstr "گفت‌وگوی هوش مصنوعی · دسترسی محدود"
+
+#: templates/home/v6
+msgid "Account menu"
+msgstr "منوی حساب"
+
+#: templates/home/v6
+msgid "Account settings"
+msgstr "تنظیمات حساب"
+
+#: templates/home/v6
+msgid "Answers from cited public sources"
+msgstr "پاسخ از منابع عمومی مستند"
+
+#: templates/home/v6
+msgid "Applications"
+msgstr "برنامه‌ها"
+
+#: templates/home/v6
+msgid "Chat"
+msgstr "گفت‌وگو"
+
+#: templates/home/v6
+msgid "Controlled testing"
+msgstr "آزمایش کنترل‌شده"
+
+#: templates/home/v6
+msgid "Create"
+msgstr "ساختن"
+
+#: templates/home/v6
+msgid "Create and manage images"
+msgstr "ساخت و مدیریت تصویر"
+
+#: templates/home/v6
+msgid "Create image"
+msgstr "ساخت تصویر"
+
+#: templates/home/v6
+msgid "Ctrl + Enter to search"
+msgstr "Ctrl + Enter برای جست‌وجو"
+
+#: templates/home/v6
+msgid "Dark theme"
+msgstr "پوستهٔ تیره"
+
+#: templates/home/v6
+msgid "Get started"
+msgstr "شروع کنید"
+
+#: templates/home/v6
+msgid "Knowledge, media and products"
+msgstr "دانش، رسانه و محصولات"
+
+#: templates/home/v6
+msgid "Main navigation"
+msgstr "پیمایش اصلی"
+
+#: templates/home/v6
+msgid "More"
+msgstr "بیشتر"
+
+#: templates/home/v6
+msgid "New chat"
+msgstr "گفت‌وگوی تازه"
+
+#: templates/home/v6
+msgid "Not available yet"
+msgstr "هنوز در دسترس نیست"
+
+#: templates/home/v6
+msgid "Nothing here yet"
+msgstr "هنوز چیزی اینجا نیست"
+
+#: templates/home/v6
+msgid "Profile"
+msgstr "نمایه"
+
+#: templates/home/v6
+msgid "Recent work"
+msgstr "کارهای اخیر"
+
+#: templates/home/v6
+msgid "Search documents, products, sources or a topic…"
+msgstr "جست‌وجوی سند، محصول، منبع یا موضوع…"
+
+#: templates/home/v6
+msgid "Settings"
+msgstr "تنظیمات"
+
+#: templates/home/v6
+msgid "Spoken conversations"
+msgstr "گفت‌وگوی صوتی"
+
+#: templates/home/v6
+msgid "This box searches VORNEQ. AI chat opens separately; its answers are drafts, not verified facts."
+msgstr "این کادر در VORNEQ جست‌وجو می‌کند. گفت‌وگوی هوش مصنوعی جداگانه باز می‌شود؛ پاسخ‌های آن پیش‌نویس‌اند، نه واقعیت‌های راستی‌آزمایی‌شده."
+
+#: templates/home/v6
+msgid "This box searches VORNEQ. No AI answer is generated here."
+msgstr "این کادر در VORNEQ جست‌وجو می‌کند. اینجا هیچ پاسخ هوش مصنوعی تولید نمی‌شود."
+
+#: templates/home/v6
+msgid "Toggle sidebar"
+msgstr "باز و بسته کردن نوار کناری"
+
+#: templates/home/v6
+msgid "VORNEQ — Precision Digital Infrastructure"
+msgstr "VORNEQ — زیرساخت دیجیتال دقیق"
+
+#: templates/home/v6
+msgid "Voice"
+msgstr "صدا"
+
+#: templates/home/v6
+msgid "Welcome back"
+msgstr "خوش برگشتید"
+
+#: templates/home/v6
+msgid "What will you create today?"
+msgstr "امروز چه چیزی می‌خواهید بسازید؟"
+
+#: templates/home/v6
+msgid "Workspace"
+msgstr "فضای کار"
+
+#: templates/home/v6
+msgid "Workspace, documents and notes"
+msgstr "فضای کار، اسناد و یادداشت‌ها"
+
+#: templates/home/v6
+msgid "Your newest documents and notes will appear here."
+msgstr "تازه‌ترین اسناد و یادداشت‌های شما اینجا نمایش داده می‌شوند."
+
+#: templates/home/v6
+msgid "Your personal hub"
+msgstr "مرکز شخصی شما"
+
+#: templates/home/v6
+msgid "Your private work, shared only with people you choose."
+msgstr "کار خصوصی شما، فقط با افرادی که انتخاب می‌کنید."
