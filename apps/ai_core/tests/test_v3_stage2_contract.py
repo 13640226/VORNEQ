@@ -1,4 +1,5 @@
 """VORNEQ V3 Stage 2 — offline fail-closed contract + compatibility tests."""
+from apps.ai_core.tests.ledger_fakes import fake_reservation
 from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
@@ -286,7 +287,8 @@ class Stage2Ledger(SimpleTestCase):
         source = dict(SOURCE, passages=[
             {"passage_id": "S1.P1", "text": split([SOURCE])[0].text}
         ])
-        with patch("apps.ai_core.budgeted_provider.ledger.reserve") as reserve, \
+        with patch("apps.ai_core.budgeted_provider.ledger.reserve",
+                   return_value=fake_reservation()) as reserve, \
              patch("apps.ai_core.budgeted_provider.ledger.settle") as settle:
             BudgetedProvider(provider, actor_id=3).generate(
                 question="What is solar?", language="en", sources=[source],

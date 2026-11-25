@@ -315,7 +315,9 @@ class MockProviderRegressionTests(SimpleTestCase):
                                                   safety_identifier=None)
         self.assertTrue(result.is_mock)
 
-    @override_settings(VORNEQ_AI_VOICE_PROVIDER="mock")
+    # V7-01: die Gateway-Auflösung prüft das Voice-Feature-Flag, das an der
+    # einzigen Aufrufstelle (voice/views nach load_config) bereits gilt.
+    @override_settings(VORNEQ_AI_VOICE_PROVIDER="mock", VORNEQ_AI_VOICE_ENABLED=True)
     def test_voice_is_mock_only(self):
         from apps.ai_core.voice.provider import VoiceProviderBlocked, get_provider
 

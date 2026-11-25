@@ -7,6 +7,7 @@ import os
 import re
 import uuid
 from django.conf import settings
+from apps.ai_core.provider_registry import LEGACY_OPENAI_IMAGE_MODELS
 from apps.ai_core.provider_resolution import legacy_model_matches, Capability
 from apps.ai_core.deploy_authorization import image_release_allowed
 
@@ -16,11 +17,8 @@ _WORKER_ID = re.compile(r"srv-[a-z0-9]{20,32}\Z")
 _SHA = re.compile(r"[0-9a-f]{40}\Z")
 _OWNER = re.compile(r"OWNER-AUTH-AI-IMAGE-STAGING-[A-Z0-9-]{6,100}\Z")
 _PAID_WORKER_OWNER = re.compile(r"OWNER-AUTH-AI-IMAGE-PAID-WORKER-STAGING-[A-Z0-9-]{6,100}\Z")
-MODELS = frozenset({
-    "gpt-image-2", "gpt-image-2.5-flare",
-    "gpt-image-2.5-sunburst", "gpt-image-2.6-flare",
-    "gpt-image-2.6-sunburst",
-})
+# V7-01: einzige Quelle ist die Registry (Werte unverändert).
+MODELS = LEGACY_OPENAI_IMAGE_MODELS
 SIZES = frozenset({"1024x1024", "1536x1024", "1024x1536"})
 # Official OpenAI list prices in micro-USD per 1M tokens: (text input, image output).
 # Source: developers.openai.com/api/docs/pricing, checked 2026-11-20. The image

@@ -1,4 +1,5 @@
 """Offline regression for V3 stage 1 (no paid API or network requests)."""
+from apps.ai_core.tests.ledger_fakes import fake_reservation
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -116,7 +117,8 @@ class V3PrepaidLedgerTests(SimpleTestCase):
         inner = MagicMock(model="synthetic", max_output_tokens=512,
                           instructions="x" * 100)
         inner.generate.return_value = generated("Synthetic answer.")
-        with patch("apps.ai_core.budgeted_provider.ledger.reserve") as reserve, \
+        with patch("apps.ai_core.budgeted_provider.ledger.reserve",
+                   return_value=fake_reservation()) as reserve, \
              patch("apps.ai_core.budgeted_provider.ledger.settle"):
             BudgetedProvider(inner, actor_id=3).generate(
                 question="q", language="en", sources=[{"a": "ü"}],
@@ -135,7 +137,8 @@ class V3PrepaidLedgerTests(SimpleTestCase):
         )
         provider.generate = lambda **kwargs: generated("Synthetic answer.")
         question = "What are solar cells and how do they work?"
-        with patch("apps.ai_core.budgeted_provider.ledger.reserve") as reserve, \
+        with patch("apps.ai_core.budgeted_provider.ledger.reserve",
+                   return_value=fake_reservation()) as reserve, \
              patch("apps.ai_core.budgeted_provider.ledger.settle") as settle:
             BudgetedProvider(provider, actor_id=3).generate(
                 question=question, language="en", sources=[SOURCE],

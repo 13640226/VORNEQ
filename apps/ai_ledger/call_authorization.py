@@ -16,6 +16,7 @@ vorhandenem API-Schlüssel.
 from __future__ import annotations
 
 import contextvars
+import uuid
 from contextlib import contextmanager
 
 KINDS = frozenset({"text", "image"})
@@ -29,7 +30,13 @@ class UnauthorizedPaidCall(RuntimeError):
 def _valid(reservation) -> bool:
     # Freigaben setzen nur Ledger-Aufrufer mit dem Ergebnis von reserve*()
     # (AST-Test: authorized_paid_call nur in BudgetedProvider und Image-Worker).
-    return reservation is not None
+    # V7-01 (COR-11): strukturell gültige Reservierung – UUID-ID und positiver
+    # reservierter Betrag, wie ``apps.ai_ledger.service.Reservation`` sie liefert.
+    if reservation is None:
+        return False
+    amount = getattr(reservation, "amount_micro", None)
+    return (isinstance(getattr(reservation, "id", None), uuid.UUID)
+            and type(amount) is int and amount > 0)
 
 
 @contextmanager
