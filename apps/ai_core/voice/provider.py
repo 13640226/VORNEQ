@@ -21,4 +21,6 @@ class MockVoiceProvider:
 def get_provider() -> MockVoiceProvider:
     if getattr(settings, "VORNEQ_AI_VOICE_PROVIDER", "mock") != "mock":
         raise VoiceProviderBlocked("only the mock Voice provider exists in this release")
+    from apps.ai_core.provider_resolution import resolve, Capability
+    resolve("mock-voice", Capability.VOICE_MOCK)
     return MockVoiceProvider()

@@ -7,6 +7,7 @@ import os
 import re
 import uuid
 from django.conf import settings
+from apps.ai_core.provider_resolution import legacy_model_matches, Capability
 from apps.ai_core.deploy_authorization import image_release_allowed
 
 STAGING_SERVICE_ID = "srv-dbm7dvc9v7es7393g70g"
@@ -261,7 +262,8 @@ def _paid_controls_ready():
         return False
     if not getattr(settings, "VORNEQ_AI_IMAGE_PAID_CALLS_ENABLED", False):
         return False
-    if getattr(settings, "VORNEQ_AI_IMAGE_MODEL", "") not in MODELS:
+    if not legacy_model_matches("openai-image", Capability.IMAGE,
+                                getattr(settings, "VORNEQ_AI_IMAGE_MODEL", ""), MODELS):
         return False
     # Never use the chat OpenAI project for paid image requests.
     if not os.getenv("VORNEQ_OPENAI_IMAGE_API_KEY", "").strip():
