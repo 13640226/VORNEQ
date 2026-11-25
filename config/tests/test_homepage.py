@@ -29,7 +29,8 @@ class HomepageSimplificationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'class="vq-home"')
-        self.assertContains(response, "What do you need today?")
+        # V6-02: owner-specified product title replaces "What do you need today?".
+        self.assertContains(response, "What will you create today?")
         for section_id in self.REMOVED_SECTION_IDS:
             self.assertNotIn(f'id="{section_id}"', html)
         self.assertNotIn("data-homepage-signal-section", html)
@@ -43,7 +44,9 @@ class HomepageSimplificationTests(TestCase):
         self.assertNotContains(response, 'class="homepage-signal-nav')
         self.assertNotContains(response, "js/homepage-signal-nav-v2")
         self.assertNotContains(response, "js/evidence-signal-v2-3")
-        self.assertContains(response, 'class="standalone-nav')
+        # V6-02: the homepage uses the compact application header instead of the site header.
+        self.assertContains(response, 'class="vq-appbar"')
+        self.assertNotContains(response, 'class="standalone-nav')
 
     def test_signal_navigation_is_homepage_only(self):
         with override("en"):
@@ -83,7 +86,7 @@ class HomepageSimplificationTests(TestCase):
             )
         for url in expected_urls:
             self.assertContains(response, f'href="{url}"')
-        self.assertContains(response, "Your tools")
+        self.assertContains(response, "Applications")  # V6-02: app grid replaces "Your tools"
         self.assertNotContains(response, "Checkout")
         self.assertNotContains(response, "Entitlement")
         self.assertNotContains(response, "Search results")
@@ -106,7 +109,7 @@ class HomepageSimplificationTests(TestCase):
         authenticated = self.get_english_home()
         for url in private_urls:
             self.assertContains(authenticated, f'href="{url}"')
-        self.assertContains(authenticated, "Welcome back. What do you need?")
+        self.assertContains(authenticated, "Welcome back")  # V6-02 greeting
         self.assertNotContains(authenticated, "Use your own workspace")
 
     def test_ai_is_labelled_honestly(self):

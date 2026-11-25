@@ -10,8 +10,12 @@ class HomepageV5SectionsTests(TestCase):
             response = self.client.get(reverse("home"))
             html = response.content.decode()
             self.assertEqual(response.status_code, 200)
-            for name in ("Application Explorer", "AI Studio", "Trust Center", "Platform Philosophy"):
+            # V6-02: the four V5 sections were merged into the application grid and a
+            # compact evidence strip; the long philosophy text was removed (owner decision).
+            for name in ("Applications", "Evidence and sources", "Image Studio", "AI chat"):
                 self.assertIn(name, html)
+            for removed in ("Application Explorer", "Platform Philosophy"):
+                self.assertNotIn(removed, html)
             for route in ("search_page", "discover", "marketplace:index", "orientation", "inspect_entry", "discover_knowledge"):
                 self.assertIn('href="' + reverse(route) + '"', html)
             self.assertNotIn('href="' + reverse("documents:list") + '"', html)
@@ -21,8 +25,8 @@ class HomepageV5SectionsTests(TestCase):
     def test_anonymous_ai_card_is_not_a_link(self):
         with override("en"):
             html = self.client.get(reverse("home")).content.decode()
-            self.assertIn('vq-v5-card--disabled', html)
-            self.assertIn('Availability not confirmed', html)
+            self.assertIn('vq-app vq-app--off', html)  # V6-02 disabled app card (no href)
+            self.assertIn('Controlled testing', html)
             self.assertNotIn('href="' + reverse("ai_core:chat") + '"', html)
 
     def test_all_three_languages(self):
@@ -30,5 +34,5 @@ class HomepageV5SectionsTests(TestCase):
             with self.subTest(lang=lang), override(lang):
                 response = self.client.get(reverse("home"))
                 self.assertEqual(response.status_code, 200)
-                self.assertContains(response, 'id="vq-v5-apps-title"')
-                self.assertContains(response, 'id="vq-v5-trust-title"')
+                self.assertContains(response, 'id="vq-apps-title"')  # V6-02 ids
+                self.assertContains(response, 'id="vq-trust-title"')

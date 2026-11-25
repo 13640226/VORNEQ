@@ -1,0 +1,74 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_available_languages as LANGUAGES %}
+{# V6-02 compact application header (56px). Replaces the site header on the homepage only. #}
+{# Every control is real: sidebar toggle, Search handoff, language, theme, account. #}
+<header class="vq-appbar" role="banner" aria-label="{% trans 'Site header' %}">
+  <button type="button" class="vq-appbar__icon vq-appbar__menu" data-vq-side-toggle
+          aria-controls="vq-side" aria-expanded="true" aria-label="{% trans 'Toggle sidebar' %}">
+    <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-panel"></use></svg>
+  </button>
+
+  <a class="vq-appbar__brand" href="{% url 'home' %}" aria-label="{% trans 'VORNEQ — Precision Digital Infrastructure' %}">
+    {% include 'partials/_brand_symbol.html' with symbol_class='vq-appbar__logo' only %}
+    <span class="vq-appbar__wordmark" dir="ltr">VORNEQ</span>
+  </a>
+
+  <a class="vq-appbar__search" href="{% url 'search_page' %}" data-vq-search-shortcut>
+    <svg class="vq-i vq-i-16" aria-hidden="true" focusable="false"><use href="#vq-i-search"></use></svg>
+    <span class="vq-appbar__search-label">{% trans "Search VORNEQ" %}</span>
+    <kbd class="vq-appbar__kbd" aria-hidden="true">/</kbd>
+  </a>
+
+  <div class="vq-appbar__actions">
+    <details class="vq-menu vq-appbar__lang" data-vq-menu>
+      <summary class="vq-appbar__chip" aria-label="{% trans 'Choose language' %}">
+        <svg class="vq-i vq-i-16" aria-hidden="true" focusable="false"><use href="#vq-i-globe"></use></svg>
+        <span>{{ LANGUAGE_CODE|upper }}</span>
+      </summary>
+      <div class="vq-menu__panel" role="group" aria-label="{% trans 'Language' %}">
+        {% for language_code, language_name in LANGUAGES %}
+        <form action="{% url 'set_language' %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <input type="hidden" name="language" value="{{ language_code }}">
+          <button type="submit" class="vq-menu__item" {% if language_code == LANGUAGE_CODE %}aria-current="true"{% endif %}>
+            <span class="vq-menu__code">{{ language_code|upper }}</span><span>{{ language_name }}</span>
+          </button>
+        </form>
+        {% endfor %}
+      </div>
+    </details>
+
+    <button type="button" class="vq-appbar__icon" data-vq-theme-toggle aria-pressed="true"
+            aria-label="{% trans 'Dark theme' %}">
+      <svg class="vq-i vq-i-20 vq-theme-moon" aria-hidden="true" focusable="false"><use href="#vq-i-moon"></use></svg>
+      <svg class="vq-i vq-i-20 vq-theme-sun" aria-hidden="true" focusable="false"><use href="#vq-i-sun"></use></svg>
+    </button>
+
+    {% if user.is_authenticated %}
+    <details class="vq-menu vq-appbar__account" data-vq-menu>
+      <summary class="vq-appbar__avatar" aria-label="{% trans 'Account menu' %}">
+        {% if user.profile_data.avatar %}
+          <img src="{% url 'profile_avatar' %}" alt="" width="32" height="32">
+        {% else %}
+          <span aria-hidden="true">{{ user.get_short_name|default:user.username|slice:":2"|upper }}</span>
+        {% endif %}
+      </summary>
+      <div class="vq-menu__panel vq-menu__panel--end">
+        <p class="vq-menu__who">{{ user.get_short_name|default:user.username }}</p>
+        <a class="vq-menu__item" href="{% url 'profile' %}">
+          <svg class="vq-i vq-i-16" aria-hidden="true" focusable="false"><use href="#vq-i-user"></use></svg>{% trans "Profile" %}</a>
+        <a class="vq-menu__item" href="{% url 'profile_edit' %}">
+          <svg class="vq-i vq-i-16" aria-hidden="true" focusable="false"><use href="#vq-i-settings"></use></svg>{% trans "Account settings" %}</a>
+        <a class="vq-menu__item" href="{% url 'platform_shell:personal_home' %}">
+          <svg class="vq-i vq-i-16" aria-hidden="true" focusable="false"><use href="#vq-i-layers"></use></svg>{% trans "My workspace" %}</a>
+        <a class="vq-menu__item" href="{% url 'account_logout' %}">
+          <svg class="vq-i vq-i-16" aria-hidden="true" focusable="false"><use href="#vq-i-logout"></use></svg>{% trans "Sign out" %}</a>
+      </div>
+    </details>
+    {% else %}
+    <a class="vq-btn vq-btn--primary vq-appbar__signin" href="{% url 'account_login' %}">{% trans "Sign in" %}</a>
+    {% endif %}
+  </div>
+</header>

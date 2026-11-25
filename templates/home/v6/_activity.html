@@ -1,0 +1,46 @@
+{% load i18n %}
+{# V6-02 recent activity. Signed-in only, owner-scoped through the domain services. #}
+{# Guests see the public trust links instead; no private data on the public homepage. #}
+{% if user.is_authenticated %}
+<section class="vq-recent" aria-labelledby="vq-recent-title">
+  <div class="vq-sectionhead">
+    <h2 class="vq-sectionhead__title" id="vq-recent-title">{% trans "Recent work" %}</h2>
+  </div>
+  {% if recent_documents or recent_notes %}
+  <ul class="vq-recent__list">
+    {% for document in recent_documents %}
+    <li><a class="vq-recent__item" href="{% url 'documents:detail' document.pk %}">
+      <span class="vq-recent__icon vq-tone-blue"><svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-doc"></use></svg></span>
+      <span class="vq-recent__body"><span class="vq-recent__name">{{ document.title }}</span>
+      <span class="vq-recent__meta">{% trans "Document" %} · <time datetime="{{ document.updated_at|date:'c' }}">{{ document.updated_at|date:"SHORT_DATE_FORMAT" }}</time></span></span></a></li>
+    {% endfor %}
+    {% for note in recent_notes %}
+    <li><a class="vq-recent__item" href="{% url 'notes:detail' note.pk %}">
+      <span class="vq-recent__icon vq-tone-amber"><svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-notebook"></use></svg></span>
+      <span class="vq-recent__body"><span class="vq-recent__name">{{ note.title }}</span>
+      <span class="vq-recent__meta">{% trans "Note" %} · <time datetime="{{ note.updated_at|date:'c' }}">{{ note.updated_at|date:"SHORT_DATE_FORMAT" }}</time></span></span></a></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="vq-empty">
+    <svg class="vq-i vq-i-32" aria-hidden="true" focusable="false"><use href="#vq-i-sparkle"></use></svg>
+    <p class="vq-empty__title">{% trans "Nothing here yet" %}</p>
+    <p class="vq-empty__copy">{% trans "Your newest documents and notes will appear here." %}</p>
+    <a class="vq-btn vq-btn--ghost" href="{% url 'notes:create' %}">{% trans "New note" %}</a>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="vq-trust" aria-labelledby="vq-trust-title">
+  <h2 class="vq-trust__title" id="vq-trust-title">
+    <svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-shield"></use></svg>
+    {% trans "Evidence and sources" %}
+  </h2>
+  <ul class="vq-trust__links">
+    <li><a href="{% url 'orientation' %}">{% trans "Evidence vocabulary" %}</a></li>
+    <li><a href="{% url 'inspect_entry' %}">{% trans "Inspect an artifact" %}</a></li>
+    <li><a href="{% url 'discover_knowledge' %}">{% trans "Public knowledge" %}</a></li>
+  </ul>
+  <p class="vq-trust__copy">{% trans "A citation is not a guarantee of truth." %}</p>
+</section>

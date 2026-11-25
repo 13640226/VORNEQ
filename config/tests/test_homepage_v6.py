@@ -1,5 +1,9 @@
 """Product UI V6-01 (Interactive Index): tokens, sprite, sidebar, bottom nav, i18n, a11y.
 
+V6-02 replaced the V6-01 layout (rail, hero, V5 sections). Assertions that targeted
+removed markup were moved to the V6-02 equivalents (marked "V6-02"); the V6-01
+guarantees (aliases, sprite, gating, five real bottom links, i18n, a11y) still hold.
+
 Rendering only. The provider and the OpenAI client are patched to fail (via the V3
 mixin) so a regression that triggers an AI call from the homepage fails loudly.
 """
@@ -15,7 +19,7 @@ from django.utils import translation
 from config.tests.test_homepage_v3 import DEV_AI, NoProviderMixin, home_fragment, parse
 
 ASSETS = Path(settings.BASE_DIR) / "assets" / "css"
-HOME_CSS = (ASSETS / "homepage-ai-cloud-v2.css").read_text(encoding="utf-8")
+HOME_CSS = (ASSETS / "v6-workspace.css").read_text(encoding="utf-8")  # V6-02 layout
 V6_TOKENS = (ASSETS / "v6-tokens.css").read_text(encoding="utf-8")
 BASE_TOKENS = (ASSETS / "tokens.css").read_text(encoding="utf-8") + (ASSETS / "theme-palettes.css").read_text(
     encoding="utf-8")
@@ -42,7 +46,7 @@ class HomepageV6Tests(NoProviderMixin, TestCase):
     # --- rendering -------------------------------------------------------
     def test_guest_renders_200_with_v6_shell(self):
         html = self.get()
-        for marker in ('data-vq-v6', 'class="vq-sprite"', 'data-vq-sidebar', 'data-vq-bottom-nav'):
+        for marker in ('data-vq-v6', 'class="vq-sprite"', 'data-vq-side', 'data-vq-bottom-nav'):  # V6-02 sidebar
             self.assertIn(marker, html)
 
     def test_authenticated_renders_200_with_private_bottom_nav_entry(self):
@@ -72,11 +76,12 @@ class HomepageV6Tests(NoProviderMixin, TestCase):
         self.assertIsNotNone(height)
         self.assertLessEqual(int(height.group(1)), 64)
         self.assertIn("--vq-header-h: var(--header-height);", V6_TOKENS)
-        self.assertIn(".vq-home[data-vq-v6] .vq-global-hero {", HOME_CSS)
+        # V6-02: the homepage header is the 56px application bar.
+        self.assertIn("height: var(--ds-appbar-h)", HOME_CSS)
 
     def test_no_horizontal_overflow_contract(self):
-        v6 = HOME_CSS[HOME_CSS.index("Product UI V6-01"):]
-        self.assertIn("grid-template-columns: repeat(auto-fit, minmax(0, 1fr))", v6)
+        v6 = HOME_CSS[HOME_CSS.index("Product UI V6-02"):]
+        self.assertIn("grid-template-columns: repeat(5, minmax(0, 1fr))", v6)
         self.assertIn("overflow-wrap: anywhere", v6)
         self.assertIn("inset-inline: 0", v6)
         rules = re.sub(r"@media[^{]*", "", v6)  # breakpoints are not element widths
@@ -84,12 +89,13 @@ class HomepageV6Tests(NoProviderMixin, TestCase):
         self.assertNotRegex(v6, r"100vw")
 
     def test_breakpoints_tap_targets_and_focus_tokens(self):
-        v6 = HOME_CSS[HOME_CSS.index("Product UI V6-01"):]
+        v6 = HOME_CSS[HOME_CSS.index("Product UI V6-02"):]
+        ds = (ASSETS / "v6-design-system.css").read_text(encoding="utf-8")
         self.assertIn("@media (max-width: 767px)", v6)
-        self.assertIn("@media (min-width: 768px) and (max-width: 1023px)", v6)
-        self.assertGreaterEqual(v6.count("min-height: 44px"), 2)
-        self.assertGreaterEqual(v6.count("min-width: 44px"), 2)
-        self.assertIn("outline: var(--vq-focus-width) solid var(--vq-focus)", v6)
+        self.assertIn("@media (max-width: 1023px)", v6)  # V6-02: drawer for tablet and mobile
+        self.assertGreaterEqual(v6.count("min-height: var(--ds-tap)"), 2)
+        self.assertGreaterEqual(v6.count("min-width: var(--ds-tap)"), 2)
+        self.assertIn("outline: var(--ds-ring-width) solid var(--ds-focus)", ds)
         self.assertNotIn("!important", v6)
 
     # --- composer --------------------------------------------------------
@@ -98,7 +104,7 @@ class HomepageV6Tests(NoProviderMixin, TestCase):
         self.assertRegex(html, r'<form[^>]+method="get"[^>]+action="' + re.escape(reverse("search_page")) + '"')
         self.assertNotIn(reverse("ai_core:chat"), html)
         self.assertNotIn("data-vq-bottom-chat", html)
-        self.assertIn(f'href="{reverse("discover")}"', bottom_nav(html))
+        self.assertIn(f'href="{reverse("search_page")}"', bottom_nav(html))  # V6-02: Search replaces Chat
 
     def test_chat_link_only_for_enabled_account(self):
         self.client.force_login(self.user)
@@ -115,10 +121,13 @@ class HomepageV6Tests(NoProviderMixin, TestCase):
                 self.client.force_login(self.user)
             nav = bottom_nav(self.get(**DEV_AI))
             hrefs = re.findall(r'<a [^>]*href="([^"]+)"', nav)
-            self.assertTrue(3 <= len(hrefs) <= 5, hrefs)
+            # V6-02: four links plus the "More" button that opens the sidebar drawer.
+            self.assertEqual(nav.count("<li>"), 5)
+            self.assertEqual(len(hrefs), 4, hrefs)
+            self.assertIn("data-vq-more", nav)
             for href in hrefs:
                 if href.startswith("#"):
-                    self.assertEqual(href, "#vq-v5-apps")
+                    self.assertEqual(href, "#vq-create")
                 else:
                     resolve(href.split("?")[0])
 
@@ -142,22 +151,22 @@ class HomepageV6Tests(NoProviderMixin, TestCase):
         html = self.get("fa")
         self.assertIn('dir="rtl"', html)
         nav = bottom_nav(html)
-        for text in ("پیمایش سریع", "خانه", "برنامه‌ها", "ورود"):
+        for text in ("پیمایش سریع", "خانه", "ساختن", "بیشتر"):  # V6-02 bottom labels
             self.assertIn(text, nav)
-        self.assertIn("مقصدها", html)
+        self.assertIn("پیمایش اصلی", html)
 
     def test_farsi_does_not_leak_new_english_strings(self):
         fragment = home_fragment(self.get("fa"))
-        for english in ("Quick navigation", "Destinations", ">Home<", ">Apps<", ">Sign in<"):
+        for english in ("Quick navigation", "Main navigation", ">Home<", ">Create<", ">More<", ">Sign in<"):
             self.assertNotIn(english, fragment)
 
     def test_german_and_english_strings(self):
         de = bottom_nav(self.get("de"))
-        for text in ("Schnellnavigation", "Startseite", "Apps", "Anmelden"):
+        for text in ("Schnellnavigation", "Startseite", "Erstellen", "Mehr"):  # V6-02 labels
             self.assertIn(text, de)
-        self.assertIn("Ziele", self.get("de"))
+        self.assertIn("Hauptnavigation", self.get("de"))
         en = bottom_nav(self.get("en"))
-        for text in ("Quick navigation", "Home", "Apps", "Sign in"):
+        for text in ("Quick navigation", "Home", "Create", "More"):
             self.assertIn(text, en)
 
     # --- accessibility ---------------------------------------------------
@@ -168,7 +177,7 @@ class HomepageV6Tests(NoProviderMixin, TestCase):
         for icon in SPRITE_ICONS:
             self.assertIn(f'<symbol id="vq-i-{icon}" viewBox="0 0 24 24">', sprite)
         self.assertGreaterEqual(sprite.count("<symbol"), 15)
-        self.assertLessEqual(sprite.count("<symbol"), 24)
+        self.assertLessEqual(sprite.count("<symbol"), 40)  # V6-02 added 11 icons
 
     def test_every_svg_is_hidden_or_labelled_and_uses_exist(self):
         self.client.force_login(self.user)
@@ -192,12 +201,13 @@ class HomepageV6Tests(NoProviderMixin, TestCase):
         self.assertEqual(nav.count('aria-current="page"'), 1)
 
     def test_sidebar_toggle_is_a_button_hidden_without_js(self):
+        """V6-02: header button toggles the sidebar (collapse >=1024px, drawer below)."""
         html = self.get()
-        toggle = re.search(r"<button[^>]*data-vq-sidebar-toggle[^>]*>", html).group(0)
-        for attr in ('type="button"', 'aria-expanded="false"', 'aria-controls="vq-rail-lists"', " hidden"):
+        toggle = re.search(r"<button[^>]*data-vq-side-toggle[^>]*>", html).group(0)
+        for attr in ('type="button"', 'aria-expanded="true"', 'aria-controls="vq-side"', "aria-label="):
             self.assertIn(attr, toggle)
-        self.assertIn('id="vq-rail-lists"', html)
-        js = (Path(settings.BASE_DIR) / "assets" / "js" / "homepage-ai-workspace-v1.js").read_text(encoding="utf-8")
-        self.assertIn("toggle.hidden = false", js)
-        self.assertIn('"Escape"', js)
-        self.assertNotRegex(js, r"fetch\(|XMLHttpRequest|sendBeacon")
+        self.assertIn('id="vq-side"', html)
+        js = (Path(settings.BASE_DIR) / "assets" / "js" / "v6-workspace.js").read_text(encoding="utf-8")
+        self.assertIn('event.key === "Escape"', js)
+        self.assertIn("opener.focus()", js)
+        self.assertNotRegex(js, r"fetch\(|XMLHttpRequest|sendBeacon|innerHTML|eval\(")

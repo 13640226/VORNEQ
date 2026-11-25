@@ -1,0 +1,84 @@
+{% load i18n %}
+{# V6-02 visual application grid. Each card shows the real state of the feature for this visitor. #}
+{# Disabled cards are not links. Nothing here starts an AI or paid operation. #}
+<section class="vq-apps" id="vq-apps" aria-labelledby="vq-apps-title">
+  <div class="vq-sectionhead">
+    <h2 class="vq-sectionhead__title" id="vq-apps-title">{% trans "Applications" %}</h2>
+  </div>
+  <ul class="vq-apps__grid">
+    <li>{% if phase_c_chat_enabled %}
+      <a class="vq-app vq-tone-violet" href="{% url 'ai_core:chat' %}?lang={{ request.LANGUAGE_CODE|slice:':2' }}">
+        <span class="vq-app__icon"><svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-chat"></use></svg></span>
+        <span class="vq-app__name">{% trans "AI chat" %}</span>
+        <span class="vq-app__desc">{% trans "Answers from cited public sources" %}</span>
+        <span class="vq-status vq-status--on">{% trans "Available for your account" %}</span>
+      </a>{% else %}
+      <div class="vq-app vq-app--off vq-tone-violet" aria-disabled="true">
+        <span class="vq-app__icon"><svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-chat"></use></svg></span>
+        <span class="vq-app__name">{% trans "AI chat" %}</span>
+        <span class="vq-app__desc">{% trans "Answers from cited public sources" %}</span>
+        <span class="vq-status">{% trans "Controlled testing" %}</span>
+      </div>{% endif %}</li>
+    <li>{% if image_studio_enabled %}
+      <a class="vq-app vq-tone-pink" href="{% url 'ai_core:image-studio' %}?lang={{ request.LANGUAGE_CODE|slice:':2' }}">
+        <span class="vq-app__icon"><svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-image"></use></svg></span>
+        <span class="vq-app__name">{% trans "Image Studio" %}</span>
+        <span class="vq-app__desc">{% trans "Create and manage images" %}</span>
+        <span class="vq-status vq-status--on">{% trans "Available for your account" %}</span>
+      </a>{% else %}
+      <div class="vq-app vq-app--off vq-tone-pink" aria-disabled="true">
+        <span class="vq-app__icon"><svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-image"></use></svg></span>
+        <span class="vq-app__name">{% trans "Image Studio" %}</span>
+        <span class="vq-app__desc">{% trans "Create and manage images" %}</span>
+        <span class="vq-status">{% trans "Controlled testing" %}</span>
+      </div>{% endif %}</li>
+    <li><a class="vq-app vq-tone-blue" href="{% url 'search_page' %}">
+      <span class="vq-app__icon"><svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-search"></use></svg></span>
+      <span class="vq-app__name">{% trans "Search" %}</span>
+      <span class="vq-app__desc">{% trans "Find records across VORNEQ." %}</span>
+      <span class="vq-status vq-status--on">{% trans "Available" %}</span></a></li>
+    <li><a class="vq-app vq-tone-teal" href="{% url 'discover' %}">
+      <span class="vq-app__icon"><svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-compass"></use></svg></span>
+      <span class="vq-app__name">{% trans "Discover" %}</span>
+      <span class="vq-app__desc">{% trans "Knowledge, media and products" %}</span>
+      <span class="vq-status vq-status--on">{% trans "Available" %}</span></a></li>
+    <li><a class="vq-app vq-tone-cyan" href="{% url 'discover_knowledge' %}">
+      <span class="vq-app__icon"><svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-books"></use></svg></span>
+      <span class="vq-app__name">{% trans "Library" %}</span>
+      <span class="vq-app__desc">{% trans "Articles, library items and audio." %}</span>
+      <span class="vq-status vq-status--on">{% trans "Available" %}</span></a></li>
+    <li><a class="vq-app vq-tone-amber" href="{% url 'marketplace:index' %}">
+      <span class="vq-app__icon"><svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-store"></use></svg></span>
+      <span class="vq-app__name">{% trans "Marketplace" %}</span>
+      <span class="vq-app__desc">{% trans "Digital products and services." %}</span>
+      <span class="vq-status vq-status--on">{% trans "Available" %}</span></a></li>
+    {% if user.is_authenticated %}
+    <li><a class="vq-app vq-tone-indigo" href="{% url 'platform_shell:personal_home' %}">
+      <span class="vq-app__icon"><svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-layers"></use></svg></span>
+      <span class="vq-app__name">{% trans "My workspace" %}</span>
+      <span class="vq-app__desc">{% trans "Your personal hub" %}</span>
+      <span class="vq-status vq-status--private">{% trans "Private" %}</span></a></li>
+    <li><a class="vq-app vq-tone-blue" href="{% url 'documents:list' %}">
+      <span class="vq-app__icon"><svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-doc"></use></svg></span>
+      <span class="vq-app__name">{% trans "Documents" %}</span>
+      <span class="vq-app__desc">{% trans "Your private and shared documents." %}</span>
+      <span class="vq-status vq-status--private">{% trans "Private" %}</span></a></li>
+    <li><a class="vq-app vq-tone-amber" href="{% url 'notes:list' %}">
+      <span class="vq-app__icon"><svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-notebook"></use></svg></span>
+      <span class="vq-app__name">{% trans "Notes" %}</span>
+      <span class="vq-app__desc">{% trans "Quick notes linked to your work." %}</span>
+      <span class="vq-status vq-status--private">{% trans "Private" %}</span></a></li>
+    {% else %}
+    <li><a class="vq-app vq-tone-indigo" href="{% url 'account_login' %}">
+      <span class="vq-app__icon"><svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-layers"></use></svg></span>
+      <span class="vq-app__name">{% trans "Workspace, documents and notes" %}</span>
+      <span class="vq-app__desc">{% trans "Your private work, shared only with people you choose." %}</span>
+      <span class="vq-status">{% trans "Sign in required" %}</span></a></li>
+    {% endif %}
+    <li><div class="vq-app vq-app--off vq-tone-slate" aria-disabled="true">
+      <span class="vq-app__icon"><svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-mic"></use></svg></span>
+      <span class="vq-app__name">{% trans "Voice" %}</span>
+      <span class="vq-app__desc">{% trans "Spoken conversations" %}</span>
+      <span class="vq-status">{% trans "Not available yet" %}</span></div></li>
+  </ul>
+</section>

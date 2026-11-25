@@ -16,15 +16,21 @@ class HomepageV5HeroTests(TestCase):
         return response.content.decode("utf-8")
 
     def test_localized_hero_for_anonymous_visitors(self):
+        """V6-02: the large V5 brand hero was removed by owner decision (product-first).
+
+        The page now opens directly with the localized composer title; the old
+        hero headline must not return.
+        """
         expected = {
-            "en": "One Platform. Many Applications.",
-            "de": "Eine Plattform. Viele Anwendungen.",
-            "fa": "یک پلتفرم. اپلیکیشن‌های متعدد.",
+            "en": ("What will you create today?", "One Platform. Many Applications."),
+            "de": ("Was möchten Sie heute erstellen?", "Eine Plattform. Viele Anwendungen."),
+            "fa": ("امروز چه چیزی می‌خواهید بسازید؟", "یک پلتفرم. اپلیکیشن‌های متعدد."),
         }
-        for language, title in expected.items():
+        for language, (title, old_hero) in expected.items():
             with self.subTest(language=language):
                 html = self.home(language)
-                self.assertIn("vq-global-hero", html)
+                self.assertNotIn("vq-global-hero", html)
+                self.assertNotIn(old_hero, html)
                 self.assertIn(title, html)
 
     def test_real_ctas_and_target(self):
@@ -32,8 +38,10 @@ class HomepageV5HeroTests(TestCase):
         with override("en"):
             search_url = reverse("search_page")
         self.assertIn('href="' + search_url + '"', html)
-        self.assertIn('href="#vq-tools-title"', html)
-        self.assertIn('id="vq-tools-title"', html)
+        # V6-02: in-page targets are the quick actions (#vq-create) and the app grid.
+        self.assertIn('href="#vq-create"', html)
+        self.assertIn('id="vq-create"', html)
+        self.assertIn('id="vq-apps-title"', html)
 
     def test_semantics_and_composer_regression(self):
         html = self.home()
@@ -46,6 +54,6 @@ class HomepageV5HeroTests(TestCase):
         self.assertNotIn("data-vq-activate-ai", html)
 
     def test_existing_composer_source_unchanged(self):
-        composer = (Path(settings.BASE_DIR) / "templates/home/_composer.html").read_text(encoding="utf-8")
+        composer = (Path(settings.BASE_DIR) / "templates/home/v6/_composer.html").read_text(encoding="utf-8")
         self.assertIn('maxlength="200"', composer)
         self.assertIn("phase_c_chat_enabled", composer)

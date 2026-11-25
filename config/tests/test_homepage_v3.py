@@ -20,7 +20,9 @@ from apps.ai_core.tests.test_ai_staging_trial import STAGING_SETTINGS, TEST_ENV
 PRIVATE_URLS = ("documents:list", "notes:list", "platform_shell:personal_home",
                 "documents:create", "notes:create")
 DEV_AI = dict(VORNEQ_ENV="development", VORNEQ_AI_PHASE_B_ENABLED=True, VORNEQ_AI_PHASE_C_ENABLED=True)
-CSS = Path(settings.BASE_DIR) / "assets" / "css" / "homepage-ai-cloud-v2.css"
+# V6-02: homepage-ai-cloud-v2.css was replaced by the design system + workspace layout.
+CSS = Path(settings.BASE_DIR) / "assets" / "css" / "v6-workspace.css"
+DS_CSS = Path(settings.BASE_DIR) / "assets" / "css" / "v6-design-system.css"
 
 
 class _Collector(HTMLParser):
@@ -93,7 +95,8 @@ class HomepageShellTests(NoProviderMixin, TestCase):
 
     def test_anonymous_shell_components_and_public_navigation_only(self):
         html = self.get()
-        for marker in ('class="vq-shell"', 'class="vq-rail"', 'class="vq-main"', 'class="vq-context"'):
+        # V6-02 shell: app header, sidebar, stage (composer, quick actions, apps, trust).
+        for marker in ('class="vq-appbar"', 'class="vq-side"', 'class="vq-stage"', 'class="vq-apps"', 'class="vq-trust"'):
             self.assertIn(marker, html)
         for name in ("search_page", "discover", "marketplace:index", "orientation", "inspect_entry",
                      "discover_knowledge", "account_login", "account_signup"):
@@ -102,8 +105,8 @@ class HomepageShellTests(NoProviderMixin, TestCase):
             self.assertNotIn(f'href="{reverse(name)}"', html)
         self.assertNotIn(reverse("ai_core:chat"), html)
         self.assertIn("Sign in required", html)
-        self.assertIn("Not enabled", html)
-        self.assertIn("No AI answer is generated on this page.", html)
+        self.assertIn("Controlled testing", html)  # V6-02 status label for gated AI cards
+        self.assertIn("AI answers are not enabled yet.", html)
 
     def test_authenticated_private_navigation_and_actions(self):
         self.client.force_login(self.user)
@@ -111,10 +114,10 @@ class HomepageShellTests(NoProviderMixin, TestCase):
         fragment = home_fragment(html)
         for name in PRIVATE_URLS:
             self.assertIn(f'href="{reverse(name)}"', fragment)
-        self.assertIn("Signed in", html)
+        self.assertIn("Welcome back", html)  # V6-02 greeting replaces the status panel
         self.assertIn("Quick actions", html)
-        self.assertNotIn("Use your own workspace", html)
-        self.assertIn('class="vq-tag vq-tag--private"', html)
+        self.assertNotIn("Sign in required", html)
+        self.assertIn('class="vq-status vq-status--private"', html)
 
     def test_search_form_destination_and_submission(self):
         html = self.get()
@@ -138,9 +141,10 @@ class HomepageShellTests(NoProviderMixin, TestCase):
 
     def test_languages_and_rtl(self):
         expected = {
-            "en": ("What do you need today?", "Workspace status", "Evidence vocabulary"),
-            "de": ("Was brauchen Sie heute?", "Status des Arbeitsbereichs", "Öffentliches Wissen"),
-            "fa": ("امروز به چه چیزی نیاز دارید؟", "وضعیت فضای کاری", "دانش عمومی"),
+            # V6-02: new product title; the app grid replaces the status panel.
+            "en": ("What will you create today?", "Applications", "Evidence vocabulary"),
+            "de": ("Was möchten Sie heute erstellen?", "Anwendungen", "Öffentliches Wissen"),
+            "fa": ("امروز چه چیزی می‌خواهید بسازید؟", "برنامه‌ها", "دانش عمومی"),
         }
         for lang, strings in expected.items():
             response = self.client.get(f"/{lang}/")
@@ -154,15 +158,19 @@ class HomepageShellTests(NoProviderMixin, TestCase):
                 self.assertNotContains(response, 'dir="rtl"')
 
     def test_rail_destinations_remain_reachable_when_rail_is_hidden(self):
-        """<1024px hides the rail; every rail link must exist elsewhere in the page."""
+        """<1024px hides the sidebar (drawer); every sidebar link must exist elsewhere.
+
+        V6-02: the V3 rail became the application sidebar (<aside class="vq-side">).
+        """
         self.client.force_login(self.user)
         with override_settings(**DEV_AI):
             html = self.get()
-        rail = html[html.index('<nav class="vq-rail"'):html.index("</nav>", html.index('<nav class="vq-rail"'))]
+        start = html.index('<aside class="vq-side"')
+        rail = html[start:html.index("</aside>", start)]
         rest = html.replace(rail, "")
         # V6-01: <use href="#vq-i-…"> are icon-sprite references, not destinations.
         hrefs = re.findall(r'<a [^>]*href="([^"]+)"', rail)
-        self.assertGreaterEqual(len(hrefs), 4)
+        self.assertGreaterEqual(len(hrefs), 8)
         for href in hrefs:
             self.assertIn(f'href="{href}"', rest, href)
 
@@ -256,9 +264,10 @@ class ResponsiveCssContractTests(TestCase):
     css = CSS.read_text(encoding="utf-8")
 
     def test_wide_shell_and_breakpoints(self):
-        for needle in ("max-width: 1520px", 'grid-template-areas: "rail main context"',
-                       "@media (max-width: 1279px)", "@media (max-width: 1023px)",
-                       "@media (max-width: 639px)", 'grid-template-areas: "main" "context"',
+        # V6-02 layout: sidebar + stage, drawer below 1024px, mobile below 768px.
+        for needle in ("max-width: var(--ds-content-max)", "grid-template-columns: var(--ds-side-w) minmax(0, 1fr)",
+                       "@media (min-width: 1440px)", "@media (max-width: 1023px)",
+                       "@media (max-width: 767px)", "grid-template-columns: minmax(0, 1fr);",
                        "minmax(0, 1fr)", "position: sticky"):
             self.assertIn(needle, self.css)
 
@@ -269,11 +278,14 @@ class ResponsiveCssContractTests(TestCase):
         self.assertIn('html[dir="rtl"]', self.css)
 
     def test_touch_targets_focus_motion_and_contrast_modes(self):
-        self.assertGreaterEqual(self.css.count("min-height: 44px"), 4)
-        self.assertIn(":focus-visible", self.css)
+        # V6-02: 44px is the design-system token --ds-tap.
+        ds = DS_CSS.read_text(encoding="utf-8")
+        self.assertIn("--ds-tap: 44px;", ds)
+        self.assertGreaterEqual(self.css.count("min-height: var(--ds-tap)"), 8)
+        self.assertIn(":focus-visible", self.css + ds)
         self.assertIn("prefers-reduced-motion", self.css)
         self.assertIn("forced-colors: active", self.css)
-        self.assertIn('[data-theme="vorneq"] .vq-home', self.css)  # light palette LED variant
+        self.assertIn(':root[data-theme="vorneq"] body.vq-ds', ds)  # light palette variant
         self.assertNotIn("!important", self.css.split("prefers-reduced-motion")[0])
 
     def test_led_colours_meet_contrast(self):
@@ -296,7 +308,8 @@ class ResponsiveCssContractTests(TestCase):
 class MeaningfulTextContrastTests(TestCase):
     def test_status_and_disabled_labels_do_not_use_muted_token(self):
         css = CSS.read_text(encoding="utf-8")
-        for selector in (".vq-mode--soon", ".vq-status__off", ".vq-home__hint", ".vq-composer__count"):
+        # V6-02: secondary text is --ds-text-2 (>= 4.5:1); --ds-text-3 is reserved for hints.
+        for selector in (".vq-mode--soon", ".vq-status", ".vq-compose__note", ".vq-composer__count"):
             rule = re.search(re.escape(selector) + r"\s*\{([^}]*)\}", css).group(1)
-            self.assertIn("--color-text-secondary", rule, selector)
-            self.assertNotIn("--color-text-muted", rule, selector)
+            self.assertIn("--ds-text-2", rule, selector)
+            self.assertNotIn("--ds-text-3", rule, selector)

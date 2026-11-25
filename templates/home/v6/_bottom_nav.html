@@ -1,0 +1,35 @@
+{% load i18n %}
+{# V6-02 mobile bottom navigation (<768px): exactly five real targets. #}
+{# "More" is a button that opens the sidebar drawer; it is not a link. #}
+<nav class="vq-bottom-nav" aria-label="{% trans 'Quick navigation' %}" data-vq-bottom-nav>
+  <ul class="vq-bottom-nav__list">
+    <li><a class="vq-bottom-nav__link" href="{% url 'home' %}" aria-current="page">
+      <svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-home"></use></svg>
+      <span class="vq-bottom-nav__label">{% trans "Home" %}</span></a></li>
+    {% if phase_c_chat_enabled %}
+    <li><a class="vq-bottom-nav__link" href="{% url 'ai_core:chat' %}?lang={{ request.LANGUAGE_CODE|slice:':2' }}" data-vq-bottom-chat>
+      <svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-chat"></use></svg>
+      <span class="vq-bottom-nav__label">{% trans "Chat" %}</span></a></li>
+    {% else %}
+    <li><a class="vq-bottom-nav__link" href="{% url 'search_page' %}">
+      <svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-search"></use></svg>
+      <span class="vq-bottom-nav__label">{% trans "Search" %}</span></a></li>
+    {% endif %}
+    <li><a class="vq-bottom-nav__link vq-bottom-nav__link--create" href="#vq-create">
+      <svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-plus"></use></svg>
+      <span class="vq-bottom-nav__label">{% trans "Create" %}</span></a></li>
+    {% if user.is_authenticated %}
+    <li><a class="vq-bottom-nav__link" href="{% url 'platform_shell:personal_home' %}">
+      <svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-layers"></use></svg>
+      <span class="vq-bottom-nav__label">{% trans "Workspace" %}</span></a></li>
+    {% else %}
+    <li><a class="vq-bottom-nav__link" href="{% url 'discover_knowledge' %}">
+      <svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-books"></use></svg>
+      <span class="vq-bottom-nav__label">{% trans "Library" %}</span></a></li>
+    {% endif %}
+    <li><button type="button" class="vq-bottom-nav__link" data-vq-side-toggle data-vq-more
+                aria-controls="vq-side" aria-expanded="false">
+      <svg class="vq-i vq-i-24" aria-hidden="true" focusable="false"><use href="#vq-i-dots"></use></svg>
+      <span class="vq-bottom-nav__label">{% trans "More" %}</span></button></li>
+  </ul>
+</nav>

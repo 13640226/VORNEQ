@@ -1,0 +1,41 @@
+{% load i18n %}
+{# V6-02 quick actions: one tap to create or continue. Real destinations only. #}
+<section class="vq-quick" id="vq-create" aria-labelledby="vq-quick-title">
+  <h2 class="vq-sr-only" id="vq-quick-title">{% trans "Quick actions" %}</h2>
+  <ul class="vq-quick__list">
+    {% if user.is_authenticated %}
+    {% if phase_c_chat_enabled %}
+    <li><a class="vq-quick__item vq-tone-violet" href="{% url 'ai_core:chat' %}?lang={{ request.LANGUAGE_CODE|slice:':2' }}">
+      <span class="vq-quick__icon"><svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-chat"></use></svg></span>
+      <span>{% trans "New chat" %}</span></a></li>
+    {% endif %}
+    {% if image_studio_enabled %}
+    <li><a class="vq-quick__item vq-tone-pink" href="{% url 'ai_core:image-studio' %}?lang={{ request.LANGUAGE_CODE|slice:':2' }}">
+      <span class="vq-quick__icon"><svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-image"></use></svg></span>
+      <span>{% trans "Create image" %}</span></a></li>
+    {% endif %}
+    <li><a class="vq-quick__item vq-tone-blue" href="{% url 'documents:create' %}">
+      <span class="vq-quick__icon"><svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-doc"></use></svg></span>
+      <span>{% trans "New document" %}</span></a></li>
+    <li><a class="vq-quick__item vq-tone-amber" href="{% url 'notes:create' %}">
+      <span class="vq-quick__icon"><svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-notebook"></use></svg></span>
+      <span>{% trans "New note" %}</span></a></li>
+    <li><a class="vq-quick__item vq-tone-teal" href="{% url 'platform_shell:personal_home' %}">
+      <span class="vq-quick__icon"><svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-layers"></use></svg></span>
+      <span>{% trans "My workspace" %}</span></a></li>
+    {% else %}
+    <li><a class="vq-quick__item vq-tone-violet" href="{% url 'account_login' %}">
+      <span class="vq-quick__icon"><svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-user"></use></svg></span>
+      <span>{% trans "Sign in" %}</span></a></li>
+    <li><a class="vq-quick__item vq-tone-blue" href="{% url 'account_signup' %}">
+      <span class="vq-quick__icon"><svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-sparkle"></use></svg></span>
+      <span>{% trans "Create an account" %}</span></a></li>
+    <li><a class="vq-quick__item vq-tone-teal" href="{% url 'discover' %}">
+      <span class="vq-quick__icon"><svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-compass"></use></svg></span>
+      <span>{% trans "Explore" %}</span></a></li>
+    <li><a class="vq-quick__item vq-tone-amber" href="{% url 'marketplace:index' %}">
+      <span class="vq-quick__icon"><svg class="vq-i vq-i-20" aria-hidden="true" focusable="false"><use href="#vq-i-store"></use></svg></span>
+      <span>{% trans "Marketplace" %}</span></a></li>
+    {% endif %}
+  </ul>
+</section>
