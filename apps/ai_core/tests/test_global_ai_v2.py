@@ -23,6 +23,7 @@ from apps.ai_core.tests.test_global_ai_api import DEV, NoNetworkMixin
 from apps.ai_core.tests.test_global_ai_router_retrieval import fake_connection, resolver
 from apps.ai_core.web_retrieval import (RetrievalError, RetrievalTimeout, WebEvidence,
                                         WikipediaRetriever, clean_text, safe_get_json)
+from apps.ai_core.tests.ledger_fakes import start_fake_ledger
 
 T = "2026-11-14T12:00:00+00:00"
 
@@ -280,6 +281,8 @@ class UnlimitedModeApiTests(NoNetworkMixin, TestCase):
                                 VORNEQ_AI_STAGING_UNMETERED=True, VORNEQ_GLOBAL_AI_QUOTA={"per_minute": 1})
         ids.enable()
         self.addCleanup(ids.disable)
+        # V4-01: hosted chat is always ledger-bound; simulate the shared ledger.
+        start_fake_ledger(self)
         self.client.force_login(self.owner)
 
     def codes(self, n):

@@ -5,6 +5,8 @@ import time
 import uuid
 from unittest.mock import patch
 
+from apps.ai_core.tests.ledger_fakes import start_fake_ledger
+
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.db import DatabaseError, connection, connections
@@ -54,9 +56,8 @@ class RecoveryEndpointTests(TestCase):
         quota = patch("apps.ai_core.views_global.reserve_global_request")
         quota.start()
         self.addCleanup(quota.stop)
-        ledger = patch("apps.ai_core.views_global.ledger_enabled", return_value=False)
-        ledger.start()
-        self.addCleanup(ledger.stop)
+        # V4-01: hosted chat is always ledger-bound; simulate the shared ledger.
+        self.ledger_reserve, self.ledger_settle = start_fake_ledger(self)
         retriever = patch("apps.ai_core.views_global.default_retriever",
                           return_value=FakeRetriever(evidence("en")))
         retriever.start()
@@ -97,6 +98,16 @@ class RecoveryEndpointTests(TestCase):
         self.assertEqual(first.status_code, 200)
         self.assertEqual(second.status_code, 200)
         self.assertEqual(second.json(), first.json())
+        self.generator.assert_called_once()
+
+    def test_v4_duplicate_request_reserves_ledger_exactly_once(self):
+        """TEST-09: the same request ID never creates a second reservation or charge."""
+        first = self.post()
+        second = self.post()
+        self.assertEqual((first.status_code, second.status_code), (200, 200))
+        self.assertEqual(second.json(), first.json())
+        self.ledger_reserve.assert_called_once()
+        self.ledger_settle.assert_called_once()
         self.generator.assert_called_once()
 
     def test_same_id_different_question_is_conflict(self):

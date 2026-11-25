@@ -22,7 +22,8 @@ from apps.platform_shell.registry import registry
 RELEASE = "a" * 40
 OTHER = "b" * 40
 ENV_READ = re.compile(
-    r'(?:\benv_[a-z]+|\benv|os\.environ\.get|os\.getenv|os\.environ\[)\(?\s*["\']([A-Z][A-Z0-9_]{2,})["\']'
+    # V4-01: auch settings-interne Helfer wie _staging_int(...)/_image_int(...) erfassen.
+    r'(?:\benv_[a-z]+|\benv|\b_[a-z]+_int|os\.environ\.get|os\.getenv|os\.environ\[)\(?\s*["\']([A-Z][A-Z0-9_]{2,})["\']'
 )
 
 

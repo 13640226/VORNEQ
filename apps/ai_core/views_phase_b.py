@@ -1,4 +1,6 @@
-"""Opt-in Phase B endpoint. Authenticated development only; no production model calls."""
+"""Opt-in Phase B endpoint (development/staging only; never production).
+
+V4-01: on staging every paid call runs through the shared prepaid ledger."""
 import json
 import os
 
@@ -16,6 +18,8 @@ from apps.ai_core.providers.exceptions import GatewayError, ProviderTimeout
 from apps.ai_core.providers.openai_responses import OpenAIResponsesProvider
 from apps.ai_core.staging_policy import trial_enabled, actor_allowed, hosted_runtime
 from apps.ai_core.staging_budget import reserve_staging_request
+from apps.ai_core.paid_provider import paid_text_provider, require_paid_text_ledger
+from apps.ai_ledger.service import ledger_enabled
 
 
 def _strict_object(pairs):
@@ -56,11 +60,19 @@ def ask_phase_b(request):
     except (ValueError, TypeError, UnicodeDecodeError, InputError):
         return JsonResponse({"error": "invalid_input"}, status=400)
     try:
+        # V4-01: on staging the paid call is ledger-bound (BudgetedProvider:
+        # reserve -> call -> settle). The ledger check runs BEFORE the legacy
+        # per-day counter, so a missing ledger never consumes quota and
+        # VORNEQ_AI_STAGING_UNMETERED can no longer remove the only cost control.
+        ledger_bound = require_paid_text_ledger(ledger_check=ledger_enabled)
         if settings.VORNEQ_ENV == "staging":
             reserve_staging_request()
-        else:
+        elif not ledger_bound:
             reserve_request(request.user.pk)
-        provider = OpenAIResponsesProvider(
+        provider = paid_text_provider(
+            actor_id=request.user.pk,
+            provider_class=OpenAIResponsesProvider,
+            ledger_check=ledger_enabled,
             model=os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""),
             timeout_s=30 if settings.VORNEQ_ENV == "staging" else 15,
             max_output_tokens=2048 if settings.VORNEQ_ENV == "staging" else 512,

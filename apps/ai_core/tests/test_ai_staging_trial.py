@@ -168,6 +168,10 @@ class StagingTrialDatabaseAndEndpointTests(TestCase):
         self.url = reverse("ai_core:ask-grounded")
         self.offline_url = reverse("ai_core:ask")
         self.client.force_login(self.owner)
+        # V4-01: paid staging calls are ledger-bound; simulate the shared ledger.
+        # Ledger-less behaviour is covered by test_v4_ledger_enforcement.
+        from apps.ai_core.tests.ledger_fakes import start_fake_ledger
+        start_fake_ledger(self)
 
     def post(self, url=None):
         return self.client.post(

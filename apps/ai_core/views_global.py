@@ -32,11 +32,10 @@ from apps.ai_core.providers.exceptions import (GatewayError, ProviderContextLimi
 from apps.ai_core.chat_output_budget import configured_output_budget
 from apps.ai_core.providers.openai_responses import OpenAIResponsesProvider
 from apps.ai_core import response_engine_v3
-from apps.ai_core.staging_budget import reserve_staging_request
-from apps.ai_core.budgeted_provider import BudgetedProvider
+from apps.ai_core.paid_provider import paid_text_provider, require_paid_text_ledger
+from apps.ai_ledger.service import ledger_enabled
 from apps.ai_core.production_policy import production_actor_allowed, production_enabled
 from apps.ai_core.staging_policy import actor_allowed, hosted_runtime, trial_enabled
-from apps.ai_ledger.service import ledger_enabled
 from apps.ai_core.retrieval_registry import default_retriever
 from apps.ai_core.web_retrieval import RetrievalError, RetrievalTimeout
 from apps.ai_core import request_recovery
@@ -210,24 +209,22 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
     # Unsupported input is rejected before quota, retrieval, or provider work.
     if route_question(question, language).kind == UNSUPPORTED:
         return {"error": "UNSUPPORTED_QUESTION"}, 422, meta
-    hosted = settings.VORNEQ_ENV in ("staging", "production")
-    # Shared prepaid ledger: mandatory in production, optional in staging. While
-    # it governs cost, the cache-based daily counts are replaced by per-call money
-    # reservations (a per-minute abuse throttle remains). On STAGING the ledger
-    # additionally enforces an independent daily ceiling (paid calls + amount)
-    # inside the locked reservation transaction: apps.ai_ledger.service.reserve().
-    shared_budget = hosted and ledger_enabled()
+    # V4-01: NO PAID AI CALL WITHOUT VALID LEDGER AUTHORIZATION. On every hosted
+    # runtime (staging AND production) the shared prepaid ledger is mandatory and
+    # checked BEFORE quota, retrieval or provider work. Staging "unmetered" or
+    # "unlimited" flags only relax application counters; the ledger additionally
+    # enforces its own staging daily ceiling inside the locked reservation
+    # transaction (apps.ai_ledger.service.reserve). Local development (never on a
+    # hosted runtime) keeps the cache-based counters and no ledger.
     try:
-        if (settings.VORNEQ_ENV == "staging"
-                and getattr(settings, "VORNEQ_AI_CHAT_STAGING_PREPAID_ONLY", False)
-                and not shared_budget):
-            raise BudgetExceeded("prepaid-only chat requires shared ledger")
+        shared_budget = require_paid_text_ledger(ledger_check=ledger_enabled)
         reserve_global_request(request.user.pk, burst_only=shared_budget)
-        if settings.VORNEQ_ENV == "staging" and not shared_budget:
-            reserve_staging_request()
         stage2 = response_engine_v3.stage2_enabled(settings)
         output_budget = configured_output_budget() if stage2 else None
-        provider = OpenAIResponsesProvider(
+        provider = paid_text_provider(
+            actor_id=request.user.pk,
+            provider_class=OpenAIResponsesProvider,
+            ledger_check=ledger_enabled,
             model=os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""),
             timeout_s=_provider_timeout_for_environment(settings.VORNEQ_ENV),
             max_output_tokens=(output_budget.output_tokens if output_budget else
@@ -239,10 +236,7 @@ def run_global_pipeline(request, question, language, *, prior_turns=(), search_q
             response_stage2_enabled=stage2,
         )
         if shared_budget:
-            provider = BudgetedProvider(provider, actor_id=request.user.pk)
             meta["budgeted"] = provider
-        elif settings.VORNEQ_ENV == "production":
-            raise BudgetExceeded("production requires the shared prepaid ledger")
         meta["model"] = getattr(provider, "model", "") or getattr(getattr(provider, "inner", None), "model", "")
         rlimit, elimit = response_engine_v3.retrieval_limits(settings)
         retriever = (default_retriever(max_results=rlimit, max_excerpt=elimit, exchars=1500)

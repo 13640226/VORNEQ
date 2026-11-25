@@ -435,6 +435,10 @@ VORNEQ_AI_STAGING_DAILY_CAP_MICROUSD = _staging_int("VORNEQ_AI_STAGING_DAILY_CAP
 VORNEQ_AI_STAGING_RESERVE_MICROUSD = _staging_int("VORNEQ_AI_STAGING_RESERVE_MICROUSD")
 VORNEQ_AI_STAGING_MAX_DAILY_REQUESTS = _staging_int("VORNEQ_AI_STAGING_MAX_DAILY_REQUESTS")
 # Explicit owner-only STAGING opt-in. Never enabled in production or by default.
+# V4-01: "unmetered" only skips the legacy per-day application counter
+# (apps.ai_core.staging_budget). It NEVER bypasses the shared prepaid ledger:
+# every hosted paid text call is ledger-bound (apps.ai_core.paid_provider), and
+# the ledger applies its own staging daily ceiling independently of this flag.
 VORNEQ_AI_STAGING_UNMETERED = (
     VORNEQ_ENV == "staging" and env_bool("VORNEQ_AI_STAGING_UNMETERED", False)
 )
@@ -536,6 +540,8 @@ VORNEQ_GLOBAL_AI_PRODUCTION_ENABLED = (
 )
 # Optional persistent chat-only release authorization; default exact SHA.
 VORNEQ_AI_CHAT_FOLLOW_OWNER_DEPLOYMENTS = env_bool("VORNEQ_AI_CHAT_FOLLOW_OWNER_DEPLOYMENTS", False)
+# V4-01: the ledger is mandatory on staging regardless of this flag; it now only
+# selects the ledger's staging accounting mode (apps.ai_ledger.service.reserve).
 VORNEQ_AI_CHAT_STAGING_PREPAID_ONLY = (
     VORNEQ_ENV == "staging" and env_bool("VORNEQ_AI_CHAT_STAGING_PREPAID_ONLY", False)
 )

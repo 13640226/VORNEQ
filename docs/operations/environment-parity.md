@@ -33,7 +33,7 @@ und Konfiguration.
 | Abschnitt | Inhalt | Schutz |
 |---|---|---|
 | `settings` | INSTALLED_APPS, Middleware, Context Processors, Loader, Router, Cache-/Storage-Backends, Sprachen, Hosts | keine Credentials |
-| `variables` | 117 Variablen aus dem Katalog | Secrets/Referenzen: nur PRESENT/MISSING; SHA-Pins: MATCHES_RELEASE/MISMATCH; Allowlists: Anzahl |
+| `variables` | 128 Variablen aus dem Katalog | Secrets/Referenzen: nur PRESENT/MISSING; SHA-Pins: MATCHES_RELEASE/MISMATCH; Allowlists: Anzahl |
 | `uncatalogued_vorneq_variables` | gesetzte `VORNEQ_*`/`DJANGO_*`-Variablen ohne Codebezug | nur Name |
 | `platform_registry` | App-Manifeste, Navigation, Auflösbarkeit | – |
 | `urls` | URL-Inventar (Anzahl, Namen, Hash) | – |
