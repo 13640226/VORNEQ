@@ -880,7 +880,9 @@
       let answerBubble = null;
       let completed = false;
       const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 35000);
+      // V7-02.1: longer answers (policy output) need the server's full window:
+      // provider 60 s + retrieval/ledger headroom, below the 100 s worker limit.
+      const timeout = window.setTimeout(() => controller.abort(), 95000);
       try {
         const headers = {
           "Content-Type": "application/json",

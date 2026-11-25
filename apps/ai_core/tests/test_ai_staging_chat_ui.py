@@ -74,7 +74,7 @@ class StagingOwnerChatUITests(TestCase):
         self.assertIn("function questionLanguage(question)", js)
         self.assertIn("language: questionLanguage(question)", js)
         self.assertIn("entry.dir = textDirection", js)
-        self.assertIn("controller.abort(), 35000", js)
+        self.assertIn("controller.abort(), 95000", js)  # V7-02.1: Serverfenster < 100 s
         self.assertIn("candidate.origin === window.location.origin", js)
         self.assertIn('link.textContent = titleText', js)
         self.assertIn("vq-chat__sources", css)
