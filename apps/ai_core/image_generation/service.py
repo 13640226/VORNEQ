@@ -236,8 +236,12 @@ def process_next_image_job():
                 # Owner stop (or any ledger doubt) after reserving: provably not sent.
                 raise ImageProviderError("ledger stopped before call", code="ledger_stopped",
                                          request_sent=False)
+            from apps.ai_core.provider_resolution import resolve, Capability
+            resolve("openai-image", Capability.IMAGE)
             provider = OpenAIImageProvider()
         else:
+            from apps.ai_core.provider_resolution import resolve, Capability
+            resolve("mock-image", Capability.IMAGE)
             provider = MockImageProvider()
         provider_called = True
         if reservation is not None:

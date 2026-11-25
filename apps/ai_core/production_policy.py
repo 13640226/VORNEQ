@@ -11,6 +11,7 @@ import os
 import re
 
 from django.conf import settings
+from apps.ai_core.provider_resolution import legacy_model_matches, Capability
 
 from apps.ai_ledger.service import EXPECTED_SERVICES, ledger_enabled
 from apps.ai_core.request_recovery import enabled as recovery_enabled
@@ -52,7 +53,8 @@ def production_enabled() -> bool:
         return False
     model = getattr(settings, "VORNEQ_AI_PRODUCTION_APPROVED_MODEL", "")
     if (not isinstance(model, str) or not model or len(model) > 100
-            or os.environ.get("VORNEQ_AI_PHASE_B_MODEL", "") != model
+            or not legacy_model_matches("openai-text", Capability.TEXT,
+                                     os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""), (model,))
             or not os.environ.get("OPENAI_API_KEY", "")):
         return False
     # request_recovery.claim() independently requires a real shared Redis

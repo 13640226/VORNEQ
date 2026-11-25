@@ -11,6 +11,7 @@ import os
 import re
 
 from django.conf import settings
+from apps.ai_core.provider_resolution import legacy_model_matches, Capability
 from apps.ai_core.deploy_authorization import release_allowed
 
 EXPECTED_STAGING_SERVICE_ID = "srv-dbm7dvc9v7es7393g70g"
@@ -63,7 +64,8 @@ def trial_enabled():
     if (
         not isinstance(approved_model, str) or not approved_model
         or len(approved_model) > 100
-        or os.environ.get("VORNEQ_AI_PHASE_B_MODEL", "") != approved_model
+        or not legacy_model_matches("openai-text", Capability.TEXT,
+                                     os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""), (approved_model,))
         or not os.environ.get("OPENAI_API_KEY", "")
     ):
         return False
