@@ -19,6 +19,7 @@ class BudgetedProvider:
         self.inner = inner
         self.actor_id = actor_id
         self.last_reservation = None
+        self.last_settlement = None
 
     def generate(self, *, question, language, sources, prior_turns=(), mode="grounded"):
         # The reservation covers the exact payload, including conversation context.
@@ -87,7 +88,7 @@ class BudgetedProvider:
         return result
 
 
-    def stream_knowledge(self, *, question, language, prior_turns=()):
+    def stream_knowledge(self, *, question, language, prior_turns=(), reservation_id=None):
         """V7-03: reserve -> EIN gestreamter Aufruf -> settle (Generator).
 
         * Reservierung (Worst Case: Eingabe-Bytes + ``max_output_tokens``) VOR dem Aufruf.
@@ -102,8 +103,11 @@ class BudgetedProvider:
         instructions = self.inner.stream_knowledge_instructions(language)
         input_bytes = len(instructions.encode("utf-8")) + len(payload.encode("utf-8"))
         self.inner.check_context_budget(input_bytes)
+        # V7-03.1a: optionale, vorab dauerhaft vermerkte Korrelations-ID (Crash-Fenster).
+        extra = {"reservation_id": reservation_id} if reservation_id is not None else {}
         reservation = ledger.reserve(actor_id=self.actor_id, model=self.inner.model,
-                                     input_bytes=input_bytes, max_output_tokens=self.inner.max_output_tokens)
+                                     input_bytes=input_bytes, max_output_tokens=self.inner.max_output_tokens,
+                                     **extra)
         self.last_reservation = reservation
         self.inner.last_usage = None
         outcome = "interrupted"
@@ -143,6 +147,8 @@ class BudgetedProvider:
                     # 1) Usage bekannt -> FINALIZED (auch nach Stop/Abbruch);
                     # 2) gesendet, Usage unbekannt -> UNCERTAIN (nie 0)
                     state = ledger.settle(reservation, usage=self.inner.last_usage, outcome=outcome[:40])
+                # V7-03.1a: Abrechnungszustand für die Job-Bindung (unabhängig vom Job-Status).
+                self.last_settlement = state if state is not None else "unacknowledged"
                 if state is None:
                     # Nicht bestätigt (DB-Fehler oder bereits abgerechnet): Reservierung
                     # bleibt RESERVED/unverändert -> manuelle Ledger-Abstimmung.

@@ -522,6 +522,15 @@ VORNEQ_AI_CHAT_PRODUCTION_EXTENDED_INPUT = os.environ.get("VORNEQ_AI_CHAT_PRODUC
 VORNEQ_AI_CHAT_STREAMING_ENABLED = os.environ.get("VORNEQ_AI_CHAT_STREAMING_ENABLED", "") == "true"
 VORNEQ_AI_CHAT_STREAMING_PRODUCTION_ENABLED = (
     os.environ.get("VORNEQ_AI_CHAT_STREAMING_PRODUCTION_ENABLED", "") == "true")
+# V7-03.1a (ADR-0010): dauerhafte Antwort-Jobs (PostgreSQL-Queue). Standard aus;
+# Development/Staging und Production getrennt. Kapazitäten sind Betriebswerte,
+# keine Produktgrenzen; ungültige Werte fallen auf die Standardwerte zurück.
+VORNEQ_AI_CHAT_JOBS_ENABLED = os.environ.get("VORNEQ_AI_CHAT_JOBS_ENABLED", "") == "true"
+VORNEQ_AI_CHAT_JOBS_PRODUCTION_ENABLED = os.environ.get("VORNEQ_AI_CHAT_JOBS_PRODUCTION_ENABLED", "") == "true"
+VORNEQ_AI_CHAT_JOBS_MAX_ACTIVE_GLOBAL = os.environ.get("VORNEQ_AI_CHAT_JOBS_MAX_ACTIVE_GLOBAL", "")
+VORNEQ_AI_CHAT_JOBS_MAX_ACTIVE_PER_USER = os.environ.get("VORNEQ_AI_CHAT_JOBS_MAX_ACTIVE_PER_USER", "")
+VORNEQ_AI_CHAT_JOB_LEASE_SECONDS = os.environ.get("VORNEQ_AI_CHAT_JOB_LEASE_SECONDS", "")
+VORNEQ_AI_CHAT_JOB_DEADLINE_SECONDS = os.environ.get("VORNEQ_AI_CHAT_JOB_DEADLINE_SECONDS", "")
 # Classification-only groundwork; no provider mode is enabled by this flag yet.
 VORNEQ_AI_GENERAL_KNOWLEDGE_ENABLED = os.environ.get("VORNEQ_AI_GENERAL_KNOWLEDGE_ENABLED", "") == "true"
 VORNEQ_AI_CHAT_BUDGET_MODEL = os.environ.get("VORNEQ_AI_CHAT_BUDGET_MODEL", "")
