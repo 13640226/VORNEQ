@@ -160,7 +160,10 @@ class HomepageShellTests(NoProviderMixin, TestCase):
             html = self.get()
         rail = html[html.index('<nav class="vq-rail"'):html.index("</nav>", html.index('<nav class="vq-rail"'))]
         rest = html.replace(rail, "")
-        for href in re.findall(r'href="([^"]+)"', rail):
+        # V6-01: <use href="#vq-i-…"> are icon-sprite references, not destinations.
+        hrefs = re.findall(r'<a [^>]*href="([^"]+)"', rail)
+        self.assertGreaterEqual(len(hrefs), 4)
+        for href in hrefs:
             self.assertIn(f'href="{href}"', rest, href)
 
     def test_accessibility_semantics(self):

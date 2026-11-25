@@ -23,7 +23,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="vq-home" data-vq-ai-workspace>
+<div class="vq-home" data-vq-ai-workspace data-vq-v6>
+  {% include "home/_icons.html" %}
   <div class="vq-shell">
     {# DOM order = keyboard order: workspace first, then destinations, then context. #}
     {# The grid places the rail visually at the inline start on wide screens.        #}
@@ -44,6 +45,7 @@
     {% include "home/_trust_center.html" %}
     {% include "home/_philosophy.html" %}
   </div>
+  {% include "home/_bottom_nav.html" %}
 </div>
 {% endblock %}
 

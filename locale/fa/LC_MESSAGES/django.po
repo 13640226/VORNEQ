@@ -2320,3 +2320,11 @@ msgstr "باز کردن نمایه"
 #: templates/partials/_standalone_nav.html
 msgid "Language"
 msgstr "زبان"
+
+#: templates/home/_rail.html
+msgid "Destinations"
+msgstr "مقصدها"
+
+#: templates/home/_bottom_nav.html
+msgid "Quick navigation"
+msgstr "پیمایش سریع"
