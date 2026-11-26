@@ -153,9 +153,23 @@ class PageShellRenderingTests(TestCase):
                     self.assertEqual(response.status_code, 200)
                     html = response.content.decode()
                     self.assertRegex(html, rf'<html\s+lang="{lang}"\s+dir="{direction}"')
-                    self.assertIn('class="global-back"', html)
-                    self.assertIn('class="main-content"', html)
-                    self.assertIn("css/page-shell.css", html)
+                    if name == "search_page":
+                        self.assertIn('class="vq-header"', html)
+                        self.assertIn('id="vq-sidebar"', html)
+                        self.assertIn('id="vq-main"', html)
+                        self.assertIn('class="vq-bottomnav"', html)
+                        self.assertIn("css/search-workspace-v8.css", html)
+                        self.assertIn("js/search-workspace-v8.js", html)
+                        self.assertEqual(html.count('aria-current="page"'), 2)
+                        self.assertIn(f'href="{reverse(name)}" aria-current="page"', html)
+                        self.assertIn('data-search-view="grid"', html)
+                        self.assertIn('data-search-view="list"', html)
+                        self.assertIn('id="suchen-filter-panel"', html)
+                        self.assertNotIn('class="global-back"', html)
+                    else:
+                        self.assertIn('class="global-back"', html)
+                        self.assertIn('class="main-content"', html)
+                        self.assertIn("css/page-shell.css", html)
 
 
 class NavigationStabilityTests(TestCase):

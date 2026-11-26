@@ -1,0 +1,21 @@
+
+.suchen-page { --search-border:var(--vq-border); --search-surface:var(--vq-surface); --search-muted:var(--vq-text-2); background:var(--vq-bg); color:var(--vq-text); max-width:1040px; margin-inline:auto; }
+.suchen-page__shell { width:100%; }
+.suchen-page__hero { padding:clamp(8px,3vw,28px) 0 24px; }
+.suchen-page__hero h1 { font-size:clamp(1.8rem,4vw,3rem); color:var(--vq-text); overflow-wrap:anywhere; }
+.suchen-page__eyebrow,.suchen-page__type { color:var(--vq-accent); }
+.suchen-page__intro,.suchen-page__card p,.suchen-page__empty p,.suchen-page__meta,.suchen-page__results-head p,.suchen-page__page-status { color:var(--vq-text-2); }
+.suchen-page__query,.suchen-page__filters,.suchen-page__card,.suchen-page__empty { background:var(--vq-surface); border-color:var(--vq-border); color:var(--vq-text); }
+.suchen-page__query label,.suchen-page__filters label,.suchen-page__tabs legend,.suchen-page__card h3,.suchen-page__empty h3,.suchen-page__results-head h2 { color:var(--vq-text); }
+.suchen-page :where(input,select),.suchen-page__tabs span { background:var(--vq-elevated); color:var(--vq-text); border-color:var(--vq-border); }
+.suchen-page button,.suchen-page__tabs input:checked + span { background:var(--vq-accent); color:var(--color-text-on-accent); }
+.suchen-page :where(input,select,button,a):focus-visible,.suchen-page__tabs input:focus-visible + span { outline-color:var(--vq-focus); }
+.suchen-page__card a,.suchen-page__pagination a { color:var(--vq-accent); overflow-wrap:anywhere; }
+.suchen-page__card { overflow-wrap:anywhere; }
+.suchen-page__grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr)); }
+.suchen-page__grid.is-list { grid-template-columns:1fr; }
+.vq-search-views { display:flex; gap:8px; }
+.vq-search-views button { min-width:44px; padding:6px; }
+.vq-search-views button[aria-pressed=false] { background:var(--vq-surface); color:var(--vq-text); }
+.suchen-page__pagination .suchen-page__page-btn { background:var(--vq-surface); color:var(--vq-accent); border-color:var(--vq-border); }
+.suchen-page__pagination .suchen-page__page-btn:hover { background:var(--vq-hover); border-color:var(--vq-accent); }

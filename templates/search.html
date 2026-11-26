@@ -1,21 +1,25 @@
-{% extends "base.html" %}
+{% extends "shell/app_base.html" %}
 {% load static i18n %}
 
 {% block title %}{% trans "Search" %} — VORNEQ{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/search-scene.css' %}">
+<link rel="stylesheet" href="{% static 'css/search-workspace-v8.css' %}">
 {% endblock %}
 
+{% block sidebar_items %}{% include "shell/_workspace_sidebar.html" with search_active=True %}{% endblock %}
+{% block bottomnav_items %}{% include "shell/_workspace_bottomnav.html" with search_active=True %}{% endblock %}
 {% block content %}
-<main class="suchen-page" aria-labelledby="search-page-title">
+{% include "home/v8/_icons.html" %}
+<div class="suchen-page" aria-labelledby="search-page-title">
   <section class="suchen-page__hero">
     <div class="suchen-page__shell">
       <p class="suchen-page__eyebrow">{% trans "Discover knowledge" %}</p>
       <h1 id="search-page-title">{% trans "Search across VORNEQ" %}</h1>
       <p class="suchen-page__intro">{% trans "Filter public knowledge and marketplace metadata across supported content types." %}</p>
 
-      <form method="get" id="suchen-search-form" class="suchen-page__form" role="search" aria-label="{% trans 'Advanced search filters' %}">
+      <form method="get" action="{% url 'search_page' %}" id="suchen-search-form" class="suchen-page__form" role="search" aria-label="{% trans 'Advanced search filters' %}">
         <div class="suchen-page__query">
           <label for="suchen-page-query">{% trans "Search query" %}</label>
           <input id="suchen-page-query" type="search" name="q" value="{{ search_query }}" maxlength="200" placeholder="{% trans 'Search VORNEQ…' %}">
@@ -47,9 +51,10 @@
     <div class="suchen-page__shell">
       <header class="suchen-page__results-head">
         <h2 id="suchen-page-results-title">{% trans "Results" %}</h2>
-        <p>{% blocktrans count counter=total %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}</p>
+        <p role="status">{% blocktrans count counter=total %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}</p>
+      <div class="vq-search-views" role="group" aria-label="{% trans 'Results' %}"><button type="button" data-search-view="grid" aria-pressed="true" aria-controls="suchen-results-grid" aria-label="{% trans 'Grid' %}">?</button><button type="button" data-search-view="list" aria-pressed="false" aria-controls="suchen-results-grid" aria-label="{% trans 'List' %}">?</button></div>
       </header>
-      <div class="suchen-page__grid">
+      <div class="suchen-page__grid" id="suchen-results-grid">
         {% for item in results %}
           <article class="suchen-page__card">
             <span class="suchen-page__type">{% include "partials/_content_type_label.html" with type=item.type %}</span>
@@ -72,7 +77,7 @@
       {% if total_pages > 1 %}
         <nav class="suchen-page__pagination" aria-label="{% trans 'Pagination' %}">
           <span class="suchen-page__pagination-links">
-            {% if has_previous %}<a class="suchen-page__page-btn" rel="prev" href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page|add:'-1' }}&amp;page_size={{ page_size }}">{% trans "Previous" %}</a>{% endif %}
+            {% if has_previous %}<a class="suchen-page__page-btn" rel="prev" href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;media_type={{ current_media_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page|add:'-1' }}&amp;page_size={{ page_size }}">{% trans "Previous" %}</a>{% endif %}
             {% if has_next %}<a class="suchen-page__page-btn" rel="next" href="?q={{ search_query|urlencode }}&amp;type={{ current_type|urlencode }}&amp;item_type={{ current_item_type|urlencode }}&amp;category={{ current_category|urlencode }}&amp;price_min={{ current_price_min|urlencode }}&amp;price_max={{ current_price_max|urlencode }}&amp;page={{ page|add:'1' }}&amp;page_size={{ page_size }}">{% trans "Next" %}</a>{% endif %}
           </span>
           <span class="suchen-page__page-status" aria-live="polite">{% blocktrans with current=page total=total_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}</span>
@@ -80,49 +85,8 @@
       {% endif %}
     </div>
   </section>
-</main>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const open = document.getElementById('suchen-filter-open');
-  const close = document.getElementById('suchen-filter-close');
-  const panel = document.getElementById('suchen-filter-panel');
-  const backdrop = document.getElementById('suchen-filter-backdrop');
-  const mq = window.matchMedia('(max-width: 768px)');
-  let expanded = false;
-  function focusable() {
-    return Array.from(panel.querySelectorAll('button, input, select, a[href], [tabindex]:not([tabindex="-1"])'))
-      .filter(el => !el.disabled && el.getClientRects().length);
-  }
-  function toggle(next, restore) {
-    expanded = next && mq.matches;
-    panel.classList.toggle('is-mobile-open', expanded);
-    backdrop.hidden = !expanded;
-    open.setAttribute('aria-expanded', String(expanded));
-    document.body.classList.toggle('suchen-filters-open', expanded);
-    if (expanded) {
-      const items = focusable();
-      (items[0] || panel).focus();
-    } else if (restore && mq.matches) {
-      open.focus();
-    }
-  }
-  open.addEventListener('click', () => toggle(true, false));
-  close.addEventListener('click', () => toggle(false, true));
-  backdrop.addEventListener('click', () => toggle(false, true));
-  document.addEventListener('keydown', e => {
-    if (!expanded) return;
-    if (e.key === 'Escape') { e.preventDefault(); toggle(false, true); return; }
-    if (e.key !== 'Tab') return;
-    const items = focusable();
-    if (!items.length) { e.preventDefault(); panel.focus(); return; }
-    const first = items[0], last = items[items.length - 1];
-    if (e.shiftKey && (document.activeElement === first || document.activeElement === panel || !panel.contains(document.activeElement))) {
-      e.preventDefault(); last.focus();
-    } else if (!e.shiftKey && (document.activeElement === last || document.activeElement === panel || !panel.contains(document.activeElement))) {
-      e.preventDefault(); first.focus();
-    }
-  });
-  mq.addEventListener('change', () => toggle(false, false));
-});
-</script>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/search-workspace-v8.js' %}" defer></script>
 {% endblock %}

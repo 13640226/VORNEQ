@@ -308,6 +308,8 @@ def search_page(request):
         "current_price_max": request.GET.get("price_max", "").strip(),
         "page_size": page_size,
     }
+    context.update(phase_c_chat_enabled=_ai_chat_available_for(request.user),
+                   image_studio_enabled=_image_studio_available_for(request.user))
     return render(request, "search.html", context)
 
 
