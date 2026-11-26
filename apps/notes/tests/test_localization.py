@@ -25,15 +25,16 @@ LIST_IDS = ("Notes \u2014 VORNEQ", "My Notes", "Private notes owned by your boun
 DETAIL_IDS = ("Back to Notes", "Note", "Edit", "Delete Note")
 CREATE_IDS = ("New Note", "Notes", "Title", "Content", "Save Note", "Back to Notes")
 UPDATE_IDS = ("Edit Note", "Notes", "Title", "Content", "Save Note", "Back to Notes")
-# Shared page chrome rendered on every Notes page (base.html and standalone navigation).
-CHROME_IDS = ("Back", "Go back to the previous page", "Choose language", "Open profile")
+# Shared V8 shell chrome rendered on every Notes page.
+CHROME_IDS = ("Choose language", "Main navigation", "Search or jump to…", "My area")
+CONTROL_IDS = ("Search notes", "Grid", "List", "No matching notes.")
 FORBIDDEN_IDS = {
     "missing": "Your account requires an identity binding. Contact the platform administrator.",
     "inactive": "Your bound identity is inactive. Contact the platform administrator.",
     "denied": "You do not have access to this note.",
 }
 ALL_IDS = tuple(sorted(set(
-    LIST_IDS + DETAIL_IDS + CREATE_IDS + UPDATE_IDS + CHROME_IDS + ("App", "No notes yet.", "Updated %(date)s",
+    LIST_IDS + DETAIL_IDS + CREATE_IDS + UPDATE_IDS + CHROME_IDS + CONTROL_IDS + ("Workspace", "App", "No notes yet.", "Updated %(date)s",
                                                       "Notes access restricted")
     + tuple(FORBIDDEN_IDS.values())
 )))
@@ -50,7 +51,13 @@ FA_ENDONYM = "\u0641\u0627\u0631\u0633\u06cc"
 
 def ui_text(html):
     """HTML without the user's own note content (never translated) and the FA endonym."""
-    return html.replace(USER_BODY, "").replace(USER_TITLE, "").replace(FA_ENDONYM, "")
+    # Remove only complete user-content text nodes, not matching prefixes of translated UI strings.
+    for value in (USER_BODY, USER_TITLE):
+        html = re.sub(r"(?<=>)" + re.escape(value) + r"(?=<)", "", html)
+    # Django adds a newline before the textarea value. Exclude only the exact fixture
+    # value in that form field; leave all translated labels and messages intact.
+    html = re.sub(r'(<textarea\b[^>]*\bid="id_content"[^>]*>)\s*' + re.escape(USER_BODY) + r'\s*(</textarea>)', r'\1\2', html)
+    return html.replace(FA_ENDONYM, "")
 
 
 def make_user(name, *, active=True):
@@ -103,7 +110,7 @@ class NotesLocalizationTests(TestCase):
     def test_list_page_in_every_language(self):
         for language in LANGUAGES:
             html = self.page(language, "notes:list")
-            self.assert_pure(html, language, LIST_IDS + CHROME_IDS, "list")
+            self.assert_pure(html, language, LIST_IDS + CHROME_IDS + CONTROL_IDS + ("Workspace",), "list")
             self.assert_direction(html, language)
             self.assertIn(USER_TITLE, html)
 
@@ -210,6 +217,9 @@ class NotesCatalogContractTests(SimpleTestCase):
         for path in folder.glob("*.html"):
             source = path.read_text(encoding="utf-8")
             self.assertIsNone(PERSIAN.search(source), f"{path.name} hardcodes Persian")
+            # body_class is an HTML attribute slot, not visible page text.
+            self.assertIn("{% block body_class %}vq-notes-workspace{% endblock %}", source)
+            source = source.replace("{% block body_class %}vq-notes-workspace{% endblock %}", "", 1)
             stripped = re.sub(r"\{%\s*blocktrans(?:late)?\b.*?endblocktrans(?:late)?\s*%\}", "", source, flags=re.S)
             stripped = re.sub(r"\{%.*?%\}|\{\{.*?\}\}", "", stripped, flags=re.S)
             stripped = re.sub(r"<(script|style)\b.*?</\1>", "", stripped, flags=re.S)

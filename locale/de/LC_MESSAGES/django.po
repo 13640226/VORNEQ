@@ -2938,3 +2938,9 @@ msgstr "Betrachter"
 
 msgid "User not found."
 msgstr "Benutzer nicht gefunden."
+
+msgid "Search notes"
+msgstr "Notizen suchen"
+
+msgid "No matching notes."
+msgstr "Keine passenden Notizen."

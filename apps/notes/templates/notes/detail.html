@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "shell/app_base.html" %}
 {% load static i18n %}
 
 {% block title %}{{ note.title }} — VORNEQ{% endblock %}
@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="{% static 'notes/notes.css' %}">
 {% endblock %}
 
+{% block body_class %}vq-notes-workspace{% endblock %}
 {% block content %}
 <section class="notes notes--detail" aria-labelledby="note-title">
     <a class="notes__back" href="{% url 'notes:list' %}">← {% trans "Back to Notes" %}</a>
