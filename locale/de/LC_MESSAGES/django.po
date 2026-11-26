@@ -2790,3 +2790,61 @@ msgstr "Ihr persönlicher Bereich"
 #: templates/home/v6
 msgid "Your private work, shared only with people you choose."
 msgstr "Ihre private Arbeit, nur mit Personen geteilt, die Sie auswählen."
+
+# UI-01 App Shell V8 (templates/shell/)
+msgid "Open navigation"
+msgstr "Navigation öffnen"
+
+msgid "Close navigation"
+msgstr "Navigation schließen"
+
+msgid "Search or jump to…"
+msgstr "Suchen oder springen zu …"
+
+msgid "Light theme"
+msgstr "Helles Design"
+
+msgid "System theme"
+msgstr "Systemdesign"
+
+msgid "My area"
+msgstr "Mein Bereich"
+
+msgid "Navigation"
+msgstr "Navigation"
+
+msgid "AI assistant"
+msgstr "KI-Assistent"
+
+msgid "AI"
+msgstr "KI"
+
+msgid "Command palette"
+msgstr "Befehlspalette"
+
+msgid "Type a page name…"
+msgstr "Seitennamen eingeben …"
+
+msgid "Search pages"
+msgstr "Seiten durchsuchen"
+
+msgid "Pages"
+msgstr "Seiten"
+
+msgid "No matching page."
+msgstr "Keine passende Seite."
+
+msgid "App shell preview"
+msgstr "Vorschau des App-Rahmens"
+
+msgid "Internal preview of the new application frame. Existing pages are unchanged."
+msgstr "Interne Vorschau des neuen Anwendungsrahmens. Bestehende Seiten bleiben unverändert."
+
+msgid "Sidebar on large screens, drawer on small screens."
+msgstr "Seitenleiste auf großen Bildschirmen, Schublade auf kleinen."
+
+msgid "Open with the keyboard shortcut and move with the arrow keys."
+msgstr "Mit dem Tastenkürzel öffnen und mit den Pfeiltasten bewegen."
+
+msgid "Uses the existing theme preference without flicker."
+msgstr "Nutzt die bestehende Design-Einstellung ohne Flackern."

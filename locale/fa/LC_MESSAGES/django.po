@@ -2476,3 +2476,64 @@ msgstr "مرکز شخصی شما"
 #: templates/home/v6
 msgid "Your private work, shared only with people you choose."
 msgstr "کار خصوصی شما، فقط با افرادی که انتخاب می‌کنید."
+
+# UI-01 App Shell V8 (templates/shell/)
+msgid "Open navigation"
+msgstr "باز کردن پیمایش"
+
+msgid "Close navigation"
+msgstr "بستن پیمایش"
+
+msgid "Search or jump to…"
+msgstr "جست‌وجو یا رفتن به…"
+
+msgid "Theme"
+msgstr "پوسته"
+
+msgid "Light theme"
+msgstr "پوستهٔ روشن"
+
+msgid "System theme"
+msgstr "پوستهٔ سیستم"
+
+msgid "My area"
+msgstr "فضای من"
+
+msgid "Navigation"
+msgstr "پیمایش"
+
+msgid "AI assistant"
+msgstr "دستیار هوش مصنوعی"
+
+msgid "AI"
+msgstr "هوش مصنوعی"
+
+msgid "Command palette"
+msgstr "پالت فرمان"
+
+msgid "Type a page name…"
+msgstr "نام صفحه را بنویسید…"
+
+msgid "Search pages"
+msgstr "جست‌وجوی صفحه‌ها"
+
+msgid "Pages"
+msgstr "صفحه‌ها"
+
+msgid "No matching page."
+msgstr "صفحه‌ای پیدا نشد."
+
+msgid "App shell preview"
+msgstr "پیش‌نمایش قاب برنامه"
+
+msgid "Internal preview of the new application frame. Existing pages are unchanged."
+msgstr "پیش‌نمایش داخلی قاب جدید برنامه. صفحه‌های فعلی تغییری نکرده‌اند."
+
+msgid "Sidebar on large screens, drawer on small screens."
+msgstr "نوار کناری در صفحه‌های بزرگ، کشو در صفحه‌های کوچک."
+
+msgid "Open with the keyboard shortcut and move with the arrow keys."
+msgstr "با میان‌بُر صفحه‌کلید باز کنید و با کلیدهای جهت حرکت کنید."
+
+msgid "Uses the existing theme preference without flicker."
+msgstr "از تنظیم پوسته فعلی بدون پرش استفاده می‌کند."

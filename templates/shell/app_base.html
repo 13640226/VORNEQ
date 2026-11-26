@@ -1,0 +1,129 @@
+{% load static i18n %}<!DOCTYPE html>
+{% get_current_language as LANG %}{% get_available_languages as SHELL_LANGUAGES %}
+<html lang="{{ LANG|default:'en' }}" dir="{% if LANG == 'fa' %}rtl{% else %}ltr{% endif %}" data-theme="navy">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#071426">
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    {# Synchron vor dem ersten Paint: bestehendes Theme-System, kein Theme-Flackern. #}
+    <script src="{% static 'js/theme-bootstrap.js' %}"></script>
+    <title>{% block title %}VORNEQ{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme-palettes.css' %}">
+    <link rel="stylesheet" href="{% static 'css/shell.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="vq-shell-body {% block body_class %}{% endblock %}">
+<svg class="vq-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <symbol id="vq-i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="vq-i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="vq-i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="vq-i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="vq-i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="vq-i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.5 8.5l-2 5-5 2 2-5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="vq-i-book" viewBox="0 0 24 24"><path d="M5 4h10a4 4 0 014 4v12H9a4 4 0 01-4-4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="vq-i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6zM9 8a3 3 0 016 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="vq-i-doc" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7zM14 3v4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="vq-i-note" viewBox="0 0 24 24"><path d="M5 4h14v12l-4 4H5zM15 20v-4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="vq-i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21a8 8 0 0116 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="vq-i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="vq-i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 119.5 4a6.5 6.5 0 0010.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="vq-i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5v17a8.5 8.5 0 000-17z" fill="currentColor"/></symbol>
+</svg>
+
+<a href="#vq-main" class="vq-skip">{% trans "Skip to main content" %}</a>
+
+{% url 'ai_core:chat' as url_chat %}
+<div class="vq-shell" data-vq-shell>
+    <header class="vq-header">
+        <button type="button" class="vq-iconbtn vq-header__menu" data-vq-drawer-open aria-controls="vq-sidebar" aria-expanded="false" aria-label="{% trans 'Open navigation' %}">
+            <svg class="vq-icon" aria-hidden="true"><use href="#vq-i-menu"/></svg>
+        </button>
+        <a class="vq-brand" href="{% url 'home' %}">
+            {% include 'partials/_brand_symbol.html' with symbol_class='vq-brand__symbol' only %}
+            <bdi dir="ltr" class="vq-brand__name">VORNEQ</bdi>
+        </a>
+        <button type="button" class="vq-search-trigger" data-vq-cmd-open aria-haspopup="dialog" aria-controls="vq-cmd" aria-keyshortcuts="Control+K Meta+K" aria-label="{% trans 'Search or jump to…' %}">
+            <svg class="vq-icon" aria-hidden="true"><use href="#vq-i-search"/></svg>
+            <span class="vq-search-trigger__label">{% trans "Search or jump to…" %}</span>
+            <kbd class="vq-kbd" dir="ltr">Ctrl K</kbd>
+        </button>
+        <div class="vq-theme" role="group" aria-label="{% trans 'Theme' %}">
+            <button type="button" class="vq-iconbtn" data-theme-option="light" aria-pressed="false" aria-label="{% trans 'Light theme' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-sun"/></svg></button>
+            <button type="button" class="vq-iconbtn" data-theme-option="dark" aria-pressed="false" aria-label="{% trans 'Dark theme' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-moon"/></svg></button>
+            <button type="button" class="vq-iconbtn" data-theme-option="system" aria-pressed="false" aria-label="{% trans 'System theme' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-auto"/></svg></button>
+        </div>
+        <details class="vq-lang" data-vq-lang>
+            <summary class="vq-iconbtn vq-lang__trigger" aria-label="{% trans 'Choose language' %}"><span dir="ltr">{{ LANG|upper }}</span></summary>
+            <div class="vq-lang__menu" role="group" aria-label="{% trans 'Language' %}">
+                {% for code, name in SHELL_LANGUAGES %}
+                <form action="{% url 'set_language' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <input type="hidden" name="language" value="{{ code }}">
+                    <button type="submit" class="vq-lang__option" lang="{{ code }}"{% if code == LANG %} aria-current="true"{% endif %}><span dir="ltr">{{ code|upper }}</span><span>{{ name }}</span></button>
+                </form>
+                {% endfor %}
+            </div>
+        </details>
+        {% if request.user.is_authenticated %}
+        <a class="vq-iconbtn" href="{% url 'platform_shell:personal_home' %}" aria-label="{% trans 'My area' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-user"/></svg></a>
+        {% else %}
+        <a class="vq-btn" href="{% url 'account_login' %}">{% trans "Sign in" %}</a>
+        {% endif %}
+    </header>
+
+    <div class="vq-scrim" data-vq-scrim hidden></div>
+
+    <nav id="vq-sidebar" class="vq-sidebar" aria-label="{% trans 'Main navigation' %}" data-vq-drawer>
+        <div class="vq-sidebar__head">
+            <span class="vq-sidebar__title">{% trans "Navigation" %}</span>
+            <button type="button" class="vq-iconbtn" data-vq-drawer-close aria-label="{% trans 'Close navigation' %}">
+                <svg class="vq-icon" aria-hidden="true"><use href="#vq-i-close"/></svg>
+            </button>
+        </div>
+        <ul class="vq-nav" data-vq-nav>
+            {% block sidebar_items %}
+            <li><a class="vq-nav__link" href="{% url 'home' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a></li>
+            <li><a class="vq-nav__link" href="{{ url_chat }}?lang={{ LANG|slice:':2' }}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-chat"/></svg><span>{% trans "AI assistant" %}</span></a></li>
+            <li><a class="vq-nav__link" href="{% url 'discover' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-compass"/></svg><span>{% trans "Discover" %}</span></a></li>
+            <li><a class="vq-nav__link" href="{% url 'discover_knowledge' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-book"/></svg><span>{% trans "Knowledge" %}</span></a></li>
+            <li><a class="vq-nav__link" href="{% url 'marketplace:index' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-bag"/></svg><span>{% trans "Marketplace" %}</span></a></li>
+            <li><a class="vq-nav__link" href="{% url 'documents:list' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-doc"/></svg><span>{% trans "Documents" %}</span></a></li>
+            <li><a class="vq-nav__link" href="{% url 'notes:list' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-note"/></svg><span>{% trans "Notes" %}</span></a></li>
+            {% endblock %}
+        </ul>
+    </nav>
+
+    <main id="vq-main" class="vq-main" tabindex="-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <nav class="vq-bottomnav" aria-label="{% trans 'Quick navigation' %}">
+        <a class="vq-bottomnav__link" href="{% url 'home' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a>
+        <a class="vq-bottomnav__link" href="{{ url_chat }}?lang={{ LANG|slice:':2' }}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-chat"/></svg><span>{% trans "AI" %}</span></a>
+        <a class="vq-bottomnav__link" href="{% url 'discover' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-compass"/></svg><span>{% trans "Discover" %}</span></a>
+        <button type="button" class="vq-bottomnav__link" data-vq-cmd-open aria-haspopup="dialog" aria-controls="vq-cmd"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-search"/></svg><span>{% trans "Search" %}</span></button>
+    </nav>
+</div>
+
+<div id="vq-cmd" class="vq-cmd" role="dialog" aria-modal="true" aria-labelledby="vq-cmd-title" data-vq-cmd hidden>
+    <div class="vq-cmd__panel">
+        <h2 id="vq-cmd-title" class="vq-visually-hidden">{% trans "Command palette" %}</h2>
+        <div class="vq-cmd__field">
+            <svg class="vq-icon" aria-hidden="true"><use href="#vq-i-search"/></svg>
+            <input id="vq-cmd-input" class="vq-cmd__input" type="text" role="combobox" autocomplete="off" spellcheck="false"
+                   aria-expanded="true" aria-controls="vq-cmd-list" aria-autocomplete="list" aria-activedescendant=""
+                   placeholder="{% trans 'Type a page name…' %}" aria-label="{% trans 'Search pages' %}" data-vq-cmd-input>
+        </div>
+        <ul id="vq-cmd-list" class="vq-cmd__list" role="listbox" aria-label="{% trans 'Pages' %}" data-vq-cmd-list></ul>
+        <p class="vq-cmd__empty" data-vq-cmd-empty hidden>{% trans "No matching page." %}</p>
+    </div>
+</div>
+
+<script src="{% static 'js/theme-preference.js' %}" defer></script>
+<script src="{% static 'js/shell.js' %}" defer></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
