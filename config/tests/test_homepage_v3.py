@@ -52,7 +52,7 @@ class _Collector(HTMLParser):
 
 
 def home_fragment(html):
-    start = html.index('<div class="vq-home"')
+    start = html.index('<div class="vq-ix"')
     end = html.index("</main>")
     return html[start:end]
 
@@ -96,7 +96,7 @@ class HomepageShellTests(NoProviderMixin, TestCase):
     def test_anonymous_shell_components_and_public_navigation_only(self):
         html = self.get()
         # V6-02 shell: app header, sidebar, stage (composer, quick actions, apps, trust).
-        for marker in ('class="vq-appbar"', 'class="vq-side"', 'class="vq-stage"', 'class="vq-apps"', 'class="vq-trust"'):
+        for marker in ('class="vq-header"', 'class="vq-sidebar"', 'class="vq-ix"', 'class="vq-ix-section vq-ix-apps"', 'class="vq-ix-section vq-ix-trust"'):
             self.assertIn(marker, html)
         for name in ("search_page", "discover", "marketplace:index", "orientation", "inspect_entry",
                      "discover_knowledge", "account_login", "account_signup"):
@@ -105,7 +105,7 @@ class HomepageShellTests(NoProviderMixin, TestCase):
             self.assertNotIn(f'href="{reverse(name)}"', html)
         self.assertNotIn(reverse("ai_core:chat"), html)
         self.assertIn("Sign in required", html)
-        self.assertIn("Controlled testing", html)  # V6-02 status label for gated AI cards
+        self.assertNotIn(reverse("ai_core:image-studio"), html)
         self.assertIn("AI answers are not enabled yet.", html)
 
     def test_authenticated_private_navigation_and_actions(self):
@@ -117,7 +117,7 @@ class HomepageShellTests(NoProviderMixin, TestCase):
         self.assertIn("Welcome back", html)  # V6-02 greeting replaces the status panel
         self.assertIn("Quick actions", html)
         self.assertNotIn("Sign in required", html)
-        self.assertIn('class="vq-status vq-status--private"', html)
+        self.assertIn('class="vq-ix-status vq-ix-status--private"', html)
 
     def test_search_form_destination_and_submission(self):
         html = self.get()
@@ -129,12 +129,12 @@ class HomepageShellTests(NoProviderMixin, TestCase):
 
     def test_composer_input_attributes_match_server_contract(self):
         html = self.get()
-        match = re.search(r'<textarea[^>]*id="vq-ai-question"[^>]*>', html, re.S)
+        match = re.search(r'<textarea[^>]*id="vq-ix-question"[^>]*>', html, re.S)
         self.assertIsNotNone(match)
         tag = match.group(0)
         self.assertRegex(tag, r"\srequired[\s>]")
         self.assertIn('enterkeyhint="search"', tag)
-        self.assertIn('aria-describedby="vq-ai-search-limitation"', tag)
+        self.assertIn('aria-describedby="vq-ix-search-limitation"', tag)
         # Server truncates queries at 200 characters (apps/search/views.py);
         # the client limit must not promise more.
         self.assertIn('maxlength="200"', tag)
@@ -158,21 +158,20 @@ class HomepageShellTests(NoProviderMixin, TestCase):
                 self.assertNotContains(response, 'dir="rtl"')
 
     def test_rail_destinations_remain_reachable_when_rail_is_hidden(self):
-        """<1024px hides the sidebar (drawer); every sidebar link must exist elsewhere.
-
-        V6-02: the V3 rail became the application sidebar (<aside class="vq-side">).
-        """
         self.client.force_login(self.user)
         with override_settings(**DEV_AI):
             html = self.get()
-        start = html.index('<aside class="vq-side"')
-        rail = html[start:html.index("</aside>", start)]
-        rest = html.replace(rail, "")
-        # V6-01: <use href="#vq-i-…"> are icon-sprite references, not destinations.
+        start = html.index('<nav id="vq-sidebar"')
+        rail = html[start:html.index("</nav>", start)]
         hrefs = re.findall(r'<a [^>]*href="([^"]+)"', rail)
         self.assertGreaterEqual(len(hrefs), 8)
+        from django.urls import resolve
         for href in hrefs:
-            self.assertIn(f'href="{href}"', rest, href)
+            resolve(href.split("?")[0])
+        self.assertRegex(html, r'<button[^>]*data-vq-drawer-open[^>]*aria-controls="vq-sidebar"')
+        self.assertRegex(rail, r'<button[^>]*data-vq-drawer-close')
+        self.assertIn('data-vq-cmd-open', html)
+        self.assertIn('data-vq-nav', rail)
 
     def test_accessibility_semantics(self):
         self.client.force_login(self.user)

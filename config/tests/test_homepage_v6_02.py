@@ -70,58 +70,59 @@ class HomepageV602RenderingTests(NoProviderMixin, TestCase):
     # --- structure ------------------------------------------------------------
     def test_guest_gets_product_shell_not_landing_page(self):
         html = self.get()
-        for marker in ('class="vq-appbar"', 'class="vq-side"', 'class="vq-stage"', 'class="vq-compose"',
-                       'class="vq-quick"', 'class="vq-apps"', 'class="vq-bottom-nav"'):
+        for marker in ('class="vq-header"', 'class="vq-sidebar"', 'class="vq-ix"', 'class="vq-ix-hero"',
+                       'class="vq-ix-section vq-ix-quick"', 'class="vq-ix-section vq-ix-apps"', 'class="vq-bottomnav"'):
             self.assertIn(marker, html)
         for removed in ("vq-global-hero", "vq-v5-sections", "vq-rail", "One Platform. Many Applications.",
                         "Platform Philosophy", 'class="standalone-nav'):
             self.assertNotIn(removed, html)
         fragment = home_fragment(html)
-        self.assertLess(fragment.index('id="vq-home-title"'), fragment.index('class="vq-apps"'))
+        self.assertLess(fragment.index('id="vq-ix-title"'), fragment.index('class="vq-ix-section vq-ix-apps"'))
 
     def test_guest_homepage_has_no_private_data_and_no_queries(self):
         with CaptureQueriesContext(connection) as ctx:
             html = self.get()
         self.assertEqual(len(ctx.captured_queries), 0)
-        self.assertNotIn("vq-recent", html)
+        self.assertNotIn("vq-ix-recent", html)
         self.assertNotIn(reverse("documents:list"), html)
         self.assertIn(f'href="{reverse("account_login")}"', html)
 
     def test_authenticated_shell_menu_and_private_navigation(self):
         self.client.force_login(self.user)
         html = self.get()
-        menu = section(html, '<details class="vq-menu vq-appbar__account"', "</details>")
-        for name in ("profile", "profile_edit", "platform_shell:personal_home", "account_logout"):
-            self.assertIn(f'href="{reverse(name)}"', menu)
-        side = section(html, '<aside class="vq-side"', "</aside>")
-        for name in ("platform_shell:personal_home", "documents:list", "notes:list", "profile_edit"):
+        side = section(html, '<nav id="vq-sidebar"', "</nav>")
+        for name in ("profile", "profile_edit", "platform_shell:personal_home", "account_logout", "documents:list", "notes:list"):
             self.assertIn(f'href="{reverse(name)}"', side)
-        self.assertNotIn(f'href="{reverse("account_login")}"', section(html, '<header class="vq-appbar"', "</header>"))
+        header = section(html, '<header class="vq-header"', "</header>")
+        self.assertIn(f'href="{reverse("platform_shell:personal_home")}"', header)
+        self.assertNotIn(f'href="{reverse("account_login")}"', header)
+
 
     # --- header -------------------------------------------------------------------
     def test_header_controls_are_real_and_labelled(self):
-        html = self.get()
-        header = section(html, '<header class="vq-appbar"', "</header>")
-        self.assertRegex(header, r'<button type="button" class="vq-appbar__icon vq-appbar__menu" data-vq-side-toggle\s+'
-                                 r'aria-controls="vq-side" aria-expanded="true" aria-label="[^"]+"')
-        self.assertRegex(header, r'<button type="button" class="vq-appbar__icon" data-vq-theme-toggle aria-pressed="true"\s+'
-                                 r'aria-label="[^"]+"')
-        self.assertIn(f'href="{reverse("search_page")}"', header)
+        header = section(self.get(), '<header class="vq-header"', "</header>")
+        self.assertRegex(header, r'data-vq-drawer-open aria-controls="vq-sidebar" aria-expanded="false" aria-label="[^"]+"')
+        for theme in ("light", "dark", "system"):
+            self.assertRegex(header, rf'data-theme-option="{theme}" aria-pressed="false" aria-label="[^"]+"')
+        self.assertIn('data-vq-cmd-open', header)
+        self.assertIn('aria-controls="vq-cmd"', header)
         self.assertEqual(header.count(f'action="{reverse("set_language")}" method="post"'), 3)
         self.assertEqual(header.count('name="csrfmiddlewaretoken"'), 3)
-        self.assertNotIn("bell", header)  # no notifications feature exists, so no fake bell
+        self.assertNotIn("bell", header)
+
 
     def test_header_height_token_is_compact(self):
-        self.assertIn("--ds-appbar-h: 56px;", DS)
-        appbar = block(WS, ".vq-appbar {")
-        self.assertIn("height: var(--ds-appbar-h)", appbar)
-        self.assertIn("position: sticky", appbar)
+        css = (CSS_DIR / "shell.css").read_text(encoding="utf-8")
+        self.assertIn("--vq-header-h: 52px;", css)
+        self.assertIn("height: var(--vq-header-h)", block(css, ".vq-header {"))
+        self.assertIn("position: sticky", block(css, ".vq-header {"))
+
 
     # --- sidebar ----------------------------------------------------------------------
     def test_sidebar_links_resolve_and_home_is_current(self):
         self.client.force_login(self.user)
         html = self.get(**DEV_AI)
-        side = section(html, '<aside class="vq-side"', "</aside>")
+        side = section(html, '<nav id="vq-sidebar"', "</nav>")
         hrefs = re.findall(r'<a [^>]*href="([^"]+)"', side)
         self.assertGreaterEqual(len(hrefs), 10)
         for href in hrefs:
@@ -136,7 +137,7 @@ class HomepageV602RenderingTests(NoProviderMixin, TestCase):
         self.assertNotIn(reverse("ai_core:image-studio"), off)
         self.assertGreaterEqual(off.count('aria-disabled="true"'), 3)
         on = self.get(**DEV_AI)
-        self.assertIn(f'href="{reverse("ai_core:chat")}?lang=en"', section(on, '<aside class="vq-side"', "</aside>"))
+        self.assertIn(f'href="{reverse("ai_core:chat")}?lang=en"', section(on, '<nav id="vq-sidebar"', "</nav>"))
         self.assertNotIn(reverse("ai_core:image-studio"), on)  # dev settings do not enable images
         with patch("apps.ai_core.image_generation.page.production_studio_preview_allowed", return_value=True):
             studio = self.get()
@@ -155,7 +156,7 @@ class HomepageV602RenderingTests(NoProviderMixin, TestCase):
         self.client.force_login(self.user)
         for overrides in ({}, DEV_AI):
             html = self.get(**overrides)
-            form = section(html, '<form class="vq-composer"', "</form>")
+            form = section(html, '<form class="vq-ix-composer"', "</form>")
             self.assertIn(f'method="get" action="{reverse("search_page")}" role="search"', form)
             self.assertNotIn('method="post"', form)
             self.assertNotIn("csrfmiddlewaretoken", form)
@@ -168,8 +169,8 @@ class HomepageV602RenderingTests(NoProviderMixin, TestCase):
     def test_every_app_card_is_a_real_link_or_disabled(self):
         self.client.force_login(self.user)
         html = self.get()
-        grid = section(html, '<ul class="vq-apps__grid">', "</ul>")
-        cards = re.findall(r'<(a|div) class="vq-app[^"]*"([^>]*)>', grid)
+        grid = section(html, '<ul class="vq-ix-apps__grid">', "</ul>")
+        cards = re.findall(r'<(a|div) class="vq-ix-app[^"]*"([^>]*)>', grid)
         self.assertGreaterEqual(len(cards), 9)
         for tag, attrs in cards:
             if tag == "a":
@@ -177,7 +178,7 @@ class HomepageV602RenderingTests(NoProviderMixin, TestCase):
             else:
                 self.assertIn('aria-disabled="true"', attrs)
                 self.assertNotIn("href", attrs)
-        self.assertEqual(grid.count('class="vq-status'), len(cards))
+        self.assertEqual(grid.count('class="vq-ix-status'), len(cards))
 
     # --- recent work (privacy) ----------------------------------------------------
     def test_recent_work_uses_owner_scoped_services(self):
@@ -205,13 +206,15 @@ class HomepageV602RenderingTests(NoProviderMixin, TestCase):
     # --- mobile -----------------------------------------------------------------------
     def test_bottom_nav_five_targets_with_more_button(self):
         html = self.get()
-        nav = section(html, '<nav class="vq-bottom-nav"', "</nav>")
-        self.assertEqual(nav.count("<li>"), 5)
-        more = re.search(r"<button[^>]*data-vq-more[^>]*>", nav).group(0)
-        for attr in ('type="button"', 'aria-controls="vq-side"', 'aria-expanded="false"'):
-            self.assertIn(attr, more)
-        self.assertIn('href="#vq-create"', nav)
+        nav = section(html, '<nav class="vq-bottomnav"', "</nav>")
+        hrefs = re.findall(r'<a [^>]*href="([^"]+)"', nav)
+        self.assertEqual(len(hrefs), 3)
+        for href in hrefs:
+            resolve(href.split("?")[0])
+        self.assertRegex(nav, r'<button[^>]*data-vq-cmd-open[^>]*aria-controls="vq-cmd"')
+        self.assertIn('id="vq-cmd"', html)
         self.assertIn('id="vq-create"', html)
+
 
     # --- i18n ----------------------------------------------------------------------------
     def test_three_languages_direction_and_titles(self):
@@ -241,14 +244,14 @@ class HomepageV602RenderingTests(NoProviderMixin, TestCase):
         self.assertEqual(html.count("<h1"), 1)
         ids = re.findall(r'\sid="([^"]+)"', html)
         self.assertEqual(len(ids), len(set(ids)), "duplicate id")
-        self.assertIn('href="#main-content" class="skip-link"', html)
+        self.assertIn('href="#vq-main" class="vq-skip"', html)
         page = parse(html)
         for tag, attrs in page.tags:
             if tag == "svg":
                 self.assertEqual(attrs.get("aria-hidden"), "true")
             if tag == "button":
                 self.assertTrue(attrs.get("type"), attrs)
-        header = section(html, '<header class="vq-appbar"', "</header>")
+        header = section(html, '<header class="vq-header"', "</header>")
         controls = re.findall(r"<(button|summary)([^>]*)>(.*?)</\1>", header, re.S)
         self.assertGreaterEqual(len(controls), 4)
         for _, attrs, inner in controls:
@@ -268,13 +271,16 @@ class HomepageV602RenderingTests(NoProviderMixin, TestCase):
 
     # --- design system and assets -------------------------------------------------
     def test_assets_exist_and_load_in_order(self):
-        for path in ("css/v6-design-system.css", "css/v6-workspace.css", "js/v6-workspace.js",
-                     "js/v6-shell-bootstrap.js"):
+        for path in ("css/tokens.css", "css/theme-palettes.css", "css/shell.css", "css/index-workspace-v8.css",
+                     "js/theme-bootstrap.js", "js/shell.js", "js/homepage-ai-workspace-v1.js"):
             self.assertIsNotNone(finders.find(path), path)
         html = self.get()
-        self.assertLess(html.index("css/v6-design-system"), html.index("css/v6-workspace"))
-        self.assertLess(html.index("js/v6-shell-bootstrap"), html.index("css/v6-workspace"))
-        self.assertIn('<body class="vq-workspace vq-ds">', html)
+        self.assertLess(html.index("css/theme-palettes"), html.index("css/shell"))
+        self.assertLess(html.index("css/shell"), html.index("css/index-workspace-v8"))
+        self.assertLess(html.index("js/theme-bootstrap"), html.index("css/shell"))
+        self.assertIn('<body class="vq-shell-body vq-index-v8">', html)
+        self.assertNotIn("css/v6-workspace", html)
+
 
     def test_design_system_is_real_and_meets_aa(self):
         dark = block(DS, "body.vq-ds {")

@@ -28,7 +28,7 @@ class HomepageSimplificationTests(TestCase):
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'class="vq-home"')
+        self.assertContains(response, 'class="vq-ix"')
         # V6-02: owner-specified product title replaces "What do you need today?".
         self.assertContains(response, "What will you create today?")
         for section_id in self.REMOVED_SECTION_IDS:
@@ -45,7 +45,7 @@ class HomepageSimplificationTests(TestCase):
         self.assertNotContains(response, "js/homepage-signal-nav-v2")
         self.assertNotContains(response, "js/evidence-signal-v2-3")
         # V6-02: the homepage uses the compact application header instead of the site header.
-        self.assertContains(response, 'class="vq-appbar"')
+        self.assertContains(response, 'class="vq-header"')
         self.assertNotContains(response, 'class="standalone-nav')
 
     def test_signal_navigation_is_homepage_only(self):

@@ -39,9 +39,9 @@ class HomepageV5HeroTests(TestCase):
             search_url = reverse("search_page")
         self.assertIn('href="' + search_url + '"', html)
         # V6-02: in-page targets are the quick actions (#vq-create) and the app grid.
-        self.assertIn('href="#vq-create"', html)
+        self.assertIn('aria-labelledby="vq-ix-quick-title"', html)
         self.assertIn('id="vq-create"', html)
-        self.assertIn('id="vq-apps-title"', html)
+        self.assertIn('id="vq-ix-apps-title"', html)
 
     def test_semantics_and_composer_regression(self):
         html = self.home()
@@ -54,6 +54,6 @@ class HomepageV5HeroTests(TestCase):
         self.assertNotIn("data-vq-activate-ai", html)
 
     def test_existing_composer_source_unchanged(self):
-        composer = (Path(settings.BASE_DIR) / "templates/home/v6/_composer.html").read_text(encoding="utf-8")
+        composer = (Path(settings.BASE_DIR) / "templates/home/v8/_hero.html").read_text(encoding="utf-8")
         self.assertIn('maxlength="200"', composer)
         self.assertIn("phase_c_chat_enabled", composer)

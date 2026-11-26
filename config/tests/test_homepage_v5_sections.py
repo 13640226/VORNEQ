@@ -25,8 +25,10 @@ class HomepageV5SectionsTests(TestCase):
     def test_anonymous_ai_card_is_not_a_link(self):
         with override("en"):
             html = self.client.get(reverse("home")).content.decode()
-            self.assertIn('vq-app vq-app--off', html)  # V6-02 disabled app card (no href)
-            self.assertIn('Controlled testing', html)
+            self.assertIn('Sign in required', html)
+            self.assertNotIn(reverse('ai_core:chat'), html)
+            self.assertNotIn(reverse('ai_core:image-studio'), html)
+            self.assertIn('href="' + reverse('account_login') + '"', html)
             self.assertNotIn('href="' + reverse("ai_core:chat") + '"', html)
 
     def test_all_three_languages(self):
@@ -34,5 +36,5 @@ class HomepageV5SectionsTests(TestCase):
             with self.subTest(lang=lang), override(lang):
                 response = self.client.get(reverse("home"))
                 self.assertEqual(response.status_code, 200)
-                self.assertContains(response, 'id="vq-apps-title"')  # V6-02 ids
-                self.assertContains(response, 'id="vq-trust-title"')
+                self.assertContains(response, 'id="vq-ix-apps-title"')  # V6-02 ids
+                self.assertContains(response, 'id="vq-ix-trust-title"')

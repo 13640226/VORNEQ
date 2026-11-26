@@ -2848,3 +2848,18 @@ msgstr "Mit dem Tastenkürzel öffnen und mit den Pfeiltasten bewegen."
 
 msgid "Uses the existing theme preference without flicker."
 msgstr "Nutzt die bestehende Design-Einstellung ohne Flackern."
+
+msgid "AI chat is a separate page. It drafts answers from cited public sources; you check the quotes."
+msgstr "Der KI-Chat ist eine eigene Seite. Er entwirft Antworten anhand zitierter öffentlicher Quellen; Sie prüfen die Zitate."
+
+msgid "Books, articles and other library items."
+msgstr "Bücher, Artikel und weitere Bibliotheksinhalte."
+
+msgid "Search VORNEQ, open your work and move between applications from one place."
+msgstr "Durchsuchen Sie VORNEQ, öffnen Sie Ihre Arbeit und wechseln Sie zentral zwischen Anwendungen."
+
+msgid "Search finds records already in VORNEQ and links to them. It never writes an answer."
+msgstr "Die Suche findet vorhandene Einträge in VORNEQ und verlinkt sie. Sie verfasst keine Antwort."
+
+msgid "Search or AI chat?"
+msgstr "Suche oder KI-Chat?"

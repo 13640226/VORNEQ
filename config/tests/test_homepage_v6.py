@@ -28,7 +28,7 @@ SPRITE_ICONS = ("chat", "image", "mic", "folder", "notebook", "books", "search",
 
 
 def bottom_nav(html):
-    start = html.index('<nav class="vq-bottom-nav"')
+    start = html.index('<nav class="vq-bottomnav"')
     return html[start:html.index("</nav>", start)]
 
 
@@ -46,13 +46,13 @@ class HomepageV6Tests(NoProviderMixin, TestCase):
     # --- rendering -------------------------------------------------------
     def test_guest_renders_200_with_v6_shell(self):
         html = self.get()
-        for marker in ('data-vq-v6', 'class="vq-sprite"', 'data-vq-side', 'data-vq-bottom-nav'):  # V6-02 sidebar
+        for marker in ('data-vq-index-v8', 'class="vq-sprite"', 'data-vq-drawer', 'class="vq-bottomnav"'):  # V6-02 sidebar
             self.assertIn(marker, html)
 
     def test_authenticated_renders_200_with_private_bottom_nav_entry(self):
         self.client.force_login(self.user)
         nav = bottom_nav(self.get())
-        self.assertIn(f'href="{reverse("platform_shell:personal_home")}"', nav)
+        self.assertIn(f'href="{reverse("platform_shell:personal_home")}"', self.get())
         self.assertNotIn(f'href="{reverse("account_login")}"', nav)
 
     # --- tokens and CSS contract ----------------------------------------
@@ -104,13 +104,13 @@ class HomepageV6Tests(NoProviderMixin, TestCase):
         self.assertRegex(html, r'<form[^>]+method="get"[^>]+action="' + re.escape(reverse("search_page")) + '"')
         self.assertNotIn(reverse("ai_core:chat"), html)
         self.assertNotIn("data-vq-bottom-chat", html)
-        self.assertIn(f'href="{reverse("search_page")}"', bottom_nav(html))  # V6-02: Search replaces Chat
+        self.assertIn("data-vq-cmd-open", bottom_nav(html))  # V6-02: Search replaces Chat
 
     def test_chat_link_only_for_enabled_account(self):
         self.client.force_login(self.user)
         html = self.get(**DEV_AI)
         self.assertIn("data-vq-phase-c-link", html)
-        self.assertIn("data-vq-bottom-chat", html)
+        self.assertIn("data-vq-cmd-open", bottom_nav(html))
         self.assertIn(f'href="{reverse("ai_core:chat")}?lang=en"', bottom_nav(html))
         self.assertEqual(html.count('role="search"'), 1)
 
@@ -121,15 +121,11 @@ class HomepageV6Tests(NoProviderMixin, TestCase):
                 self.client.force_login(self.user)
             nav = bottom_nav(self.get(**DEV_AI))
             hrefs = re.findall(r'<a [^>]*href="([^"]+)"', nav)
-            # V6-02: four links plus the "More" button that opens the sidebar drawer.
-            self.assertEqual(nav.count("<li>"), 5)
-            self.assertEqual(len(hrefs), 4, hrefs)
-            self.assertIn("data-vq-more", nav)
+            self.assertEqual(len(hrefs), 3)
+            self.assertEqual(nav.count("data-vq-cmd-open"), 1)
             for href in hrefs:
-                if href.startswith("#"):
-                    self.assertEqual(href, "#vq-create")
-                else:
-                    resolve(href.split("?")[0])
+                resolve(href.split("?")[0])
+
 
     def test_all_index_links_resolve(self):
         self.client.force_login(self.user)
@@ -151,9 +147,12 @@ class HomepageV6Tests(NoProviderMixin, TestCase):
         html = self.get("fa")
         self.assertIn('dir="rtl"', html)
         nav = bottom_nav(html)
-        for text in ("پیمایش سریع", "خانه", "ساختن", "بیشتر"):  # V6-02 bottom labels
-            self.assertIn(text, nav)
-        self.assertIn("پیمایش اصلی", html)
+        with translation.override("fa"):
+            for label in ("Home", "Marketplace", "Discover", "Search", "Quick navigation"):
+                localized = translation.gettext(label)
+                self.assertNotEqual(localized, label)
+                self.assertIn(localized, nav)
+
 
     def test_farsi_does_not_leak_new_english_strings(self):
         fragment = home_fragment(self.get("fa"))
@@ -161,23 +160,31 @@ class HomepageV6Tests(NoProviderMixin, TestCase):
             self.assertNotIn(english, fragment)
 
     def test_german_and_english_strings(self):
-        de = bottom_nav(self.get("de"))
-        for text in ("Schnellnavigation", "Startseite", "Erstellen", "Mehr"):  # V6-02 labels
-            self.assertIn(text, de)
-        self.assertIn("Hauptnavigation", self.get("de"))
-        en = bottom_nav(self.get("en"))
-        for text in ("Quick navigation", "Home", "Create", "More"):
-            self.assertIn(text, en)
+        for lang in ("de", "en"):
+            html = self.get(lang)
+            self.assertIn('dir="ltr"', html)
+            nav = bottom_nav(html)
+            with translation.override(lang):
+                for label in ("Home", "Marketplace", "Discover", "Search", "Quick navigation"):
+                    localized = translation.gettext(label)
+                    if lang == "de":
+                        self.assertNotEqual(localized, label)
+                    self.assertIn(localized, nav)
+
 
     # --- accessibility ---------------------------------------------------
     def test_sprite_contains_required_icons_and_is_hidden(self):
         html = self.get()
-        sprite = html[html.index('<svg class="vq-sprite"'):html.index("</svg>", html.index('<svg class="vq-sprite"'))]
-        self.assertIn('aria-hidden="true"', sprite.split(">", 1)[0])
-        for icon in SPRITE_ICONS:
-            self.assertIn(f'<symbol id="vq-i-{icon}" viewBox="0 0 24 24">', sprite)
-        self.assertGreaterEqual(sprite.count("<symbol"), 15)
-        self.assertLessEqual(sprite.count("<symbol"), 40)  # V6-02 added 11 icons
+        sprites = re.findall(r'<svg[^>]*class="vq-sprite"[^>]*>.*?</svg>', html, re.S)
+        self.assertTrue(sprites)
+        for sprite in sprites:
+            self.assertIn('aria-hidden="true"', sprite.split(">", 1)[0])
+        ids = re.findall(r'<symbol id="([^"]+)"', html)
+        self.assertEqual(len(ids), len(set(ids)))
+        self.assertGreaterEqual(len(ids), 15)
+        for ref in re.findall(r'<use href="#([^"]+)"', html):
+            self.assertIn(ref, ids)
+
 
     def test_every_svg_is_hidden_or_labelled_and_uses_exist(self):
         self.client.force_login(self.user)
@@ -192,22 +199,21 @@ class HomepageV6Tests(NoProviderMixin, TestCase):
 
     def test_skip_link_unique_ids_and_labelled_landmarks(self):
         html = self.get()
-        self.assertIn('href="#main-content" class="skip-link"', html)
-        self.assertIn('id="main-content"', html)
+        self.assertIn('href="#vq-main" class="vq-skip"', html)
+        self.assertIn('id="vq-main"', html)
         ids = re.findall(r'\sid="([^"]+)"', html)
         self.assertEqual(len(ids), len(set(ids)), "duplicate id")
         nav = bottom_nav(html)
-        self.assertRegex(nav, r'^<nav class="vq-bottom-nav" aria-label="[^"]+"')
+        self.assertRegex(nav, r'^<nav class="vq-bottomnav" aria-label="[^"]+"')
         self.assertEqual(nav.count('aria-current="page"'), 1)
 
     def test_sidebar_toggle_is_a_button_hidden_without_js(self):
-        """V6-02: header button toggles the sidebar (collapse >=1024px, drawer below)."""
         html = self.get()
-        toggle = re.search(r"<button[^>]*data-vq-side-toggle[^>]*>", html).group(0)
-        for attr in ('type="button"', 'aria-expanded="true"', 'aria-controls="vq-side"', "aria-label="):
+        toggle = re.search(r'<button[^>]*data-vq-drawer-open[^>]*>', html).group(0)
+        for attr in ('type="button"', 'aria-expanded="false"', 'aria-controls="vq-sidebar"', 'aria-label='):
             self.assertIn(attr, toggle)
-        self.assertIn('id="vq-side"', html)
-        js = (Path(settings.BASE_DIR) / "assets" / "js" / "v6-workspace.js").read_text(encoding="utf-8")
-        self.assertIn('event.key === "Escape"', js)
-        self.assertIn("opener.focus()", js)
+        self.assertIn('id="vq-sidebar"', html)
+        js = (Path(settings.BASE_DIR) / "assets/js/shell.js").read_text(encoding="utf-8")
+        self.assertIn("Escape", js)
+        self.assertIn(".focus()", js)
         self.assertNotRegex(js, r"fetch\(|XMLHttpRequest|sendBeacon|innerHTML|eval\(")

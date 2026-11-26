@@ -58,7 +58,7 @@
       document.body.classList.add('vq-scroll-locked');
       setInert(background, true);
       var target = closeBtn || qs(FOCUSABLE, drawer);
-      if (target) window.setTimeout(function () { target.focus(); }, 0);
+      if (target) target.focus();
     }
 
     function close(restore) {

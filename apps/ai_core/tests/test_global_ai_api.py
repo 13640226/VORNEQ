@@ -370,8 +370,8 @@ class FrontendWiringTests(NoNetworkMixin, TestCase):
 
     def test_static_css_and_js_contracts(self):
         base = Path(settings.BASE_DIR) / "assets"
-        css = (base / "css" / "phase-c-chat.css").read_text()
-        js = (base / "js" / "phase-c-chat.js").read_text()
+        css = (base / "css" / "phase-c-chat.css").read_text(encoding="utf-8")
+        js = (base / "js" / "phase-c-chat.js").read_text(encoding="utf-8")
         self.assertIn("overflow-wrap: anywhere", css)
         self.assertIn("min-height: 44px", css)
         self.assertIn(".vq-chat__log { max-height: none; overflow-y: visible; }", css)
