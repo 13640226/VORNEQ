@@ -20,6 +20,7 @@ from config.metrics import metrics_view
 from config.public_graph_views import public_graph_presentation_view, public_graph_view
 from config.views import (
     discover,
+    knowledge,
     home,
     orientation,
     profile,
@@ -60,7 +61,8 @@ urlpatterns += i18n_patterns(
     path("discover/", discover, name="discover"),
     path("orientation/", orientation, name="orientation"),
     path("platform-report/", TemplateView.as_view(template_name="reports/platform_review.html"), name="platform_report"),
-    path("discover/knowledge/", discover, {"domain": "knowledge"}, name="discover_knowledge"),
+    path("knowledge/", knowledge, name="knowledge"),
+    path("discover/knowledge/", knowledge, name="discover_knowledge"),
     path("discover/media/", discover, {"domain": "media"}, name="discover_media"),
     path(
         "discover/software-services/",

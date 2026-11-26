@@ -1,5 +1,5 @@
 {% load i18n %}
-<li><a class="vq-nav__link" href="{% url 'home' %}" {% if not studio_active and not search_active and not discover_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a></li>
+<li><a class="vq-nav__link" href="{% url 'home' %}" {% if not studio_active and not search_active and not discover_active and not knowledge_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a></li>
 {% if phase_c_chat_enabled %}
 <li><a class="vq-nav__link" href="{{ url_chat }}?lang={{ LANG|slice:':2' }}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-chat"/></svg><span>{% trans "AI assistant" %}</span></a></li>
 {% endif %}
@@ -8,7 +8,7 @@
 {% endif %}
 <li><a class="vq-nav__link" href="{% url 'search_page' %}" {% if search_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-search"/></svg><span>{% trans "Search" %}</span></a></li>
 <li><a class="vq-nav__link" href="{% url 'discover' %}" {% if discover_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-compass"/></svg><span>{% trans "Discover" %}</span></a></li>
-<li><a class="vq-nav__link" href="{% url 'discover_knowledge' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-book"/></svg><span>{% trans "Knowledge" %}</span></a></li>
+<li><a class="vq-nav__link" href="{% url 'discover_knowledge' %}" {% if knowledge_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-book"/></svg><span>{% trans "Knowledge" %}</span></a></li>
 <li><a class="vq-nav__link" href="{% url 'marketplace:index' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-bag"/></svg><span>{% trans "Marketplace" %}</span></a></li>
 {% if request.user.is_authenticated %}
 <li><a class="vq-nav__link" href="{% url 'platform_shell:personal_home' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-ix-layers"/></svg><span>{% trans "My workspace" %}</span></a></li>

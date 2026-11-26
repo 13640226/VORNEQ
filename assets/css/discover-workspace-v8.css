@@ -24,3 +24,7 @@
 .discover-view-controls button { font:inherit; color:var(--vq-text); background:var(--vq-surface); border:1px solid var(--vq-border); border-radius:8px; padding:8px 14px; cursor:pointer; }
 .discover-view-controls button[aria-pressed="true"] { background:var(--vq-accent-subtle); border-color:var(--vq-accent); }
 .discover-view-controls button:focus-visible { outline:2px solid var(--vq-focus); outline-offset:3px; }
+
+.knowledge-topics {display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-block:20px;}
+.knowledge-topics a {padding:24px 16px;border:1px solid var(--vq-border);border-radius:16px;background:var(--vq-surface);color:var(--vq-text);font-weight:600;text-align:center;}
+.knowledge-topics a:hover {border-color:var(--vq-accent);}
