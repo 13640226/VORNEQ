@@ -18,7 +18,7 @@
     qsa('.vq-nav__link, .vq-bottomnav__link[href]').forEach(function (link) {
       var url;
       try { url = new URL(link.getAttribute('href'), window.location.href); } catch (e) { return; }
-      if (url.pathname === path) link.setAttribute('aria-current', 'page');
+      if (url.pathname === path && !url.hash) link.setAttribute('aria-current', 'page');
     });
   }
 

@@ -93,6 +93,12 @@
             <li><a class="vq-nav__link" href="{% url 'marketplace:index' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-bag"/></svg><span>{% trans "Marketplace" %}</span></a></li>
             <li><a class="vq-nav__link" href="{% url 'documents:list' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-doc"/></svg><span>{% trans "Documents" %}</span></a></li>
             <li><a class="vq-nav__link" href="{% url 'notes:list' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-note"/></svg><span>{% trans "Notes" %}</span></a></li>
+            {% if request.user.is_authenticated %}
+            <li><a class="vq-nav__link" href="{% url 'platform_shell:personal_home' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "My area" %}</span></a></li>
+            <li><a class="vq-nav__link" href="{% url 'profile' %}"{% if request.resolver_match.url_name == 'profile_edit' %} aria-current="location"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-user"/></svg><span>{% trans "Profile" %}</span></a></li>
+            <li><a class="vq-nav__link" href="{% url 'profile' %}#settings"><span>{% trans "Settings" %}</span></a></li>
+            <li><a class="vq-nav__link" href="{% url 'account_logout' %}"><span>{% trans "Sign out" %}</span></a></li>
+            {% endif %}
             {% endblock %}
         </ul>
     </nav>

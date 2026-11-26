@@ -2552,3 +2552,24 @@ msgstr "جست‌وجو اطلاعات موجود در VORNEQ را پیدا می
 
 msgid "Search or AI chat?"
 msgstr "جست‌وجو یا گفت‌وگوی هوش مصنوعی؟"
+
+msgid "Continue your discovery journey."
+msgstr "مسیر کشف خود را ادامه دهید."
+
+msgid "Sign in to access your workspace, saved context, documents, notes, and identity-linked activity."
+msgstr "برای دسترسی به فضای کاری، زمینه‌های ذخیره‌شده، اسناد، یادداشت‌ها و فعالیت‌های مرتبط با هویت خود وارد شوید."
+
+msgid "Secure sign-in"
+msgstr "ورود امن"
+
+msgid "Your credentials are used only to authenticate your VORNEQ account."
+msgstr "اطلاعات ورود شما فقط برای احراز هویت حساب VORNEQ استفاده می‌شود."
+
+msgid "Use your email address or username and password."
+msgstr "از نشانی ایمیل یا نام کاربری و رمز عبور خود استفاده کنید."
+
+msgid "We couldn't sign you in"
+msgstr "ورود شما موفق نبود"
+
+msgid "New to VORNEQ?"
+msgstr "تازه با VORNEQ آشنا شده‌اید؟"

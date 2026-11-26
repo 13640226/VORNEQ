@@ -1,0 +1,8 @@
+/* Account workspace compatibility, scoped to migrated pages. */
+.vq-account-workspace .vq-main { --container-width: 100%; --header-height: var(--vq-header-h); min-width: 0; }
+.vq-account-workspace :is(.profile-shell, .profile-edit-shell, .account-experience) { max-inline-size: 100%; }
+.vq-account-workspace .profile-main { min-inline-size: 0; }
+@media (max-width: 1200px) {
+  .vq-account-workspace .profile-layout { grid-template-columns: minmax(0, 1fr); }
+  .vq-account-workspace .profile-sidebar { position: static; }
+}

@@ -2863,3 +2863,24 @@ msgstr "Die Suche findet vorhandene Einträge in VORNEQ und verlinkt sie. Sie ve
 
 msgid "Search or AI chat?"
 msgstr "Suche oder KI-Chat?"
+
+msgid "Continue your discovery journey."
+msgstr "Setzen Sie Ihre Entdeckungsreise fort."
+
+msgid "Sign in to access your workspace, saved context, documents, notes, and identity-linked activity."
+msgstr "Melden Sie sich an, um auf Ihren Arbeitsbereich, gespeicherten Kontext, Dokumente, Notizen und identitätsbezogene Aktivitäten zuzugreifen."
+
+msgid "Secure sign-in"
+msgstr "Sichere Anmeldung"
+
+msgid "Your credentials are used only to authenticate your VORNEQ account."
+msgstr "Ihre Zugangsdaten dienen ausschließlich der Anmeldung bei Ihrem VORNEQ-Konto."
+
+msgid "Use your email address or username and password."
+msgstr "Verwenden Sie Ihre E-Mail-Adresse oder Ihren Benutzernamen und Ihr Passwort."
+
+msgid "We couldn't sign you in"
+msgstr "Die Anmeldung ist fehlgeschlagen"
+
+msgid "New to VORNEQ?"
+msgstr "Neu bei VORNEQ?"

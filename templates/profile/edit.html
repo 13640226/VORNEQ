@@ -1,13 +1,16 @@
-{% extends "base.html" %}
+{% extends "shell/app_base.html" %}
 {% load static i18n %}
 
 {% block title %}{% trans "Edit profile" %} — VORNEQ{% endblock %}
 
 {% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/account-workspace-v8.css' %}">
 <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/profile-edit.css' %}">
 <link rel="stylesheet" href="{% static 'css/profile-system.css' %}">
 {% endblock %}
+
+{% block body_class %}vq-account-workspace{% endblock %}
 
 {% block content %}
 <section class="profile-edit-shell" aria-labelledby="profile-edit-title">

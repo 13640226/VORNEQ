@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "shell/app_base.html" %}
 {% load static i18n allauth account %}
 
 {% block title %}{% trans "Sign In" %} — VORNEQ{% endblock %}
@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="{% static 'css/account-login.css' %}">
 {% endblock %}
 
+{% block body_class %}vq-account-workspace{% endblock %}
 {% block content %}
 <div class="account-shell account-shell--login">
   <div class="account-login">
@@ -20,6 +21,7 @@
         <input type="hidden" name="next" value="{{ request.get_full_path }}">
         <div class="account-form__actions account-form__actions--wrap">
           <button type="submit" name="language" value="fa" class="account-form__button {% if request.LANGUAGE_CODE == 'fa' %}account-form__button--primary{% else %}account-form__button--secondary{% endif %}" lang="fa" dir="rtl">فارسی</button>
+          <button type="submit" name="language" value="de" class="account-form__button {% if request.LANGUAGE_CODE == 'de' %}account-form__button--primary{% else %}account-form__button--secondary{% endif %}" lang="de" dir="ltr">Deutsch</button>
           <button type="submit" name="language" value="en" class="account-form__button {% if request.LANGUAGE_CODE == 'en' %}account-form__button--primary{% else %}account-form__button--secondary{% endif %}" lang="en" dir="ltr">English</button>
         </div>
       </form>
@@ -74,9 +76,7 @@
             {% endfor %}
           </div>
 
-          <div class="account-form__utility">
-            <a href="{% url 'account_reset_password' %}" class="account-form__link">{% trans "Forgot your password?" %}</a>
-          </div>
+
 
           <button type="submit" class="account-form__button account-form__button--primary account-form__button--login">{% trans "Sign In" %}</button>
 
