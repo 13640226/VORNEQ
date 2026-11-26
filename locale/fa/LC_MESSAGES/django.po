@@ -2573,3 +2573,6 @@ msgstr "ورود شما موفق نبود"
 
 msgid "New to VORNEQ?"
 msgstr "تازه با VORNEQ آشنا شده‌اید؟"
+
+msgid "Verify your email address to access your personal workspace."
+msgstr "برای دسترسی به فضای کاری شخصی، نشانی ایمیل خود را تأیید کنید."

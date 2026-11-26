@@ -2884,3 +2884,6 @@ msgstr "Die Anmeldung ist fehlgeschlagen"
 
 msgid "New to VORNEQ?"
 msgstr "Neu bei VORNEQ?"
+
+msgid "Verify your email address to access your personal workspace."
+msgstr "Bestätigen Sie Ihre E-Mail-Adresse, um auf Ihren persönlichen Arbeitsbereich zuzugreifen."
