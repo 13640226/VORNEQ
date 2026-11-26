@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "shell/app_base.html" %}
 {% load static i18n %}
 
 {% block title %}{% trans "Notes — VORNEQ" %}{% endblock %}
@@ -7,18 +7,28 @@
 <link rel="stylesheet" href="{% static 'notes/notes.css' %}">
 {% endblock %}
 
+{% block body_class %}vq-notes-workspace{% endblock %}
 {% block content %}
 <section class="notes" aria-labelledby="notes-title">
     <header class="notes__header">
         <div>
-            <p class="notes__eyebrow">{% trans "App" %}</p>
+            <p class="notes__eyebrow">{% trans "Workspace" %}</p>
             <h1 id="notes-title">{% trans "My Notes" %}</h1>
             <p class="notes__subtitle">{% trans "Private notes owned by your bound VORNEQ identity." %}</p>
         </div>
         <a class="notes-button" href="{% url 'notes:create' %}">{% trans "New Note" %}</a>
     </header>
 
-    <div class="notes-list">
+    {% if notes %}
+    <div class="notes-toolbar" data-note-controls hidden>
+        <label for="note-search">{% trans "Search notes" %}</label>
+        <input id="note-search" type="search">
+        <button type="button" class="notes-button notes-button--secondary" data-note-layout="grid" aria-pressed="true">{% trans "Grid" %}</button>
+        <button type="button" class="notes-button notes-button--secondary" data-note-layout="list" aria-pressed="false">{% trans "List" %}</button>
+    </div>
+    <p data-note-empty role="status" hidden>{% trans "No matching notes." %}</p>
+    {% endif %}
+    <div class="notes-list notes-grid" id="note-results">
         {% for note in notes %}
         <article class="note-card">
             <div>
@@ -32,3 +42,5 @@
     </div>
 </section>
 {% endblock %}
+
+{% block extra_js %}{{ block.super }}<script src="{% static 'notes/workspace.js' %}" defer></script>{% endblock %}

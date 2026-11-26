@@ -2636,3 +2636,9 @@ msgstr "بیننده"
 
 msgid "User not found."
 msgstr "کاربر یافت نشد."
+
+msgid "Search notes"
+msgstr "جستجوی یادداشت‌ها"
+
+msgid "No matching notes."
+msgstr "یادداشت مناسبی یافت نشد."

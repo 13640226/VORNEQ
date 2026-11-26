@@ -93,3 +93,21 @@ class NoteViewTests(TestCase):
         note.refresh_from_db()
         self.assertEqual(note.title, "Private")
         self.assertTrue(note.is_active)
+
+    def test_v8_notes_shell_all_languages(self):
+        note = NoteService.create_note(user=self.user, title="V8 private note", content="Private body")
+        for lang in ("en", "de", "fa"):
+            for suffix in ("", "create/", f"{note.pk}/", f"{note.pk}/update/"):
+                with self.subTest(lang=lang, suffix=suffix):
+                    response = self.client.get(f"/{lang}/notes/{suffix}")
+                    self.assertContains(response, 'id="vq-main"', count=1)
+                    self.assertContains(response, "vq-notes-workspace")
+            response = self.client.get(f"/{lang}/notes/")
+            self.assertContains(response, 'data-note-layout="grid"')
+            self.assertContains(response, 'data-note-layout="list"')
+        other = User.objects.create_user(username="v8-other")
+        self.client.force_login(other)
+        response = self.client.get(f"/en/notes/{note.pk}/")
+        self.assertContains(response, "vq-notes-workspace", status_code=403)
+        self.assertNotContains(response, "Private body", status_code=403)
+        self.assertFalse(UserIdentity.objects.filter(user=other).exists())
