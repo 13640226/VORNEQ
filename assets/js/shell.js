@@ -31,6 +31,14 @@
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   }
 
+  // Hintergrund während Drawer/Palette für Tastatur, Zeiger und Screenreader sperren.
+  function setInert(elements, on) {
+    elements.forEach(function (el) {
+      if (!el) return;
+      if (on) el.setAttribute('inert', ''); else el.removeAttribute('inert');
+    });
+  }
+
   function setupDrawer(shell) {
     var drawer = qs('[data-vq-drawer]', shell);
     var scrim = qs('[data-vq-scrim]', shell);
@@ -38,6 +46,7 @@
     var closeBtn = qs('[data-vq-drawer-close]', shell);
     var mq = window.matchMedia('(max-width: 959px)');
     var lastFocus = null;
+    var background = [qs('.vq-header', shell), qs('.vq-main', shell), qs('.vq-bottomnav', shell)];
 
     function isOpen() { return shell.hasAttribute('data-drawer-open'); }
 
@@ -47,6 +56,7 @@
       scrim.hidden = false;
       openBtn.setAttribute('aria-expanded', 'true');
       document.body.classList.add('vq-scroll-locked');
+      setInert(background, true);
       var target = closeBtn || qs(FOCUSABLE, drawer);
       if (target) window.setTimeout(function () { target.focus(); }, 0);
     }
@@ -57,6 +67,7 @@
       scrim.hidden = true;
       openBtn.setAttribute('aria-expanded', 'false');
       document.body.classList.remove('vq-scroll-locked');
+      setInert(background, false);
       if (restore !== false && lastFocus && lastFocus.focus) lastFocus.focus();
     }
 
@@ -74,7 +85,7 @@
     return { close: close };
   }
 
-  function setupPalette(drawerApi) {
+  function setupPalette(drawerApi, shell) {
     var dialog = qs('[data-vq-cmd]');
     var input = qs('[data-vq-cmd-input]');
     var list = qs('[data-vq-cmd-list]');
@@ -134,6 +145,7 @@
       lastFocus = document.activeElement;
       dialog.hidden = false;
       document.body.classList.add('vq-scroll-locked');
+      setInert([shell], true);
       qsa('[data-vq-cmd-open]').forEach(function (b) { b.setAttribute('aria-expanded', 'true'); });
       input.value = '';
       render();
@@ -144,6 +156,7 @@
       if (dialog.hidden) return;
       dialog.hidden = true;
       document.body.classList.remove('vq-scroll-locked');
+      setInert([shell], false);
       qsa('[data-vq-cmd-open]').forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
       if (lastFocus && lastFocus.focus) lastFocus.focus();
     }
@@ -174,12 +187,29 @@
     });
   }
 
+  function setupLanguageMenu() {
+    var menu = qs('[data-vq-lang]');
+    if (!menu) return;
+    document.addEventListener('click', function (event) {
+      if (menu.open && !menu.contains(event.target)) menu.open = false;
+    });
+    menu.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && menu.open) {
+        event.preventDefault();
+        menu.open = false;
+        var summary = qs('summary', menu);
+        if (summary) summary.focus();
+      }
+    });
+  }
+
   function init() {
     var shell = qs('[data-vq-shell]');
     if (!shell) return;
     markCurrent();
     var drawerApi = setupDrawer(shell);
-    setupPalette(drawerApi);
+    setupPalette(drawerApi, shell);
+    setupLanguageMenu();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

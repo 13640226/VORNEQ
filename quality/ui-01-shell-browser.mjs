@@ -19,8 +19,11 @@ const browser = await chromium.launch({
   executablePath: process.env.CHROME_PATH || undefined,
 });
 
-async function openPage({ lang = 'fa', width = 1280, height = 800, theme = null } = {}) {
+async function openPage({ lang = 'fa', width = 1280, height = 800, theme = null, session = null } = {}) {
   const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1 });
+  if (session) {
+    await context.addCookies([{ name: 'sessionid', value: session, url: BASE }]);
+  }
   const page = await context.newPage();
   const problems = { console: [], csp: [], pageErrors: [] };
   page.on('console', (msg) => {
@@ -45,6 +48,33 @@ async function openPage({ lang = 'fa', width = 1280, height = 800, theme = null 
   }, { theme });
   const response = await page.goto(`${BASE}/${lang}/shell-test/`, { waitUntil: 'load' });
   return { context, page, response, problems };
+}
+
+
+async function smallTargets(page, scope) {
+  return page.evaluate((scope) => Array.from(document.querySelectorAll(
+    `${scope} a[href], ${scope} button, ${scope} summary, ${scope} [role="option"]`))
+    .filter((el) => el.offsetParent !== null && !el.closest('[hidden]'))
+    .map((el) => { const r = el.getBoundingClientRect(); return { t: (el.textContent || el.getAttribute('aria-label') || '').trim().slice(0, 24), w: Math.round(r.width), h: Math.round(r.height) }; })
+    .filter((r) => r.w < 44 || r.h < 44), scope);
+}
+
+async function headerOverlaps(page) {
+  return page.evaluate(() => {
+    const items = Array.from(document.querySelector('.vq-header').children)
+      .filter((el) => el.offsetParent !== null)
+      .map((el) => ({ c: el.className, r: el.getBoundingClientRect() }));
+    const hits = [];
+    for (let i = 0; i < items.length; i += 1) {
+      for (let j = i + 1; j < items.length; j += 1) {
+        const a = items[i].r; const b = items[j].r;
+        if (a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5) hits.push([items[i].c, items[j].c]);
+      }
+    }
+    const header = document.querySelector('.vq-header').getBoundingClientRect();
+    const outside = items.filter((x) => x.r.left < header.left - 0.5 || x.r.right > header.right + 0.5).map((x) => x.c);
+    return { hits, outside };
+  });
 }
 
 async function overflowX(page) {
@@ -208,6 +238,86 @@ async function shot(page, name) {
   await context.close();
 }
 
+// ---------- Alle Breiten × Sprachen ----------
+{
+  const widths = [320, 360, 390, 414, 768, 1024, 1280, 1440, 1920];
+  const failures = [];
+  for (const lang of ['fa', 'de', 'en']) {
+    for (const width of widths) {
+      const { context, page, problems } = await openPage({ lang, width, height: 860 });
+      const ox = await overflowX(page);
+      const ov = await headerOverlaps(page);
+      const small = await smallTargets(page, '.vq-header');
+      const smallBottom = await smallTargets(page, '.vq-bottomnav');
+      const csp = await page.evaluate(() => window.__vqCsp || []);
+      const errs = problems.console.length + problems.pageErrors.length;
+      if (ox > 0 || ov.hits.length || ov.outside.length || small.length || smallBottom.length || csp.length || errs) {
+        failures.push({ lang, width, ox, ov, small, smallBottom, csp, errs });
+      }
+      await context.close();
+    }
+  }
+  check('all_widths_no_overflow_overlap_small_targets_errors', failures.length === 0, failures);
+}
+
+// ---------- Drawer: alle Ziele, Hintergrund inert ----------
+{
+  const { context, page } = await openPage({ lang: 'fa', width: 360, height: 780 });
+  await page.click('[data-vq-drawer-open]');
+  await page.waitForTimeout(350);
+  const inert = await page.evaluate(() => ['.vq-header', '.vq-main', '.vq-bottomnav'].map((s) => document.querySelector(s).hasAttribute('inert')));
+  check('drawer_background_inert', inert.every(Boolean), inert);
+  const small = await smallTargets(page, '#vq-sidebar');
+  check('drawer_targets_44px', small.length === 0, small);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(350);
+  const after = await page.evaluate(() => ['.vq-header', '.vq-main', '.vq-bottomnav'].map((s) => document.querySelector(s).hasAttribute('inert')));
+  check('drawer_close_removes_inert', after.every((v) => !v), after);
+  await page.click('.vq-bottomnav button[data-vq-cmd-open]');
+  const shellInert = await page.evaluate(() => document.querySelector('[data-vq-shell]').hasAttribute('inert'));
+  const smallOpts = await smallTargets(page, '#vq-cmd');
+  check('palette_background_inert', shellInert);
+  check('palette_targets_44px', smallOpts.length === 0, smallOpts);
+  await page.keyboard.press('Tab');
+  const focus = await page.evaluate(() => document.activeElement && document.activeElement.id);
+  check('palette_focus_trap_tab', focus === 'vq-cmd-input', focus);
+  await page.keyboard.press('Escape');
+  const restored = await page.evaluate(() => document.activeElement && document.activeElement.matches('.vq-bottomnav button[data-vq-cmd-open]'));
+  const shellAfter = await page.evaluate(() => document.querySelector('[data-vq-shell]').hasAttribute('inert'));
+  check('palette_focus_restored_and_inert_removed', restored && !shellAfter, { restored, shellAfter });
+  await context.close();
+}
+
+// ---------- Sprachwechsel über bestehendes set_language ----------
+{
+  const { context, page, problems } = await openPage({ lang: 'fa', width: 390, height: 844 });
+  await page.click('[data-vq-lang] summary');
+  const small = await smallTargets(page, '[data-vq-lang]');
+  check('language_menu_targets_44px', small.length === 0, small);
+  const box = await page.locator('.vq-lang__menu').boundingBox();
+  check('language_menu_inside_viewport', box && box.x >= 0 && box.x + box.width <= 390, box);
+  await shot(page, 'mobile-fa-language-menu.png');
+  await Promise.all([page.waitForURL(/\/de\/shell-test\//, { timeout: 5000 }).catch(() => null),
+    page.click('.vq-lang__option[lang="de"]')]);
+  const html = await page.evaluate(() => [document.documentElement.lang, document.documentElement.dir, location.pathname]);
+  check('language_switch_to_de', html[0] === 'de' && html[1] === 'ltr' && html[2] === '/de/shell-test/', html);
+  check('language_switch_no_errors', problems.console.length === 0 && problems.pageErrors.length === 0, problems);
+  await context.close();
+}
+
+// ---------- Angemeldeter Nutzer (lokale Testsitzung) ----------
+if (process.env.SESSION_ID) {
+  const { context, page, problems } = await openPage({ lang: 'fa', width: 1280, height: 800, session: process.env.SESSION_ID });
+  const mine = await page.locator('.vq-header a[href="/fa/apps/home/"]').count();
+  const login = await page.locator('.vq-header a[href="/fa/accounts/login/"]').count();
+  check('authenticated_account_link', mine === 1 && login === 0, { mine, login });
+  check('authenticated_no_errors', problems.console.length === 0 && problems.pageErrors.length === 0, problems);
+  await shot(page, 'desktop-fa-authenticated.png');
+  await context.close();
+} else {
+  results.push({ name: 'authenticated_account_link', ok: true, detail: 'NOT_VERIFIED (SESSION_ID fehlt)', skipped: true });
+}
+
 // ---------- Bestehende Routen unverändert ----------
 // Vergleicht Statuscodes mit einem Server auf dem Stand von main (BASELINE_URL).
 // Ohne BASELINE_URL gilt: jede Route < 400 (anonym; 302 = Login-Weiterleitung).
@@ -230,5 +340,6 @@ async function shot(page, name) {
 
 await browser.close();
 const failed = results.filter((r) => !r.ok);
-console.log(JSON.stringify({ base: BASE, total: results.length, failed: failed.length, results }, null, 2));
+const skipped = results.filter((r) => r.skipped).map((r) => r.name);
+console.log(JSON.stringify({ base: BASE, total: results.length, failed: failed.length, skipped, results }, null, 2));
 process.exit(failed.length ? 1 : 0);

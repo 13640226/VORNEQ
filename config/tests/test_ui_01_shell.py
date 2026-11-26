@@ -64,6 +64,42 @@ class ShellMarkupTests(TestCase):
         self.assertIn("پیش‌نمایش قاب برنامه", fa)
         self.assertIn("Vorschau des App-Rahmens", de)
 
+    def test_english_is_ltr(self):
+        en = self.client.get(_url("en")).content.decode()
+        self.assertRegex(en, r'<html lang="en" dir="ltr"')
+        self.assertIn("App shell preview", en)
+
+    def test_language_switcher_posts_with_csrf_for_all_languages(self):
+        html = self.client.get(_url("fa")).content.decode()
+        with translation.override("fa"):
+            action = reverse("set_language")
+        self.assertEqual(html.count(f'action="{action}" method="post"'), 3)
+        self.assertEqual(html.count('name="csrfmiddlewaretoken"'), 3)
+        for code in ("fa", "en", "de"):
+            self.assertIn(f'name="language" value="{code}"', html)
+        self.assertIn('name="next" value="/fa/shell-test/"', html)
+
+    def test_account_navigation_guest_and_authenticated(self):
+        guest = self.client.get(_url()).content.decode()
+        with translation.override("fa"):
+            login, mine = reverse("account_login"), reverse("platform_shell:personal_home")
+        self.assertIn(f'href="{login}"', guest)
+        self.assertNotIn(f'href="{mine}"', guest)
+        self.client.force_login(get_user_model().objects.create_user(username="ui01-member"))
+        member = self.client.get(_url()).content.decode()
+        self.assertIn(f'href="{mine}"', member)
+        self.assertNotIn(f'href="{login}"', member)
+
+    def test_preview_makes_no_ai_or_ledger_calls(self):
+        from unittest import mock
+
+        with mock.patch("apps.ai_ledger.service.reserve") as reserve, mock.patch(
+            "apps.ai_core.budgeted_provider.BudgetedProvider.stream_knowledge"
+        ) as stream:
+            self.assertEqual(self.client.get(_url()).status_code, 200)
+        reserve.assert_not_called()
+        stream.assert_not_called()
+
     def test_theme_bootstrap_loads_before_styles(self):
         html = self.client.get(_url()).content.decode()
         boot = html.index("js/theme-bootstrap")

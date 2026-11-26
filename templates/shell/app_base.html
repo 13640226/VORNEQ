@@ -1,5 +1,5 @@
 {% load static i18n %}<!DOCTYPE html>
-{% get_current_language as LANG %}
+{% get_current_language as LANG %}{% get_available_languages as SHELL_LANGUAGES %}
 <html lang="{{ LANG|default:'en' }}" dir="{% if LANG == 'fa' %}rtl{% else %}ltr{% endif %}" data-theme="navy">
 <head>
     <meta charset="UTF-8">
@@ -44,7 +44,7 @@
             {% include 'partials/_brand_symbol.html' with symbol_class='vq-brand__symbol' only %}
             <bdi dir="ltr" class="vq-brand__name">VORNEQ</bdi>
         </a>
-        <button type="button" class="vq-search-trigger" data-vq-cmd-open aria-haspopup="dialog" aria-controls="vq-cmd" aria-keyshortcuts="Control+K Meta+K">
+        <button type="button" class="vq-search-trigger" data-vq-cmd-open aria-haspopup="dialog" aria-controls="vq-cmd" aria-keyshortcuts="Control+K Meta+K" aria-label="{% trans 'Search or jump to…' %}">
             <svg class="vq-icon" aria-hidden="true"><use href="#vq-i-search"/></svg>
             <span class="vq-search-trigger__label">{% trans "Search or jump to…" %}</span>
             <kbd class="vq-kbd" dir="ltr">Ctrl K</kbd>
@@ -54,6 +54,19 @@
             <button type="button" class="vq-iconbtn" data-theme-option="dark" aria-pressed="false" aria-label="{% trans 'Dark theme' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-moon"/></svg></button>
             <button type="button" class="vq-iconbtn" data-theme-option="system" aria-pressed="false" aria-label="{% trans 'System theme' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-auto"/></svg></button>
         </div>
+        <details class="vq-lang" data-vq-lang>
+            <summary class="vq-iconbtn vq-lang__trigger" aria-label="{% trans 'Choose language' %}"><span dir="ltr">{{ LANG|upper }}</span></summary>
+            <div class="vq-lang__menu" role="group" aria-label="{% trans 'Language' %}">
+                {% for code, name in SHELL_LANGUAGES %}
+                <form action="{% url 'set_language' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <input type="hidden" name="language" value="{{ code }}">
+                    <button type="submit" class="vq-lang__option" lang="{{ code }}"{% if code == LANG %} aria-current="true"{% endif %}><span dir="ltr">{{ code|upper }}</span><span>{{ name }}</span></button>
+                </form>
+                {% endfor %}
+            </div>
+        </details>
         {% if request.user.is_authenticated %}
         <a class="vq-iconbtn" href="{% url 'platform_shell:personal_home' %}" aria-label="{% trans 'My area' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-user"/></svg></a>
         {% else %}

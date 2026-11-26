@@ -1,7 +1,8 @@
 {
   "base": "http://127.0.0.1:8765",
-  "total": 41,
+  "total": 55,
   "failed": 0,
+  "skipped": [],
   "results": [
     {
       "name": "desktop_fa_status_200",
@@ -269,6 +270,107 @@
         "y": 0,
         "width": 300,
         "height": 844
+      }
+    },
+    {
+      "name": "all_widths_no_overflow_overlap_small_targets_errors",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "drawer_background_inert",
+      "ok": true,
+      "detail": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "name": "drawer_targets_44px",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "drawer_close_removes_inert",
+      "ok": true,
+      "detail": [
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "name": "palette_background_inert",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "palette_targets_44px",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "palette_focus_trap_tab",
+      "ok": true,
+      "detail": "vq-cmd-input"
+    },
+    {
+      "name": "palette_focus_restored_and_inert_removed",
+      "ok": true,
+      "detail": {
+        "restored": true,
+        "shellAfter": false
+      }
+    },
+    {
+      "name": "language_menu_targets_44px",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "language_menu_inside_viewport",
+      "ok": true,
+      "detail": {
+        "x": 64.3125,
+        "y": 53.5,
+        "width": 180,
+        "height": 150
+      }
+    },
+    {
+      "name": "language_switch_to_de",
+      "ok": true,
+      "detail": [
+        "de",
+        "ltr",
+        "/de/shell-test/"
+      ]
+    },
+    {
+      "name": "language_switch_no_errors",
+      "ok": true,
+      "detail": {
+        "console": [],
+        "csp": [],
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "authenticated_account_link",
+      "ok": true,
+      "detail": {
+        "mine": 1,
+        "login": 0
+      }
+    },
+    {
+      "name": "authenticated_no_errors",
+      "ok": true,
+      "detail": {
+        "console": [],
+        "csp": [],
+        "pageErrors": []
       }
     },
     {
