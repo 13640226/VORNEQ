@@ -11,6 +11,15 @@ from .policy import actor_allowed, paid_provider_enabled, PRODUCTION_SERVICE_ID
 
 LABELS = {
     "en": {
+        'composer': 'Create an image',
+        'square': 'Square',
+        'landscape': 'Landscape',
+        'portrait': 'Portrait',
+        'readonly_intro': 'Production preview - the Studio interface is available in read-only mode.',
+        'readonly_mode': 'Image generation is not enabled in Production.',
+        'readonly_send': 'Create one image - unavailable',
+        'readonly_note': 'No image job can be submitted and no paid OpenAI request is made from this page.',
+        'readonly_history': 'Image history is not available in Production preview.',
         "status_rejected": "Request rejected before queueing. No new image charge was initiated.",
         "status_rate_limited": "Request rejected. Try a new request in {seconds} seconds; no new image charge was initiated.",
         "status_daily_limit": "Daily request limit reached. No new image charge was initiated.",
@@ -69,6 +78,15 @@ LABELS = {
         "mock_badge": "Mock",
     },
     "de": {
+        'composer': 'Bild erstellen',
+        'square': 'Quadrat',
+        'landscape': 'Querformat',
+        'portrait': 'Hochformat',
+        'readonly_intro': 'Produktionsvorschau - das Bildstudio ist nur lesbar.',
+        'readonly_mode': 'Die Bildgenerierung ist in Produktion nicht aktiviert.',
+        'readonly_send': 'Bild erstellen - nicht verfügbar',
+        'readonly_note': 'Auf dieser Seite werden keine Bildaufträge oder kostenpflichtigen OpenAI-Anfragen gesendet.',
+        'readonly_history': 'Der Bildverlauf ist in der Produktionsvorschau nicht verfügbar.',
         "status_rejected": "Anfrage vor dem Einreihen abgelehnt. Keine neuen Bildkosten ausgelöst.",
         "status_rate_limited": "Anfrage abgelehnt. Neue Anfrage in {seconds} Sekunden möglich; keine neuen Bildkosten ausgelöst.",
         "status_daily_limit": "Tägliches Anfragelimit erreicht. Keine neuen Bildkosten ausgelöst.",
@@ -127,6 +145,15 @@ LABELS = {
         "mock_badge": "Mock",
     },
     "fa": {
+        'composer': 'ساخت تصویر',
+        'square': 'مربع',
+        'landscape': 'افقی',
+        'portrait': 'عمودی',
+        'readonly_intro': 'پیش\u200cنمایش محیط اصلی؛ فقط خواندنی.',
+        'readonly_mode': 'تولید تصویر در محیط اصلی فعال نیست.',
+        'readonly_send': 'ساخت تصویر - غیرفعال',
+        'readonly_note': 'هیچ درخواست پولی یا کار جدیدی ایجاد نمی\u200cشود.',
+        'readonly_history': 'تاریخچه تصاویر در پیش\u200cنمایش در دسترس نیست.',
         "status_rejected": "درخواست پیش از ورود به صف رد شد. هزینه‌ای برای تولید تصویر جدید آغاز نشد.",
         "status_rate_limited": "درخواست رد شد. پس از {seconds} ثانیه می‌توانید درخواست جدیدی بفرستید؛ هزینه جدیدی آغاز نشد.",
         "status_daily_limit": "سهمیه روزانه درخواست‌ها پر شده است. هزینه جدیدی آغاز نشد.",
@@ -214,13 +241,29 @@ def image_studio_allowed(user):
     return provider == "mock" or (provider == "openai" and paid_provider_enabled())
 
 
+def _studio_language(request):
+    requested = request.GET.get("lang", "")
+    language = requested if requested in LABELS else (get_language() or "en")[:2]
+    return language if language in LABELS else "en"
+
+
+def _studio_context(request, language):
+    from config.views import _ai_chat_available_for
+    return {"labels": LABELS[language], "studio_active": True,
+            "image_studio_enabled": True,
+            "phase_c_chat_enabled": _ai_chat_available_for(request.user),
+            "chat_url": reverse("ai_core:chat")}
+
+
 @never_cache
 @require_GET
 def image_studio_page(request):
     if production_studio_preview_allowed(request.user):
-        result = render(request, "ai_core/image_studio_production_preview.html", {
-            "chat_url": reverse("ai_core:chat"),
-        })
+        language = _studio_language(request)
+        request.LANGUAGE_CODE = language
+        with override(language):
+            result = render(request, "ai_core/image_studio_production_preview.html",
+                            _studio_context(request, language))
         result["Cache-Control"] = "no-store, private"
         result["X-Robots-Tag"] = "noindex, nofollow"
         return result
@@ -235,19 +278,15 @@ def image_studio_page(request):
         return result
     if not image_studio_allowed(request.user):
         raise Http404("Image Studio unavailable")
-    requested = request.GET.get("lang", "")
-    language = requested if requested in LABELS else (get_language() or "en")[:2]
-    if language not in LABELS:
-        language = "en"
+    language = _studio_language(request)
     provider = getattr(settings, "VORNEQ_AI_IMAGE_PROVIDER", "mock")
     request.LANGUAGE_CODE = language
     with override(language):
         result = render(request, "ai_core/image_studio.html", {
-            "labels": LABELS[language],
+            **_studio_context(request, language),
             "image_paid": provider == "openai",
             "image_create_url": reverse("ai_core:image-jobs"),
             "image_history_url": reverse("ai_core:image-history"),
-            "chat_url": reverse("ai_core:chat"),
         })
     result["Cache-Control"] = "no-store, private"
     result["X-Robots-Tag"] = "noindex, nofollow"

@@ -27,7 +27,7 @@ class ProductionImagePreviewTests(TestCase):
                 expected = user.pk in (1, 3)
                 self.assertEqual(production_studio_preview_allowed(user), expected)
                 self.client.force_login(user)
-                response = self.client.get(reverse("ai_core:image-studio"))
+                response = self.client.get(reverse("ai_core:image-studio") + "?lang=en")
                 self.assertEqual(response.status_code, 200 if expected else 404)
                 if expected:
                     self.assertContains(response, "Production preview")

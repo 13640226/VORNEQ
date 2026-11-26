@@ -1,39 +1,43 @@
-{% extends "base.html" %}
-{% load static %}
-{% block title %}Image Studio — VORNEQ{% endblock %}
+{% extends "shell/app_base.html" %}
+{% load static i18n %}
+{% block title %}{{ labels.title }} — VORNEQ{% endblock %}
 {% block body_class %}vq-image-page{% endblock %}
 {% block meta %}<meta name="robots" content="noindex,nofollow">{% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="{% static 'css/ai-brand.css' %}"><link rel="stylesheet" href="{% static 'css/image-studio.css' %}">{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/image-studio.css' %}"><link rel="stylesheet" href="{% static 'css/image-studio-v8.css' %}">
+{% endblock %}
+{% block sidebar_items %}{% include "shell/_workspace_sidebar.html" %}{% endblock %}
+{% block bottomnav_items %}{% include "shell/_workspace_bottomnav.html" %}{% endblock %}
 {% block content %}
-<section class="vq-image" aria-labelledby="image-studio-title">
+{% include "home/v8/_icons.html" %}
+<section class="vq-image vq-is" data-vq-image-v8 aria-labelledby="image-studio-title">
   <header class="vq-image__header">
-    {% include "partials/_ai_brand.html" %}
+    <span class="vq-is__icon"><svg class="vq-icon" aria-hidden="true"><use href="#vq-ix-image"/></svg></span>
     <p class="vq-image__kicker">VORNEQ · AI · PRODUCTION</p>
-    <h1 id="image-studio-title">Image Studio</h1>
-    <p>Production preview — the Studio interface is available in read-only mode.</p>
-    <p class="vq-image__mode" role="status">Image generation is not enabled in Production.</p>
+    <h1 id="image-studio-title">{{ labels.title }}</h1>
+    <p>{{ labels.readonly_intro }}</p>
+    <p class="vq-image__mode" role="status">{{ labels.readonly_mode }}</p>
   </header>
   <div class="vq-image__layout">
     <section class="vq-image__form" aria-labelledby="image-prompt-title">
-      <h2 id="image-prompt-title">Create an image</h2>
-      <label for="vq-image-prompt">Describe the image</label>
-      <textarea id="vq-image-prompt" rows="5" placeholder="Describe the image you want to create…"></textarea>
-      <label for="vq-image-size">Image dimensions</label>
-      <select id="vq-image-size">
+      <h2 id="image-prompt-title">{{ labels.composer }}</h2>
+      <label for="vq-image-prompt">{{ labels.prompt }}</label>
+      <textarea readonly id="vq-image-prompt" rows="5" placeholder="{{ labels.placeholder }}"></textarea>
+      <label for="vq-image-size">{{ labels.size }}</label>
+      <select disabled id="vq-image-size">
         <option>1024 × 1024</option><option>1536 × 1024</option><option>1024 × 1536</option>
       </select>
-      <button class="vq-image__submit" type="button" disabled aria-disabled="true">Create one image — unavailable</button>
-      <p role="note">No image job can be submitted and no paid OpenAI request is made from this page.</p>
+      <button class="vq-image__submit" type="button" disabled aria-disabled="true">{{ labels.readonly_send }}</button>
+      <p role="note">{{ labels.readonly_note }}</p>
     </section>
     <section class="vq-image__result" aria-labelledby="image-result-title">
-      <h2 id="image-result-title">Job result</h2>
-      <p role="status">No request has been submitted.</p>
+      <h2 id="image-result-title">{{ labels.heading }}</h2>
+      <p role="status">{{ labels.status_wait }}</p>
     </section>
   </div>
   <section class="vq-gallery" aria-labelledby="image-history-title">
-    <h2 id="image-history-title">Image History</h2>
-    <p>Image history is not available in Production preview.</p>
+    <h2 id="image-history-title">{{ labels.gallery_title }}</h2>
+    <p>{{ labels.readonly_history }}</p>
   </section>
-  <p class="vq-image__back"><a href="{{ chat_url }}">Back to AI Chat</a></p>
+  {% if phase_c_chat_enabled %}<p class="vq-image__back"><a href="{{ chat_url }}">{{ labels.back }}</a></p>{% endif %}
 </section>
 {% endblock %}

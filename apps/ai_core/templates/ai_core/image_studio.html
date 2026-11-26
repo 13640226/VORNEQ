@@ -1,21 +1,25 @@
-{% extends "base.html" %}
-{% load static %}
+{% extends "shell/app_base.html" %}
+{% load static i18n %}
 {% block title %}{{ labels.title }} — VORNEQ{% endblock %}
 {% block body_class %}vq-image-page{% endblock %}
 {% block meta %}
 <meta name="robots" content="noindex,nofollow">
 <meta name="description" content="{{ labels.intro }}">
 {% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="{% static 'css/ai-brand.css' %}">
+{% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/image-studio.css' %}">
+<link rel="stylesheet" href="{% static 'css/image-studio-v8.css' %}">
 {% endblock %}
+{% block sidebar_items %}{% include "shell/_workspace_sidebar.html" %}{% endblock %}
+{% block bottomnav_items %}{% include "shell/_workspace_bottomnav.html" %}{% endblock %}
 {% block content %}
-<section class="vq-image" data-vq-image-studio
+{% include "home/v8/_icons.html" %}
+<section class="vq-image vq-is" data-vq-image-v8 data-vq-image-studio
   data-create-url="{{ image_create_url }}"
   data-user-id="{{ request.user.pk }}"
   data-paid="{% if image_paid %}true{% else %}false{% endif %}">
   <header class="vq-image__header">
-    {% include "partials/_ai_brand.html" %}
+    <span class="vq-is__icon"><svg class="vq-icon" aria-hidden="true"><use href="#vq-ix-image"/></svg></span>
     <p class="vq-image__kicker"><span class="vq-image__led" aria-hidden="true"></span>VORNEQ · AI · STAGING</p>
     <h1>{{ labels.title }}</h1>
     <p>{{ labels.intro }}</p>
@@ -23,17 +27,24 @@
   </header>
   <div class="vq-image__layout">
     <form class="vq-image__form" data-vq-image-form>
+      <h2>{{ labels.composer }}</h2>
       {% csrf_token %}
       <label for="vq-image-prompt">{{ labels.prompt }}</label>
       <textarea id="vq-image-prompt" data-vq-image-prompt rows="5" minlength="4"
         maxlength="2000" required autocomplete="off"
-        placeholder="{{ labels.placeholder }}"></textarea>
+        placeholder="{{ labels.placeholder }}" aria-describedby="vq-is-count"></textarea>
+      <p id="vq-is-count" class="vq-is__count"><span data-vq-image-count>0</span> / 2000</p>
       <label for="vq-image-size">{{ labels.size }}</label>
       <select id="vq-image-size" data-vq-image-size>
         <option value="1024x1024">1024 × 1024</option>
         <option value="1536x1024">1536 × 1024</option>
         <option value="1024x1536">1024 × 1536</option>
       </select>
+      <div class="vq-is__ratios" role="group" aria-label="{{ labels.size }}" data-vq-ratios hidden>
+        <button type="button" data-vq-ratio="1024x1024" aria-pressed="true"><span class="vq-is__shape vq-is__shape--square" aria-hidden="true"></span>{{ labels.square }} <bdi>1:1</bdi></button>
+        <button type="button" data-vq-ratio="1536x1024" aria-pressed="false"><span class="vq-is__shape vq-is__shape--landscape" aria-hidden="true"></span>{{ labels.landscape }} <bdi>3:2</bdi></button>
+        <button type="button" data-vq-ratio="1024x1536" aria-pressed="false"><span class="vq-is__shape vq-is__shape--portrait" aria-hidden="true"></span>{{ labels.portrait }} <bdi>2:3</bdi></button>
+      </div>
       <label class="vq-image__consent" for="vq-image-consent">
         <input id="vq-image-consent" type="checkbox" data-vq-image-consent required>
         <span>{% if image_paid %}{{ labels.consent_paid }}{% else %}{{ labels.consent_mock }}{% endif %}</span>
@@ -43,6 +54,7 @@
     </form>
     <section class="vq-image__result" aria-labelledby="vq-image-result-title">
       <h2 id="vq-image-result-title">{{ labels.heading }}</h2>
+      <div class="vq-is__empty" data-vq-image-empty aria-hidden="true"><svg class="vq-icon"><use href="#vq-ix-image"/></svg></div>
       <p class="vq-image__status" data-vq-image-status role="status" aria-live="polite"
         data-wait="{{ labels.status_wait }}"
         data-sending="{{ labels.status_sending }}"
@@ -101,7 +113,7 @@
       <img data-vq-viewer-img alt="{{ labels.image_alt }}" referrerpolicy="no-referrer">
     </div>
   </dialog>
-  <p class="vq-image__back"><a href="{{ chat_url }}">{{ labels.back }}</a></p>
+  {% if phase_c_chat_enabled %}<p class="vq-image__back"><a href="{{ chat_url }}">{{ labels.back }}</a></p>{% endif %}
   <noscript><p>{{ labels.status_error }}</p></noscript>
 </section>
 {% endblock %}
@@ -109,4 +121,5 @@
 {{ labels|json_script:"vq-image-labels" }}
 <script src="{% static 'js/image-studio.js' %}" defer></script>
 <script src="{% static 'js/image-studio-gallery.js' %}" defer></script>
+<script src="{% static 'js/image-studio-v8.js' %}" defer></script>
 {% endblock %}

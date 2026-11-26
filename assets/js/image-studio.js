@@ -56,6 +56,7 @@
   function message(name, seconds) {
     const brand = root.querySelector("[data-vq-ai-brand]");
     if (brand) brand.dataset.state = ["sending", "queued", "running"].includes(name) ? "thinking" : ["wait", "completed"].includes(name) ? "idle" : "error";
+    status.dataset.state = name;
     const text = status.dataset[name] || status.dataset.error;
     status.textContent = seconds === undefined ? text : text.replace("{seconds}", String(seconds));
   }
