@@ -71,3 +71,11 @@ class StudioV8Tests(NoProviderMixin, TestCase):
                 self.assertTrue(any("disabled" in a for a in doc.select("button")
                                     if a.get("class") == "vq-image__submit"))
                 self.assertIn("readonly", doc.select("textarea")[0])
+
+    def test_preview_size_choices_are_selectable(self):
+        for lang in ('en', 'de', 'fa'):
+            with self.subTest(lang=lang):
+                doc = Markup(self.visit(lang, preview=True))
+                size = next(a for a in doc.select('select') if a.get('id') == 'vq-image-size')
+                self.assertNotIn('disabled', size)
+                self.assertEqual({a.get('value') for a in doc.select('option') if a.get('value') in {'1024x1024', '1536x1024', '1024x1536'}}, {'1024x1024', '1536x1024', '1024x1536'})
