@@ -276,6 +276,8 @@ def discover(request, domain=None):
         "domain_supported": domain_supported,
         "is_recent": not query and not requested_type,
     }
+    context.update(phase_c_chat_enabled=_ai_chat_available_for(request.user),
+                   image_studio_enabled=_image_studio_available_for(request.user))
     return render(request, "discover/placeholder.html", context)
 
 

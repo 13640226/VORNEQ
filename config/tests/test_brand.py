@@ -12,13 +12,15 @@ class BrandIntegrationTests(TestCase):
         content = response.content.decode()
 
         # UI-02: the homepage renders the same canonical symbol and wordmark in its
-        # compact application header; every other page keeps the site header.
+        # compact application header; Discover now shares the V8 header.
         self.assertContains(response, 'class="vq-brand"')
         self.assertContains(response, 'class="vq-brand__symbol"')
         self.assertContains(response, 'dir="ltr" class="vq-brand__name">VORNEQ</bdi>')
         other = self.client.get(reverse("discover"))
-        self.assertContains(other, 'class="standalone-nav__brand"')
-        self.assertContains(other, 'class="standalone-nav__wordmark" dir="ltr">VORNEQ</span>')
+        self.assertContains(other, 'class="vq-brand"')
+        self.assertContains(other, 'class="vq-brand__symbol"')
+        self.assertContains(other, staticfiles_storage.url("images/brand/v2/symbol.svg"))
+        self.assertContains(other, 'dir="ltr" class="vq-brand__name">VORNEQ</bdi>')
 
         brand_start = content.index('class="vq-brand"')
         brand_end = content.index("</a>", brand_start)
