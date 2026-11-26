@@ -322,9 +322,11 @@ class HomepageV602RenderingTests(NoProviderMixin, TestCase):
         self.assertIn('localStorage.getItem("vq-side")', bootstrap)
         self.assertNotIn("fetch(", bootstrap)
 
-    def test_other_pages_keep_site_header(self):
+    def test_discover_uses_v8_header_not_legacy_homepage_header(self):
         with translation.override("en"):
             response = self.client.get(reverse("discover"))
-        self.assertContains(response, 'class="standalone-nav')
+        self.assertContains(response, 'class="vq-header')
+        self.assertContains(response, 'class="vq-brand"')
+        self.assertNotContains(response, 'class="standalone-nav')
         self.assertNotContains(response, "vq-appbar")
         self.assertNotContains(response, "v6-workspace.css")
