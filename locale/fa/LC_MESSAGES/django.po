@@ -2582,3 +2582,57 @@ msgstr "شبکه‌ای"
 
 msgid "List"
 msgstr "فهرست"
+
+msgid "New Document"
+msgstr "سند جدید"
+
+msgid "Edit Document"
+msgstr "ویرایش سند"
+
+msgid "Create, organize, and collaborate on your private documents."
+msgstr "اسناد خصوصی خود را ایجاد و سازماندهی کنید و به اشتراک بگذارید."
+
+msgid "No documents yet."
+msgstr "هنوز سندی وجود ندارد."
+
+msgid "Search documents"
+msgstr "جستجوی اسناد"
+
+msgid "Back to Documents"
+msgstr "بازگشت به اسناد"
+
+msgid "Collaboration"
+msgstr "همکاری"
+
+msgid "Share access"
+msgstr "اشتراک دسترسی"
+
+msgid "Revoke access"
+msgstr "لغو دسترسی"
+
+msgid "No collaborators yet."
+msgstr "هنوز همکاری وجود ندارد."
+
+msgid "Share"
+msgstr "اشتراک‌گذاری"
+
+msgid "Revoke"
+msgstr "لغو"
+
+msgid "Comma-separated tags"
+msgstr "برچسب‌ها با ویرگول جدا شوند"
+
+msgid "Username"
+msgstr "نام کاربری"
+
+msgid "Role"
+msgstr "نقش"
+
+msgid "Editor"
+msgstr "ویرایشگر"
+
+msgid "Viewer"
+msgstr "بیننده"
+
+msgid "User not found."
+msgstr "کاربر یافت نشد."

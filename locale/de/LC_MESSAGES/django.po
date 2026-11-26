@@ -2893,3 +2893,48 @@ msgstr "Raster"
 
 msgid "List"
 msgstr "Liste"
+
+msgid "New Document"
+msgstr "Neues Dokument"
+
+msgid "Edit Document"
+msgstr "Dokument bearbeiten"
+
+msgid "Create, organize, and collaborate on your private documents."
+msgstr "Erstellen, organisieren und gemeinsam bearbeiten Sie Ihre privaten Dokumente."
+
+msgid "No documents yet."
+msgstr "Noch keine Dokumente."
+
+msgid "Search documents"
+msgstr "Dokumente suchen"
+
+msgid "Back to Documents"
+msgstr "Zurück zu Dokumenten"
+
+msgid "Collaboration"
+msgstr "Zusammenarbeit"
+
+msgid "Share access"
+msgstr "Zugriff teilen"
+
+msgid "Revoke access"
+msgstr "Zugriff widerrufen"
+
+msgid "No collaborators yet."
+msgstr "Noch keine Mitwirkenden."
+
+msgid "Share"
+msgstr "Teilen"
+
+msgid "Revoke"
+msgstr "Widerrufen"
+
+msgid "Editor"
+msgstr "Bearbeiter"
+
+msgid "Viewer"
+msgstr "Betrachter"
+
+msgid "User not found."
+msgstr "Benutzer nicht gefunden."
