@@ -244,6 +244,23 @@ class DiscoverRouteContractTests(TestCase):
                 self.assertContains(response, 'class="discover-page"')
                 self.assertContains(response, 'class="discover-controls"')
 
+    def test_knowledge_workspace_routes_and_type_scope(self):
+        with override("en"):
+            for route in ("knowledge", "discover_knowledge"):
+                for requested in ("", "article", "libraryitem", "audio", "product", "mediaasset"):
+                    with self.subTest(route=route, requested=requested):
+                        with patch("config.views.UnifiedSearch.search", return_value={"results": [], "total": 0}) as search:
+                            response = self.client.get(reverse(route), {"type": requested})
+                        self.assertEqual(response.status_code, 200)
+                        self.assertTemplateUsed(response, "knowledge/index.html")
+                        self.assertContains(response, 'data-knowledge-workspace="true"')
+                        allowed = {"article", "libraryitem", "audio"}
+                        expected = {requested} if requested in allowed else allowed
+                        self.assertEqual(search.call_args.kwargs["filters"]["types"], expected)
+            response = self.client.get(reverse("discover"))
+            self.assertTemplateUsed(response, "discover/placeholder.html")
+            self.assertNotContains(response, 'data-knowledge-workspace="true"')
+
     def test_placeholder_does_not_define_discover_product_surface(self):
         with override("en"):
             response = self.client.get(reverse("discover"))

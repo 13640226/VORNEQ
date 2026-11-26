@@ -1,5 +1,5 @@
 {% load i18n %}
-<a class="vq-bottomnav__link" href="{% url 'home' %}" {% if not studio_active and not search_active and not discover_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a>
+<a class="vq-bottomnav__link" href="{% url 'home' %}" {% if not studio_active and not search_active and not discover_active and not knowledge_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a>
 {% if studio_active %}
 <a class="vq-bottomnav__link" href="{% url 'ai_core:image-studio' %}?lang={{ LANG|slice:':2' }}" aria-current="page"><svg class="vq-icon" aria-hidden="true"><use href="#vq-ix-image"/></svg><span>{% trans "Image Studio" %}</span></a>
 {% elif phase_c_chat_enabled %}

@@ -233,6 +233,10 @@ def _attach_discover_graphs(payload):
     return {**payload, "results": enriched}
 
 
+def knowledge(request):
+    return discover(request, domain="knowledge")
+
+
 def discover(request, domain=None):
     """Render public discovery using retrieval-only, disclosure-safe metadata."""
     service = UnifiedSearch()
@@ -241,7 +245,8 @@ def discover(request, domain=None):
     page = _positive_int(request.GET.get("page"), 1)
 
     filters = {}
-    if requested_type in DISCOVER_TYPES:
+    allowed_types = DISCOVER_DOMAIN_TYPES["knowledge"] if domain == "knowledge" else DISCOVER_TYPES
+    if requested_type in allowed_types:
         filters["types"] = {requested_type}
     elif domain in DISCOVER_DOMAIN_TYPES:
         filters["types"] = DISCOVER_DOMAIN_TYPES[domain]
@@ -272,13 +277,13 @@ def discover(request, domain=None):
         **payload,
         "discover_domain": domain,
         "discover_query": query,
-        "current_type": requested_type if requested_type in DISCOVER_TYPES else "",
+        "current_type": requested_type if requested_type in allowed_types else "",
         "domain_supported": domain_supported,
         "is_recent": not query and not requested_type,
     }
     context.update(phase_c_chat_enabled=_ai_chat_available_for(request.user),
                    image_studio_enabled=_image_studio_available_for(request.user))
-    return render(request, "discover/placeholder.html", context)
+    return render(request, "knowledge/index.html" if domain == "knowledge" else "discover/placeholder.html", context)
 
 
 def search_page(request):
