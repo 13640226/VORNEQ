@@ -384,3 +384,19 @@ class PublicFixtureGuardAllSurfacesTests(TestCase):
 
         for product in (self.real, self.fixture):
             self.assertEqual(publication._is_known_fixture(product), selectors.is_known_fixture(product))
+
+
+class MarketplaceV8Tests(TestCase):
+    def test_public_shell_and_layout_controls(self):
+        for lang in ('de', 'fa', 'en'):
+            with self.subTest(lang=lang):
+                response = self.client.get(f'/{lang}/marketplace/')
+                self.assertContains(response, 'id="vq-main"', count=1)
+                self.assertContains(response, 'data-layout="grid"')
+                self.assertContains(response, 'data-layout="list"')
+                from django.templatetags.static import static
+                self.assertContains(response, static('css/marketplace-v8.css'))
+
+    def test_private_routes_require_login(self):
+        for name in ('seller_dashboard', 'product_create', 'review_queue'):
+            self.assertEqual(self.client.get(reverse('marketplace:'+name)).status_code, 302)

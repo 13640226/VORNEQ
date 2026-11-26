@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "shell/app_base.html" %}
 {% load static i18n %}
 
 {% block title %}{% trans "Seller Dashboard" %} — VORNEQ{% endblock %}
@@ -7,8 +7,10 @@
 {{ block.super }}
 <link rel="stylesheet" href="{% static 'css/marketplace.css' %}">
 <link rel="stylesheet" href="{% static 'css/marketplace-v2.css' %}">
+<link rel="stylesheet" href="{% static 'css/marketplace-v8.css' %}">
 {% endblock %}
 
+{% block body_class %}vq-marketplace-workspace{% endblock %}
 {% block content %}
 <section class="marketplace-page mkt-v2" data-marketplace-ui="v2">
   <div class="marketplace-shell">
