@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "shell/app_base.html" %}
 {% load static i18n %}
 
 {% block title %}{% trans "Your Home" %} — VORNEQ{% endblock %}
@@ -15,6 +15,10 @@
         <p>{% trans "Pick up recent documents or return to something you viewed." %}</p>
     </header>
 
+    {% if identity_required %}
+    <p role="status">{% trans "Verify your email address to access your personal workspace." %}</p>
+    <a href="{% url 'account_email' %}">{% trans "Email Addresses" %}</a>
+    {% else %}
     <div class="personal-home__sections">
         <section class="personal-home__section" aria-labelledby="recent-documents-title">
             <div class="personal-home__section-heading">
@@ -57,5 +61,6 @@
             {% endif %}
         </section>
     </div>
+    {% endif %}
 </section>
 {% endblock %}

@@ -112,3 +112,17 @@ class PersonalHomeTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(document.audit_log.count(), before)
+
+    def test_unbound_account_sees_onboarding_without_documents(self):
+        UserIdentity.objects.filter(user=self.user).delete()
+        hidden = DocumentService.create_document(user=self.other, title="Private sentinel")
+        response = self.client.get(reverse("platform_shell:personal_home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["identity_required"])
+        self.assertNotContains(response, hidden.title)
+        self.assertFalse(UserIdentity.objects.filter(user=self.user).exists())
+
+    def test_inactive_identity_still_denied(self):
+        Identity.objects.filter(pk=UserIdentity.objects.get(user=self.user).identity_id).update(is_active=False)
+        response = self.client.get(reverse("platform_shell:personal_home"))
+        self.assertEqual(response.status_code, 403)

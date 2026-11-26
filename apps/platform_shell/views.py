@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.urls import NoReverseMatch, reverse
 
 from apps.documents.services import DocumentService
+from apps.documents.identity_resolver import IdentityNotFoundError
 
 from .registry import registry
 
@@ -25,18 +26,16 @@ def _launcher_app(manifest):
 @login_required
 def personal_home(request):
     """Compose a lightweight authenticated home from domain-owned summaries."""
-    return render(
-        request,
-        "platform_shell/personal_home.html",
-        {
-            "recent_documents": DocumentService.personal_home_recent_documents(
-                user=request.user,
-            ),
-            "recently_viewed_documents": DocumentService.personal_home_recently_viewed(
-                user=request.user,
-            ),
-        },
-    )
+    try:
+        recent = DocumentService.personal_home_recent_documents(user=request.user)
+        viewed = DocumentService.personal_home_recently_viewed(user=request.user)
+    except IdentityNotFoundError:
+        # An unbound account may see onboarding, never document data.
+        return render(request, "platform_shell/personal_home.html", {"identity_required": True})
+    return render(request, "platform_shell/personal_home.html", {
+        "recent_documents": recent,
+        "recently_viewed_documents": viewed,
+    })
 
 
 @login_required
