@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "shell/app_base.html" %}
 {% load static i18n trust_context %}
 
 {% block title %}{% trans "Marketplace" %} — VORNEQ{% endblock %}
@@ -14,8 +14,10 @@
 <link rel="stylesheet" href="{% static 'css/marketplace-index-system.css' %}">
 <link rel="stylesheet" href="{% static 'css/trust-context.css' %}">
 <link rel="stylesheet" href="{% static 'css/marketplace-v2.css' %}">
+<link rel="stylesheet" href="{% static 'css/marketplace-v8.css' %}">
 {% endblock %}
 
+{% block body_class %}vq-marketplace-workspace{% endblock %}
 {% block content %}
 <section class="marketplace-page mkt-v2" data-marketplace-ui="v2">
   <div class="marketplace-shell">
@@ -69,6 +71,10 @@
       </nav>
 
       <div class="mkt-toolbar__row">
+        <div class="mkt-layout-toggle" hidden data-marketplace-layout>
+          <button type="button" class="mkt-button mkt-button--quiet" data-layout="grid" aria-pressed="true">{% trans "Grid" %}</button>
+          <button type="button" class="mkt-button mkt-button--quiet" data-layout="list" aria-pressed="false">{% trans "List" %}</button>
+        </div>
         <p class="mkt-toolbar__count" aria-live="polite">
           {% blocktrans count total=paginator.count %}{{ total }} product{% plural %}{{ total }} products{% endblocktrans %}
           {% if has_filters %}
@@ -91,7 +97,7 @@
 
     <div class="marketplace-results-surface mkt-results">
       {% if products %}
-        <ul class="mkt-grid" role="list">
+        <ul class="mkt-grid" id="marketplace-results" role="list">
           {% for product in products %}
             <li class="mkt-card">
               <a href="{% url 'marketplace:detail' product.slug %}" class="mkt-card__media" tabindex="-1" aria-hidden="true">
@@ -190,3 +196,5 @@
   </div>
 </section>
 {% endblock %}
+
+{% block extra_js %}{{ block.super }}<script src="{% static 'js/marketplace-v8.js' %}" defer></script>{% endblock %}

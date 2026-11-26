@@ -2576,3 +2576,9 @@ msgstr "تازه با VORNEQ آشنا شده‌اید؟"
 
 msgid "Verify your email address to access your personal workspace."
 msgstr "برای دسترسی به فضای کاری شخصی، نشانی ایمیل خود را تأیید کنید."
+
+msgid "Grid"
+msgstr "شبکه‌ای"
+
+msgid "List"
+msgstr "فهرست"

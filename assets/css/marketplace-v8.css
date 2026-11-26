@@ -1,0 +1,14 @@
+/* V8 workspace overrides, scoped to marketplace pages. */
+.vq-marketplace-workspace .vq-main { --container-width: 100%; --header-height: var(--vq-header-h); min-inline-size: 0; }
+.vq-marketplace-workspace :is(.marketplace-page,.marketplace-detail,.marketplace-workspace) { background: none; min-inline-size: 0; padding: 0; }
+.vq-marketplace-workspace :is(.marketplace-shell,.marketplace-detail__shell,.marketplace-workspace__shell) { width: 100%; max-width: 100%; min-width: 0; }
+.vq-marketplace-workspace :is(.mkt-hero,.marketplace-workspace__header,.mkt-sell,.mkt-empty) { background: var(--vq-surface); padding: 20px; }
+.vq-marketplace-workspace :is(.mkt-hero__title,.marketplace-workspace__title) { font-size: clamp(1.5rem, 3vw, 2rem); }
+.vq-marketplace-workspace .mkt-empty__title { font-size: 1.25rem; }
+.vq-marketplace-workspace .mkt-layout-toggle:not([hidden]) { display: flex; gap: 4px; }
+.vq-marketplace-workspace .mkt-layout-toggle [aria-pressed=true] { background: var(--vq-accent-subtle); border-color: var(--vq-accent); }
+.vq-marketplace-workspace .mkt-grid--list { grid-template-columns: minmax(0,1fr); }
+@media (min-width: 760px) {
+ .vq-marketplace-workspace .mkt-grid--list .mkt-card { display: grid; grid-template-columns: minmax(120px, 180px) minmax(0,1fr); }
+ .vq-marketplace-workspace .mkt-grid--list .mkt-card__media { align-self: start; }
+}

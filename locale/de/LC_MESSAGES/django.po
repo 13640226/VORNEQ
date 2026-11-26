@@ -2887,3 +2887,9 @@ msgstr "Neu bei VORNEQ?"
 
 msgid "Verify your email address to access your personal workspace."
 msgstr "Bestätigen Sie Ihre E-Mail-Adresse, um auf Ihren persönlichen Arbeitsbereich zuzugreifen."
+
+msgid "Grid"
+msgstr "Raster"
+
+msgid "List"
+msgstr "Liste"
