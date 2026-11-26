@@ -2537,3 +2537,18 @@ msgstr "با میان‌بُر صفحه‌کلید باز کنید و با کل�
 
 msgid "Uses the existing theme preference without flicker."
 msgstr "از تنظیم پوسته فعلی بدون پرش استفاده می‌کند."
+
+msgid "AI chat is a separate page. It drafts answers from cited public sources; you check the quotes."
+msgstr "گفت‌وگوی هوش مصنوعی صفحه‌ای جداگانه است. پاسخ‌های اولیه را بر پایه منابع عمومیِ مورد استناد تهیه می‌کند؛ بررسی نقل‌قول‌ها بر عهده شماست."
+
+msgid "Books, articles and other library items."
+msgstr "کتاب‌ها، مقاله‌ها و سایر منابع کتابخانه."
+
+msgid "Search VORNEQ, open your work and move between applications from one place."
+msgstr "در VORNEQ جست‌وجو کنید، کارهای خود را باز کنید و از یک محیط میان برنامه‌ها جابه‌جا شوید."
+
+msgid "Search finds records already in VORNEQ and links to them. It never writes an answer."
+msgstr "جست‌وجو اطلاعات موجود در VORNEQ را پیدا می‌کند و به آن‌ها پیوند می‌دهد. هیچ پاسخی تولید نمی‌کند."
+
+msgid "Search or AI chat?"
+msgstr "جست‌وجو یا گفت‌وگوی هوش مصنوعی؟"

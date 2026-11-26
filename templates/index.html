@@ -1,8 +1,8 @@
-{% extends "base.html" %}
+{% extends "shell/app_base.html" %}
 {% load i18n static %}
 
-{# V6-02 product-first workspace: app header, sidebar, Search composer, app grid. #}
-{# No inference, no private queries and no API calls are made from this page. #}
+{# UI-02: Index Workspace on the App Shell V8 (header, sidebar, drawer, bottom navigation and command palette #}
+{# come from shell/app_base.html). No inference, no private queries and no API calls are made from this page. #}
 {% block title %}VORNEQ — {% trans "AI workspace" %}{% endblock %}
 
 {% block meta %}
@@ -18,33 +18,57 @@
 <meta name="twitter:card" content="summary">
 {% endblock %}
 
-{% block body_class %}vq-workspace vq-ds{% endblock %}
+{% block body_class %}vq-index-v8{% endblock %}
 
 {% block extra_head %}
-<script src="{% static 'js/v6-shell-bootstrap.js' %}"></script>
-<link rel="stylesheet" href="{% static 'css/v6-design-system.css' %}">
-<link rel="stylesheet" href="{% static 'css/v6-workspace.css' %}">
+<link rel="stylesheet" href="{% static 'css/index-workspace-v8.css' %}">
 {% endblock %}
 
-{% block site_header %}
-{% include "home/_icons.html" %}
-{% include "home/v6/_appbar.html" %}
+{# Navigation follows the real gates of this page: AI links only when the server gates allow them, #}
+{# private destinations only for signed-in visitors. The command palette is built from these links. #}
+{% block sidebar_items %}
+<li><a class="vq-nav__link" href="{% url 'home' %}" aria-current="page"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a></li>
+{% if phase_c_chat_enabled %}
+<li><a class="vq-nav__link" href="{{ url_chat }}?lang={{ LANG|slice:':2' }}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-chat"/></svg><span>{% trans "AI assistant" %}</span></a></li>
+{% endif %}
+{% if image_studio_enabled %}
+<li><a class="vq-nav__link" href="{% url 'ai_core:image-studio' %}?lang={{ LANG|slice:':2' }}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-ix-image"/></svg><span>{% trans "Image Studio" %}</span></a></li>
+{% endif %}
+<li><a class="vq-nav__link" href="{% url 'search_page' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-search"/></svg><span>{% trans "Search" %}</span></a></li>
+<li><a class="vq-nav__link" href="{% url 'discover' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-compass"/></svg><span>{% trans "Discover" %}</span></a></li>
+<li><a class="vq-nav__link" href="{% url 'discover_knowledge' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-book"/></svg><span>{% trans "Knowledge" %}</span></a></li>
+<li><a class="vq-nav__link" href="{% url 'marketplace:index' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-bag"/></svg><span>{% trans "Marketplace" %}</span></a></li>
+{% if request.user.is_authenticated %}
+<li><a class="vq-nav__link" href="{% url 'platform_shell:personal_home' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-ix-layers"/></svg><span>{% trans "My workspace" %}</span></a></li>
+<li><a class="vq-nav__link" href="{% url 'documents:list' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-doc"/></svg><span>{% trans "Documents" %}</span></a></li>
+<li><a class="vq-nav__link" href="{% url 'notes:list' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-note"/></svg><span>{% trans "Notes" %}</span></a></li>
+<li><a class="vq-nav__link" href="{% url 'profile' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-user"/></svg><span>{% trans "Profile" %}</span></a></li>
+<li><a class="vq-nav__link" href="{% url 'profile_edit' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-user"/></svg><span>{% trans "Account settings" %}</span></a></li>
+<li><a class="vq-nav__link" href="{% url 'account_logout' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-user"/></svg><span>{% trans "Sign out" %}</span></a></li>
+{% endif %}
+{% endblock %}
+
+{% block bottomnav_items %}
+<a class="vq-bottomnav__link" href="{% url 'home' %}" aria-current="page"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a>
+{% if phase_c_chat_enabled %}
+<a class="vq-bottomnav__link" href="{{ url_chat }}?lang={{ LANG|slice:':2' }}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-chat"/></svg><span>{% trans "AI" %}</span></a>
+{% else %}
+<a class="vq-bottomnav__link" href="{% url 'marketplace:index' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-bag"/></svg><span>{% trans "Marketplace" %}</span></a>
+{% endif %}
+<a class="vq-bottomnav__link" href="{% url 'discover' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-compass"/></svg><span>{% trans "Discover" %}</span></a>
+<button type="button" class="vq-bottomnav__link" data-vq-cmd-open aria-haspopup="dialog" aria-controls="vq-cmd"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-search"/></svg><span>{% trans "Search" %}</span></button>
 {% endblock %}
 
 {% block content %}
-<div class="vq-home" data-vq-ai-workspace data-vq-v6 data-vq-v6-02>
-  {% include "home/v6/_sidebar.html" %}
-  <div class="vq-stage">
-    {% include "home/v6/_composer.html" %}
-    {% include "home/v6/_quick_actions.html" %}
-    {% include "home/v6/_apps.html" %}
-    {% include "home/v6/_activity.html" %}
-  </div>
-  {% include "home/v6/_bottom_nav.html" %}
+{% include "home/v8/_icons.html" %}
+<div class="vq-ix" data-vq-ai-workspace data-vq-index-v8>
+  {% include "home/v8/_hero.html" %}
+  {% include "home/v8/_quick_actions.html" %}
+  {% include "home/v8/_apps.html" %}
+  {% include "home/v8/_activity.html" %}
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/homepage-ai-workspace-v1.js' %}" defer></script>
-<script src="{% static 'js/v6-workspace.js' %}" defer></script>
 {% endblock %}

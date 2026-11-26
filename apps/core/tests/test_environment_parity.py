@@ -32,8 +32,7 @@ def _code_variables():
     names = set()
     for folder in ("config", "apps", "library", "marketplace"):
         for path in (root / folder).rglob("*.py"):
-            text = str(path)
-            if "/tests/" in text or "/migrations/" in text:
+            if {"tests", "migrations"}.intersection(path.relative_to(root).parts):
                 continue
             names.update(ENV_READ.findall(path.read_text(encoding="utf-8")))
     return names

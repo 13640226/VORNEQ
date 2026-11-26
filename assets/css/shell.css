@@ -220,7 +220,7 @@ html[lang="fa"] .vq-shell-body { font-family: var(--font-family-fa, var(--font-f
     min-height: var(--vq-target); border: 0; background: transparent;
     color: var(--vq-muted); font: inherit; font-size: 12px; text-decoration: none; cursor: pointer;
   }
-  .vq-bottomnav__link[aria-current="page"] { color: var(--vq-accent); }
+  .vq-bottomnav__link[aria-current="page"] { color: var(--color-accent-text, var(--vq-accent)); }
 }
 
 @media (max-width: 379px) {

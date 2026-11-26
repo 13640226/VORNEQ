@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    {% block meta %}{% endblock %}
     <meta name="theme-color" content="#071426">
     <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
     {# Synchron vor dem ersten Paint: bestehendes Theme-System, kein Theme-Flackern. #}
@@ -101,10 +102,12 @@
     </main>
 
     <nav class="vq-bottomnav" aria-label="{% trans 'Quick navigation' %}">
+        {% block bottomnav_items %}
         <a class="vq-bottomnav__link" href="{% url 'home' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a>
         <a class="vq-bottomnav__link" href="{{ url_chat }}?lang={{ LANG|slice:':2' }}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-chat"/></svg><span>{% trans "AI" %}</span></a>
         <a class="vq-bottomnav__link" href="{% url 'discover' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-compass"/></svg><span>{% trans "Discover" %}</span></a>
         <button type="button" class="vq-bottomnav__link" data-vq-cmd-open aria-haspopup="dialog" aria-controls="vq-cmd"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-search"/></svg><span>{% trans "Search" %}</span></button>
+        {% endblock %}
     </nav>
 </div>
 

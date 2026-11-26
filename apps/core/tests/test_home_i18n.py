@@ -10,8 +10,8 @@ class HomeTranslationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'lang="de"')
-        self.assertContains(response, 'class="vq-home"')
-        # V6-02: product title and application grid replace the V2 title and "Your tools".
+        self.assertContains(response, 'data-vq-index-v8')
+        # UI-02: the Index workspace retains localized title and applications.
         self.assertContains(response, "Was möchten Sie heute erstellen?")
         self.assertContains(response, "Anwendungen")
         self.assertNotContains(response, "Empfohlene Entdeckungen")
@@ -26,8 +26,8 @@ class HomeTranslationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'lang="fa"')
         self.assertContains(response, 'dir="rtl"')
-        self.assertContains(response, 'class="vq-home"')
-        # V6-02: product title and application grid replace the V2 title and "Your tools".
+        self.assertContains(response, 'data-vq-index-v8')
+        # UI-02: the Index workspace retains localized title and applications.
         self.assertContains(response, "امروز چه چیزی می‌خواهید بسازید؟")
         self.assertContains(response, "برنامه‌ها")
         self.assertNotContains(response, "کشف‌های برگزیده")

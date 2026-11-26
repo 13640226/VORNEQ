@@ -1,0 +1,41 @@
+{% load i18n %}
+{# UI-02 quick actions: one tap to create or continue. Real destinations only, gated like the pages themselves. #}
+<section class="vq-ix-section vq-ix-quick" id="vq-create" aria-labelledby="vq-ix-quick-title">
+  <h2 class="vq-visually-hidden" id="vq-ix-quick-title">{% trans "Quick actions" %}</h2>
+  <ul class="vq-ix-quick__list">
+    {% if request.user.is_authenticated %}
+    {% if phase_c_chat_enabled %}
+    <li><a class="vq-ix-action vq-ix-tone-1" href="{% url 'ai_core:chat' %}?lang={{ LANG|slice:':2' }}">
+      <span class="vq-ix-icontile"><svg class="vq-icon" aria-hidden="true" focusable="false"><use href="#vq-i-chat"></use></svg></span>
+      <span>{% trans "New chat" %}</span></a></li>
+    {% endif %}
+    {% if image_studio_enabled %}
+    <li><a class="vq-ix-action vq-ix-tone-2" href="{% url 'ai_core:image-studio' %}?lang={{ LANG|slice:':2' }}">
+      <span class="vq-ix-icontile"><svg class="vq-icon" aria-hidden="true" focusable="false"><use href="#vq-ix-image"></use></svg></span>
+      <span>{% trans "Create image" %}</span></a></li>
+    {% endif %}
+    <li><a class="vq-ix-action vq-ix-tone-3" href="{% url 'documents:create' %}">
+      <span class="vq-ix-icontile"><svg class="vq-icon" aria-hidden="true" focusable="false"><use href="#vq-i-doc"></use></svg></span>
+      <span>{% trans "New document" %}</span></a></li>
+    <li><a class="vq-ix-action vq-ix-tone-4" href="{% url 'notes:create' %}">
+      <span class="vq-ix-icontile"><svg class="vq-icon" aria-hidden="true" focusable="false"><use href="#vq-i-note"></use></svg></span>
+      <span>{% trans "New note" %}</span></a></li>
+    <li><a class="vq-ix-action vq-ix-tone-5" href="{% url 'platform_shell:personal_home' %}">
+      <span class="vq-ix-icontile"><svg class="vq-icon" aria-hidden="true" focusable="false"><use href="#vq-ix-layers"></use></svg></span>
+      <span>{% trans "My workspace" %}</span></a></li>
+    {% else %}
+    <li><a class="vq-ix-action vq-ix-tone-1" href="{% url 'account_login' %}">
+      <span class="vq-ix-icontile"><svg class="vq-icon" aria-hidden="true" focusable="false"><use href="#vq-i-user"></use></svg></span>
+      <span>{% trans "Sign in" %}</span></a></li>
+    <li><a class="vq-ix-action vq-ix-tone-2" href="{% url 'account_signup' %}">
+      <span class="vq-ix-icontile"><svg class="vq-icon" aria-hidden="true" focusable="false"><use href="#vq-ix-sparkle"></use></svg></span>
+      <span>{% trans "Create an account" %}</span></a></li>
+    <li><a class="vq-ix-action vq-ix-tone-3" href="{% url 'discover' %}">
+      <span class="vq-ix-icontile"><svg class="vq-icon" aria-hidden="true" focusable="false"><use href="#vq-i-compass"></use></svg></span>
+      <span>{% trans "Explore" %}</span></a></li>
+    <li><a class="vq-ix-action vq-ix-tone-4" href="{% url 'marketplace:index' %}">
+      <span class="vq-ix-icontile"><svg class="vq-icon" aria-hidden="true" focusable="false"><use href="#vq-i-bag"></use></svg></span>
+      <span>{% trans "Marketplace" %}</span></a></li>
+    {% endif %}
+  </ul>
+</section>

@@ -42,14 +42,14 @@ class HomepageAIWorkspaceTests(TestCase):
 
     def test_progressive_enhancement_and_accessibility(self):
         html = self.get_home().content.decode("utf-8")
-        self.assertIn('id="vq-ai-question"', html)
-        self.assertIn('for="vq-ai-question"', html)
-        self.assertIn('aria-describedby="vq-ai-search-limitation"', html)
+        self.assertIn('id="vq-ix-question"', html)
+        self.assertIn('for="vq-ix-question"', html)
+        self.assertIn('aria-describedby="vq-ix-search-limitation"', html)
         self.assertIn('aria-label="Search across VORNEQ"', html)
         self.assertIn("data-vq-example", html)
         # V6-02: the homepage stylesheet is now design system + workspace layout.
-        self.assertIn(static("css/v6-design-system.css"), html)
-        self.assertIn(static("css/v6-workspace.css"), html)
+        self.assertIn(static("css/shell.css"), html)
+        self.assertIn(static("css/index-workspace-v8.css"), html)
         self.assertNotIn("homepage-ai-cloud-v2.css", html)
         self.assertIn(static("js/homepage-ai-workspace-v1.js"), html)
         self.assertEqual(html.count("<h1"), 1)
