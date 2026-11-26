@@ -166,6 +166,13 @@ class PageShellRenderingTests(TestCase):
                         self.assertIn('data-search-view="list"', html)
                         self.assertIn('id="suchen-filter-panel"', html)
                         self.assertNotIn('class="global-back"', html)
+                    elif name == "discover":
+                        self.assertIn('class="vq-header"', html)
+                        self.assertIn('id="vq-sidebar"', html)
+                        self.assertIn('id="vq-main"', html)
+                        self.assertIn("css/discover-workspace-v8.css", html)
+                        self.assertEqual(html.count('aria-current="page"'), 3)
+                        self.assertNotIn('class="global-back"', html)
                     else:
                         self.assertIn('class="global-back"', html)
                         self.assertIn('class="main-content"', html)

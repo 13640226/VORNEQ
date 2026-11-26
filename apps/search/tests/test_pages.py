@@ -249,8 +249,8 @@ class DiscoverV1ATests(TestCase):
         with override("en"):
             response = self.client.get(reverse("discover"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, '<main id="main-content"')
-        self.assertContains(response, 'href="#main-content"')
+        self.assertContains(response, '<main id="vq-main"')
+        self.assertContains(response, 'href="#vq-main"')
         self.assertContains(response, 'aria-labelledby="discover-title"')
         self.assertContains(response, 'id="discover-title"')
         self.assertContains(response, 'aria-labelledby="discover-results-title"')
@@ -260,9 +260,10 @@ class DiscoverV1ATests(TestCase):
         self.assertContains(response, 'id="discover-q"')
         self.assertContains(response, 'aria-label="Discovery filters"')
         self.assertContains(response, 'type="button"')
-        self.assertContains(response, 'class="global-back__button"')
-        self.assertContains(response, 'aria-label="Go back to the previous page"')
-        self.assertContains(response, 'class="global-back__icon" aria-hidden="true"')
+        self.assertContains(response, "<main ", count=1)
+        self.assertContains(response, 'id="vq-sidebar"')
+        self.assertContains(response, 'class="vq-bottomnav"')
+        self.assertContains(response, 'tabindex="-1"')
 
 
 

@@ -1,13 +1,17 @@
-{% extends "base.html" %}
+{% extends "shell/app_base.html" %}
 {% load static i18n %}
 
 {% block title %}{% trans "Discover" %} — VORNEQ{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/discover.css' %}">
+<link rel="stylesheet" href="{% static 'css/discover-workspace-v8.css' %}">
 {% endblock %}
 
+{% block sidebar_items %}{% include "shell/_workspace_sidebar.html" with discover_active=True %}{% endblock %}
+{% block bottomnav_items %}{% include "shell/_workspace_bottomnav.html" with discover_active=True %}{% endblock %}
 {% block content %}
+{% include "home/v8/_icons.html" %}
 <div class="discover-page">
   <section class="discover-hero" aria-labelledby="discover-title">
     <p class="discover-eyebrow">{% trans "DISCOVER" %}</p>
@@ -50,11 +54,15 @@
         <p>{% trans "VORNEQ will not broaden product metadata into software or service semantics without a verified contract." %}</p>
       </div>
     {% elif results %}
-      <div class="discover-grid">
+      <div class="discover-view-controls" role="group" aria-label="{% trans 'Discovery results' %}" hidden>
+<button type="button" data-discover-view="grid" aria-controls="discover-grid" aria-pressed="true">{% trans "Grid" %}</button>
+<button type="button" data-discover-view="list" aria-controls="discover-grid" aria-pressed="false">{% trans "List" %}</button>
+</div>
+<div class="discover-grid" id="discover-grid">
         {% for result in results %}
           <article class="discover-object">
             <div class="discover-object__meta">
-              <span>{{ result.type }}</span>
+              <span>{% include "partials/_content_type_label.html" with type=result.type %}</span>
             </div>
             <h3>{{ result.title }}</h3>
             {% if result.description %}<p>{{ result.description|truncatechars:220 }}</p>{% endif %}
@@ -125,3 +133,5 @@
   </section>
 </div>
 {% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/discover-workspace-v8.js' %}" defer></script>{% endblock %}
