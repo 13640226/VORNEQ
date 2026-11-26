@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.template.loader import render_to_string
 from django.test import TestCase
 from django.urls import reverse
-from django.utils import timezone
+from django.utils import timezone, translation
 
 from apps.core.models import (
     ContextualReputation,
@@ -134,12 +134,13 @@ class PublicReputationTests(TestCase):
         self.assertIn("not a confidence score or truth claim", item["interpretation_note"])
 
     def test_public_widget_displays_actor_role_label(self):
-        html = render_to_string(
-            "partials/_public_contextual_reputation.html",
-            {"reputations": get_public_reputation(self.verifier)},
-        )
-        self.assertIn("Role", html)
-        self.assertIn("Verifier", html)
+        for lang, label in (("en", "Role"), ("de", "Rolle"), ("fa", "نقش")):
+            with self.subTest(lang=lang), translation.override(lang):
+                html = render_to_string(
+                    "partials/_public_contextual_reputation.html",
+                    {"reputations": get_public_reputation(self.verifier)},
+                )
+                self.assertIn(f"{label}: Verifier", html)
 
     def test_multiple_contexts_remain_separate(self):
         user = User.objects.create_user(username="multi-context-verifier", password="x")
