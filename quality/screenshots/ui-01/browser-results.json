@@ -1,0 +1,325 @@
+{
+  "base": "http://127.0.0.1:8765",
+  "total": 41,
+  "failed": 0,
+  "results": [
+    {
+      "name": "desktop_fa_status_200",
+      "ok": true,
+      "detail": 200
+    },
+    {
+      "name": "csp_header_present",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "rtl_html_attributes",
+      "ok": true,
+      "detail": [
+        "fa",
+        "rtl"
+      ]
+    },
+    {
+      "name": "desktop_sidebar_visible_on_right_in_rtl",
+      "ok": true,
+      "detail": {
+        "x": 1032,
+        "y": 52,
+        "width": 248,
+        "height": 748
+      }
+    },
+    {
+      "name": "desktop_menu_button_hidden",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop_no_horizontal_overflow",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "desktop_bottomnav_hidden",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "cmd_opens_with_ctrl_k",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "cmd_input_focused",
+      "ok": true,
+      "detail": "vq-cmd-input"
+    },
+    {
+      "name": "cmd_activedescendant_first",
+      "ok": true,
+      "detail": {
+        "ad1": "vq-cmd-opt-0",
+        "sel1": "true"
+      }
+    },
+    {
+      "name": "cmd_activedescendant_arrowdown",
+      "ok": true,
+      "detail": {
+        "ad2": "vq-cmd-opt-1",
+        "sel2": "true",
+        "prevSel": "false"
+      }
+    },
+    {
+      "name": "cmd_activedescendant_wraps",
+      "ok": true,
+      "detail": {
+        "adWrap": "vq-cmd-opt-6",
+        "optionCount": 7
+      }
+    },
+    {
+      "name": "cmd_filters_options",
+      "ok": true,
+      "detail": [
+        "بازارچه"
+      ]
+    },
+    {
+      "name": "cmd_empty_state",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "cmd_closes_with_escape",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "cmd_enter_navigates",
+      "ok": true,
+      "detail": "http://127.0.0.1:8765/fa/accounts/login/?next=/fa/documents/"
+    },
+    {
+      "name": "desktop_no_csp_violations",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "desktop_no_console_errors",
+      "ok": true,
+      "detail": {
+        "console": [],
+        "csp": [],
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "theme_applied_before_body",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "theme_button_reflects_preference",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "name": "theme_toggle_dark_persists",
+      "ok": true,
+      "detail": [
+        "dark",
+        "dark"
+      ]
+    },
+    {
+      "name": "theme_dark_background_applied",
+      "ok": true,
+      "detail": {
+        "actual": "rgb(11, 17, 32)",
+        "expected": "rgb(11, 17, 32)"
+      }
+    },
+    {
+      "name": "mobile_rtl_drawer_closed_offscreen_right",
+      "ok": true,
+      "detail": {
+        "x": 390,
+        "y": 0,
+        "width": 300,
+        "height": 844
+      }
+    },
+    {
+      "name": "mobile_drawer_closed_not_focusable",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile_single_column",
+      "ok": true,
+      "detail": {
+        "x": 0,
+        "y": 52,
+        "width": 390,
+        "height": 792
+      }
+    },
+    {
+      "name": "mobile_no_horizontal_overflow",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "mobile_bottomnav_visible",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile_cards_single_column",
+      "ok": true,
+      "detail": 1
+    },
+    {
+      "name": "mobile_targets_44px",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "mobile_drawer_opens",
+      "ok": true,
+      "detail": {
+        "expanded": "true",
+        "open": {
+          "x": 90,
+          "y": 0,
+          "width": 300,
+          "height": 844
+        }
+      }
+    },
+    {
+      "name": "mobile_drawer_focus_moves_in",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile_scrim_visible",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile_drawer_focus_trap",
+      "ok": true,
+      "detail": {
+        "stillIn": true,
+        "stillInBack": true
+      }
+    },
+    {
+      "name": "mobile_drawer_escape_closes_and_restores_focus",
+      "ok": true,
+      "detail": {
+        "after": "false",
+        "focusBack": true
+      }
+    },
+    {
+      "name": "mobile_drawer_scrim_click_closes",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile_bottomnav_opens_palette",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile_no_csp_violations",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "mobile_no_console_errors",
+      "ok": true,
+      "detail": {
+        "console": [],
+        "csp": [],
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "mobile_ltr_drawer_closed_offscreen_left",
+      "ok": true,
+      "detail": {
+        "x": -300,
+        "y": 0,
+        "width": 300,
+        "height": 844
+      }
+    },
+    {
+      "name": "mobile_ltr_drawer_opens_from_left",
+      "ok": true,
+      "detail": {
+        "x": 0,
+        "y": 0,
+        "width": 300,
+        "height": 844
+      }
+    },
+    {
+      "name": "existing_routes_same_status_as_main",
+      "ok": true,
+      "detail": {
+        "/fa/": {
+          "branch": 200,
+          "main": 200
+        },
+        "/de/": {
+          "branch": 200,
+          "main": 200
+        },
+        "/fa/discover/": {
+          "branch": 200,
+          "main": 200
+        },
+        "/fa/discover/knowledge/": {
+          "branch": 200,
+          "main": 200
+        },
+        "/fa/marketplace/": {
+          "branch": 200,
+          "main": 200
+        },
+        "/fa/search/": {
+          "branch": 200,
+          "main": 200
+        },
+        "/api/ai/v1/chat/?lang=fa": {
+          "branch": 401,
+          "main": 401
+        },
+        "/fa/accounts/login/": {
+          "branch": 200,
+          "main": 200
+        },
+        "/fa/documents/": {
+          "branch": 302,
+          "main": 302
+        },
+        "/fa/notes/": {
+          "branch": 302,
+          "main": 302
+        },
+        "/fa/apps/home/": {
+          "branch": 302,
+          "main": 302
+        }
+      }
+    }
+  ]
+}

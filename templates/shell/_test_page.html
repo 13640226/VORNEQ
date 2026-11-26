@@ -1,0 +1,14 @@
+{% extends "shell/app_base.html" %}
+{% load i18n %}
+{% block title %}{% trans "App shell preview" %} · VORNEQ{% endblock %}
+{% block content %}
+<section class="vq-preview" data-vq-shell-preview>
+    <h1>{% trans "App shell preview" %}</h1>
+    <p>{% trans "Internal preview of the new application frame. Existing pages are unchanged." %}</p>
+    <div class="vq-preview__grid">
+        <article class="vq-card"><h2>{% trans "Navigation" %}</h2><p>{% trans "Sidebar on large screens, drawer on small screens." %}</p></article>
+        <article class="vq-card"><h2>{% trans "Command palette" %}</h2><p>{% trans "Open with the keyboard shortcut and move with the arrow keys." %} <kbd class="vq-kbd" dir="ltr">Ctrl K</kbd> <kbd class="vq-kbd" dir="ltr">⌘ K</kbd></p></article>
+        <article class="vq-card"><h2>{% trans "Theme" %}</h2><p>{% trans "Uses the existing theme preference without flicker." %}</p></article>
+    </div>
+</section>
+{% endblock %}

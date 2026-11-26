@@ -4,7 +4,7 @@ from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import get_language
@@ -337,3 +337,25 @@ def profile(request):
         "verification_activity": get_verification_activity(request.user),
     }
     return render(request, "profile.html", context)
+
+
+def shell_preview_allowed(request):
+    """UI-01: Vorschau des App-Shells nur lokal oder für Staff.
+
+    In jeder gehosteten Umgebung (Staging und Produktion) ist die Seite für
+    normale Nutzer nicht vorhanden (404), damit kein halbfertiger Rahmen
+    öffentlich erreichbar ist.
+    """
+    if getattr(settings, "VORNEQ_ENV", None) == "development":
+        return True
+    user = getattr(request, "user", None)
+    return bool(user is not None and user.is_authenticated and user.is_staff)
+
+
+def shell_test_view(request):
+    if not shell_preview_allowed(request):
+        raise Http404
+    response = render(request, "shell/_test_page.html")
+    response["X-Robots-Tag"] = "noindex, nofollow"
+    response["Cache-Control"] = "private, no-store"
+    return response

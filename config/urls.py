@@ -18,7 +18,16 @@ from config.language_views import set_language
 from config.inspect_views import context_view, inspect_entry
 from config.metrics import metrics_view
 from config.public_graph_views import public_graph_presentation_view, public_graph_view
-from config.views import discover, home, orientation, profile, robots_txt, search_page, sitemap_xml
+from config.views import (
+    discover,
+    home,
+    orientation,
+    profile,
+    robots_txt,
+    search_page,
+    shell_test_view,
+    sitemap_xml,
+)
 
 
 def favicon_redirect(request):
@@ -74,6 +83,7 @@ urlpatterns += i18n_patterns(
         name="public_graph_presentation",
     ),
     path("profile/", profile, name="profile"),
+    path("shell-test/", shell_test_view, name="shell_test"),
     path("", include("apps.profiles.urls")),
     path("accounts/", include("allauth.urls")),
     path("apps/", include("apps.platform_shell.urls")),
