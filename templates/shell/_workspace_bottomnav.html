@@ -1,5 +1,5 @@
 {% load i18n %}
-<a class="vq-bottomnav__link" href="{% url 'home' %}" {% if not studio_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a>
+<a class="vq-bottomnav__link" href="{% url 'home' %}" {% if not studio_active and not search_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a>
 {% if studio_active %}
 <a class="vq-bottomnav__link" href="{% url 'ai_core:image-studio' %}?lang={{ LANG|slice:':2' }}" aria-current="page"><svg class="vq-icon" aria-hidden="true"><use href="#vq-ix-image"/></svg><span>{% trans "Image Studio" %}</span></a>
 {% elif phase_c_chat_enabled %}
@@ -8,4 +8,4 @@
 <a class="vq-bottomnav__link" href="{% url 'marketplace:index' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-bag"/></svg><span>{% trans "Marketplace" %}</span></a>
 {% endif %}
 <a class="vq-bottomnav__link" href="{% url 'discover' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-compass"/></svg><span>{% trans "Discover" %}</span></a>
-<button type="button" class="vq-bottomnav__link" data-vq-cmd-open aria-haspopup="dialog" aria-controls="vq-cmd"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-search"/></svg><span>{% trans "Search" %}</span></button>
+{% if search_active %}<a class="vq-bottomnav__link" href="{% url 'search_page' %}" aria-current="page"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-search"/></svg><span>{% trans "Search" %}</span></a>{% else %}<button type="button" class="vq-bottomnav__link" data-vq-cmd-open aria-haspopup="dialog" aria-controls="vq-cmd"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-search"/></svg><span>{% trans "Search" %}</span></button>{% endif %}

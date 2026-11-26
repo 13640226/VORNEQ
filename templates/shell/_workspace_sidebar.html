@@ -1,12 +1,12 @@
 {% load i18n %}
-<li><a class="vq-nav__link" href="{% url 'home' %}" {% if not studio_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a></li>
+<li><a class="vq-nav__link" href="{% url 'home' %}" {% if not studio_active and not search_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a></li>
 {% if phase_c_chat_enabled %}
 <li><a class="vq-nav__link" href="{{ url_chat }}?lang={{ LANG|slice:':2' }}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-chat"/></svg><span>{% trans "AI assistant" %}</span></a></li>
 {% endif %}
 {% if image_studio_enabled %}
 <li><a class="vq-nav__link" href="{% url 'ai_core:image-studio' %}?lang={{ LANG|slice:':2' }}" {% if studio_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-ix-image"/></svg><span>{% trans "Image Studio" %}</span></a></li>
 {% endif %}
-<li><a class="vq-nav__link" href="{% url 'search_page' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-search"/></svg><span>{% trans "Search" %}</span></a></li>
+<li><a class="vq-nav__link" href="{% url 'search_page' %}" {% if search_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-search"/></svg><span>{% trans "Search" %}</span></a></li>
 <li><a class="vq-nav__link" href="{% url 'discover' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-compass"/></svg><span>{% trans "Discover" %}</span></a></li>
 <li><a class="vq-nav__link" href="{% url 'discover_knowledge' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-book"/></svg><span>{% trans "Knowledge" %}</span></a></li>
 <li><a class="vq-nav__link" href="{% url 'marketplace:index' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-bag"/></svg><span>{% trans "Marketplace" %}</span></a></li>
