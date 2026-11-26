@@ -1,10 +1,11 @@
-{% extends "base.html" %}
+{% extends "shell/app_base.html" %}
 {% load static i18n %}
 
 {% block title %}{% trans "Documents — VORNEQ" %}{% endblock %}
 
 {% block extra_head %}<link rel="stylesheet" href="{% static 'documents/documents.css' %}">{% endblock %}
 
+{% block body_class %}vq-documents-workspace{% endblock %}
 {% block content %}
 <section class="documents" aria-labelledby="documents-title">
     <header class="documents__header">
@@ -16,7 +17,15 @@
         <a class="documents-button" href="{% url 'documents:create' %}">{% trans "New Document" %}</a>
     </header>
 
-    <div class="documents-list">
+    {% if documents %}
+    <div class="document-actions" data-doc-controls hidden>
+        <label for="doc-search">{% trans "Search documents" %}</label>
+        <input id="doc-search" type="search">
+        <button type="button" class="documents-button" data-doc-layout="grid" aria-pressed="true">{% trans "Grid" %}</button>
+        <button type="button" class="documents-button" data-doc-layout="list" aria-pressed="false">{% trans "List" %}</button>
+    </div>
+    {% endif %}
+    <div class="documents-list documents-grid" id="doc-results">
         {% for document in documents %}
         <article class="document-card">
             <h2><a href="{% url 'documents:detail' document_id=document.pk %}">{{ document.title }}</a></h2>
@@ -29,3 +38,5 @@
     </div>
 </section>
 {% endblock %}
+
+{% block extra_js %}{{ block.super }}<script src="{% static 'documents/workspace.js' %}" defer></script>{% endblock %}

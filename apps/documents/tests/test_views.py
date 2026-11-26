@@ -127,3 +127,17 @@ class DocumentWorkspaceViewTests(TestCase):
                 identity=self.viewer_identity,
             ).exists()
         )
+
+    def test_v8_shell_all_document_pages(self):
+        self.client.force_login(self.owner)
+        for lang in ('de', 'fa', 'en'):
+            for suffix in ('', 'create/', f'{self.document.pk}/', f'{self.document.pk}/update/'):
+                with self.subTest(lang=lang, suffix=suffix):
+                    response = self.client.get(f'/{lang}/documents/{suffix}')
+                    self.assertContains(response, 'id="vq-main"', count=1)
+                    self.assertContains(response, 'vq-documents-workspace')
+            response = self.client.get(f'/{lang}/documents/')
+            self.assertContains(response, 'data-doc-layout="grid"')
+            self.assertContains(response, 'data-doc-layout="list"')
+        self.client.force_login(self.outsider)
+        self.assertNotContains(self.client.get('/en/documents/'), 'Workspace document')
