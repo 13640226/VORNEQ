@@ -12,7 +12,7 @@
 {% block bottomnav_items %}{% include "shell/_workspace_bottomnav.html" with knowledge_active=True %}{% endblock %}
 {% block content %}
 {% include "home/v8/_icons.html" %}
-<div class="discover-page knowledge-page">
+<div class="discover-page" data-knowledge-workspace="true">
   <section class="discover-hero" aria-labelledby="discover-title">
     <p class="discover-eyebrow">{% trans "Knowledge" %}</p>
     <h1 id="discover-title">{% trans "Public knowledge" %}</h1>
@@ -20,7 +20,7 @@
     <p><a href="{% url 'orientation' %}">{% trans "Evidence vocabulary" %} <span aria-hidden="true">{% if request.LANGUAGE_CODE == "fa" %}←{% else %}→{% endif %}</span></a></p>
   </section>
 
-  <section class="discover-controls knowledge-controls" aria-labelledby="discover-controls-title">
+  <section class="discover-controls" aria-labelledby="discover-controls-title">
     <h2 id="discover-controls-title" class="sr-only">{% trans "Discover public information" %}</h2>
     <form class="discover-search" role="search" method="get">
       <label class="sr-only" for="discover-q">{% trans "Explore a topic, source, document, or entity" %}</label>
