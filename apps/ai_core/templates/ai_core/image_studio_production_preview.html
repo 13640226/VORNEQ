@@ -23,8 +23,8 @@
       <label for="vq-image-prompt">{{ labels.prompt }}</label>
       <textarea readonly id="vq-image-prompt" rows="5" placeholder="{{ labels.placeholder }}"></textarea>
       <label for="vq-image-size">{{ labels.size }}</label>
-      <select disabled id="vq-image-size">
-        <option>1024 × 1024</option><option>1536 × 1024</option><option>1024 × 1536</option>
+      <select id="vq-image-size">
+        <option value="1024x1024">1024 × 1024</option><option value="1536x1024">1536 × 1024</option><option value="1024x1536">1024 × 1536</option>
       </select>
       <button class="vq-image__submit" type="button" disabled aria-disabled="true">{{ labels.readonly_send }}</button>
       <p role="note">{{ labels.readonly_note }}</p>
