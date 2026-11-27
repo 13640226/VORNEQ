@@ -50,6 +50,9 @@ class ResendBackendTests(SimpleTestCase):
         self.assertEqual(payload["from"], "verified@example.com")
         self.assertEqual(send.call_args.kwargs["timeout"], 10)
         self.assertEqual(request.full_url, "https://api.resend.com/emails")
+        self.assertEqual(request.get_header("User-agent"), "VORNEQ/1.0")
+        self.assertEqual(request.get_method(), "POST")
+        send.assert_called_once()
 
     @patch("config.email_backends.urlopen", return_value=Response(200))
     def test_html_allauth_style(self, send):
@@ -89,6 +92,15 @@ class ResendBackendTests(SimpleTestCase):
         with self.assertRaises(EmailDeliveryError) as caught:
             self.backend().send_messages([self.message()])
         self.assertEqual(caught.exception.status, 401)
+
+    @patch("config.email_backends.urlopen", side_effect=HTTPError("https://api.resend.com/emails", 403, "test-secret", None, None))
+    def test_http_403_remains_denied_without_retry(self, send):
+        with self.assertRaises(EmailDeliveryError) as caught:
+            self.backend().send_messages([self.message()])
+        self.assertEqual(caught.exception.category, "http")
+        self.assertEqual(caught.exception.status, 403)
+        self.assertNotIn("test-secret", str(caught.exception))
+        send.assert_called_once()
 
     @patch("config.email_backends.urlopen", side_effect=HTTPError("https://api.resend.com/emails", 429, "test-secret", None, None))
     def test_http_429(self, send):
@@ -223,7 +235,8 @@ class AllauthResendIntegrationTests(TestCase):
                 "recipient@example.com",
                 {"user": user, "activate_url": "https://example.com/confirm/fake-token"},
             )
-        self.assertTrue(send.called)
+        send.assert_called_once()
+        self.assertEqual(send.call_args.args[0].get_header("User-agent"), "VORNEQ/1.0")
         payload = json.loads(send.call_args.args[0].data)
         self.assertEqual(payload["to"], ["recipient@example.com"])
         self.assertIn("https://example.com/confirm/fake-token", payload["text"])
@@ -243,7 +256,8 @@ class AllauthResendIntegrationTests(TestCase):
                 "recipient@example.com",
                 {"user": None, "password_reset_url": "https://example.com/reset/fake-token"},
             )
-        self.assertTrue(send.called)
+        send.assert_called_once()
+        self.assertEqual(send.call_args.args[0].get_header("User-agent"), "VORNEQ/1.0")
         payload = json.loads(send.call_args.args[0].data)
         self.assertEqual(payload["to"], ["recipient@example.com"])
         self.assertIn("https://example.com/reset/fake-token", payload["text"])
