@@ -116,6 +116,7 @@ CATALOG: tuple[Var, ...] = (
     _v("VORNEQ_AI_PHASE_C_ENABLED", "flag", "local"),
     _v("VORNEQ_GLOBAL_AI_ENABLED", "flag", parity="staging_first"),
     _v("VORNEQ_AI_CONVERSATIONS_ENABLED", "flag", parity="staging_first"),
+    _v("VORNEQ_AI_FEEDBACK_ENABLED", "flag", parity="staging_first"),
     _v("VORNEQ_AI_CONVERSATIONS_ACTOR_POLICY", "config", parity="allowed_difference"),
     _v("VORNEQ_AI_CONVERSATIONS_ALLOWED_USER_IDS", "allowlist"),
     _v("VORNEQ_AI_CONTEXT_RETRIEVAL_ENABLED", "flag", parity="staging_first"),
