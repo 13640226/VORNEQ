@@ -1,9 +1,9 @@
 {% load i18n %}
-<a class="vq-bottomnav__link" href="{% url 'home' %}" {% if not studio_active and not search_active and not discover_active and not knowledge_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a>
+<a class="vq-bottomnav__link" href="{% url 'home' %}" {% if not chat_active and not studio_active and not search_active and not discover_active and not knowledge_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a>
 {% if studio_active %}
 <a class="vq-bottomnav__link" href="{% url 'ai_core:image-studio' %}?lang={{ LANG|slice:':2' }}" aria-current="page"><svg class="vq-icon" aria-hidden="true"><use href="#vq-ix-image"/></svg><span>{% trans "Image Studio" %}</span></a>
 {% elif phase_c_chat_enabled %}
-<a class="vq-bottomnav__link" href="{{ url_chat }}?lang={{ LANG|slice:':2' }}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-chat"/></svg><span>{% trans "AI" %}</span></a>
+<a class="vq-bottomnav__link" href="{{ url_chat }}?lang={{ LANG|slice:':2' }}"{% if chat_active %} aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-chat"/></svg><span>{% trans "AI" %}</span></a>
 {% else %}
 <a class="vq-bottomnav__link" href="{% url 'marketplace:index' %}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-bag"/></svg><span>{% trans "Marketplace" %}</span></a>
 {% endif %}

@@ -1,5 +1,5 @@
-{% extends "base.html" %}
-{% load static %}
+{% extends "shell/app_base.html" %}
+{% load static i18n %}
 {% block title %}{{ chat_labels.title }} — VORNEQ{% endblock %}
 {% block body_class %}vq-chat-page{% endblock %}
 {% block meta %}
@@ -10,7 +10,10 @@
 <link rel="stylesheet" href="{% static 'css/phase-c-chat.css' %}">
 <link rel="stylesheet" href="{% static 'css/voice/mic-button.css' %}">
 {% endblock %}
+{% block sidebar_items %}{% include "shell/_workspace_sidebar.html" with chat_active=True phase_c_chat_enabled=True image_studio_enabled=chat_image_studio_enabled %}{% endblock %}
+{% block bottomnav_items %}{% include "shell/_workspace_bottomnav.html" with chat_active=True phase_c_chat_enabled=True %}{% endblock %}
 {% block content %}
+{% include "home/v8/_icons.html" %}
 <div class="vq-chat-shell{% if chat_conversations_enabled %} vq-chat-shell--history{% endif %}">
 {% if chat_conversations_enabled %}
 <details class="vq-chat__history" data-vq-conv-panel open>
@@ -87,7 +90,7 @@
     <h1 id="vq-chat-title">{{ chat_labels.title }}</h1>
     <p class="vq-chat__intro">{{ chat_labels.intro }}</p>
     {% if chat_image_studio_enabled %}
-    <p class="vq-chat__image-entry"><a href="{{ chat_image_studio_url }}">VORNEQ Image Studio · Staging</a></p>
+    <p class="vq-chat__image-entry"><a href="{{ chat_image_studio_url }}">{% if chat_staging %}VORNEQ Image Studio · Staging{% else %}{% trans "Image Studio" %}{% endif %}</a></p>
     {% endif %}
     {% if chat_conversations_enabled %}
     <div class="vq-chat__conv-bar" data-vq-conv-bar hidden>

@@ -811,7 +811,7 @@
           showBar(result.data.conversation);
           renderStored(result.data.messages);
           refreshList();
-          if (panel && window.matchMedia && window.matchMedia("(max-width: 1023px)").matches) panel.open = false;
+          if (panel && window.matchMedia && window.matchMedia("(max-width: 1199px)").matches) panel.open = false;
           return result.data.messages;
         } catch (_error) {
           status.textContent = root.dataset.vqConvLoadError || labels.error || "";

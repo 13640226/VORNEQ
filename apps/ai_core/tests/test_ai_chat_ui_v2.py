@@ -127,9 +127,10 @@ class StaticAssetContractTests(SimpleTestCase):
         self.assertIn('author.textContent', JS)
 
     def test_css_layout_contract(self):
-        self.assertIn("grid-template-columns: minmax(0, 1fr) minmax(260px, 300px)", CSS)
-        self.assertIn("@media (min-width: 1024px)", CSS)
-        self.assertIn('[data-theme="vorneq"] .vq-chat-shell { --vq-led: #047857;', CSS)
+        self.assertIn("grid-template-columns: minmax(180px, 220px) minmax(0, 1fr)", CSS)
+        self.assertIn("@media (min-width: 1200px)", CSS)
+        self.assertIn('window.matchMedia("(max-width: 1199px)")', JS)
+        self.assertIn('--vq-led: var(--color-success);', CSS)
         self.assertIn("prefers-reduced-motion: reduce", CSS)
         self.assertIn("forced-colors: active", CSS)
         self.assertNotRegex(CSS, r"(margin|padding)-(left|right)\s*:|(?<![-\w])(left|right)\s*:")
@@ -154,3 +155,34 @@ class ChatPageIntegrationTests(TestCase):
         self.assertIn("هوش مصنوعی VORNEQ", html)
         self.assertIn("data-vq-chat-example", html)
         self.assertIn(f'href="{reverse("search_page")}"', html)
+
+    @override_settings(**DEV)
+    def test_workspace_shell_navigation_language_and_preserved_chat(self):
+        self.client.force_login(self.user)
+        for language in ("fa", "de", "en"):
+            with self.subTest(language=language):
+                url = reverse("ai_core:chat") + "?lang=" + language
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+                html = response.content.decode()
+                self.assertIn('class="vq-shell-body vq-chat-page"', html)
+                self.assertIn('id="vq-main"', html)
+                self.assertIn('data-vq-drawer', html)
+                self.assertIn('data-vq-cmd', html)
+                self.assertIn('class="vq-bottomnav"', html)
+                self.assertNotIn('class="standalone-nav"', html)
+                self.assertIn('dir="rtl"' if language == "fa" else 'dir="ltr"', html)
+                self.assertIn(f'href="{reverse("ai_core:chat")}?lang={language}" aria-current="page"', html)
+                self.assertIn('data-vq-chat-form', html)
+                self.assertIn('csrfmiddlewaretoken', html)
+                self.assertIn('no-store', response["Cache-Control"])
+                self.assertIn('noindex', response["X-Robots-Tag"])
+                for code in ("fa", "de", "en"):
+                    self.assertIn(f'value="{reverse("ai_core:chat")}?lang={code}"', html)
+
+    @override_settings(**DEV)
+    def test_language_switch_preserves_selected_conversation(self):
+        self.client.force_login(self.user)
+        cid = "11111111-2222-4333-8444-555555555555"
+        response = self.client.get(reverse("ai_core:chat") + "?lang=de&c=" + cid)
+        self.assertContains(response, f'value="{reverse("ai_core:chat")}?lang=fa&amp;c={cid}"')
