@@ -2642,3 +2642,23 @@ msgstr "جستجوی یادداشت‌ها"
 
 msgid "No matching notes."
 msgstr "یادداشت مناسبی یافت نشد."
+
+
+msgid "Email status"
+msgstr "وضعیت ایمیل"
+
+
+msgid "Sending verification email..."
+msgstr "در حال ارسال ایمیل تأیید..."
+
+
+msgid "Unable to send the verification email. Please try again later."
+msgstr "ارسال ایمیل تأیید موفق نبود. لطفاً بعداً دوباره تلاش کنید."
+
+
+msgid "No new verification email was sent. Check the selected address or try again later."
+msgstr "ایمیل تأیید جدیدی ارسال نشد. نشانی انتخاب‌شده را بررسی کنید یا بعداً تلاش کنید."
+
+
+msgid "Choose an email address before sending verification."
+msgstr "پیش از ارسال تأییدیه، یک نشانی ایمیل انتخاب کنید."

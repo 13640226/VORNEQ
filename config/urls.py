@@ -13,6 +13,7 @@ from django.views.generic import RedirectView, TemplateView
 
 from apps.platform_shell.diagnostics import diagnostics_urlpatterns
 from apps.platform_shell.registry import registry as platform_registry
+from config.account_views import AccountEmailView
 from config.health import health_check
 from config.language_views import set_language
 from config.inspect_views import context_view, inspect_entry
@@ -87,6 +88,7 @@ urlpatterns += i18n_patterns(
     path("profile/", profile, name="profile"),
     path("shell-test/", shell_test_view, name="shell_test"),
     path("", include("apps.profiles.urls")),
+    path("accounts/email/", AccountEmailView.as_view(), name="account_email"),
     path("accounts/", include("allauth.urls")),
     path("apps/", include("apps.platform_shell.urls")),
     path(
