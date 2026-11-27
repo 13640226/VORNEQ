@@ -1,5 +1,6 @@
 """Notes UI must be fully FA, DE or EN; user-written note content must never change."""
 import re
+from html.parser import HTMLParser
 from pathlib import Path
 
 from django.contrib.auth import get_user_model
@@ -49,15 +50,49 @@ def tr(language, msgid):
 FA_ENDONYM = "\u0641\u0627\u0631\u0633\u06cc"
 
 
+class _UITextParser(HTMLParser):
+    """Collect human-readable text and labels, never opaque HTML attributes."""
+
+    LABEL_ATTRIBUTES = {"aria-label", "aria-description", "title", "placeholder", "alt", "label"}
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.parts = []
+        self.non_text_tag = None
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("script", "style"):
+            self.non_text_tag = tag
+        if self.non_text_tag:
+            return
+        attrs = dict(attrs)
+        for name in self.LABEL_ATTRIBUTES:
+            if attrs.get(name):
+                self.parts.append(attrs[name])
+        if tag == "input" and attrs.get("type", "").lower() in ("submit", "reset", "button"):
+            if attrs.get("value"):
+                self.parts.append(attrs["value"])
+
+    def handle_endtag(self, tag):
+        if self.non_text_tag == tag:
+            self.non_text_tag = None
+
+    def handle_data(self, data):
+        if self.non_text_tag:
+            return
+        value = data.strip()
+        # Exempt only whole fixture text nodes and the language endonym.
+        # Keep labels and translations that merely contain these strings.
+        if value and value not in (USER_BODY, USER_TITLE, FA_ENDONYM):
+            self.parts.append(value)
+
+
 def ui_text(html):
-    """HTML without the user's own note content (never translated) and the FA endonym."""
-    # Remove only complete user-content text nodes, not matching prefixes of translated UI strings.
-    for value in (USER_BODY, USER_TITLE):
-        html = re.sub(r"(?<=>)" + re.escape(value) + r"(?=<)", "", html)
-    # Django adds a newline before the textarea value. Exclude only the exact fixture
-    # value in that form field; leave all translated labels and messages intact.
-    html = re.sub(r'(<textarea\b[^>]*\bid="id_content"[^>]*>)\s*' + re.escape(USER_BODY) + r'\s*(</textarea>)', r'\1\2', html)
-    return html.replace(FA_ENDONYM, "")
+    """Decoded UI strings, including initially hidden controls and accessible labels."""
+    parser = _UITextParser()
+    parser.feed(html)
+    parser.close()
+    return "\n".join(parser.parts)
 
 
 def make_user(name, *, active=True):
@@ -87,7 +122,7 @@ class NotesLocalizationTests(TestCase):
         for msgid in ids:
             expected = tr(language, msgid)
             # base.html renders the title separator as an em dash.
-            self.assertIn(escape(expected), text, f"{label}[{language}] missing {msgid!r}")
+            self.assertIn(expected, text, f"{label}[{language}] missing {msgid!r}")
         # No leakage from the other two languages (identical words such as "App" are exempt).
         for other in LANGUAGES:
             if other == language:
@@ -98,7 +133,7 @@ class NotesLocalizationTests(TestCase):
                     continue
                 if foreign in own:
                     continue
-                self.assertNotIn(escape(foreign), text, f"{label}[{language}] leaks {other}: {msgid!r}")
+                self.assertNotIn(foreign, text, f"{label}[{language}] leaks {other}: {msgid!r}")
         if language != "fa":
             self.assertIsNone(PERSIAN.search(text), f"{label}[{language}] contains Persian UI text")
 
@@ -113,6 +148,22 @@ class NotesLocalizationTests(TestCase):
             self.assert_pure(html, language, LIST_IDS + CHROME_IDS + CONTROL_IDS + ("Workspace",), "list")
             self.assert_direction(html, language)
             self.assertIn(USER_TITLE, html)
+
+    def test_csrf_token_collision_is_not_a_translation_leak(self):
+        html = self.page("fa", "notes:list")
+        # Reproduce the exact CI failure without relying on random token generation.
+        html, replacements = re.subn(
+            r'(name="csrfmiddlewaretoken"\s+value=")[A-Za-z0-9]{64}(")',
+            lambda match: match[1] + "App" + "a" * 61 + match[2],
+            html,
+        )
+        self.assertGreater(replacements, 0)
+        self.assertIn("App", html)
+        self.assert_pure(html, "fa", LIST_IDS + CHROME_IDS + CONTROL_IDS, "csrf-collision")
+        # A real leak must still fail, including an accessibility-only label.
+        for leak in ('<span>App</span>', '<button aria-label="App"></button>'):
+            with self.subTest(leak=leak), self.assertRaisesRegex(AssertionError, "leaks"):
+                self.assert_pure(html + leak, "fa", LIST_IDS, "real-leak")
 
     def test_empty_list_in_every_language(self):
         self.client.force_login(make_user("notes-l10n-empty"))
@@ -176,6 +227,35 @@ class NotesLocalizationTests(TestCase):
             self.page(language, "notes:update", note_id=self.note.pk)
         after = Note.objects.values_list("title", "content", "updated_at").get(pk=self.note.pk)
         self.assertEqual(before, after)
+
+
+class NotesUITextTests(SimpleTestCase):
+    def test_extracts_only_human_readable_strings(self):
+        html = (
+            '<title>Notes &amp; more</title>'
+            '<script>IGNORED_SCRIPT</script><style>IGNORED_STYLE</style>'
+            '<input type="hidden" name="csrfmiddlewaretoken" value="AppSECRET">'
+            '<a href="/App" id="App" data-key="App" title="Link help">Visible</a>'
+            '<input placeholder="Search notes" aria-label="Accessible label">'
+            '<img alt="Image description" src="/App.png">'
+            '<input type="submit" value="Save Note">'
+            '<p hidden>No matching notes.</p>'
+        )
+        text = ui_text(html)
+        for expected in ("Notes & more", "Visible", "Link help", "Search notes",
+                         "Accessible label", "Image description", "Save Note", "No matching notes."):
+            self.assertIn(expected, text)
+        for opaque in ("App", "SECRET", "IGNORED_SCRIPT", "IGNORED_STYLE"):
+            self.assertNotIn(opaque, text)
+
+    def test_preserves_labels_containing_fixture_or_endonym(self):
+        html = (
+            f'<p>{USER_BODY}</p><p>{USER_TITLE}</p><span>{FA_ENDONYM}</span>'
+            f'<textarea id="id_content">\n{USER_BODY}</textarea>'
+            f'<p>{USER_BODY} additional text</p>'
+            f'<button aria-label="{FA_ENDONYM}"></button>'
+        )
+        self.assertEqual(ui_text(html), f"{USER_BODY} additional text\n{FA_ENDONYM}")
 
 
 class NotesCatalogContractTests(SimpleTestCase):
