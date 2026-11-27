@@ -19,12 +19,20 @@
     <p class="account-experience__subtitle">{% trans "Manage the email addresses connected to your account." %}</p>
   </header>
 
+  {% if messages %}
+    <div class="account-email-feedback" aria-label="{% trans 'Email status' %}">
+      {% for message in messages %}
+        <p class="account-email-notice account-email-notice--{{ message.level_tag }}" role="{% if message.level_tag == 'error' or message.level_tag == 'warning' %}alert{% else %}status{% endif %}">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+
   <section class="account-panel" aria-labelledby="current-emails-heading">
     <h2 id="current-emails-heading" class="account-panel__title">{% trans "Current email addresses" %}</h2>
     <p class="account-panel__description">{% trans "Choose an address to manage its primary, verification, or removal actions." %}</p>
 
     {% if emailaddresses %}
-      <form method="post" action="{% url 'account_email' %}" class="account-system-form">
+      <form method="post" action="{% url 'account_email' %}" class="account-system-form" data-email-verification-form>
         {% csrf_token %}
         <fieldset class="account-email-list">
           <legend class="visually-hidden">{% trans "Email addresses" %}</legend>
@@ -50,9 +58,13 @@
 
         <div class="account-system-actions">
           <button type="submit" name="action_primary" class="account-system-button account-system-button--secondary account-system-button--small">{% trans "Make Primary" %}</button>
-          <button type="submit" name="action_send" class="account-system-button account-system-button--secondary account-system-button--small">{% trans "Re-send Verification" %}</button>
+          <button type="submit" name="action_send" class="account-system-button account-system-button--secondary account-system-button--small" data-email-resend>
+            <span class="account-email-spinner" aria-hidden="true" hidden></span>
+            <span data-email-resend-label>{% trans "Re-send Verification" %}</span>
+          </button>
           <button type="submit" name="action_remove" class="account-system-button account-system-button--danger account-system-button--small">{% trans "Remove" %}</button>
         </div>
+        <p class="account-system-message" role="status" aria-live="polite" data-email-progress data-sending-label="{% trans 'Sending verification email...' %}"></p>
       </form>
     {% else %}
       <p class="account-system-empty">{% trans "No email address is currently registered for this account." %}</p>
@@ -97,4 +109,10 @@
     </form>
   </section>
 </div>
+{% endblock %}
+
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'js/account-email-verification.js' %}" defer></script>
 {% endblock %}

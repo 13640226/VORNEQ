@@ -2944,3 +2944,23 @@ msgstr "Notizen suchen"
 
 msgid "No matching notes."
 msgstr "Keine passenden Notizen."
+
+
+msgid "Email status"
+msgstr "E-Mail-Status"
+
+
+msgid "Sending verification email..."
+msgstr "Bestätigungs-E-Mail wird gesendet..."
+
+
+msgid "Unable to send the verification email. Please try again later."
+msgstr "Die Bestätigungs-E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es später erneut."
+
+
+msgid "No new verification email was sent. Check the selected address or try again later."
+msgstr "Es wurde keine neue Bestätigungs-E-Mail gesendet. Prüfen Sie die ausgewählte Adresse oder versuchen Sie es später erneut."
+
+
+msgid "Choose an email address before sending verification."
+msgstr "Wählen Sie vor dem Senden eine E-Mail-Adresse aus."
