@@ -113,6 +113,7 @@ class ResendEmailBackend(BaseEmailBackend):
             headers={
                 "Authorization": "Bearer " + self.api_key,
                 "Content-Type": "application/json",
+                "User-Agent": "VORNEQ/1.0",
             },
             method="POST",
         )
