@@ -11,7 +11,7 @@ from django.utils import timezone
 from apps.ai_core.models import AIConversation, AIMessage
 from apps.ai_core.engine.passages import MAX_PASSAGES
 
-from . import repository
+from . import feedback, repository
 from .repository import ConversationNotFound
 
 TITLE_LIMIT = 120
@@ -257,6 +257,7 @@ def finalize_from_cache(message_id, cached):
 def stored_response(message, conversation):
     """Rebuild the client response of a FINAL turn (replay after cache expiry)."""
     base = {"conversation_id": str(conversation.id), "persisted": True, "replayed": True}
+    base.update(feedback.response_identity(message, {"answer": message.content}))
     if message.status == AIMessage.STATUS_COMPLETED:
         if getattr(message, "error_code", "") == "model_knowledge":
             return dict(base, mode="model_knowledge", answer=message.content,
@@ -302,13 +303,19 @@ def record_turn(owner, conversation_id, *, question, language, result, http_stat
 
 def export(owner, conversation_id):
     conversation, messages = repository.list_messages(owner, conversation_id, limit=1000, include_deleted=True)
+    serialized = [serialize_message(m) for m in messages]
+    if feedback.enabled():
+        ratings = feedback.ratings(messages)
+        for message, data in zip(messages, serialized):
+            if feedback.eligible(message):
+                data["feedback"] = ratings.get(message.pk)
     return {
         "format": "vorneq.ai.conversation.v1",
         "id": str(conversation.id),
         "title": conversation.title,
         "language": conversation.language,
         "created_at": conversation.created_at.isoformat(),
-        "messages": [serialize_message(m) for m in messages],
+        "messages": serialized,
     }
 
 

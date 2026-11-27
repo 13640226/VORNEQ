@@ -251,6 +251,8 @@ UI_LABELS = {
 # Persistent conversations V1 (shown only when VORNEQ_AI_CONVERSATIONS_ENABLED).
 CONVERSATION_LABELS = {
     "en": {
+        "feedback_like": "Helpful response", "feedback_dislike": "Unhelpful response",
+        "feedback_error": "Feedback could not be saved or loaded.",
         "conv_not_saved": "This answer was shown but could NOT be saved to your history. It may have been billed; do not resend automatically.",
         "conv_title": "Conversations", "conv_new": "New conversation", "conv_search": "Search conversations",
         "conv_empty": "No conversations yet.", "conv_untitled": "New conversation",
@@ -266,6 +268,8 @@ CONVERSATION_LABELS = {
         "conv_full": "This conversation is full. Please start a new conversation.",
     },
     "de": {
+        "feedback_like": "Hilfreiche Antwort", "feedback_dislike": "Nicht hilfreiche Antwort",
+        "feedback_error": "Feedback konnte nicht gespeichert oder geladen werden.",
         "conv_not_saved": "Diese Antwort wurde angezeigt, konnte aber NICHT im Verlauf gespeichert werden. Sie wurde möglicherweise berechnet; nicht automatisch erneut senden.",
         "conv_title": "Gespräche", "conv_new": "Neues Gespräch", "conv_search": "Gespräche durchsuchen",
         "conv_empty": "Noch keine Gespräche.", "conv_untitled": "Neues Gespräch",
@@ -281,6 +285,8 @@ CONVERSATION_LABELS = {
         "conv_full": "Dieses Gespräch ist voll. Bitte beginnen Sie ein neues Gespräch.",
     },
     "fa": {
+        "feedback_like": "پاسخ مفید", "feedback_dislike": "پاسخ غیرمفید",
+        "feedback_error": "بازخورد ذخیره یا بارگیری نشد.",
         "conv_not_saved": "این پاسخ نمایش داده شد اما در تاریخچه ذخیره نشد. ممکن است هزینه‌اش ثبت شده باشد؛ آن را خودکار دوباره نفرستید.",
         "conv_title": "گفت‌وگوها", "conv_new": "گفت‌وگوی تازه", "conv_search": "جست‌وجو در گفت‌وگوها",
         "conv_empty": "هنوز گفت‌وگویی ندارید.", "conv_untitled": "گفت‌وگوی تازه",

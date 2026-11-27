@@ -29,6 +29,7 @@ done
 node -e 'fetch(process.env.QUALITY_BASE_URL + "/en/").then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))'
 
 node --test /src/quality/test-image-studio-recovery.mjs /src/quality/test-image-studio-gallery.mjs
+node /src/apps/ai_core/tests/browser/message_feedback.cjs
 npm test
 npm run verify
 npm run lighthouse

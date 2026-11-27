@@ -283,3 +283,27 @@ class AIChatJob(models.Model):
                            | (Q(lease_until__isnull=False) & ~Q(worker_id=""))),
                 name="ai_chatjob_running_has_lease"),
         ]
+
+
+class AIMessageFeedback(models.Model):
+    """Owner-only rating of a persisted assistant response.
+
+    Ownership derives exclusively from message.conversation.owner.
+    No extra user identity, provider call or ledger accounting is involved.
+    """
+
+    class Rating(models.TextChoices):
+        LIKE = "like", "Like"
+        DISLIKE = "dislike", "Dislike"
+
+    message = models.OneToOneField(AIMessage, on_delete=models.CASCADE,
+                                   related_name="feedback", primary_key=True)
+    rating = models.CharField(max_length=7, choices=Rating.choices)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(rating__in=["like", "dislike"]),
+                                   name="ai_msg_feedback_rating_valid"),
+        ]

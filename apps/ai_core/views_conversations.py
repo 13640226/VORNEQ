@@ -28,7 +28,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.ai_core import request_recovery
-from apps.ai_core.conversations import context, repository, service
+from apps.ai_core.conversations import context, feedback, repository, service
 from apps.ai_core.conversations.repository import ConversationNotFound
 from apps.ai_core.conversations.service import ConversationLimit, ConversationNotInTrash
 from apps.ai_core.error_contracts import input_too_large
@@ -134,8 +134,19 @@ def conversation_detail_view(request, conversation_id):
                 return _json({"error": "invalid_input"}, 400)
             conversation, messages = repository.list_messages(user, conversation_id, after_sequence=after,
                                                               limit=1000)
+            serialized = [service.serialize_message(m) for m in messages]
+            if feedback.enabled():
+                try:
+                    ratings = feedback.ratings(messages)
+                except DatabaseError:
+                    # Fail closed for feedback while preserving access to existing history.
+                    _log.warning("ai_feedback_history_unavailable")
+                else:
+                    for message, data in zip(messages, serialized):
+                        if feedback.eligible(message):
+                            data["feedback"] = ratings.get(message.pk)
             return _json({"conversation": service.serialize_conversation(conversation),
-                          "messages": [service.serialize_message(m) for m in messages]})
+                          "messages": serialized})
         if request.method == "PATCH":
             try:
                 body = _body(request, {"title", "archived"})
@@ -166,6 +177,36 @@ def conversation_detail_view(request, conversation_id):
 
 @never_cache
 @csrf_protect
+@require_http_methods(["GET", "POST", "DELETE"])
+def conversation_feedback_view(request, conversation_id, message_id):
+    if not feedback.enabled():
+        raise Http404("feedback disabled")
+    user = _enabled_user(request)
+    if user is None:
+        return _json({"error": "authentication_required"}, 401)
+    rating = None
+    if request.method == "POST":
+        try:
+            body = _body(request, {"rating"}, max_body=128)
+            rating = body.get("rating")
+            if not isinstance(rating, str) or rating not in ("like", "dislike"):
+                raise ValueError("rating")
+        except (ValueError, TypeError, UnicodeDecodeError):
+            return _json({"error": "invalid_input"}, 400)
+    try:
+        rating = feedback.access(user, conversation_id, message_id,
+                                 method=request.method, rating=rating)
+    except ConversationNotFound:
+        return _json({"error": "not_found"}, 404)
+    except feedback.IneligibleMessage:
+        return _json({"error": "ineligible_message"}, 409)
+    except DatabaseError:
+        return _json({"error": "persistence_unavailable"}, 503)
+    return _json({"rating": rating})
+
+
+@never_cache
+@csrf_protect
 @require_POST
 def conversation_restore_view(request, conversation_id):
     user = _enabled_user(request)
@@ -188,6 +229,8 @@ def conversation_export_view(request, conversation_id):
         data = service.export(user, conversation_id)
     except ConversationNotFound:
         return _json({"error": "not_found"}, 404)
+    except DatabaseError:
+        return _json({"error": "persistence_unavailable"}, 503)
     reply = _json(data)
     reply["Content-Disposition"] = f'attachment; filename="vorneq-conversation-{conversation_id}.json"'
     return reply
@@ -311,7 +354,7 @@ def persist_turn(request, user, conversation, pending, request_id, data, status,
     finaler Turn + Guard-Übergang in EINER PostgreSQL-Transaktion, dann Redis."""
     persisted = False
     try:
-        service.complete_turn(
+        message, _guard_finalized = service.complete_turn(
             user, pending.id, result=data, http_status=status,
             reservation_id=getattr(reservation, "id", None), model=model,
             finalize_guard=((lambda: request_recovery.finalize_guard_in_transaction(request, request_id))
@@ -321,6 +364,8 @@ def persist_turn(request, user, conversation, pending, request_id, data, status,
         # The provider may have been billed. Never claim persistence; never retry.
         _log.warning("ai_conversation_persist_failed")
     body = dict(data, conversation_id=str(conversation.id), persisted=persisted) if isinstance(data, dict) else data
+    if persisted and isinstance(body, dict):
+        body.update(feedback.response_identity(message, data))
     if request_id is not None:
         if persisted:
             request_recovery.cache_result_best_effort(request, request_id, http_status=status, response=body)

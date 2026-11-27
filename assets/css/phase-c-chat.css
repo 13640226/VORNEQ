@@ -311,3 +311,15 @@
 .vq-hl-s { color: var(--color-success, #15803d); }
 .vq-hl-n { color: var(--color-warning, #b45309); }
 .vq-hl-c { color: var(--color-text-secondary); font-style: italic; }
+
+
+/* Owner-confirmed message feedback; never marks a pending write successful. */
+.vq-chat__feedback { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; vertical-align: middle; margin-inline-start: 4px; }
+.vq-chat__feedback-button { min-width: var(--vq-target); min-height: var(--vq-target); display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; border-radius: var(--vq-radius); background: transparent; color: var(--vq-text-2); cursor: pointer; }
+.vq-chat__feedback-button .vq-icon { inline-size: 19px; block-size: 19px; }
+.vq-chat__feedback-button:hover:not(:disabled) { background: var(--vq-hover); border-color: var(--vq-border); }
+.vq-chat__feedback-button[aria-pressed="true"] { border-color: var(--vq-border); background: var(--vq-accent-subtle); color: var(--vq-text); }
+.vq-chat__feedback-button[aria-pressed="true"] svg { stroke-width: 2; }
+.vq-chat__feedback-button:disabled { opacity: .55; cursor: default; }
+.vq-chat__feedback-note { font-size: .75rem; color: var(--vq-text-2); }
+@media (forced-colors: active) { .vq-chat__feedback-button[aria-pressed="true"] { border-color: Highlight; color: Highlight; } }

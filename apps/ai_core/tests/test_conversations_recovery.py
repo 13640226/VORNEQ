@@ -77,6 +77,32 @@ class ConversationRecoveryLedgerTests(TestCase):
         self.assertEqual((assistant.role, assistant.sequence), ("assistant", 2))
         self.assertEqual(AIChatRequestGuard.objects.get(request_id=rid).state, "finished")
 
+    @override_settings(VORNEQ_AI_FEEDBACK_ENABLED=True)
+    def test_feedback_identity_survives_cache_and_database_replay(self):
+        rid = str(uuid.uuid4())
+        first = self.ask(rid)
+        self.assertEqual(first.status_code, 200)
+        assistant = AIMessage.objects.get(request_id=rid)
+        identity = str(assistant.pk)
+        self.assertEqual(first.json()["assistant_message_id"], identity)
+        self.assertNotEqual(identity, rid)
+        self.assertTrue(first.json()["persisted"])
+        recovered = self.client.get(reverse("ai_core:request-status"), {"request_id": rid})
+        self.assertEqual(recovered.status_code, 200)
+        self.assertEqual(recovered.json()["response"]["assistant_message_id"], identity)
+        target = reverse("ai_core:conversation-message-feedback",
+                         args=[self.conversation.pk, assistant.pk])
+        rating = self.client.post(target, data='{"rating":"like"}',
+                                  content_type="application/json")
+        self.assertEqual(rating.json(), {"rating": "like"})
+        self.assertEqual(self.ask(rid).json()["assistant_message_id"], identity)
+        cache.clear()
+        replay = self.ask(rid)
+        self.assertEqual(replay.status_code, 200)
+        self.assertEqual(replay.json()["assistant_message_id"], identity)
+        self.assertEqual(self.client.get(target).json(), {"rating": "like"})
+        self.assertEqual(self.generator.call_count, 1)
+
     def test_request_id_cannot_be_replayed_into_another_conversation(self):
         rid = str(uuid.uuid4())
         self.assertEqual(self.ask(rid).status_code, 200)
