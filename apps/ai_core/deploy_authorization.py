@@ -68,39 +68,43 @@ def _id(row):
     return value
 
 
+class DeploymentDrift(ValueError):
+    """The latest deployment record does not attest this release."""
+
+
 def _latest(environment, sha, token):
     # No SHA filter: a stale rollback must not inherit an old grant.
     row = _rows("/deployments?" + urlencode({"environment": environment, "per_page": 10}), token)[0]
     if row.get("sha") != sha or row.get("environment") != environment:
-        raise ValueError("deployment drift")
+        raise DeploymentDrift("deployment drift")
     return row
 
 
-def verify_deployment(environment, sha, token):
+def _deployment_reason(environment, sha, token):
     if environment not in SERVICES or not isinstance(sha, str) or not SHA.fullmatch(sha) or not token:
-        return False
+        return "INVALID_VERIFICATION_INPUT"
     record = _latest(environment, sha, token)
     marker = MARKER.fullmatch(record.get("description") or "")
     if marker is None or not _bot(record.get("creator")):
-        return False
+        return "DEPLOYMENT_MARKER_OR_CREATOR_INVALID"
     state = _rows(f"/deployments/{_id(record)}/statuses?per_page=1", token)[0]
     if (state.get("state") != "success" or state.get("environment") != environment
             or state.get("description") != marker.group(1) + ": success"
             or not _bot(state.get("creator"))):
-        return False
+        return "DEPLOYMENT_STATUS_INVALID"
     job_record = _latest("deploy-" + environment, sha, token)
     app = job_record.get("performed_via_github_app") or {}
     if not _owner(job_record.get("creator")) or app.get("slug") != "github-actions" or app.get("id") != 15368:
-        return False
+        return "JOB_CREATOR_OR_APP_INVALID"
     job_state = _rows(f"/deployments/{_id(job_record)}/statuses?per_page=1", token)[0]
     match = LOG_URL.fullmatch(job_state.get("log_url") or "")
     if (job_state.get("state") != "success" or job_state.get("environment") != "deploy-" + environment
             or not _owner(job_state.get("creator")) or match is None):
-        return False
+        return "JOB_STATUS_OR_LOG_INVALID"
     run = _get("/actions/runs/" + match.group(1), token)
     if not isinstance(run, dict):
-        return False
-    return bool(run.get("id") == int(match.group(1)) and run.get("event") == "workflow_dispatch"
+        return "WORKFLOW_RESPONSE_INVALID"
+    valid = bool(run.get("id") == int(match.group(1)) and run.get("event") == "workflow_dispatch"
                 and run.get("path") == ".github/workflows/deploy.yml"
                 and run.get("head_branch") == "main" and run.get("head_sha") == sha
                 and run.get("status") == "completed" and run.get("conclusion") == "success"
@@ -109,6 +113,12 @@ def verify_deployment(environment, sha, token):
                 and isinstance(run.get("updated_at"), str)
                 and isinstance(record.get("created_at"), str)
                 and run["created_at"] <= record["created_at"] <= run["updated_at"])
+
+    return "VERIFIED" if valid else "WORKFLOW_EVIDENCE_INVALID"
+
+
+def verify_deployment(environment, sha, token):
+    return _deployment_reason(environment, sha, token) == "VERIFIED"
 
 
 def release_allowed(environment, authorized_sha):
