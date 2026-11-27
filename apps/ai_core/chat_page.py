@@ -68,6 +68,7 @@ def chat_page(request):
         response = render(request, "ai_core/chat.html", {
             "chat_labels": chat_labels(language, environment=settings.VORNEQ_ENV),
             "chat_language": language,
+            "chat_shell_active": True,
             "chat_question_limit": budget.question_chars,
             "chat_question_bytes": budget.question_utf8_bytes,
             "chat_endpoint": reverse("ai_core:ask-global" if global_ai else "ai_core:ask-grounded"),
