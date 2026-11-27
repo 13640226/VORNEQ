@@ -61,7 +61,7 @@
                 {% for code, name in SHELL_LANGUAGES %}
                 <form action="{% url 'set_language' %}" method="post">
                     {% csrf_token %}
-                    <input type="hidden" name="next" value="{% if chat_shell_active %}{{ url_chat }}?lang={{ code }}{% if request.GET.c %}&amp;c={{ request.GET.c|urlencode }}{% endif %}{% else %}{{ request.get_full_path }}{% endif %}">
+                    <input type="hidden" name="next"{% if chat_shell_active %} data-vq-chat-language-next{% endif %} value="{% if chat_shell_active %}{{ url_chat }}?lang={{ code }}{% if request.GET.c %}&amp;c={{ request.GET.c|urlencode }}{% endif %}{% else %}{{ request.get_full_path }}{% endif %}">
                     <input type="hidden" name="language" value="{{ code }}">
                     <button type="submit" class="vq-lang__option" lang="{{ code }}"{% if code == LANG %} aria-current="true"{% endif %}><span dir="ltr">{{ code|upper }}</span><span>{{ name }}</span></button>
                 </form>

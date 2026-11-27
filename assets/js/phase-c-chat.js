@@ -691,6 +691,15 @@
         const url = new URL(window.location.href);
         if (id) url.searchParams.set("c", id); else url.searchParams.delete("c");
         window.history.replaceState(null, "", url.pathname + url.search);
+        // The shell form was rendered before this client-side conversation change.
+        // Keep only the validated current conversation, not the stale initial URL.
+        document.querySelectorAll("[data-vq-chat-language-next]").forEach((field) => {
+          const next = new URL(field.value, window.location.origin);
+          if (next.origin !== window.location.origin || next.pathname !== url.pathname) return;
+          if (id && uuidPattern.test(String(id))) next.searchParams.set("c", id);
+          else next.searchParams.delete("c");
+          field.value = next.pathname + next.search;
+        });
       }
       function showBar(conversation) {
         current = conversation;
@@ -824,6 +833,7 @@
         showBar(null);
         log.replaceChildren();
         if (welcome) welcome.hidden = false;
+        if (panel && window.matchMedia && window.matchMedia("(max-width: 1199px)").matches) panel.open = false;
         refreshList();
       }
       async function ensure(question) {
