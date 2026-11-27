@@ -94,6 +94,7 @@ class LayoutAndAccessibilityTests(SimpleTestCase):
             with self.subTest(language=language):
                 html = render_page(language)
                 self.assertEqual(html.count("<h1"), 1)
+                self.assertEqual(len(re.findall(r'<main\b', html)), 1)
                 ids = re.findall(r'\sid="([^"]+)"', html)
                 self.assertEqual(len(ids), len(set(ids)))
                 for attribute in ("aria-labelledby", "aria-describedby"):
@@ -185,4 +186,5 @@ class ChatPageIntegrationTests(TestCase):
         self.client.force_login(self.user)
         cid = "11111111-2222-4333-8444-555555555555"
         response = self.client.get(reverse("ai_core:chat") + "?lang=de&c=" + cid)
+        self.assertContains(response, 'data-vq-chat-language-next', count=3)
         self.assertContains(response, f'value="{reverse("ai_core:chat")}?lang=fa&amp;c={cid}"')
