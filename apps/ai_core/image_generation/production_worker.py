@@ -3,6 +3,7 @@ import os
 import re
 from django.conf import settings
 from .policy import PRODUCTION_SERVICE_ID
+from .production_ledger_contract import ProductionImageBudget
 
 _WORKER_ID = re.compile(r"srv-[a-z0-9]{20,32}\Z")
 _SHA = re.compile(r"[0-9a-f]{40}\Z")
@@ -18,7 +19,11 @@ def production_worker_preflight():
     checks = {
         "production_environment": getattr(settings, "VORNEQ_ENV", "") == "production",
         "debug_off": getattr(settings, "DEBUG", True) is False,
-        "budget_intent": getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_UNCAPPED_BUDGET", False) is True,
+        "budget_intent": ProductionImageBudget(
+            getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_PROJECT_BUDGET_MICROUSD", None),
+            getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_DAILY_CAP_MICROUSD", None),
+            getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_MAX_REQUEST_MICROUSD", None),
+        ).valid(),
         "production_switch": getattr(settings, "VORNEQ_AI_IMAGE_PRODUCTION_ENABLED", False) is True,
         "actor_isolation": actor_ids == "1",
         "owner_grant_format": isinstance(owner, str) and bool(re.fullmatch(r"OWNER-AUTH-AI-IMAGE-PRODUCTION-[A-Z0-9-]{6,100}", owner)),
