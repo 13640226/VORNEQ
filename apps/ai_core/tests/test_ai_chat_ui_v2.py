@@ -68,7 +68,7 @@ class EnvironmentWordingTests(SimpleTestCase):
                     self.assertTrue(all(table[language][key] for key in keys))
         for language in ("en", "de", "fa"):
             self.assertEqual(set(ENVIRONMENT_LABELS[language]), {"staging", "production"})
-            self.assertEqual(len(UI_LABELS[language]["examples"]), 3)
+            self.assertEqual(len(UI_LABELS[language]["examples"]), 4)
 
     def test_unknown_language_falls_back_to_english(self):
         self.assertEqual(chat_labels("../x", "production")["entry"], "Open AI chat")
@@ -78,7 +78,7 @@ class LayoutAndAccessibilityTests(SimpleTestCase):
     def test_examples_are_buttons_and_only_shown_for_global_sources(self):
         html = render_page(hosts="en.wikipedia.org")
         examples = re.findall(r'<button type="button" class="vq-chat__example" data-vq-chat-example>', html)
-        self.assertEqual(len(examples), 3)
+        self.assertEqual(len(examples), 4)
         self.assertIn("Public encyclopedia articles (Wikipedia)", html)
         local = render_page(hosts="")
         self.assertNotIn("data-vq-chat-example", local)
@@ -103,6 +103,11 @@ class LayoutAndAccessibilityTests(SimpleTestCase):
                             self.assertIn(target, ids)
                 self.assertIn('role="log"', html)
                 self.assertIn('<aside class="vq-chat__panel"', html)
+                self.assertIn('<details class="vq-chat__info">', html)
+                self.assertIn('data-vq-chat-thread', html)
+                self.assertRegex(html, r'<button type="submit" class="vq-chat__send"[^>]+disabled>')
+                self.assertIn('rows="1" dir="auto"', html)
+                self.assertIn(chat_labels(language, "production")["warning"], html)
                 self.assertNotIn("style=", html)
                 self.assertNotRegex(html, r"<script(?![^>]*\bsrc=)")
 
@@ -128,7 +133,13 @@ class StaticAssetContractTests(SimpleTestCase):
         self.assertIn('author.textContent', JS)
 
     def test_css_layout_contract(self):
-        self.assertIn("grid-template-columns: minmax(180px, 220px) minmax(0, 1fr)", CSS)
+        self.assertIn("grid-template-columns: minmax(180px, 240px) minmax(0, 1fr)", CSS)
+        self.assertIn(".vq-chat__thread", CSS)
+        self.assertIn("overflow-y: auto", CSS)
+        self.assertIn("scrollbar-width: thin", CSS)
+        self.assertIn("text-overflow: ellipsis", CSS)
+        self.assertIn("resizeComposer()", JS)
+        self.assertNotIn("linear-gradient", CSS)
         self.assertIn("@media (min-width: 1200px)", CSS)
         self.assertIn('window.matchMedia("(max-width: 1199px)")', JS)
         self.assertIn('--vq-led: var(--color-success);', CSS)

@@ -75,4 +75,9 @@ class ConversationAssetContractTests(TestCase):
     def test_css_logical_properties_and_touch_targets(self):
         block = CSS[CSS.index("/* Persistent conversations V1"):CSS.index("/* Keep citation links readable")]
         self.assertNotRegex(block, r"(margin|padding)-(left|right)\s*:|(?<![-\w])(left|right)\s*:")
-        self.assertGreaterEqual(block.count("min-height: 44px"), 6)
+        self.assertGreaterEqual(block.count("min-height: var(--vq-target)"), 6)
+        shell_css = (Path(settings.BASE_DIR) / "assets" / "css" / "shell.css").read_text(encoding="utf-8")
+        self.assertIn("--vq-target: 44px;", shell_css)
+        self.assertIn("overflow-x: hidden", block)
+        self.assertIn("text-overflow: ellipsis", block)
+        self.assertIn("flex: 1 1 0; max-height: none", block)

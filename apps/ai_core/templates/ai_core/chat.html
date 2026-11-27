@@ -85,10 +85,34 @@
   data-vq-stream-interrupted="{{ chat_labels.stream_interrupted }}"
   data-vq-copy-code="{{ chat_labels.copy_code }}"{% endif %}{% endif %}>
   <header class="vq-chat__header">
-    {% include "partials/_ai_brand.html" %}
-    <p class="vq-chat__kicker"><span class="vq-chat__led" aria-hidden="true"></span>VORNEQ · AI · {% if chat_production %}Generated drafts · claims not verified{% elif chat_staging %}Authorized staging trial{% else %}Development preview{% endif %}</p>
-    <h1 id="vq-chat-title">{{ chat_labels.title }}</h1>
-    <p class="vq-chat__intro">{{ chat_labels.intro }}</p>
+    <div class="vq-chat__heading">
+      {% include "partials/_ai_brand.html" %}
+      <div class="vq-chat__heading-text">
+        <h1 id="vq-chat-title">{{ chat_labels.title }}</h1>
+        <p class="vq-chat__kicker"><span class="vq-chat__led" aria-hidden="true"></span>VORNEQ · AI · {% if chat_production %}Generated drafts · claims not verified{% elif chat_staging %}Authorized staging trial{% else %}Development preview{% endif %}</p>
+      </div>
+      <details class="vq-chat__info">
+        <summary class="vq-chat__info-toggle"><svg class="vq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/></svg><span>{{ chat_labels.panel_title }}</span></summary>
+        <aside class="vq-chat__panel" aria-labelledby="vq-chat-panel-title">
+  <section class="vq-chat__card">
+    <h2 id="vq-chat-panel-title">{{ chat_labels.panel_title }}</h2>
+    <dl class="vq-chat__facts">
+      <div><dt>{{ chat_labels.sources_label }}</dt><dd>{% if chat_source_hosts %}{{ chat_labels.sources_global }}{% else %}{{ chat_labels.sources_local }}{% endif %}</dd></div>
+      <div><dt>{{ chat_labels.answers_label }}</dt><dd>{{ chat_labels.answers_value }}</dd></div>
+      <div><dt>{{ chat_labels.quotes_label }}</dt><dd>{{ chat_labels.quotes_value }}</dd></div>
+      <div><dt>{{ chat_labels.memory_label }}</dt><dd>{% if chat_conversations_enabled %}{{ chat_labels.conv_memory_value }}{% else %}{{ chat_labels.memory_value }}{% endif %}</dd></div>
+    </dl>
+    <p class="vq-chat__single">{% if chat_conversations_enabled %}{{ chat_labels.conv_turns }}{% else %}{{ chat_labels.single_turn }}{% endif %}</p>
+  </section>
+  <section class="vq-chat__card" aria-labelledby="vq-chat-privacy-title">
+    <h2 id="vq-chat-privacy-title">{{ chat_labels.privacy_title }}</h2>
+    {% if chat_conversations_enabled %}<p class="vq-chat__single" data-vq-conv-notice>{{ chat_labels.conv_stored_notice }}</p>{% endif %}
+    {% if chat_recovery_enabled %}<p class="vq-chat__single">{{ chat_labels.recovery_note }}</p>{% endif %}
+  </section>
+  <p class="vq-chat__back"><a href="{% url 'search_page' %}">{{ chat_labels.back }}</a></p>
+</aside>
+      </details>
+    </div>
     {% if chat_image_studio_enabled %}
     <p class="vq-chat__image-entry"><a href="{{ chat_image_studio_url }}">{% if chat_staging %}VORNEQ Image Studio · Staging{% else %}{% trans "Image Studio" %}{% endif %}</a></p>
     {% endif %}
@@ -111,26 +135,30 @@
     {% endif %}
   </header>
 
-  {% if chat_source_hosts %}
+  <div class="vq-chat__thread" data-vq-chat-thread tabindex="0" role="region" aria-label="{{ chat_labels.title }}">
   <div class="vq-chat__welcome" data-vq-chat-welcome>
+    <img class="vq-chat__welcome-logo" src="{% static 'images/brand/v2/ai-avatar.svg' %}" alt="" width="56" height="56">
     <h2 class="vq-chat__welcome-title">{{ chat_labels.examples_title }}</h2>
+    <p class="vq-chat__intro">{{ chat_labels.intro }}</p>
+    {% if chat_source_hosts %}
     <ul class="vq-chat__examples">
       {% for example in chat_labels.examples %}
       <li><button type="button" class="vq-chat__example" data-vq-chat-example>{{ example }}</button></li>
       {% endfor %}
     </ul>
     <p class="vq-chat__examples-note">{{ chat_labels.examples_note }}</p>
+    {% endif %}
   </div>
-  {% endif %}
 
   <div class="vq-chat__log" id="vq-chat-log" data-vq-chat-log role="log"
     aria-live="polite" aria-relevant="additions" aria-label="{{ chat_labels.title }}"></div>
+  </div>
   <p class="vq-chat__status" data-vq-chat-status role="status" aria-live="polite"></p>
 
   <form class="vq-chat__form" method="post" action="{{ chat_endpoint }}" data-vq-chat-form>
     {% csrf_token %}
     <label class="vq-chat__label" for="vq-chat-question">{{ chat_labels.question }}</label>
-    <textarea id="vq-chat-question" name="question" rows="3" maxlength="{{ chat_question_limit|default:200 }}"
+    <textarea id="vq-chat-question" name="question" rows="1" dir="auto" maxlength="{{ chat_question_limit|default:200 }}"
       required enterkeyhint="send" autocomplete="off" data-vq-chat-input
       aria-describedby="vq-chat-limit vq-chat-hint" placeholder="{{ chat_labels.question }}"></textarea>
     <div class="vq-chat__actions">
@@ -138,31 +166,14 @@
       <span class="vq-chat__hint" id="vq-chat-hint">{{ chat_labels.hint }}</span>
       <button type="button" class="vq-chat__clear" data-vq-chat-clear>{{ chat_labels.clear }}</button>
       {% if chat_streaming_enabled %}<button type="button" class="vq-chat__stop" data-vq-chat-stop hidden>{{ chat_labels.stream_stop }}</button>{% endif %}
-      <button type="submit" class="vq-chat__send" data-vq-chat-send>{{ chat_labels.send }}</button>
+      <button type="submit" class="vq-chat__send" data-vq-chat-send aria-label="{{ chat_labels.send }}" title="{{ chat_labels.send }}" disabled><svg class="vq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg><span class="sr-only">{{ chat_labels.send }}</span></button>
     </div>
   </form>
+  <p class="vq-chat__warning" role="note">{{ chat_labels.warning }}</p>
   <noscript><p>{{ chat_labels.error }}</p></noscript>
 </section>
 
-<aside class="vq-chat__panel" aria-labelledby="vq-chat-panel-title">
-  <section class="vq-chat__card">
-    <h2 id="vq-chat-panel-title">{{ chat_labels.panel_title }}</h2>
-    <dl class="vq-chat__facts">
-      <div><dt>{{ chat_labels.sources_label }}</dt><dd>{% if chat_source_hosts %}{{ chat_labels.sources_global }}{% else %}{{ chat_labels.sources_local }}{% endif %}</dd></div>
-      <div><dt>{{ chat_labels.answers_label }}</dt><dd>{{ chat_labels.answers_value }}</dd></div>
-      <div><dt>{{ chat_labels.quotes_label }}</dt><dd>{{ chat_labels.quotes_value }}</dd></div>
-      <div><dt>{{ chat_labels.memory_label }}</dt><dd>{% if chat_conversations_enabled %}{{ chat_labels.conv_memory_value }}{% else %}{{ chat_labels.memory_value }}{% endif %}</dd></div>
-    </dl>
-    <p class="vq-chat__single">{% if chat_conversations_enabled %}{{ chat_labels.conv_turns }}{% else %}{{ chat_labels.single_turn }}{% endif %}</p>
-  </section>
-  <section class="vq-chat__card" aria-labelledby="vq-chat-privacy-title">
-    <h2 id="vq-chat-privacy-title">{{ chat_labels.privacy_title }}</h2>
-    <p class="vq-chat__warning" role="note">{{ chat_labels.warning }}</p>
-    {% if chat_conversations_enabled %}<p class="vq-chat__single" data-vq-conv-notice>{{ chat_labels.conv_stored_notice }}</p>{% endif %}
-    {% if chat_recovery_enabled %}<p class="vq-chat__single">{{ chat_labels.recovery_note }}</p>{% endif %}
-  </section>
-  <p class="vq-chat__back"><a href="{% url 'search_page' %}">{{ chat_labels.back }}</a></p>
-</aside>
+
 </div>
 {% endblock %}
 {% block extra_js %}
