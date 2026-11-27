@@ -119,6 +119,10 @@ def conversation_message_stream_view(request, conversation_id):
         reservation = getattr(provider, "last_reservation", None)
         _body, persisted = persist_turn(request, user, conversation, pending, request_id, result, status,
                                         reservation=reservation, model=model)
+        # KnowledgeStream emits this same result after the durable finalize.
+        if persisted and "assistant_message_id" in _body:
+            result.update(assistant_message_id=_body["assistant_message_id"],
+                          conversation_id=_body["conversation_id"])
         return persisted
 
     session = streaming.KnowledgeStream(

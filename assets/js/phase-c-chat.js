@@ -547,6 +547,10 @@
       bubble.appendChild(note);
       showSources(bubble, data.citations);
       addCopyButton(bubble, data.answer);
+      if (root.dataset.vqFeedback === "true" && data.persisted === true) {
+        addFeedback(bubble, data.conversation_id, data.assistant_message_id,
+          Object.hasOwn(data, "feedback") ? data.feedback : undefined);
+      }
       return { completed: true, answerBubble: bubble };
     }
     // Copies only the plain answer text that is already displayed.
@@ -576,6 +580,123 @@
         } catch (_error) { /* clipboard permission denied: leave the text selectable */ }
       });
       bubble.appendChild(button);
+    }
+    // Only durable server identities may target feedback. Never use a request
+    // ID, array index, current active conversation, or raw provider text.
+    function addFeedback(bubble, conversationId, messageId, initialRating) {
+      const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+      const endpoint = root.dataset.vqConvEndpoint || "";
+      if (typeof conversationId !== "string" || typeof messageId !== "string" ||
+          !uuid.test(conversationId) || !uuid.test(messageId) ||
+          !endpoint.startsWith("/") || endpoint.startsWith("//") || !endpoint.endsWith("/")) return;
+      const url = new URL(endpoint + conversationId + "/messages/" + messageId + "/feedback/",
+        window.location.origin);
+      if (url.origin !== window.location.origin) return;
+      const valid = value => value === null || value === "like" || value === "dislike";
+      const actions = document.createElement("div");
+      actions.className = "vq-chat__feedback";
+      const note = document.createElement("span");
+      note.className = "vq-chat__feedback-note";
+      note.setAttribute("role", "status");
+      const buttons = [];
+      let rating = null;
+      let pending = true;
+      let known = false;
+      function paint() {
+        for (const [value, button] of buttons) {
+          button.disabled = pending || !known;
+          button.setAttribute("aria-pressed", String(known && value === rating));
+        }
+      }
+      async function exchange(method, value) {
+        const headers = { "Accept": "application/json", "X-CSRFToken": token.value };
+        const options = { method, headers, credentials: "same-origin", cache: "no-store", redirect: "error" };
+        if (method === "POST") {
+          headers["Content-Type"] = "application/json";
+          options.body = JSON.stringify({ rating: value });
+        }
+        const controller = new AbortController();
+        const timer = window.setTimeout(() => controller.abort(), 10000);
+        options.signal = controller.signal;
+        try {
+          const reply = await fetch(url.pathname, options);
+          if (!reply.ok) throw new Error("feedback unavailable");
+          const result = await reply.json();
+          if (!result || !valid(result.rating) || (method !== "GET" && result.rating !== value))
+            throw new Error("invalid feedback response");
+          return result.rating;
+        } finally {
+          window.clearTimeout(timer);
+        }
+      }
+      function announceError() {
+        note.textContent = root.dataset.vqFeedbackError || "Feedback unavailable";
+      }
+      async function load() {
+        try {
+          rating = await exchange("GET");
+          known = true;
+        } catch (_error) {
+          known = false;
+          announceError();
+        } finally {
+          pending = false;
+          paint();
+        }
+      }
+      for (const value of ["like", "dislike"]) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "vq-chat__feedback-button";
+        const title = value === "like" ? root.dataset.vqFeedbackLike : root.dataset.vqFeedbackDislike;
+        button.title = title || value;
+        button.setAttribute("aria-label", title || value);
+        const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        icon.setAttribute("viewBox", "0 0 24 24");
+        icon.setAttribute("aria-hidden", "true");
+        icon.setAttribute("class", "vq-icon");
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        if (value === "dislike") path.setAttribute("transform", "rotate(180 12 12)");
+        path.setAttribute("d", "M7 10v10H3V10zm0 0 5-7 2 1v6h6l1 2-2 8H7");
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke", "currentColor");
+        path.setAttribute("stroke-width", "1.6");
+        path.setAttribute("stroke-linejoin", "round");
+        icon.appendChild(path);
+        button.appendChild(icon);
+        buttons.push([value, button]);
+        actions.appendChild(button);
+        button.addEventListener("click", async () => {
+          if (pending || !known || !bubble.isConnected) return;
+          const next = rating === value ? null : value;
+          pending = true;
+          note.textContent = "";
+          paint();
+          try {
+            rating = await exchange(next === null ? "DELETE" : "POST", next);
+          } catch (_error) {
+            // No optimistic success. A lost response might have committed.
+            // Reconcile by GET only; never retry the mutation automatically.
+            known = false;
+            announceError();
+            try { rating = await exchange("GET"); known = true; } catch (_ignored) {}
+          } finally {
+            pending = false;
+            paint();
+          }
+        });
+      }
+      actions.appendChild(note);
+      bubble.appendChild(actions);
+      if (valid(initialRating)) {
+        rating = initialRating;
+        known = true;
+        pending = false;
+        paint();
+      } else {
+        paint();
+        load();
+      }
     }
     function focusAnswer(bubble) {
       if (bubble && typeof bubble.scrollIntoView === "function") {
@@ -748,13 +869,16 @@
           if (message.role === "user") {
             appendMessage(String(message.content || ""), "user");
           } else if (message.status === "completed") {
+            const feedbackData = Object.hasOwn(message, "feedback") && current
+              ? { persisted: true, conversation_id: current.id,
+                  assistant_message_id: message.id, feedback: message.feedback } : {};
             if (message.error_code === "model_knowledge") {
               renderData({ mode: "model_knowledge", verified: false, answer: String(message.content || ""),
                 language: document.documentElement.lang, citations: [], model_status: "generated",
-                grounded_status: "model_knowledge_unverified", error_code: "", route: "general_public" }, true);
+                grounded_status: "model_knowledge_unverified", error_code: "", route: "general_public", ...feedbackData }, true);
             } else {
               renderData({ mode: "grounded_draft", verified: false, answer: String(message.content || ""),
-                citations: Array.isArray(message.citations) ? message.citations : [] }, true);
+                citations: Array.isArray(message.citations) ? message.citations : [], ...feedbackData }, true);
             }
           } else if (message.status === "insufficient_evidence") {
             const code = String(message.error_code || "");

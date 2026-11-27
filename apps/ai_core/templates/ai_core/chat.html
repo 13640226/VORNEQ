@@ -75,7 +75,11 @@
   data-vq-conv-delete-forever="{{ chat_labels.conv_delete_forever }}"
   data-vq-conv-load-error="{{ chat_labels.conv_load_error }}"
   data-vq-conv-full="{{ chat_labels.conv_full }}"
-  data-vq-conv-not-saved="{{ chat_labels.conv_not_saved }}"{% if chat_streaming_enabled %}
+  data-vq-conv-not-saved="{{ chat_labels.conv_not_saved }}"{% if chat_feedback_enabled %}
+  data-vq-feedback="true"
+  data-vq-feedback-like="{{ chat_labels.feedback_like }}"
+  data-vq-feedback-dislike="{{ chat_labels.feedback_dislike }}"
+  data-vq-feedback-error="{{ chat_labels.feedback_error }}"{% endif %}{% if chat_streaming_enabled %}
   data-vq-streaming="true"
   data-vq-stream-stop="{{ chat_labels.stream_stop }}"
   data-vq-stream-stopping="{{ chat_labels.stream_stopping }}"

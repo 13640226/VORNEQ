@@ -503,6 +503,8 @@ VORNEQ_AI_EMERGENCY_STOP = env_bool("VORNEQ_AI_EMERGENCY_STOP", False)
 # Persistent AI conversations V1 (docs/ai/PERSISTENT_CONVERSATION_V1_DESIGN.md).
 # Default OFF in every environment; requires ai_core.0003 to be applied.
 VORNEQ_AI_CONVERSATIONS_ENABLED = env_bool("VORNEQ_AI_CONVERSATIONS_ENABLED", False)
+# Owner-only feedback; new table must exist before enabling.
+VORNEQ_AI_FEEDBACK_ENABLED = env_bool("VORNEQ_AI_FEEDBACK_ENABLED", False)
 # Pilot access is controlled independently of the flag: "allowlist" (default,
 # empty list = nobody) or "authenticated". Applies to starting conversations and
 # asking; every user can always read, export and delete their OWN history.

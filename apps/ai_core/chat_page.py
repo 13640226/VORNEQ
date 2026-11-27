@@ -61,6 +61,7 @@ def chat_page(request):
                      if policy_output else None)
     # Persistent conversations ride on Global AI; off unless explicitly enabled.
     from .views_conversations import may_start
+    from .conversations.feedback import enabled as feedback_enabled
     from .streaming import enabled as streaming_enabled
     conversations_on = bool(global_ai and getattr(settings, "VORNEQ_AI_CONVERSATIONS_ENABLED", False)
                             and may_start(request.user))
@@ -85,6 +86,7 @@ def chat_page(request):
             "chat_recovery_enabled": global_ai and recovery_enabled(),
             "chat_recovery_endpoint": reverse("ai_core:request-status"),
             "chat_conversations_enabled": conversations_on,
+            "chat_feedback_enabled": bool(conversations_on and feedback_enabled()),
             # V7-03: Streaming nur mit Unterhaltungen (serverseitige Persistenz/Recovery).
             "chat_streaming_enabled": bool(conversations_on and streaming_enabled()),
             "chat_image_studio_enabled": image_studio_allowed(request.user) or production_studio_preview_allowed(request.user),
