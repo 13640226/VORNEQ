@@ -75,6 +75,24 @@ class EnvironmentWordingTests(SimpleTestCase):
 
 
 class LayoutAndAccessibilityTests(SimpleTestCase):
+    def test_composer_polish_contract(self):
+        for language in ("en", "de", "fa"):
+            html = render_page(language)
+            self.assertIn('class="vq-chat__composer-box"', html)
+            self.assertIn('class="vq-chat__attach" disabled', html)
+            self.assertIn(chat_labels(language)["attach_unavailable"], html)
+            self.assertIn(chat_labels(language)["voice_local"], html)
+            self.assertIn("vq-chat__count--quiet", html)
+            self.assertEqual(html.count('class="vq-icon vq-chat__example-icon"'), 4)
+        self.assertIn("used < Math.ceil(capacity * 0.9)", JS)
+        self.assertIn("inputCount(input.value)", JS)
+        self.assertIn("input.scrollHeight", JS)
+        self.assertIn("historyBucket(item.last_message_at || item.created_at, now)", JS)
+        self.assertIn("text-overflow: ellipsis", CSS)
+        self.assertIn("calc(5 * 1.5em + 16px)", CSS)
+        self.assertIn("border-radius: 50%", CSS)
+        self.assertIn("prefers-reduced-motion: reduce", CSS)
+
     def test_examples_are_buttons_and_only_shown_for_global_sources(self):
         html = render_page(hosts="en.wikipedia.org")
         examples = re.findall(r'<button type="button" class="vq-chat__example" data-vq-chat-example>', html)

@@ -107,7 +107,12 @@
     }
     function update() {
       resizeComposer();
-      if (count) count.textContent = String(inputCount(input.value)) + "/" + (byteLimit || limit) + (byteLimit ? " B" : "");
+      if (count) {
+        const used = inputCount(input.value);
+        const capacity = byteLimit || limit;
+        count.textContent = String(used) + "/" + capacity + (byteLimit ? " B" : "");
+        count.classList.toggle("vq-chat__count--quiet", used < Math.ceil(capacity * 0.9));
+      }
       send.disabled = busy || recoveryBlocked || !input.value.trim() || !fitsQuestion(input.value);
       clear.disabled = busy;
       input.disabled = busy;
@@ -550,12 +555,24 @@
       const button = document.createElement("button");
       button.type = "button";
       button.className = "vq-chat__copy";
-      button.textContent = labels.copy || "Copy";
+      const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      icon.setAttribute("viewBox", "0 0 24 24");
+      icon.setAttribute("aria-hidden", "true");
+      icon.setAttribute("class", "vq-icon");
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", "M8 8h12v12H8zM16 8V4H4v12h4");
+      path.setAttribute("fill", "none");
+      path.setAttribute("stroke", "currentColor");
+      path.setAttribute("stroke-width", "1.7");
+      icon.appendChild(path);
+      const caption = document.createElement("span");
+      caption.textContent = labels.copy || "Copy";
+      button.append(icon, caption);
       button.addEventListener("click", async () => {
         try {
           await navigator.clipboard.writeText(String(answer));
-          button.textContent = labels.copied || "Copied";
-          window.setTimeout(() => { button.textContent = labels.copy || "Copy"; }, 2000);
+          caption.textContent = labels.copied || "Copied";
+          window.setTimeout(() => { caption.textContent = labels.copy || "Copy"; }, 2000);
         } catch (_error) { /* clipboard permission denied: leave the text selectable */ }
       });
       bubble.appendChild(button);
@@ -764,9 +781,27 @@
           }
         }
       }
+      function historyBucket(value, now = new Date()) {
+        if (typeof value !== "string" || !value) return "unknown";
+        const stamp = new Date(value);
+        if (!Number.isFinite(stamp.getTime())) return "unknown";
+        const day = date => Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000;
+        const age = day(now) - day(stamp);
+        if (age < 0) return "unknown";
+        if (age === 0) return "today";
+        if (age === 1) return "yesterday";
+        return age <= 7 ? "week" : "older";
+      }
       function renderList(conversations) {
         items.replaceChildren();
         if (emptyNote) emptyNote.hidden = conversations.length > 0;
+        const groups = new Map();
+        const groupLabels = {
+          en: { today: "Today", yesterday: "Yesterday", week: "Last 7 days", older: "Older", unknown: "Unknown date" },
+          de: { today: "Heute", yesterday: "Gestern", week: "Letzte 7 Tage", older: "Älter", unknown: "Unbekanntes Datum" },
+          fa: { today: "امروز", yesterday: "دیروز", week: "۷ روز گذشته", older: "قدیمی‌تر", unknown: "تاریخ نامشخص" },
+        }[language];
+        const now = new Date();
         for (const item of conversations) {
           if (!item || !uuidPattern.test(String(item.id))) continue;
           const li = document.createElement("li");
@@ -804,8 +839,27 @@
             open.addEventListener("click", () => { if (!busy) openConversation(item.id); });
             li.appendChild(open);
           }
-          items.appendChild(li);
+          if (trashMode) {
+            items.appendChild(li);
+          } else {
+            const bucket = historyBucket(item.last_message_at || item.created_at, now);
+            if (!groups.has(bucket)) groups.set(bucket, []);
+            groups.get(bucket).push(li);
+          }
         }
+        for (const key of ["today", "yesterday", "week", "older", "unknown"]) {
+          if (!groups.has(key)) continue;
+          const group = document.createElement("li");
+          group.className = "vq-chat__history-group";
+          const heading = document.createElement("h3");
+          heading.textContent = groupLabels[key];
+          const list = document.createElement("ul");
+          list.setAttribute("aria-label", groupLabels[key]);
+          list.append(...groups.get(key));
+          group.append(heading, list);
+          items.appendChild(group);
+        }
+        if (emptyNote) emptyNote.hidden = items.children.length > 0;
       }
       async function refreshList() {
         const url = new URL(endpoint, window.location.origin);
