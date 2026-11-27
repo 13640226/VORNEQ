@@ -374,7 +374,9 @@ class FrontendWiringTests(NoNetworkMixin, TestCase):
         js = (base / "js" / "phase-c-chat.js").read_text(encoding="utf-8")
         self.assertIn("overflow-wrap: anywhere", css)
         self.assertIn("min-height: 44px", css)
-        self.assertIn(".vq-chat__log { max-height: none; overflow-y: visible; }", css)
+        self.assertRegex(css, r"(?s)\.vq-chat__thread\s*\{[^}]*overflow-y: auto")
+        self.assertRegex(css, r"(?s)@media \(max-height: 580px\).*?\.vq-chat__thread\s*\{[^}]*overflow: visible")
+        self.assertNotRegex(css, r"(?s)\.vq-chat__log\s*\{[^}]*overflow-y: hidden")
         for required in ('candidate.protocol !== "https:"', "sourceHosts.has(candidate.hostname)",
                          'link.rel = external ? "noopener noreferrer external"', "textContent",
                          'redirect: "error"', '"X-CSRFToken": token.value', "data.verified !== false"):

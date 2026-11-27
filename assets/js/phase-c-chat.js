@@ -13,6 +13,7 @@
     const form = root.querySelector("[data-vq-chat-form]");
     const input = root.querySelector("[data-vq-chat-input]");
     const log = root.querySelector("[data-vq-chat-log]");
+    const thread = root.querySelector("[data-vq-chat-thread]");
     const status = root.querySelector("[data-vq-chat-status]");
     const send = root.querySelector("[data-vq-chat-send]");
     const clear = root.querySelector("[data-vq-chat-clear]");
@@ -100,7 +101,12 @@
     let busy = false;
     let recoveryBlocked = false;
 
+    function resizeComposer() {
+      input.style.height = "auto";
+      input.style.height = input.scrollHeight + "px";
+    }
     function update() {
+      resizeComposer();
       if (count) count.textContent = String(inputCount(input.value)) + "/" + (byteLimit || limit) + (byteLimit ? " B" : "");
       send.disabled = busy || recoveryBlocked || !input.value.trim() || !fitsQuestion(input.value);
       clear.disabled = busy;
@@ -108,6 +114,7 @@
       root.classList.toggle("vq-chat--busy", busy);
     }
     function appendMessage(text, role) {
+      const wasNear = nearBottom();
       const entry = document.createElement("article");
       entry.className = "vq-chat__message vq-chat__message--" + role;
       entry.dir = textDirection(String(text || ""));
@@ -120,6 +127,7 @@
       entry.appendChild(p);
       log.appendChild(entry);
       if (welcome) welcome.hidden = true;
+      if (role === "user") keepPinned(wasNear, entry);
       return entry;
     }
     function relativeUrl(value) {
@@ -558,7 +566,8 @@
           window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         bubble.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
       } else {
-        log.scrollTop = log.scrollHeight;
+        const scroller = thread || log;
+        scroller.scrollTop = scroller.scrollHeight;
       }
     }
     async function pollRecovery(record) {
@@ -653,6 +662,7 @@
       const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
       if (!endpoint.startsWith("/") || endpoint.startsWith("//")) return null;
       const panel = document.querySelector("[data-vq-conv-panel]");
+      if (panel && window.matchMedia && window.matchMedia("(max-width: 1199px)").matches) panel.open = false;
       const items = document.querySelector("[data-vq-conv-items]");
       const emptyNote = document.querySelector("[data-vq-conv-empty]");
       const search = document.querySelector("[data-vq-conv-search]");
@@ -788,6 +798,7 @@
             open.type = "button";
             open.className = "vq-chat__history-open";
             open.textContent = title;
+            open.title = title;
             open.dir = textDirection(title);
             if (item.id === activeId) open.setAttribute("aria-current", "true");
             open.addEventListener("click", () => { if (!busy) openConversation(item.id); });
@@ -918,15 +929,17 @@
     const uuidLike = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
     let activeStream = null;
     function nearBottom() {
-      const scroller = log.scrollHeight > log.clientHeight + 4 ? log : document.scrollingElement;
+      const scroller = thread && getComputedStyle(thread).overflowY === "auto"
+        ? thread : document.scrollingElement;
       if (!scroller) return true;
-      const height = scroller === log ? log.clientHeight : window.innerHeight;
+      const height = scroller === thread ? thread.clientHeight : window.innerHeight;
       return scroller.scrollHeight - scroller.scrollTop - height < 120;
     }
     function keepPinned(wasNear, bubble) {
       // Never yank the reader down while they scroll up through the conversation.
       if (!wasNear || !bubble) return;
-      if (typeof bubble.scrollIntoView === "function") bubble.scrollIntoView({ block: "end" });
+      if (thread && getComputedStyle(thread).overflowY === "auto") thread.scrollTop = thread.scrollHeight;
+      else if (typeof bubble.scrollIntoView === "function") bubble.scrollIntoView({ block: "end" });
     }
     function showStop(visible) {
       if (!stopButton) return;
@@ -1200,6 +1213,7 @@
       input.focus();
     });
     input.addEventListener("input", update);
+    window.addEventListener("resize", resizeComposer);
     input.addEventListener("keydown", (event) => {
       if (event.isComposing || event.keyCode === 229) return;
       if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
