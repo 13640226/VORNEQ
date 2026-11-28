@@ -318,11 +318,16 @@
 .vq-chat__feedback-button { min-width: var(--vq-target); min-height: var(--vq-target); display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; border-radius: var(--vq-radius); background: transparent; color: var(--vq-text-2); cursor: pointer; }
 .vq-chat__feedback-button .vq-icon { inline-size: 19px; block-size: 19px; }
 .vq-chat__feedback-button:hover:not(:disabled) { background: var(--vq-hover); border-color: var(--vq-border); }
-.vq-chat__feedback-button[aria-pressed="true"] { border-color: var(--vq-border); background: var(--vq-accent-subtle); color: var(--vq-text); }
-.vq-chat__feedback-button[aria-pressed="true"] svg { stroke-width: 2; }
+.vq-chat__feedback-button[aria-pressed="true"][data-rating="like"] { background: #166534; border-color: #166534; color: #fff; }
+.vq-chat__feedback-button[aria-pressed="true"][data-rating="dislike"] { background: #b91c1c; border-color: #b91c1c; color: #fff; }
+.vq-chat__feedback-button[aria-pressed="true"] svg { stroke-width: 2.5; }
+.vq-chat__feedback-button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 .vq-chat__feedback-button:disabled { opacity: .55; cursor: default; }
-.vq-chat__feedback-note { font-size: .75rem; color: var(--vq-text-2); }
-@media (forced-colors: active) { .vq-chat__feedback-button[aria-pressed="true"] { border-color: Highlight; color: Highlight; } }
+.vq-chat__feedback-note { font-size: .78rem; color: var(--vq-text-2); overflow-wrap: anywhere; }
+.vq-chat__feedback-note[data-state="saved"], .vq-chat__feedback-note[data-state="removed"] { font-weight: 650; color: var(--vq-text); }
+@media (forced-colors: active) {
+  .vq-chat__feedback-button[aria-pressed="true"][data-rating] { border-color: Highlight; background: Highlight; color: HighlightText; }
+}
 
 /* History mode retains CSRF and DOM hooks without exposing a composer. */
 [data-vq-history-only] [data-vq-chat-form],

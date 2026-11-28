@@ -56,6 +56,14 @@ class HistoryOnlyTests(NoNetworkMixin, TestCase):
                 self.assertContains(page, 'data-vq-history-only="true"')
                 self.assertContains(page, 'data-vq-feedback="true"')
                 labels = chat_labels(lang, "staging")
+                feedback_status = {
+                    "en": ("Saving feedback…", "Feedback saved", "Feedback removed"),
+                    "de": ("Bewertung wird gespeichert…", "Bewertung gespeichert", "Bewertung entfernt"),
+                    "fa": ("در حال ذخیره بازخورد…", "بازخورد ذخیره شد", "بازخورد حذف شد"),
+                }[lang]
+                for state, expected in zip(("pending", "saved", "removed"), feedback_status):
+                    self.assertEqual(labels["feedback_" + state], expected)
+                    self.assertContains(page, f'data-vq-feedback-{state}="{expected}"')
                 self.assertContains(page, labels["history_only"])
                 self.assertContains(page, labels["history_title"])
                 self.assertContains(page, labels["history_intro"])
