@@ -55,7 +55,14 @@ class HistoryOnlyTests(NoNetworkMixin, TestCase):
                 self.assertEqual(page.status_code, 200)
                 self.assertContains(page, 'data-vq-history-only="true"')
                 self.assertContains(page, 'data-vq-feedback="true"')
-                self.assertContains(page, chat_labels(lang, "staging")["history_only"])
+                labels = chat_labels(lang, "staging")
+                self.assertContains(page, labels["history_only"])
+                self.assertContains(page, labels["history_title"])
+                self.assertContains(page, labels["history_intro"])
+                self.assertNotContains(page, labels["examples_title"])
+                self.assertContains(page, 'data-vq-history-notice', count=1)
+                self.assertContains(page, '<h2 class="vq-chat__welcome-title">' +
+                                    labels["history_title"] + '</h2>', html=True)
                 self.assertContains(page, 'hidden inert data-vq-chat-form')
                 self.assertNotContains(page, 'action="' + reverse("ai_core:ask-grounded") + '"')
                 self.assertNotContains(page, 'action="' + reverse("ai_core:ask-global") + '"')
@@ -100,8 +107,13 @@ class HistoryOnlyTests(NoNetworkMixin, TestCase):
 
     def test_disabled_flags_wrong_runtime_and_actor_policy(self):
         with override_settings(VORNEQ_AI_FEEDBACK_ENABLED=False):
-            self.assertNotContains(self.client.get(reverse("ai_core:chat")),
-                                   'data-vq-feedback="true"')
+            for lang in ("fa", "de", "en"):
+                page = self.client.get(reverse("ai_core:chat"), {"lang": lang})
+                labels = chat_labels(lang, "staging")
+                self.assertNotContains(page, 'data-vq-feedback="true"')
+                self.assertNotContains(page, labels["history_only"])
+                self.assertContains(page, labels["history_generation_off"])
+                self.assertContains(page, labels["history_title"])
         with override_settings(VORNEQ_AI_CONVERSATIONS_ENABLED=False):
             self.assertEqual(self.client.get(reverse("ai_core:chat")).status_code,404)
         with patch.dict(os.environ, {"RENDER_SERVICE_ID": "wrong"}):
