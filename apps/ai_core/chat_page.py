@@ -1,4 +1,6 @@
 """Guarded Chat UI for authorized development, staging, and Production actors."""
+import os
+
 from django.conf import settings
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
@@ -11,8 +13,9 @@ from .chat_strings import chat_labels
 from .chat_input_budget import LEGACY, global_budget
 from .chat_output_budget import configured_output_budget
 from .response_engine_v3 import answer_limit, stage2_enabled
-from .staging_policy import hosted_runtime, trial_enabled, actor_allowed
-from .production_policy import production_actor_allowed
+from .staging_policy import (hosted_runtime, trial_enabled, actor_allowed,
+                             EXPECTED_STAGING_SERVICE_ID)
+from .production_policy import production_actor_allowed, EXPECTED_PRODUCTION_SERVICE_ID
 from .views_global import global_ai_available
 from .web_retrieval import WikipediaRetriever
 from .request_recovery import enabled as recovery_enabled
@@ -32,39 +35,65 @@ def is_chat_enabled():
     )
 
 
+def history_available_for(user):
+    """Independent, local history UI; retain the explicit conversation actor policy."""
+    from .views_conversations import may_start
+    if not (getattr(settings, "VORNEQ_AI_CONVERSATIONS_ENABLED", False) is True
+            and may_start(user)):
+        return False
+    env = settings.VORNEQ_ENV
+    if env == "development":
+        return not hosted_runtime()
+    expected = {"staging": EXPECTED_STAGING_SERVICE_ID,
+                "production": EXPECTED_PRODUCTION_SERVICE_ID}.get(env)
+    return bool(expected and settings.DEBUG is False
+                and os.environ.get("RENDER_SERVICE_ID") == expected)
+
+
 @never_cache
 @require_GET
 def chat_page(request):
-    if not is_chat_enabled():
+    history_on = history_available_for(request.user)
+    # A local history session must not fall through to the legacy paid trial.
+    # Do not evaluate paid release policy when the hosted global switch is off.
+    if history_on:
+        global_ai = global_ai_available() and is_chat_enabled()
+        if global_ai and settings.VORNEQ_ENV == "staging":
+            global_ai = actor_allowed(request.user)
+        if global_ai and settings.VORNEQ_ENV == "production":
+            global_ai = production_actor_allowed(request.user)
+        history_only = not global_ai
+    else:
+        global_ai = False
+        history_only = False
+    if not history_on and not is_chat_enabled():
         raise Http404("AI chat preview disabled")
     if not request.user.is_authenticated:
         response = HttpResponse("Authentication required", status=401)
         response["Cache-Control"] = "no-store, private"
         response["X-Robots-Tag"] = "noindex, nofollow"
         return response
-    if settings.VORNEQ_ENV == "staging" and not actor_allowed(request.user):
+    if not history_on and settings.VORNEQ_ENV == "staging" and not actor_allowed(request.user):
         raise Http404("AI chat preview unavailable")
-    if settings.VORNEQ_ENV == "production" and not production_actor_allowed(request.user):
+    if not history_on and settings.VORNEQ_ENV == "production" and not production_actor_allowed(request.user):
         raise Http404("AI chat unavailable")
     requested_language = request.GET.get("lang", "")
     language = requested_language if requested_language in ("fa", "de", "en") else (get_language() or "en")[:2]
     request.LANGUAGE_CODE = language
-    global_ai = global_ai_available()
+    if not history_on:
+        global_ai = global_ai_available()
     budget = global_budget() if global_ai else LEGACY
     output_budget = configured_output_budget() if global_ai else None
     # V7-02.1: dieselbe Ausgabe-Policy wie run_global_pipeline (ohne Stage 2).
     from .model_limits import ANSWER_CHARS_PER_TOKEN, MAX_VALIDATED_ANSWER_CHARS, policy_output_tokens
-    import os
     policy_output = (policy_output_tokens(os.environ.get("VORNEQ_AI_PHASE_B_MODEL", ""))
                      if global_ai and not stage2_enabled(settings) else None)
     policy_answer = (min(MAX_VALIDATED_ANSWER_CHARS, ANSWER_CHARS_PER_TOKEN * policy_output)
                      if policy_output else None)
-    # Persistent conversations ride on Global AI; off unless explicitly enabled.
-    from .views_conversations import may_start
+    # History access is independent; generation still uses the original policy.
     from .conversations.feedback import enabled as feedback_enabled
     from .streaming import enabled as streaming_enabled
-    conversations_on = bool(global_ai and getattr(settings, "VORNEQ_AI_CONVERSATIONS_ENABLED", False)
-                            and may_start(request.user))
+    conversations_on = history_on
     with override(language):
         response = render(request, "ai_core/chat.html", {
             "chat_labels": chat_labels(language, environment=settings.VORNEQ_ENV),
@@ -72,15 +101,16 @@ def chat_page(request):
             "chat_shell_active": True,
             "chat_question_limit": budget.question_chars,
             "chat_question_bytes": budget.question_utf8_bytes,
-            "chat_endpoint": reverse("ai_core:ask-global" if global_ai else "ai_core:ask-grounded"),
-            "chat_source_hosts": " ".join(sorted(WikipediaRetriever.allowed_hosts)) if global_ai else "",
+            "chat_history_only": history_only,
+            "chat_endpoint": "" if history_only else reverse("ai_core:ask-global" if global_ai else "ai_core:ask-grounded"),
+            "chat_source_hosts": " ".join(sorted(WikipediaRetriever.allowed_hosts)) if global_ai or history_only else "",
             # V7-02.1: auch die Ausgabe-Policy (ohne Stage 2) liefert Grenzen ans Frontend.
-            "chat_v3_enabled": answer_limit(settings) > 1000 or policy_answer is not None,
-            "chat_answer_limit": (output_budget.answer_chars if output_budget else
+            "chat_v3_enabled": history_only or answer_limit(settings) > 1000 or policy_answer is not None,
+            "chat_answer_limit": (MAX_VALIDATED_ANSWER_CHARS if history_only else output_budget.answer_chars if output_budget else
                                   policy_answer or answer_limit(settings)),
-            "chat_rich_text": output_budget is not None or policy_answer is not None,
+            "chat_rich_text": history_only or output_budget is not None or policy_answer is not None,
             "chat_section_limit": output_budget.section_chars if output_budget else 700,
-            "chat_citation_limit": 5 if stage2_enabled(settings) else 3,
+            "chat_citation_limit": 5 if history_only or stage2_enabled(settings) else 3,
             "chat_staging": settings.VORNEQ_ENV == "staging",
             "chat_production": settings.VORNEQ_ENV == "production",
             "chat_recovery_enabled": global_ai and recovery_enabled(),
@@ -88,9 +118,9 @@ def chat_page(request):
             "chat_conversations_enabled": conversations_on,
             "chat_feedback_enabled": bool(conversations_on and feedback_enabled()),
             # V7-03: Streaming nur mit Unterhaltungen (serverseitige Persistenz/Recovery).
-            "chat_streaming_enabled": bool(conversations_on and streaming_enabled()),
-            "chat_image_studio_enabled": image_studio_allowed(request.user) or production_studio_preview_allowed(request.user),
-            "chat_image_studio_preview": production_studio_preview_allowed(request.user),
+            "chat_streaming_enabled": bool(global_ai and conversations_on and streaming_enabled()),
+            "chat_image_studio_enabled": not history_only and (image_studio_allowed(request.user) or production_studio_preview_allowed(request.user)),
+            "chat_image_studio_preview": not history_only and production_studio_preview_allowed(request.user),
             "chat_image_studio_url": reverse("ai_core:image-studio"),
             "chat_conversations_endpoint": reverse("ai_core:conversations") if conversations_on else "",
         })

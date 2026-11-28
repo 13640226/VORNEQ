@@ -142,10 +142,18 @@ def _recent_work_for(user, limit=3):
 def home(request):
     """Product-first workspace (V6-02): Search composer, gated AI links, own recent work."""
     chat_enabled = _ai_chat_available_for(request.user)
-    labels = chat_labels(get_language(), environment=settings.VORNEQ_ENV) if chat_enabled else {}
+    from apps.ai_core.chat_page import history_available_for
+    history_enabled = history_available_for(request.user)
+    if history_enabled and chat_enabled:
+        from apps.ai_core.views_global import global_ai_available
+        chat_enabled = global_ai_available()
+    labels = chat_labels(get_language(), environment=settings.VORNEQ_ENV) if chat_enabled or history_enabled else {}
     recent_documents, recent_notes = _recent_work_for(request.user)
     return render(request, "index.html", {
         "phase_c_chat_enabled": chat_enabled,
+        "chat_history_available": history_enabled,
+        "chat_history_label": labels.get("conv_title", ""),
+        "chat_history_notice": labels.get("history_only", ""),
         "phase_c_chat_link_label": labels.get("entry", ""),
         "phase_c_chat_warning": labels.get("warning", ""),
         "image_studio_enabled": _image_studio_available_for(request.user),

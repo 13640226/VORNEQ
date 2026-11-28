@@ -21,6 +21,7 @@
     const token = form && form.querySelector('input[name="csrfmiddlewaretoken"]');
     if (!form || !input || !log || !status || !send || !clear || !token) return;
 
+    const historyOnly = root.dataset.vqHistoryOnly === "true";
     const labels = {
       loading: root.dataset.vqLoading,
       error: root.dataset.vqError,
@@ -50,7 +51,7 @@
     const welcome = root.querySelector("[data-vq-chat-welcome]");
     for (const example of root.querySelectorAll("[data-vq-chat-example]")) {
       example.addEventListener("click", () => {
-        if (busy) return;
+        if (historyOnly || busy) return;
         const exampleQuestion = String(example.textContent || "").trim();
         if (!fitsQuestion(exampleQuestion)) return;
         input.value = exampleQuestion;
@@ -95,7 +96,7 @@
     function fitsQuestion(value) {
       return Array.from(value).length <= limit && inputCount(value) <= (byteLimit || limit);
     }
-    const recoveryEnabled = root.dataset.vqRecoveryEnabled === "true";
+    const recoveryEnabled = !historyOnly && root.dataset.vqRecoveryEnabled === "true";
     const recoveryEndpoint = root.dataset.vqRecoveryEndpoint || "";
     const recoveryKey = "vq-ai-chat-recovery-v1";
     let busy = false;
@@ -113,9 +114,9 @@
         count.textContent = String(used) + "/" + capacity + (byteLimit ? " B" : "");
         count.classList.toggle("vq-chat__count--quiet", used < Math.ceil(capacity * 0.9));
       }
-      send.disabled = busy || recoveryBlocked || !input.value.trim() || !fitsQuestion(input.value);
-      clear.disabled = busy;
-      input.disabled = busy;
+      send.disabled = historyOnly || busy || recoveryBlocked || !input.value.trim() || !fitsQuestion(input.value);
+      clear.disabled = historyOnly || busy;
+      input.disabled = historyOnly || busy;
       root.classList.toggle("vq-chat--busy", busy);
     }
     function appendMessage(text, role) {
@@ -1026,6 +1027,7 @@
         refreshList();
       }
       async function ensure(question) {
+        if (historyOnly) return false;
         if (activeId) return true;
         const result = await api("POST", endpoint, { language: questionLanguage(question), title: question });
         if (!result.ok || !result.data || !result.data.conversation ||
@@ -1038,7 +1040,7 @@
         showBar(result.data.conversation);
         return true;
       }
-      newButton.addEventListener("click", () => { if (!busy) { startNew(); input.focus(); } });
+      newButton.addEventListener("click", () => { if (!historyOnly && !busy) { startNew(); input.focus(); } });
       if (search) search.addEventListener("input", () => {
         window.clearTimeout(searchTimer);
         searchTimer = window.setTimeout(refreshList, 250);
@@ -1101,7 +1103,7 @@
 
     // ------------------------------------------------------------ V7-03 streaming
     // Streaming needs the parser module; without it the JSON path stays active.
-    const streamingEnabled = Boolean(conv) && root.dataset.vqStreaming === "true" &&
+    const streamingEnabled = !historyOnly && Boolean(conv) && root.dataset.vqStreaming === "true" &&
       Boolean(window.VQStreamParser) && typeof TextDecoder === "function";
     const stopButton = root.querySelector("[data-vq-chat-stop]");
     const uuidLike = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -1243,7 +1245,7 @@
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      if (busy || recoveryBlocked) return;
+      if (historyOnly || busy || recoveryBlocked) return;
       const question = input.value.trim();
       if (!question || !fitsQuestion(input.value)) { input.focus(); return; }
       // Conversation mode: create the (cost-free) conversation before any billable request.
@@ -1378,7 +1380,7 @@
       }
     });
     clear.addEventListener("click", () => {
-      if (busy) return;
+      if (historyOnly || busy) return;
       if (conv) { clearRecovery(); recoveryBlocked = false; input.value = ""; status.textContent = "";
         conv.startNew(); update(); input.focus(); return; }
       log.replaceChildren();
@@ -1393,7 +1395,7 @@
     input.addEventListener("input", update);
     window.addEventListener("resize", resizeComposer);
     input.addEventListener("keydown", (event) => {
-      if (event.isComposing || event.keyCode === 229) return;
+      if (historyOnly || event.isComposing || event.keyCode === 229) return;
       if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
         if (form.requestSubmit) form.requestSubmit();
