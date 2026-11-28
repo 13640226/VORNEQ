@@ -28,6 +28,8 @@
           {% trans "Open AI chat" %}
           <svg class="vq-icon vq-ix-flip" aria-hidden="true" focusable="false"><use href="#vq-ix-arrow"></use></svg>
         </a>
+        {% elif chat_history_available %}
+        <a class="vq-ix-mode vq-ix-mode--link" href="{% url 'ai_core:chat' %}?lang={{ LANG|slice:':2' }}" data-vq-history-link>{{ chat_history_label }}</a>
         {% else %}
         <span class="vq-ix-mode vq-ix-mode--off" aria-disabled="true">
           <svg class="vq-icon" aria-hidden="true" focusable="false"><use href="#vq-ix-lock"></use></svg>

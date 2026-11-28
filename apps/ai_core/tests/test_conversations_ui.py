@@ -46,8 +46,14 @@ class ConversationPageTests(NoNetworkMixin, TestCase):
 
     @override_settings(VORNEQ_AI_CONVERSATIONS_ENABLED=True, VORNEQ_GLOBAL_AI_ENABLED=False,
                        VORNEQ_AI_CONVERSATIONS_ACTOR_POLICY="authenticated")
-    def test_conversations_require_global_ai_on_the_page(self):
-        self.assertNotIn("data-vq-conversations", self.page())
+    def test_conversations_history_is_independent_of_global_ai(self):
+        html = self.page()
+        self.assertIn('data-vq-conversations="true"', html)
+        self.assertIn('data-vq-history-only="true"', html)
+        self.assertNotIn(f'action="{reverse("ai_core:ask-grounded")}"', html)
+        self.assertNotIn(f'action="{reverse("ai_core:ask-global")}"', html)
+        self.assertIn('hidden inert data-vq-chat-form', html)
+        self.assertNotIn('data-vq-streaming="true"', html)
 
     @override_settings(VORNEQ_AI_CONVERSATIONS_ENABLED=True, VORNEQ_AI_CONVERSATIONS_ALLOWED_USER_IDS="")
     def test_pilot_allowlist_controls_the_page_independently_of_the_flag(self):

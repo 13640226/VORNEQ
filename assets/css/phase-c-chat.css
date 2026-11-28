@@ -323,3 +323,7 @@
 .vq-chat__feedback-button:disabled { opacity: .55; cursor: default; }
 .vq-chat__feedback-note { font-size: .75rem; color: var(--vq-text-2); }
 @media (forced-colors: active) { .vq-chat__feedback-button[aria-pressed="true"] { border-color: Highlight; color: Highlight; } }
+
+/* History mode retains CSRF and DOM hooks without exposing a composer. */
+[data-vq-history-only] [data-vq-chat-form],
+.vq-chat__history-new[hidden] { display: none; }

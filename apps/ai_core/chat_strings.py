@@ -360,4 +360,9 @@ def chat_labels(language, environment=None):
                "stream_interrupted": "\u0627\u062a\u0635\u0627\u0644 \u0642\u0637\u0639 \u0634\u062f. \u067e\u0627\u0633\u062e \u062f\u0631 \u0633\u0631\u0648\u0631 \u0627\u062f\u0627\u0645\u0647 \u0645\u06cc\u200c\u06cc\u0627\u0628\u062f\u061b \u0628\u0631\u0627\u06cc \u062f\u06cc\u062f\u0646 \u0622\u0646 \u06af\u0641\u062a\u06af\u0648 \u0631\u0627 \u062f\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0632 \u06a9\u0646\u06cc\u062f.",
                "copy_code": "\u06a9\u067e\u06cc \u06a9\u062f"},
     }[code])
+    labels["history_only"] = {
+        "en": "Saved conversations and feedback are available. New AI responses are disabled.",
+        "de": "Gespeicherte Gespräche und Bewertungen sind verfügbar. Neue KI-Antworten sind deaktiviert.",
+        "fa": "گفت‌وگوهای ذخیره‌شده و امتیازدهی در دسترس هستند. تولید پاسخ جدید هوش مصنوعی غیرفعال است.",
+    }[code]
     return labels

@@ -2,6 +2,8 @@
 <li><a class="vq-nav__link" href="{% url 'home' %}" {% if not chat_active and not studio_active and not search_active and not discover_active and not knowledge_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-home"/></svg><span>{% trans "Home" %}</span></a></li>
 {% if phase_c_chat_enabled %}
 <li><a class="vq-nav__link" href="{{ url_chat }}?lang={{ LANG|slice:':2' }}"{% if chat_active %} aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-chat"/></svg><span>{% trans "AI assistant" %}</span></a></li>
+{% elif chat_history_available %}
+<li><a class="vq-nav__link" href="{{ url_chat }}?lang={{ LANG|slice:':2' }}"><svg class="vq-icon" aria-hidden="true"><use href="#vq-i-chat"/></svg><span>{{ chat_history_label }}</span></a></li>
 {% endif %}
 {% if image_studio_enabled %}
 <li><a class="vq-nav__link" href="{% url 'ai_core:image-studio' %}?lang={{ LANG|slice:':2' }}" {% if studio_active %}aria-current="page"{% endif %}><svg class="vq-icon" aria-hidden="true"><use href="#vq-ix-image"/></svg><span>{% trans "Image Studio" %}</span></a></li>
