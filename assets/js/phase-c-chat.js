@@ -599,11 +599,14 @@
       const note = document.createElement("span");
       note.className = "vq-chat__feedback-note";
       note.setAttribute("role", "status");
+      note.setAttribute("aria-live", "polite");
+      note.setAttribute("aria-atomic", "true");
       const buttons = [];
       let rating = null;
       let pending = true;
       let known = false;
       function paint() {
+        actions.setAttribute("aria-busy", String(pending));
         for (const [value, button] of buttons) {
           button.disabled = pending || !known;
           button.setAttribute("aria-pressed", String(known && value === rating));
@@ -630,13 +633,21 @@
           window.clearTimeout(timer);
         }
       }
+      function announce(state, label) {
+        note.setAttribute("data-state", state);
+        note.textContent = label;
+      }
+      function announceSaved() {
+        announce("saved", root.dataset.vqFeedbackSaved || "Feedback saved");
+      }
       function announceError() {
-        note.textContent = root.dataset.vqFeedbackError || "Feedback unavailable";
+        announce("error", root.dataset.vqFeedbackError || "Feedback unavailable");
       }
       async function load() {
         try {
           rating = await exchange("GET");
           known = true;
+          if (rating !== null) announceSaved();
         } catch (_error) {
           known = false;
           announceError();
@@ -649,6 +660,7 @@
         const button = document.createElement("button");
         button.type = "button";
         button.className = "vq-chat__feedback-button";
+        button.setAttribute("data-rating", value);
         const title = value === "like" ? root.dataset.vqFeedbackLike : root.dataset.vqFeedbackDislike;
         button.title = title || value;
         button.setAttribute("aria-label", title || value);
@@ -671,10 +683,15 @@
           if (pending || !known || !bubble.isConnected) return;
           const next = rating === value ? null : value;
           pending = true;
-          note.textContent = "";
+          announce("pending", root.dataset.vqFeedbackPending || "Saving feedback…");
           paint();
           try {
             rating = await exchange(next === null ? "DELETE" : "POST", next);
+            if (rating === null) {
+              announce("removed", root.dataset.vqFeedbackRemoved || "Feedback removed");
+            } else {
+              announceSaved();
+            }
           } catch (_error) {
             // No optimistic success. A lost response might have committed.
             // Reconcile by GET only; never retry the mutation automatically.
@@ -693,6 +710,7 @@
         rating = initialRating;
         known = true;
         pending = false;
+        if (rating !== null) announceSaved();
         paint();
       } else {
         paint();
