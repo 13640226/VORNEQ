@@ -365,4 +365,21 @@ def chat_labels(language, environment=None):
         "de": "Gespeicherte Gespräche und Bewertungen sind verfügbar. Neue KI-Antworten sind deaktiviert.",
         "fa": "گفت‌وگوهای ذخیره‌شده و امتیازدهی در دسترس هستند. تولید پاسخ جدید هوش مصنوعی غیرفعال است.",
     }[code]
+    labels.update({
+        "en": {
+            "history_title": "Saved conversations",
+            "history_intro": "Select a conversation from the history to view its messages.",
+            "history_generation_off": "New AI responses are disabled.",
+        },
+        "de": {
+            "history_title": "Gespeicherte Gespräche",
+            "history_intro": "Wählen Sie ein Gespräch aus dem Verlauf aus, um seine Nachrichten anzusehen.",
+            "history_generation_off": "Neue KI-Antworten sind deaktiviert.",
+        },
+        "fa": {
+            "history_title": "گفت‌وگوهای ذخیره‌شده",
+            "history_intro": "برای مشاهده پیام‌ها، یک گفت‌وگو را از تاریخچه انتخاب کنید.",
+            "history_generation_off": "تولید پاسخ جدید هوش مصنوعی غیرفعال است.",
+        },
+    }[code])
     return labels

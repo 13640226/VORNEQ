@@ -4,7 +4,7 @@
 {% block body_class %}vq-chat-page{% endblock %}
 {% block meta %}
 <meta name="robots" content="noindex,nofollow">
-<meta name="description" content="{{ chat_labels.intro }}">
+<meta name="description" content="{% if chat_history_only %}{{ chat_labels.history_intro }}{% else %}{{ chat_labels.intro }}{% endif %}">
 {% endblock %}
 {% block extra_head %}<link rel="stylesheet" href="{% static 'css/ai-brand.css' %}">
 <link rel="stylesheet" href="{% static 'css/phase-c-chat.css' %}">
@@ -107,7 +107,7 @@
       <div><dt>{{ chat_labels.quotes_label }}</dt><dd>{{ chat_labels.quotes_value }}</dd></div>
       <div><dt>{{ chat_labels.memory_label }}</dt><dd>{% if chat_conversations_enabled %}{{ chat_labels.conv_memory_value }}{% else %}{{ chat_labels.memory_value }}{% endif %}</dd></div>
     </dl>
-    <p class="vq-chat__single">{% if chat_history_only %}{{ chat_labels.history_only }}{% elif chat_conversations_enabled %}{{ chat_labels.conv_turns }}{% else %}{{ chat_labels.single_turn }}{% endif %}</p>
+    <p class="vq-chat__single">{% if chat_history_only %}{% if chat_feedback_enabled %}{{ chat_labels.history_only }}{% else %}{{ chat_labels.history_generation_off }}{% endif %}{% elif chat_conversations_enabled %}{{ chat_labels.conv_turns }}{% else %}{{ chat_labels.single_turn }}{% endif %}</p>
   </section>
   <section class="vq-chat__card" aria-labelledby="vq-chat-privacy-title">
     <h2 id="vq-chat-privacy-title">{{ chat_labels.privacy_title }}</h2>
@@ -143,8 +143,8 @@
   <div class="vq-chat__thread" data-vq-chat-thread tabindex="0" role="region" aria-label="{{ chat_labels.title }}">
   <div class="vq-chat__welcome" data-vq-chat-welcome>
     <img class="vq-chat__welcome-logo" src="{% static 'images/brand/v2/ai-avatar.svg' %}" alt="" width="56" height="56">
-    <h2 class="vq-chat__welcome-title">{{ chat_labels.examples_title }}</h2>
-    <p class="vq-chat__intro">{% if chat_history_only %}{{ chat_labels.history_only }}{% else %}{{ chat_labels.intro }}{% endif %}</p>
+    <h2 class="vq-chat__welcome-title">{% if chat_history_only %}{{ chat_labels.history_title }}{% else %}{{ chat_labels.examples_title }}{% endif %}</h2>
+    <p class="vq-chat__intro">{% if chat_history_only %}{{ chat_labels.history_intro }}{% else %}{{ chat_labels.intro }}{% endif %}</p>
     {% if chat_source_hosts and not chat_history_only %}
     <ul class="vq-chat__examples">
       {% for example in chat_labels.examples %}
@@ -160,7 +160,7 @@
   </div>
   <p class="vq-chat__status" data-vq-chat-status role="status" aria-live="polite"></p>
 
-  {% if chat_history_only %}<p role="note" data-vq-history-notice>{{ chat_labels.history_only }}</p>{% endif %}
+  {% if chat_history_only %}<p role="note" data-vq-history-notice>{% if chat_feedback_enabled %}{{ chat_labels.history_only }}{% else %}{{ chat_labels.history_generation_off }}{% endif %}</p>{% endif %}
   <form class="vq-chat__form" method="post"{% if chat_history_only %} hidden inert{% else %} action="{{ chat_endpoint }}"{% endif %} data-vq-chat-form>
     {% csrf_token %}
     <div class="vq-chat__composer-box">

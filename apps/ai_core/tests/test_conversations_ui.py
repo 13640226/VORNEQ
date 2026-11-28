@@ -27,7 +27,9 @@ class ConversationPageTests(NoNetworkMixin, TestCase):
         html = self.page()
         self.assertNotIn("data-vq-conversations", html)
         self.assertNotIn("data-vq-conv-panel", html)
-        self.assertIn("vq-chat-shell\"", html)
+        self.assertIn('vq-chat-shell"', html)
+        self.assertIn("یک پرسش را امتحان کنید", html)
+        self.assertNotIn("data-vq-history-notice", html)
 
     @override_settings(VORNEQ_AI_CONVERSATIONS_ENABLED=True, VORNEQ_AI_CONVERSATIONS_ACTOR_POLICY="authenticated")
     def test_flag_on_renders_history_notice_and_endpoint(self):
